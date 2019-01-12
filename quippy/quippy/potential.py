@@ -25,8 +25,11 @@ ASE-compatible Calculator from a quip-potential object
 import ase
 import ase.calculators.calculator
 import numpy as np
+from copy import deepcopy as cp
 
 import quippy
+
+__all__ = ['potential']
 
 
 class potential(ase.calculators.calculator.Calculator):
@@ -112,7 +115,8 @@ class potential(ase.calculators.calculator.Calculator):
 
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
-                  local_virial=None, vol_per_atom=None):
+                  local_virial=None, vol_per_atom=None,
+                  copy_all_properties=True):
         """Do the calculation.
 
         properties: list of str
@@ -279,6 +283,18 @@ below.
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
+
+        if isinstance(copy_all_properties, bool) and copy_all_properties:
+            _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
+
+            for param, val in _quip_params.items():
+                if param not in _skip_keys:
+                    self.atoms.info[param] = cp(val)
+
+            for prop, val in _quip_properties.items():
+                if prop not in _skip_keys:
+                    self.atoms.arrays[prop] = np.copy(val, order='C')
+
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)

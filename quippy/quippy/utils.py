@@ -24,8 +24,10 @@ Utilities for quippy
 
 import _quippy
 import quippy
-import numpy as np
 import f90wrap.runtime
+from copy import deepcopy as cp
+
+__all__ = ['get_dict_arrays']
 
 
 def get_dict_arrays(fdict):
@@ -48,10 +50,10 @@ def get_dict_arrays(fdict):
         except ValueError:
             value = fdict.get_value(key)
             try:
-                # normally it is an array, because the error arf from fortran is converted to output
-                arrays[key] = value[0]
+                # normally it is an tuple, because the error arf from fortran is converted to output
+                arrays[key] = cp(value[0])
             except TypeError:
-                arrays[key] = value
+                arrays[key] = cp(value)
 
     return arrays
 
