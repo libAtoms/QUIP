@@ -157,9 +157,9 @@ below.
         if len(properties) == 0:
             raise RuntimeError('Nothing to calculate')
 
-        for property in properties:
-            if property not in self.implemented_properties:
-                raise RuntimeError("Don't know how to calculate property '%s'" % property)
+        for prop in properties:
+            if prop not in self.implemented_properties:
+                raise RuntimeError("Don't know how to calculate property '%s'" % prop)
 
         # passing arguments which will be changed by the calculator
         _dict_args = {}
