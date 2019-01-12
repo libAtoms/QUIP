@@ -7,7 +7,6 @@ import ase
 import ase.calculators.calculator
 import numpy as np
 
-import _quippy
 import quippy
 
 
@@ -93,7 +92,7 @@ class potential(ase.calculators.calculator.Calculator):
         pass
 
     def calculate(self, atoms=None, properties=None, system_changes=None,
-                  force=None, virial=None, local_energy=None,
+                  forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None):
         """Do the calculation.
 
@@ -165,12 +164,12 @@ below.
         _dict_args = {}
         # TODO implement this for energy too
 
-        val = _check_arg(force)
+        val = _check_arg(forces)
         if val == 'y':
             properties += ['force']
         elif val == 'add':
             properties += ['force']
-            _dict_args['force'] = force
+            _dict_args['force'] = forces
 
         val = _check_arg(virial)
         if val == 'y':
@@ -211,7 +210,7 @@ below.
             args_str += ' local_virial'
         if 'energies' in properties or 'local_energy' in properties:
             args_str += ' local_energy'
-        if 'force' in properties:
+        if 'forces' in properties:
             args_str += ' force'
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
@@ -234,7 +233,7 @@ below.
             self.results['virial'] = _quip_params['virial'].copy()
 
         if 'force' in _quip_properties.keys():
-            self.results['force'] = np.copy(_quip_properties['force'].T)
+            self.results['forces'] = np.copy(_quip_properties['force'].T)
 
         if 'local_energy' in _quip_properties.keys():
             self.results['energies'] = np.copy(_quip_properties['local_energy'].T)
