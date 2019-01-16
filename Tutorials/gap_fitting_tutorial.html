@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial of how to train a GAP model from scratch &mdash; quippy 0be1566+ documentation</title>
+  <title>Tutorial of how to train a GAP model from scratch &mdash; quippy c48ac3d+ documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0be1566+
+                c48ac3d+
               </div>
             
           
@@ -222,18 +222,18 @@ div.nblast {
 
 /* input prompt */
 div.nbinput div.prompt pre {
-    color: #303F9F;
+    color: #307FC1;
 }
 
 /* output prompt */
 div.nboutput div.prompt pre {
-    color: #D84315;
+    color: #BF5B3D;
 }
 
 /* all prompts */
 div.nbinput div.prompt,
 div.nboutput div.prompt {
-    min-width: 8ex;
+    min-width: 5ex;
     padding-top: 0.4em;
     padding-right: 0.4em;
     text-align: right;
@@ -273,9 +273,9 @@ div.nboutput div.output_area {
 
 /* input area */
 div.nbinput div.input_area {
-    border: 1px solid #cfcfcf;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
-    background: #f7f7f7;
+    background: #f5f5f5;
 }
 
 /* override MathJax center alignment in output cells */
@@ -283,7 +283,7 @@ div.nboutput div[class*=MathJax] {
     text-align: left !important;
 }
 
-/* override sphinx.ext.pngmath center alignment in output cells */
+/* override sphinx.ext.imgmath center alignment in output cells */
 div.nboutput div.math p {
     text-align: left;
 }
@@ -333,6 +333,40 @@ div.nboutput div.output_area.stderr {
 .ansi-bold { font-weight: bold; }
 .ansi-underline { text-decoration: underline; }
 
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
@@ -348,6 +382,11 @@ div.nboutput div.output_area.stderr {
 
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
 }
 </style>
 <div class="section" id="Tutorial-of-how-to-train-a-GAP-model-from-scratch">
@@ -367,8 +406,7 @@ div.nboutput div.output_area.stderr {
 <div class="section" id="here-we-will-fit-twice,-to-see-the-difference-between-a-2b-only-and-a-2b+3b-fit">
 <h2>here we will fit twice, to see the difference between a 2b-only and a 2b+3b fit<a class="headerlink" href="#here-we-will-fit-twice,-to-see-the-difference-between-a-2b-only-and-a-2b+3b-fit" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -389,8 +427,7 @@ div.nboutput div.output_area.stderr {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -426,12 +463,9 @@ div.nboutput div.output_area.stderr {
 </div>
 <div class="section" id="generating-data-only-with-ASE,-using-the-EMT-calculator">
 <h2>generating data only with ASE, using the EMT calculator<a class="headerlink" href="#generating-data-only-with-ASE,-using-the-EMT-calculator" title="Permalink to this headline">¶</a></h2>
-<p>This is only for the demonstration of how to do it, this run is will be
-done very fast. There is no practical use of the data beyond lerning the
-use teach_sparse, quip, etc. with it.</p>
+<p>This is only for the demonstration of how to do it, this run is will be done very fast. There is no practical use of the data beyond lerning the use teach_sparse, quip, etc. with it.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -599,8 +633,7 @@ Energy per atom: Epot = 0.417eV  Ekin = 0.558eV (T=4313K)  Etot = 0.974eV
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -616,11 +649,9 @@ Energy per atom: Epot = 0.417eV  Ekin = 0.558eV (T=4313K)  Etot = 0.974eV
 </div>
 <div class="section" id="get-e0-for-H-and-O---energies-of-the-isolated-atoms">
 <h2>get e0 for H and O - energies of the isolated atoms<a class="headerlink" href="#get-e0-for-H-and-O---energies-of-the-isolated-atoms" title="Permalink to this headline">¶</a></h2>
-<p>This is the energy of the isolated atom, will be in the teach_sparse
-string in the following format: <code class="docutils literal notranslate"><span class="pre">e0={H:energy:O:energy}</span></code></p>
+<p>This is the energy of the isolated atom, will be in the teach_sparse string in the following format: <code class="docutils literal notranslate"><span class="pre">e0={H:energy:O:energy}</span></code></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -647,11 +678,9 @@ e0_O: 4.6
 </div>
 <div class="section" id="separate-the-dataset-into-a-training-and-a-validation-set">
 <h1>separate the dataset into a training and a validation set<a class="headerlink" href="#separate-the-dataset-into-a-training-and-a-validation-set" title="Permalink to this headline">¶</a></h1>
-<p>As we have 120 frames from the 600fs MD, I will do it 60,60 with taking
-even and odd frames for the two</p>
+<p>As we have 120 frames from the 600fs MD, I will do it 60,60 with taking even and odd frames for the two</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -661,8 +690,7 @@ even and odd frames for the two</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -671,8 +699,7 @@ even and odd frames for the two</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -683,40 +710,24 @@ even and odd frames for the two</p>
 <div class="section" id="train-our-GAP-model-from-the-command-line">
 <h2>train our GAP model from the command line<a class="headerlink" href="#train-our-GAP-model-from-the-command-line" title="Permalink to this headline">¶</a></h2>
 <p>Will use a fit of 2b only, using the desciptor distance_2b.</p>
-<p>Let’s understand how this works. The bash command takes named arguments
-separated by spaces.</p>
+<p>Let’s understand how this works. The bash command takes named arguments separated by spaces.</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">teach_sparse</span></code> the command which actually does the fit</li>
 <li><code class="docutils literal notranslate"><span class="pre">e0={H:3.21:O:4.6}</span></code> the energies of the isolated atoms</li>
-<li><code class="docutils literal notranslate"><span class="pre">energy_parameter_name=energy</span> <span class="pre">force_parameter_name=forces</span></code> names of
-the parameters</li>
-<li><code class="docutils literal notranslate"><span class="pre">do_copy_at_file=F</span> <span class="pre">sparse_separate_file=T</span></code> just needed, don’t want
-to copy the training data and using separate files for the xml makes
-it faster</li>
-<li><code class="docutils literal notranslate"><span class="pre">gp_file=GAP.xml</span></code> filename of the potential parameters, I have
-always used this name, because I had separate directories for the
-different trainings potentials</li>
+<li><code class="docutils literal notranslate"><span class="pre">energy_parameter_name=energy</span> <span class="pre">force_parameter_name=forces</span></code> names of the parameters</li>
+<li><code class="docutils literal notranslate"><span class="pre">do_copy_at_file=F</span> <span class="pre">sparse_separate_file=T</span></code> just needed, don’t want to copy the training data and using separate files for the xml makes it faster</li>
+<li><code class="docutils literal notranslate"><span class="pre">gp_file=GAP.xml</span></code> filename of the potential parameters, I have always used this name, because I had separate directories for the different trainings potentials</li>
 <li><code class="docutils literal notranslate"><span class="pre">at_file=train.xyz</span></code> training file</li>
-<li><code class="docutils literal notranslate"><span class="pre">default_sigma={0.008</span> <span class="pre">0.04</span> <span class="pre">0</span> <span class="pre">0}</span></code> sigma values to be used for
-energies, forces, stresses, hessians in order; this represents the
-accuracy of the data and the relative weight of them in the fit (more
-accurate –&gt; more significant in the fit)</li>
+<li><code class="docutils literal notranslate"><span class="pre">default_sigma={0.008</span> <span class="pre">0.04</span> <span class="pre">0</span> <span class="pre">0}</span></code> sigma values to be used for energies, forces, stresses, hessians in order; this represents the accuracy of the data and the relative weight of them in the fit (more accurate –&gt; more significant in the fit)</li>
 <li><code class="docutils literal notranslate"><span class="pre">gap={...}</span></code> the potential to be fit, separated by ‘:’</li>
 </ul>
-<p><strong>distance_2b</strong> - <code class="docutils literal notranslate"><span class="pre">cutoff=4.0</span></code> radial, practically the highest
-distance the descriptor takes into account - <code class="docutils literal notranslate"><span class="pre">covariance_type=ard_se</span></code>
-use gausses in the fit - <code class="docutils literal notranslate"><span class="pre">delta=0.5</span></code> what relative portion of the
-things shall be determined by this potential - <code class="docutils literal notranslate"><span class="pre">theta_uniform=1.0</span></code>
-width of the gaussians - <code class="docutils literal notranslate"><span class="pre">sparse_method=uniform</span></code> use uniform bins to
-choose the sparse points - <code class="docutils literal notranslate"><span class="pre">add_species=T</span></code> take the species into
-account, so it will generate more GAPs automatically (see the output) -
-<code class="docutils literal notranslate"><span class="pre">n_sparse=10</span></code> number of sparse points</p>
+<p><strong>distance_2b</strong> - <code class="docutils literal notranslate"><span class="pre">cutoff=4.0</span></code> radial, practically the highest distance the descriptor takes into account - <code class="docutils literal notranslate"><span class="pre">covariance_type=ard_se</span></code> use gausses in the fit - <code class="docutils literal notranslate"><span class="pre">delta=0.5</span></code> what relative portion of the things shall be determined by this potential - <code class="docutils literal notranslate"><span class="pre">theta_uniform=1.0</span></code> width of the gaussians - <code class="docutils literal notranslate"><span class="pre">sparse_method=uniform</span></code> use uniform bins to choose the sparse points - <code class="docutils literal notranslate"><span class="pre">add_species=T</span></code> take the species into account, so it will generate more GAPs automatically (see the output) - <code class="docutils literal notranslate"><span class="pre">n_sparse=10</span></code>
+number of sparse points</p>
 </div>
 <div class="section" id="notice,-that-the-script-is-running-in-parallel,-using-all-8-cores-of-the-current-machine">
 <h2>notice, that the script is running in parallel, using all 8 cores of the current machine<a class="headerlink" href="#notice,-that-the-script-is-running-in-parallel,-using-all-8-cores-of-the-current-machine" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -819,8 +830,7 @@ libAtoms::Finalise: Bye-Bye!
 <div class="section" id="use-the-potential-with-QUIP-on-trani.xyz-and-validate.xyz">
 <h2>use the potential with QUIP on trani.xyz and validate.xyz<a class="headerlink" href="#use-the-potential-with-QUIP-on-trani.xyz-and-validate.xyz" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -836,8 +846,7 @@ libAtoms::Finalise: Bye-Bye!
 <div class="section" id="make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas">
 <h1>make simple plots of the energies and forces on the EMT and GAP datas<a class="headerlink" href="#make-simple-plots-of-the-energies-and-forces-on-the-EMT-and-GAP-datas" title="Permalink to this headline">¶</a></h1>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -913,8 +922,7 @@ libAtoms::Finalise: Bye-Bye!
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -946,18 +954,13 @@ libAtoms::Finalise: Bye-Bye!
 </div>
 <div class="section" id="train-our-GAP_3b-model-from-the-command-line">
 <h2>train our GAP_3b model from the command line<a class="headerlink" href="#train-our-GAP_3b-model-from-the-command-line" title="Permalink to this headline">¶</a></h2>
-<p>Let’s add three ody terms to the fit, which will hopefully improve it.
-We will be using the desciprtors distance_2b and angle_3b.</p>
-<p><strong>angle_3b</strong> - <code class="docutils literal notranslate"><span class="pre">theta_fac=0.5</span></code> this takes the input data and
-determines the width from that; useful here, because the dimensions of
-the descriptor are different - <code class="docutils literal notranslate"><span class="pre">n_sparse=50</span></code> higher dimensional space,
-more sparse points</p>
+<p>Let’s add three ody terms to the fit, which will hopefully improve it. We will be using the desciprtors distance_2b and angle_3b.</p>
+<p><strong>angle_3b</strong> - <code class="docutils literal notranslate"><span class="pre">theta_fac=0.5</span></code> this takes the input data and determines the width from that; useful here, because the dimensions of the descriptor are different - <code class="docutils literal notranslate"><span class="pre">n_sparse=50</span></code> higher dimensional space, more sparse points</p>
 </div>
 <div class="section" id="both-training-and-quip-takes-significantly-more-time-than-the-last-one!!!">
 <h2>both training and quip takes significantly more time than the last one!!!<a class="headerlink" href="#both-training-and-quip-takes-significantly-more-time-than-the-last-one!!!" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1097,8 +1100,7 @@ libAtoms::Finalise: Bye-Bye!
 <div class="section" id="use-the-potential-with-QUIP-on-trani.xyz-and-validate.xyz">
 <h2>use the potential with QUIP on trani.xyz and validate.xyz<a class="headerlink" href="#use-the-potential-with-QUIP-on-trani.xyz-and-validate.xyz" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1114,8 +1116,7 @@ libAtoms::Finalise: Bye-Bye!
 <div class="section" id="look-at-the-outputs---clear-improvement">
 <h1>look at the outputs - clear improvement<a class="headerlink" href="#look-at-the-outputs---clear-improvement" title="Permalink to this headline">¶</a></h1>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1146,8 +1147,7 @@ libAtoms::Finalise: Bye-Bye!
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1193,7 +1193,9 @@ libAtoms::Finalise: Bye-Bye!
         <script type="text/javascript" src="../_static/jquery.js"></script>
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
     
 
   

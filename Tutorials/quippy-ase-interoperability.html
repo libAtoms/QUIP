@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interoperability with Atomic Simulation Environment &mdash; quippy 0be1566+ documentation</title>
+  <title>Interoperability with Atomic Simulation Environment &mdash; quippy c48ac3d+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0be1566+
+                c48ac3d+
               </div>
             
           
@@ -237,18 +237,18 @@ div.nblast {
 
 /* input prompt */
 div.nbinput div.prompt pre {
-    color: #303F9F;
+    color: #307FC1;
 }
 
 /* output prompt */
 div.nboutput div.prompt pre {
-    color: #D84315;
+    color: #BF5B3D;
 }
 
 /* all prompts */
 div.nbinput div.prompt,
 div.nboutput div.prompt {
-    min-width: 8ex;
+    min-width: 5ex;
     padding-top: 0.4em;
     padding-right: 0.4em;
     text-align: right;
@@ -288,9 +288,9 @@ div.nboutput div.output_area {
 
 /* input area */
 div.nbinput div.input_area {
-    border: 1px solid #cfcfcf;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
-    background: #f7f7f7;
+    background: #f5f5f5;
 }
 
 /* override MathJax center alignment in output cells */
@@ -298,7 +298,7 @@ div.nboutput div[class*=MathJax] {
     text-align: left !important;
 }
 
-/* override sphinx.ext.pngmath center alignment in output cells */
+/* override sphinx.ext.imgmath center alignment in output cells */
 div.nboutput div.math p {
     text-align: left;
 }
@@ -348,6 +348,40 @@ div.nboutput div.output_area.stderr {
 .ansi-bold { font-weight: bold; }
 .ansi-underline { text-decoration: underline; }
 
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
@@ -364,29 +398,29 @@ div.nboutput div.output_area.stderr {
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
 }
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <div class="section" id="Interoperability-with-Atomic-Simulation-Environment">
 <h1>Interoperability with Atomic Simulation Environment<a class="headerlink" href="#Interoperability-with-Atomic-Simulation-Environment" title="Permalink to this headline">¶</a></h1>
-<p>[<a class="reference external" href="http://nbviewer.ipython.org/github/libAtoms/QUIP/blob/public/doc/Examples/quippy-ase-interoperability.ipynb">View with IPython
-nbviewer</a>]</p>
+<p>[<a class="reference external" href="http://nbviewer.ipython.org/github/libAtoms/QUIP/blob/public/doc/Examples/quippy-ase-interoperability.ipynb">View with IPython nbviewer</a>]</p>
 <ul class="simple">
-<li>quippy <code class="docutils literal notranslate"><span class="pre">Potential</span></code> objects can be used as ASE calculators, and
-vice-versa</li>
+<li>quippy <code class="docutils literal notranslate"><span class="pre">Potential</span></code> objects can be used as ASE calculators, and vice-versa</li>
 <li>quippy <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object is interoperable with ASE <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></li>
-<li>Can use standard ASE tools, plus communicate with other packages
-using ASE as <em>lingua franca</em></li>
+<li>Can use standard ASE tools, plus communicate with other packages using ASE as <em>lingua franca</em></li>
 </ul>
 <div class="section" id="Example:-vacancy-formation-energy">
 <h2>Example: vacancy formation energy<a class="headerlink" href="#Example:-vacancy-formation-energy" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>Generate structure with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> lattice tools</li>
 <li>Stillinger-Weber potential implementation from <code class="docutils literal notranslate"><span class="pre">QUIP</span></code></li>
-<li>Elastic constant fitting routine from <code class="docutils literal notranslate"><span class="pre">matscipy</span></code>, internal
-relaxations with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> FIRE minimiser</li>
+<li>Elastic constant fitting routine from <code class="docutils literal notranslate"><span class="pre">matscipy</span></code>, internal relaxations with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> FIRE minimiser</li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -450,7 +484,7 @@ FIRE:    2 16:22:44      -34.627707        0.0221
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="stderr output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
 WARNING:quippy.potential:Minim atoms is not quippy.Atoms instance, copy forced!
 </pre></div></div>
@@ -519,8 +553,7 @@ SW vacancy formation energy 4.30106655261 eV
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -576,7 +609,9 @@ SW vacancy formation energy 4.30106655261 eV
         <script type="text/javascript" src="../_static/jquery.js"></script>
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
     
 
   

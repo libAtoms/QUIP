@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>f90doc — Fortran 90 source code scanner &mdash; quippy 0be1566+ documentation</title>
+  <title>f90doc — Fortran 90 source code scanner &mdash; quippy c48ac3d+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0be1566+
+                c48ac3d+
               </div>
             
           
@@ -199,6 +199,11 @@
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
 }
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <div class="section" id="module-f90doc">
 <span id="f90doc-fortran-90-source-code-scanner"></span><h1><a class="reference internal" href="#module-f90doc" title="f90doc: Read Fortan 90 sources and extract documenataion strings"><code class="xref py py-mod docutils literal notranslate"><span class="pre">f90doc</span></code></a> — Fortran 90 source code scanner<a class="headerlink" href="#module-f90doc" title="Permalink to this headline">¶</a></h1>
@@ -319,7 +324,9 @@ a tuple <cite>(programs, modules, functs, subts)</cite>.</p>
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
     
 
   

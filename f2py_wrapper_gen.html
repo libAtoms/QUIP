@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>f2py_wrapper_gen — Fortran 90 source code wrapping &mdash; quippy 0be1566+ documentation</title>
+  <title>f2py_wrapper_gen — Fortran 90 source code wrapping &mdash; quippy c48ac3d+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0be1566+
+                c48ac3d+
               </div>
             
           
@@ -195,6 +195,11 @@
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
 }
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <div class="section" id="module-f2py_wrapper_gen">
 <span id="f2py-wrapper-gen-fortran-90-source-code-wrapping"></span><h1><a class="reference internal" href="#module-f2py_wrapper_gen" title="f2py_wrapper_gen: Generate simplified Fortran 90 source suitable for f2py"><code class="xref py py-mod docutils literal notranslate"><span class="pre">f2py_wrapper_gen</span></code></a> — Fortran 90 source code wrapping<a class="headerlink" href="#module-f2py_wrapper_gen" title="Permalink to this headline">¶</a></h1>
@@ -301,7 +306,9 @@ of other modules and saved to disk by quippy’s <code class="file docutils lite
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
     
 
   

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Using Quippy to compute descriptors of atomic environments &mdash; quippy 0be1566+ documentation</title>
+  <title>Using Quippy to compute descriptors of atomic environments &mdash; quippy c48ac3d+ documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0be1566+
+                c48ac3d+
               </div>
             
           
@@ -239,18 +239,18 @@ div.nblast {
 
 /* input prompt */
 div.nbinput div.prompt pre {
-    color: #303F9F;
+    color: #307FC1;
 }
 
 /* output prompt */
 div.nboutput div.prompt pre {
-    color: #D84315;
+    color: #BF5B3D;
 }
 
 /* all prompts */
 div.nbinput div.prompt,
 div.nboutput div.prompt {
-    min-width: 8ex;
+    min-width: 5ex;
     padding-top: 0.4em;
     padding-right: 0.4em;
     text-align: right;
@@ -290,9 +290,9 @@ div.nboutput div.output_area {
 
 /* input area */
 div.nbinput div.input_area {
-    border: 1px solid #cfcfcf;
+    border: 1px solid #e0e0e0;
     border-radius: 2px;
-    background: #f7f7f7;
+    background: #f5f5f5;
 }
 
 /* override MathJax center alignment in output cells */
@@ -300,7 +300,7 @@ div.nboutput div[class*=MathJax] {
     text-align: left !important;
 }
 
-/* override sphinx.ext.pngmath center alignment in output cells */
+/* override sphinx.ext.imgmath center alignment in output cells */
 div.nboutput div.math p {
     text-align: left;
 }
@@ -350,6 +350,40 @@ div.nboutput div.output_area.stderr {
 .ansi-bold { font-weight: bold; }
 .ansi-underline { text-decoration: underline; }
 
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
@@ -366,14 +400,17 @@ div.nboutput div.output_area.stderr {
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
 }
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <div class="section" id="Using-Quippy-to-compute-descriptors-of-atomic-environments">
 <h1>Using Quippy to compute descriptors of atomic environments<a class="headerlink" href="#Using-Quippy-to-compute-descriptors-of-atomic-environments" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial shows how to use quippy to calculate various descriptors
-for a given atomic structure, contained in an Atoms object.</p>
+<p>This tutorial shows how to use quippy to calculate various descriptors for a given atomic structure, contained in an Atoms object.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -382,8 +419,7 @@ for a given atomic structure, contained in an Atoms object.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -393,8 +429,7 @@ for a given atomic structure, contained in an Atoms object.</p>
 </div>
 <p>Create a configuration:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -404,8 +439,7 @@ for a given atomic structure, contained in an Atoms object.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -421,8 +455,7 @@ for a given atomic structure, contained in an Atoms object.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -431,8 +464,7 @@ for a given atomic structure, contained in an Atoms object.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -440,30 +472,13 @@ for a given atomic structure, contained in an Atoms object.</p>
 </pre></div>
 </div>
 </div>
-<p>All descriptors are instantiated by a call to <code class="docutils literal notranslate"><span class="pre">Descriptor()</span></code>, which
-takes the descriptor initialisation string as its only argument. For a
-list of available descriptors and their parameters, see the following
-list, auto-generated using the following command:
-<code class="docutils literal notranslate"><span class="pre">quip</span> <span class="pre">descriptor_str=&quot;--help&quot;</span></code></p>
-<p>bispectrum_so4 bispectrum_so3 behler distance_2b coordination
-angle_3b co_angle_3b co_distance_2b cosnx trihis water_monomer
-water_dimer A2_dimer AB_dimer bond_real_space atom_real_space
-power_so3 power_so4 soap AN_monomer general_monomer general_dimer
-general_trimer rdf as_distance_2b molecule_lo_d alex com_dimer
-distance_Nb</p>
+<p>All descriptors are instantiated by a call to <code class="docutils literal notranslate"><span class="pre">Descriptor()</span></code>, which takes the descriptor initialisation string as its only argument. For a list of available descriptors and their parameters, see the following list, auto-generated using the following command: <code class="docutils literal notranslate"><span class="pre">quip</span> <span class="pre">descriptor_str=&quot;--help&quot;</span></code></p>
+<p>bispectrum_so4 bispectrum_so3 behler distance_2b coordination angle_3b co_angle_3b co_distance_2b cosnx trihis water_monomer water_dimer A2_dimer AB_dimer bond_real_space atom_real_space power_so3 power_so4 soap AN_monomer general_monomer general_dimer general_trimer rdf as_distance_2b molecule_lo_d alex com_dimer distance_Nb</p>
 <div class="section" id="A-simple-descriptor:-pairwise-distances">
 <h2>A simple descriptor: pairwise distances<a class="headerlink" href="#A-simple-descriptor:-pairwise-distances" title="Permalink to this headline">¶</a></h2>
-<p>Here we use a simple pair distance between carbon atoms, with a cutoff
-of 1.5 Angstrom. There are several descriptors that can do this, one is
-<code class="docutils literal notranslate"><span class="pre">distance_2b</span></code>, which takes a cutoff argument, and two Z values to
-specify the atom types. Alternatively, the <code class="docutils literal notranslate"><span class="pre">distance_Nb</span></code> descriptor
-could also do this, with <code class="docutils literal notranslate"><span class="pre">order=2</span></code>, and it takes a string of Zs to
-specify the atom types. This is more general, <code class="docutils literal notranslate"><span class="pre">order=3</span></code> is a
-triangle-like three-body descriptor of the three sides of a triangle of
-3 atoms.</p>
+<p>Here we use a simple pair distance between carbon atoms, with a cutoff of 1.5 Angstrom. There are several descriptors that can do this, one is <code class="docutils literal notranslate"><span class="pre">distance_2b</span></code>, which takes a cutoff argument, and two Z values to specify the atom types. Alternatively, the <code class="docutils literal notranslate"><span class="pre">distance_Nb</span></code> descriptor could also do this, with <code class="docutils literal notranslate"><span class="pre">order=2</span></code>, and it takes a string of Zs to specify the atom types. This is more general, <code class="docutils literal notranslate"><span class="pre">order=3</span></code> is a triangle-like three-body descriptor of the three sides of a triangle of 3 atoms.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -471,11 +486,9 @@ triangle-like three-body descriptor of the three sides of a triangle of
 </pre></div>
 </div>
 </div>
-<p>The descriptor dimension is the length of the descriptor vector. For the
-scalar distance this is 1.</p>
+<p>The descriptor dimension is the length of the descriptor vector. For the scalar distance this is 1.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -484,8 +497,7 @@ scalar distance this is 1.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -493,11 +505,9 @@ scalar distance this is 1.</p>
 </pre></div>
 </div>
 </div>
-<p>This descriptor is very simple: it is scalar (dimension 1), and hence
-only has a single permutation.</p>
+<p>This descriptor is very simple: it is scalar (dimension 1), and hence only has a single permutation.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -506,8 +516,7 @@ only has a single permutation.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -516,8 +525,7 @@ only has a single permutation.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -526,8 +534,7 @@ only has a single permutation.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -535,11 +542,9 @@ only has a single permutation.</p>
 </pre></div>
 </div>
 </div>
-<p>Many descriptors rely on the neighbour connectivity, so we need to call
-<code class="docutils literal notranslate"><span class="pre">calc_connect</span></code>, after setting the Atoms cutoff with a skin of 1 A:</p>
+<p>Many descriptors rely on the neighbour connectivity, so we need to call <code class="docutils literal notranslate"><span class="pre">calc_connect</span></code>, after setting the Atoms cutoff with a skin of 1 A:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -548,11 +553,9 @@ only has a single permutation.</p>
 </pre></div>
 </div>
 </div>
-<p>We can now calculate how many instances of this descriptor are found in
-an <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> (or <code class="docutils literal notranslate"><span class="pre">ASEAtoms</span></code>) object:</p>
+<p>We can now calculate how many instances of this descriptor are found in an <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> (or <code class="docutils literal notranslate"><span class="pre">ASEAtoms</span></code>) object:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -561,8 +564,7 @@ an <code class="docutils literal notranslate"><span class="pre">Atoms</span></co
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -570,13 +572,10 @@ an <code class="docutils literal notranslate"><span class="pre">Atoms</span></co
 </pre></div>
 </div>
 </div>
-<p>This also works transparently for iterables (such as lists), returning a
-list of the counts.</p>
-<p>We can also calculate the actual descriptor values – in this case, the
-list of pairwise distances:</p>
+<p>This also works transparently for iterables (such as lists), returning a list of the counts.</p>
+<p>We can also calculate the actual descriptor values – in this case, the list of pairwise distances:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -586,8 +585,7 @@ list of pairwise distances:</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1036,18 +1034,10 @@ list of pairwise distances:</p>
 </pre></div>
 </div>
 </div>
-<p>Notice that the first array is called <code class="docutils literal notranslate"><span class="pre">cutoff</span></code>, and it supplies the
-value of a cutoff function, implicit in all descriptors, which takes the
-descriptor value to zero as the atoms approach the cutoff, i.e. in this
-case as the distance between the two atoms approaches the cutoff. It is
-more complicated for three-body and higher-body descriptors, but the end
-result is always a descriptor which changes smoothly with atomic
-positions.</p>
-<p>Here is a histogram of the resulting descriptor array, i.e. of the
-interatomic distances</p>
+<p>Notice that the first array is called <code class="docutils literal notranslate"><span class="pre">cutoff</span></code>, and it supplies the value of a cutoff function, implicit in all descriptors, which takes the descriptor value to zero as the atoms approach the cutoff, i.e. in this case as the distance between the two atoms approaches the cutoff. It is more complicated for three-body and higher-body descriptors, but the end result is always a descriptor which changes smoothly with atomic positions.</p>
+<p>Here is a histogram of the resulting descriptor array, i.e. of the interatomic distances</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [41]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1066,8 +1056,7 @@ interatomic distances</p>
 </div>
 <p>Calculate size of descriptor data:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1085,14 +1074,9 @@ n_desc=368 n_cross=736
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">n_desc</span></code> is number of descriptors, <code class="docutils literal notranslate"><span class="pre">n_cross</span></code> is number of gradients</p>
-<p>Gradients are returned in a <code class="docutils literal notranslate"><span class="pre">DescriptorCalcResult</span></code> object ( if the
-<code class="docutils literal notranslate"><span class="pre">grad=True</span></code> option is set ) which has the following elements: -
-<code class="docutils literal notranslate"><span class="pre">descriptor</span></code> = the descriptor values (equivalent to <code class="docutils literal notranslate"><span class="pre">desc.calc(at)</span></code>)
-- <code class="docutils literal notranslate"><span class="pre">grad</span></code> = the gradients - <code class="docutils literal notranslate"><span class="pre">index</span></code> = the indices (<code class="docutils literal notranslate"><span class="pre">i_desc</span></code>,
-<code class="docutils literal notranslate"><span class="pre">i_atom</span></code>, <code class="docutils literal notranslate"><span class="pre">i_coord</span></code>)</p>
+<p>Gradients are returned in a <code class="docutils literal notranslate"><span class="pre">DescriptorCalcResult</span></code> object ( if the <code class="docutils literal notranslate"><span class="pre">grad=True</span></code> option is set ) which has the following elements: - <code class="docutils literal notranslate"><span class="pre">descriptor</span></code> = the descriptor values (equivalent to <code class="docutils literal notranslate"><span class="pre">desc.calc(at)</span></code>) - <code class="docutils literal notranslate"><span class="pre">grad</span></code> = the gradients - <code class="docutils literal notranslate"><span class="pre">index</span></code> = the indices (<code class="docutils literal notranslate"><span class="pre">i_desc</span></code>, <code class="docutils literal notranslate"><span class="pre">i_atom</span></code>, <code class="docutils literal notranslate"><span class="pre">i_coord</span></code>)</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1102,8 +1086,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1112,8 +1095,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1122,8 +1104,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1499,8 +1480,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1509,8 +1489,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1542,8 +1521,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [46]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1552,8 +1530,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[46]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1571,8 +1548,7 @@ n_desc=368 n_cross=736
 <div class="section" id="A-many-body-descriptor:-SOAP">
 <h2>A many-body descriptor: SOAP<a class="headerlink" href="#A-many-body-descriptor:-SOAP" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1581,8 +1557,7 @@ n_desc=368 n_cross=736
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1591,11 +1566,9 @@ n_desc=368 n_cross=736
 </pre></div>
 </div>
 </div>
-<p>There are now only 8 descriptors, because SOAP produces one for each
-atom in the structure</p>
+<p>There are now only 8 descriptors, because SOAP produces one for each atom in the structure</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1604,8 +1577,7 @@ atom in the structure</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1613,12 +1585,9 @@ atom in the structure</p>
 </pre></div>
 </div>
 </div>
-<p>But each descriptor now is a long vector, because it encodes the entire
-environment of the atom up to the cutoff. The length of the vector
-depends on <code class="docutils literal notranslate"><span class="pre">l_max</span></code> and <code class="docutils literal notranslate"><span class="pre">n_max</span></code> and also on the number of atom types.</p>
+<p>But each descriptor now is a long vector, because it encodes the entire environment of the atom up to the cutoff. The length of the vector depends on <code class="docutils literal notranslate"><span class="pre">l_max</span></code> and <code class="docutils literal notranslate"><span class="pre">n_max</span></code> and also on the number of atom types.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1627,8 +1596,7 @@ depends on <code class="docutils literal notranslate"><span class="pre">l_max</s
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1637,8 +1605,7 @@ depends on <code class="docutils literal notranslate"><span class="pre">l_max</s
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1647,8 +1614,7 @@ depends on <code class="docutils literal notranslate"><span class="pre">l_max</s
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1792,12 +1758,10 @@ depends on <code class="docutils literal notranslate"><span class="pre">l_max</s
 </pre></div>
 </div>
 </div>
-<p>Note that the <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> array is now all 1, because SOAP takes the
-cutoff into account when it computes the descriptor vector</p>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> array is now all 1, because SOAP takes the cutoff into account when it computes the descriptor vector</p>
 <p>We now add a hydrogen atom to the structure</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1806,8 +1770,7 @@ cutoff into account when it computes the descriptor vector</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1817,8 +1780,7 @@ cutoff into account when it computes the descriptor vector</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1826,12 +1788,9 @@ cutoff into account when it computes the descriptor vector</p>
 </pre></div>
 </div>
 </div>
-<p>The descriptor sizes did not change! This is because the descriptor was
-set up above to only look at carbon atoms (Z=6). We need a new
-descriptor that takes account of H atoms.</p>
+<p>The descriptor sizes did not change! This is because the descriptor was set up above to only look at carbon atoms (Z=6). We need a new descriptor that takes account of H atoms.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1839,15 +1798,10 @@ descriptor that takes account of H atoms.</p>
 </pre></div>
 </div>
 </div>
-<p>The specification of which atoms are used as SOAP centers is separate to
-the specification of which atoms are taken into account in the
-environment. The <code class="docutils literal notranslate"><span class="pre">n_Z=2</span> <span class="pre">Z={1</span> <span class="pre">6}</span></code> options specify that both H and C are
-to be taken as SOAP centers. The <code class="docutils literal notranslate"><span class="pre">n_species=2</span> <span class="pre">species_Z={1</span> <span class="pre">6}</span></code> options
-specify the atom types to be taken into account in the environment.</p>
+<p>The specification of which atoms are used as SOAP centers is separate to the specification of which atoms are taken into account in the environment. The <code class="docutils literal notranslate"><span class="pre">n_Z=2</span> <span class="pre">Z={1</span> <span class="pre">6}</span></code> options specify that both H and C are to be taken as SOAP centers. The <code class="docutils literal notranslate"><span class="pre">n_species=2</span> <span class="pre">species_Z={1</span> <span class="pre">6}</span></code> options specify the atom types to be taken into account in the environment.</p>
 <p>Now the dimensionality of the SOAP descriptor goes up:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1856,8 +1810,7 @@ specify the atom types to be taken into account in the environment.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1865,11 +1818,9 @@ specify the atom types to be taken into account in the environment.</p>
 </pre></div>
 </div>
 </div>
-<p>And the size also increases to 9 (and the cross terms go up too),
-reflecting the fact that there are 9 atoms altogether.</p>
+<p>And the size also increases to 9 (and the cross terms go up too), reflecting the fact that there are 9 atoms altogether.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1878,8 +1829,7 @@ reflecting the fact that there are 9 atoms altogether.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1888,8 +1838,7 @@ reflecting the fact that there are 9 atoms altogether.</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1898,8 +1847,7 @@ reflecting the fact that there are 9 atoms altogether.</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1920,14 +1868,10 @@ reflecting the fact that there are 9 atoms altogether.</p>
 </pre></div>
 </div>
 </div>
-<p>Note that the same descriptor can be obtained not via python, but from
-the unix command line, using the <code class="docutils literal notranslate"><span class="pre">quip</span></code> program. The input needs to be
-an extended XYZ file, and the descriptor specification is identical to
-the above.</p>
+<p>Note that the same descriptor can be obtained not via python, but from the unix command line, using the <code class="docutils literal notranslate"><span class="pre">quip</span></code> program. The input needs to be an extended XYZ file, and the descriptor specification is identical to the above.</p>
 <p>So let’s write out an xyz file:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [37]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1935,16 +1879,14 @@ the above.</p>
 </pre></div>
 </div>
 </div>
-<p>The following command will print all the descriptor vectors, each vector
-on a line, which starts with the string <code class="docutils literal notranslate"><span class="pre">DESC</span></code></p>
+<p>The following command will print all the descriptor vectors, each vector on a line, which starts with the string <code class="docutils literal notranslate"><span class="pre">DESC</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">quip</span> <span class="pre">atoms_filename=diamondH.xyz</span> <span class="pre">descriptor_str=&quot;soap</span> <span class="pre">cutoff=3</span> <span class="pre">l_max=4</span> <span class="pre">n_max=4</span> <span class="pre">atom_sigma=0.5</span> <span class="pre">n_Z=2</span> <span class="pre">Z={1</span> <span class="pre">6}</span> <span class="pre">n_species=2</span> <span class="pre">species_Z={1</span> <span class="pre">6}&quot;</span></code></p>
 </div>
 <div class="section" id="General_monomer-example:-benzene">
 <h2>General_monomer example: benzene<a class="headerlink" href="#General_monomer-example:-benzene" title="Permalink to this headline">¶</a></h2>
 <p>Now for a more interesting descriptor: a three-site benzene monomer</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1954,8 +1896,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 <p>Three intramolecular distances = dimensionality 3:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [48]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1964,8 +1905,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[48]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1975,8 +1915,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 <p>And a lot more permutations now:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [49]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -1985,8 +1924,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[49]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -1995,8 +1933,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2005,8 +1942,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -2021,8 +1957,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 <p>Load some test configurations</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [51]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2031,8 +1966,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [52]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2041,8 +1975,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[52]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -2051,8 +1984,7 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [53]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2062,12 +1994,9 @@ on a line, which starts with the string <code class="docutils literal notranslat
 </pre></div>
 </div>
 </div>
-<p>Calling <code class="docutils literal notranslate"><span class="pre">calc</span></code> or any of the other methods on an <code class="docutils literal notranslate"><span class="pre">AtomsList</span></code> returns
-a list of results. Here we look at the results for the first
-configuration:</p>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">calc</span></code> or any of the other methods on an <code class="docutils literal notranslate"><span class="pre">AtomsList</span></code> returns a list of results. Here we look at the results for the first configuration:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [54]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2076,8 +2005,7 @@ configuration:</p>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>In [55]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
@@ -2086,8 +2014,7 @@ configuration:</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre>
-<span></span>Out[55]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
@@ -2143,7 +2070,9 @@ configuration:</p>
         <script type="text/javascript" src="../_static/jquery.js"></script>
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
     
 
   
