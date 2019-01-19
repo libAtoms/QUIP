@@ -381,19 +381,27 @@ separate file</td>
 <td>Use actual GP covariance for
 sparsification methods</td>
 </tr>
-<tr class="row-odd"><td>template_file</td>
+<tr class="row-odd"><td>sparsify_only_no_fit</td>
+<td>bool</td>
+<td>False</td>
+<td>If true, sparsification is done, but no
+fitting. print the sparse index by
+adding print_sparse_index=file.dat to
+the descriptor string.</td>
+</tr>
+<tr class="row-even"><td>template_file</td>
 <td>str</td>
 <td>template.xyz</td>
 <td>Template XYZ file for initialising
 object</td>
 </tr>
-<tr class="row-even"><td>verbosity</td>
+<tr class="row-odd"><td>verbosity</td>
 <td>str</td>
 <td>NORMAL</td>
 <td>Verbosity control. Options: NORMAL,
 VERBOSE, NERD, ANAL.</td>
 </tr>
-<tr class="row-odd"><td>virial_parameter_name</td>
+<tr class="row-even"><td>virial_parameter_name</td>
 <td>str</td>
 <td>virial</td>
 <td>Name of virial property in the at_file
