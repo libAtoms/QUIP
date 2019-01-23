@@ -46,10 +46,13 @@ use units_module
 implicit none
 private
 
-public :: ElementName, ElementMass, ElementValence, ElementCovRad, atomic_number, atomic_number_from_symbol, atomic_number_from_mass
+public :: ElementName, ElementMass, ElementValence, ElementCovRad, atomic_number, atomic_number_from_symbol, atomic_number_from_mass, &
+   total_elements
+
+integer, parameter :: total_elements = 118
 
 ! IUPAC 2017 element symbols
-character(3),parameter,dimension(0:118) :: ElementName =   (/"xx ",                                             &
+character(3),parameter,dimension(0:total_elements) :: ElementName =   (/"xx ",                                             &
    "H  ","He ",                                                                                                 &
    "Li ","Be ","B  ","C  ","N  ","O  ","F  ","Ne ",                                                             &
    "Na ","Mg ","Al ","Si ","P  ","S  ","Cl ","Ar ",                                                             &
@@ -66,7 +69,7 @@ character(3),parameter,dimension(0:118) :: ElementName =   (/"xx ",             
 #ifdef LEGACY_MASSES
 ! Masses for pre-2017 code. Many of these have been updated, but some code may depend on these
 ! values. If used, tests will fail.
-real(dp),parameter,dimension(118) :: ElementMass =                                                     &
+real(dp),parameter,dimension(total_elements) :: ElementMass =                                                     &
 (/1.00794, 4.00260, 6.941, 9.012187, 10.811, 12.0107, 14.00674, 15.9994, 18.99840, 20.1797, 22.98977,  &
 24.3050, 26.98154, 28.0855, 30.97376, 32.066, 35.4527, 39.948, 39.0983, 40.078, 44.95591, 47.867,      &
 50.9415, 51.9961, 54.93805, 55.845, 58.93320, 58.6934, 63.546, 65.39, 69.723, 72.61, 74.92160, 78.96,  &
@@ -84,7 +87,7 @@ real(dp),parameter,dimension(118) :: ElementMass =                              
 !   88(3), pp. 265-291. Retrieved 30 Nov. 2016,
 !   from doi:10.1515/pac-2015-0305
 ! Consistent with ase 3.14 onwards
-real(dp),parameter,dimension(118) :: ElementMass = (/                                                 &
+real(dp),parameter,dimension(total_elements) :: ElementMass = (/                                                 &
 1.008_dp,4.002602_dp,6.94_dp,9.0121831_dp,10.81_dp,12.011_dp,14.007_dp,15.999_dp,18.998403163_dp,     &
 20.1797_dp,22.98976928_dp,24.305_dp,26.9815385_dp,28.085_dp,30.973761998_dp,32.06_dp,35.45_dp,        &
 39.948_dp,39.0983_dp,40.078_dp,44.955908_dp,47.867_dp,50.9415_dp,51.9961_dp,54.938044_dp,55.845_dp,   &
@@ -104,7 +107,7 @@ real(dp),parameter,dimension(118) :: ElementMass = (/                           
 
 ! Units: Angstroms
 
-real(dp),parameter,dimension(118) :: ElementCovRad =                                                   &
+real(dp),parameter,dimension(total_elements) :: ElementCovRad =                                                   &
 (/0.320,0.310,1.630,0.900,0.820,0.770,0.750,0.730,0.720,0.710,1.540,1.360,1.180,1.110,1.060,1.020,     &
 0.990,0.980,2.030,1.740,1.440,1.320,1.220,1.180,1.170,1.170,1.160,1.150,1.170,1.250,1.260,1.220,1.200, &
 1.160,1.140,1.120,2.160,1.910,1.620,1.450,1.340,1.300,1.270,1.250,1.250,1.280,1.340,1.480,1.440,1.410, &
@@ -114,7 +117,7 @@ real(dp),parameter,dimension(118) :: ElementCovRad =                            
 2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000,2.000/)
 !% Covalent radii in \AA.
 
-integer,parameter,dimension(118) :: ElementValence =  &
+integer,parameter,dimension(total_elements) :: ElementValence =  &
 (/1,-1, 1, 2, 3, 4, 3, 2, 1,-1, 1, 2, 3, 4, 3, 2,     &
   1,-1, 1, 2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
  -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,     &
@@ -145,7 +148,7 @@ contains
        endif
        return
     else ! not an integer, hopefully an element abbreviation
-       do i = 1, 118
+       do i = 1, total_elements
           if (trim(lower_case(adjustl(atomic_symbol)))==trim(lower_case(ElementName(i)))) then
              atomic_number_from_symbol = i
              return
@@ -167,7 +170,7 @@ contains
     integer              :: i
     real(dp), parameter  :: TOL = 0.01_dp
 
-    do i = 1, 118
+    do i = 1, total_elements
        if (abs(atomic_mass - ElementMass(i)/MASSCONVERT) < TOL) then
           atomic_number_from_mass = i
           return
