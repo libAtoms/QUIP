@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line options of the teach_sparse main program &mdash; quippy c48ac3d+ documentation</title>
+  <title>Command line options of the teach_sparse main program &mdash; quippy 0d063ee+ documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                c48ac3d+
+                0d063ee+
               </div>
             
           
@@ -264,22 +264,13 @@ hessians]</td>
 file (should be set to False for NetCDF
 input).</td>
 </tr>
-<tr class="row-odd"><td>do_e0_avg</td>
-<td>bool</td>
-<td>True</td>
-<td>Method of calculating e0 if not
-explicitly specified. If true, computes
-the average atomic energy in input
-data. If false, sets e0 to the lowest
-atomic energy in the input data.</td>
-</tr>
-<tr class="row-even"><td>do_ip_timing</td>
+<tr class="row-odd"><td>do_ip_timing</td>
 <td>bool</td>
 <td>False</td>
 <td>To enable or not timing of the
 interatomic potential.</td>
 </tr>
-<tr class="row-odd"><td>e0</td>
+<tr class="row-even"><td>e0</td>
 <td>str</td>
 <td>0.0</td>
 <td>Atomic energy value to be subtracted
@@ -288,6 +279,17 @@ back on after prediction). Specifiy a
 single number (used for all species) or
 by species: {Ti:-150.0:O:-320}. energy
 = core + GAP + e0</td>
+</tr>
+<tr class="row-odd"><td>e0_method</td>
+<td>str</td>
+<td>isolated</td>
+<td>Method to determine e0, if not
+explicitly specified. Possible options:
+isolated (default, each atom present in
+the XYZ needs to have an isolated
+representative, with a valid energy),
+average (e0 is the average of all total
+energies across the XYZ)</td>
 </tr>
 <tr class="row-even"><td>e0_offset</td>
 <td>float</td>
