@@ -45,6 +45,7 @@ module IPModel_GAP_module
 use error_module
 use system_module, only : dp, inoutput, string_to_int, reallocate, system_timer , print, PRINT_NERD
 use dictionary_module
+use periodictable_module, only: total_elements
 use extendable_str_module
 use paramreader_module
 use linearalgebra_module
@@ -87,9 +88,9 @@ type IPModel_GAP
   real(dp) :: z0 = 0.0_dp
   integer :: n_species = 0                                       !% Number of atomic types.
   integer, dimension(:), allocatable :: Z
-  real(dp), dimension(116) :: z_eff = 0.0_dp
-  real(dp), dimension(116) :: w_Z = 1.0_dp
-  real(dp), dimension(116) :: e0 = 0.0_dp
+  real(dp), dimension(total_elements) :: z_eff = 0.0_dp
+  real(dp), dimension(total_elements) :: w_Z = 1.0_dp
+  real(dp), dimension(total_elements) :: e0 = 0.0_dp
 
   ! qw parameters
   integer :: qw_l_max = 0
