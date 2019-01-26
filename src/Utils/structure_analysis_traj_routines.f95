@@ -45,7 +45,7 @@ public :: density_sample_radial_mesh_Gaussians, rdfd_calc, xrd_calc, propdf_radi
    geometry_calc, shift_silica_to_edges, density_axial_calc, num_hbond_calc, &
    water_orientation_calc
 
-real(dp), dimension(0:116) :: ASF_c = (/ &
+real(dp), dimension(0:total_elements) :: ASF_c = (/ &
     0.0, &
     0.001305, &
     0.0064, &
@@ -162,9 +162,11 @@ real(dp), dimension(0:116) :: ASF_c = (/ &
     1.0, &
     1.0, &
     1.0, &
+    1.0, &
+    1.0, &
     1.0 /)
 
-real(dp), dimension(4,0:116) :: ASF_a = reshape( (/ &
+real(dp), dimension(4,0:total_elements) :: ASF_a = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     0.489918, 0.262003, 0.196767, 0.049879, &
     0.8734, 0.6309, 0.3112, 0.178, &
@@ -281,9 +283,11 @@ real(dp), dimension(4,0:116) :: ASF_a = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     0.0, 0.0, 0.0, 0.0, &
     0.0, 0.0, 0.0, 0.0, &
-    0.0, 0.0, 0.0, 0.0 /), (/ 4, 117 /) )
+    0.0, 0.0, 0.0, 0.0, &
+    0.0, 0.0, 0.0, 0.0, &
+    0.0, 0.0, 0.0, 0.0 /), (/ 4, total_elements + 1 /) )
 
-real(dp), dimension(4,0:116) :: ASF_b = reshape( (/ &
+real(dp), dimension(4,0:total_elements) :: ASF_b = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     20.6593, 7.74039, 49.5519, 2.20159, &
     9.1037, 3.3568, 22.9276, 0.9821, &
@@ -400,7 +404,9 @@ real(dp), dimension(4,0:116) :: ASF_b = reshape( (/ &
     0.0, 0.0, 0.0, 0.0, &
     0.0, 0.0, 0.0, 0.0, &
     0.0, 0.0, 0.0, 0.0, &
-    0.0, 0.0, 0.0, 0.0 /), (/ 4, 117 /) )
+    0.0, 0.0, 0.0, 0.0, &
+    0.0, 0.0, 0.0, 0.0, &
+    0.0, 0.0, 0.0, 0.0 /), (/ 4, total_elements+1 /) )
 
 
 contains
