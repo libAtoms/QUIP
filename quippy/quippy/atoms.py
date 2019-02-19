@@ -361,7 +361,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         # Phonopy compatibility
         if 'phonopy' in available_modules:
-            if symbols is not None and isinstance(symbols, PhonopyAtoms):
+            if symbols is not None and isinstance(symbols, type(PhonopyAtoms)):
                 atoms = symbols
                 symbols = atoms.get_chemical_symbols()
                 cell = atoms.get_cell()
