@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.atoms &mdash; quippy 3e19633+ documentation</title>
+  <title>quippy.atoms &mdash; quippy 26188e0+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                3e19633+
+                26188e0+
               </div>
             
           
@@ -533,7 +533,7 @@
 
         <span class="c1"># Phonopy compatibility</span>
         <span class="k">if</span> <span class="s1">&#39;phonopy&#39;</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="n">PhonopyAtoms</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">symbols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbols</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">PhonopyAtoms</span><span class="p">)):</span>
                 <span class="n">atoms</span> <span class="o">=</span> <span class="n">symbols</span>
                 <span class="n">symbols</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">()</span>
                 <span class="n">cell</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()</span>
