@@ -33,10 +33,9 @@ RUN cd ${QUIP_ROOT} \
     && make install-quippy > /dev/null \
     && find build/${QUIP_ARCH} -type f ! \( -name 'libquip.a' -o -name 'Makefile.inc' \) -delete
 
-# TODO: prune any unwanted directories in this command
+# Build LAMMPS from github - faster and more reliable than from the website
 RUN mkdir -p ${LAMMPS_PATH} \
-    && cd ${LAMMPS_PATH} \
-    && curl https://lammps.sandia.gov/tars/lammps-stable.tar.gz | tar xz --strip-components 1
+    && git clone --branch stable --depth 1 https://github.com/lammps/lammps.git ${LAMMPS_PATH}
 
 # Build `shlib` objects first so they have `-fPIC` then symlink the directory
 # so they can be reused to build the binaries halving the compilation time.
