@@ -23,7 +23,7 @@
 
 
 # default to be overridden by site-specific config
-QUIPPY_INSTALL_DIR = ${HOME}/anaconda2/lib/python2.7/site-packages
+QUIPPY_INSTALL_DIR = ${HOME}/anaconda2/lib/python2.7/site-packages     #fixme: this was for debug only
 
 # include other makefiles and export env variables
 export QUIP_ARCH
@@ -102,6 +102,6 @@ _quippy.so: ${WRAP_FPP_FILES}
 		 -L. -lquip --link-lapack
 
 install: build
-	QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages
+	QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages       #fixme: this was for debug only
 	cp -r quippy ${QUIPPY_INSTALL_DIR}
 	cp _quippy.so ${QUIPPY_INSTALL_DIR}
