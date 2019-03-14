@@ -211,7 +211,7 @@ endfunction  internal_vector
    integer, intent(out), optional                                  :: n_data 
 
    open (unit=22, file=trim(data_dir)//'grid.dat', status='old', action='read')
-   read(22,*), k, add_vector, m 
+   read(22,*) k, add_vector, m 
 
    call print("Number of iv: "//k)
    if (present(n_data)) n_data=m
