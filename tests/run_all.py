@@ -41,5 +41,5 @@ sys.path.insert(0, os.path.join(quip_root, 'build/{0}/lib.{1}'.format(quip_arch,
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE
-suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_pot.py')  # fixme run all tests not just one
+suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_filepot.py')  # fixme run all tests not just one
 unittest.TextTestRunner().run(suite)
