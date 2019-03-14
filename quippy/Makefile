@@ -46,7 +46,7 @@ CFLAGS = -fPIC
 
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95   # Table.f95
 POT_SOURCES =  Potential.f95
-GAP_SOURCES =  descriptors.f95 #descriptors_wrapper.f95
+GAP_SOURCES =  descriptors.f95 descriptors_wrapper.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
@@ -66,10 +66,13 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 
 F2PY_LINK_ARGS = $(shell python -c 'import sys; print " ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")])' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
+
 ###
 .PHONY: build clean install
 
 build: _quippy.so
+	echo WRAP_SOURCES__ ${WRAP_SOURCES}
+	echo WRAP_FILES___ ${WRAP_FILES}
 
 clean:
 	-rm _castep.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -85,6 +88,8 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
+	echo ${WRAP_FILES}
+	echo ${WRAP_SOURCES}
 	echo quippy_stone_2 ### debug
 	-rm -r quippy
 	mkdir quippy
