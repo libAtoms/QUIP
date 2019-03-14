@@ -43,7 +43,7 @@ class potential(ase.calculators.calculator.Calculator):
     #  'numeric_forces', 'elastic_constants',
     #  'unrelaxed_elastic_constants']
 
-    def __init__(self, args_str, param_str, atoms=None, calculation_always_required=False, **kwargs):
+    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None, **kwargs):
 
         # update_docstring not implemented yet, it was oo_quip.update_doc_string() in the earlier version
 
@@ -102,7 +102,11 @@ class potential(ase.calculators.calculator.Calculator):
         ase.calculators.calculator.Calculator.__init__(self, restart=None, ignore_bad_restart_file=False, label=None,
                                                        atoms=atoms, **kwargs)
         # init the quip potential
-        self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
+        if param_filename is not None and type(param_filename) == str:
+            self._quip_potential = quippy.potential_module.Potential.filename_initialise(args_str=args_str,
+                                                                                         param_filename=param_filename)
+        else:
+            self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
         # init the quip atoms as None, to have the variable
         self._quip_atoms = None
 
