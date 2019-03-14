@@ -95,7 +95,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 	   -a c_error_abort --init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		 --shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		 --skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
-		         potential_sum potential_initialise_inoutput #potential_fm potential_evb potential_cluster
+		         potential_initialise_inoutput #potential_fm potential_evb potential_cluster
 	echo quippy_stone_5 ### debug
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
