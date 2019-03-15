@@ -113,7 +113,7 @@ module cp2k_driver_module
                                      check_size
   use paramreader_module,      only: param_register, param_read_line, &
                                      STRING_LENGTH
-  use periodictable_module,    only: ElementName, ElementCovRad, ElementMass
+  use periodictable_module,    only: ElementName, ElementCovRad, ElementMass, total_elements
   use structures_module,       only: find_motif
   use system_module,           only: dp, inoutput, initialise, finalise, &
                                      INPUT, OUTPUT, INOUT, &
@@ -1748,7 +1748,7 @@ logical :: constrain_all_HSI
        counter = 0
 
        !print QM list
-       do j=1,116
+       do j=1,total_elements
          if (any(my_atoms%Z(list(1:size(list))).eq.j)) then
             call print('    &QM_KIND '//ElementName(j),file=input_file)
             do i=1,qm_list%N

@@ -13,6 +13,7 @@ private
    logical, save :: cg_initialised = .false.
 
    public :: SphericalYCartesian, GradSphericalYCartesian
+   public :: SphericalYCartesian_all, GradSphericalYCartesian_all
    public :: SolidRCartesian
 
    public :: wigner3j
@@ -53,6 +54,52 @@ contains
 
    end function SolidRCartesian
 
+   function SolidRCartesian_all(l_max, x)
+
+     integer, intent(in) :: l_max
+     real(dp), intent(in) :: x(3)
+     complex(dp) :: SolidRCartesian_all(0:l_max, -l_max:l_max)
+
+     integer :: l, m
+     integer :: p, q, s
+     complex(kind=dp) :: cm, cp, cm_term(0:l_max), cp_term(0:2*l_max), x3_term(0:2*l_max)
+     real(dp) :: factorials(0:2*l_max)
+
+     SolidRCartesian_all = CPLX_ZERO
+
+     cm = cmplx(-0.5_dp * x(1), -0.5_dp * x(2), dp)
+     cp = cmplx(0.5_dp * x(1), -0.5_dp * x(2), dp)
+
+     ! p = 0 .. l
+     do p=0, l_max
+         cm_term(p) = cm**p
+     end do
+     ! q, s = 0 .. 2l
+     do q=0, 2*l_max
+        cp_term(q) = cp**q
+        x3_term(q) = x(3)**q
+        factorials(q) = factorial(q)
+     end do
+
+     do l=0, l_max
+     do m=-l, l
+         do p = 0, l
+            q = p - m
+            s = l - p - q
+
+            if ((q >= 0) .and. (s >= 0)) then
+               SolidRCartesian_all(l,m) = SolidRCartesian_all(l,m) + &
+                ( cm_term(p) * cp_term(q) * x3_term(s) / &
+                  ( factorials(p) * factorials(q) * factorials(s) ) )
+            end if
+         end do
+
+         SolidRCartesian_all(l,m) = SolidRCartesian_all(l,m) * sqrt(factorials(l + m) * factorials(l - m))
+     end do
+     end do
+
+   end function SolidRCartesian_all
+
    !#################################################################################
    !#
    !% Spherical Harmonic function using Cartesian coordinates
@@ -69,6 +116,24 @@ contains
                                                     * (normsq(x)**(-0.5_dp * l))
 
    end function SphericalYCartesian
+
+   function SphericalYCartesian_all(l_max, x)
+
+     integer, intent(in) :: l_max
+     real(dp), intent(in) :: x(3)
+     complex(dp) :: SphericalYCartesian_all(0:l_max, -l_max:l_max)
+
+     real(dp) :: normsq_x
+     integer :: l, m
+
+     normsq_x = normsq(x)
+     SphericalYCartesian_all = SolidRCartesian_all(l_max, x) 
+     do l=0, l_max
+         SphericalYCartesian_all(l,-l:l) = SphericalYCartesian_all(l,-l:l) * &
+            sqrt(((2.0_dp * l) + 1) / (4.0_dp * PI)) * (normsq_x**(-0.5_dp * l))
+     end do
+
+   end function SphericalYCartesian_all
 
     !#################################################################################
     !#
@@ -136,6 +201,81 @@ contains
                               - (l * x * SphericalYCartesian(l, m, x) / normsq(x))
 
     end function GradSphericalYCartesian
+
+    function GradSphericalYCartesian_all(l_max, x)
+
+      integer, intent(in) :: l_max
+      real(dp), intent(in) :: x(3)
+      complex(dp) :: GradSphericalYCartesian_all(0:l_max, -l_max:l_max, 3)
+
+      integer :: l, m
+      integer :: p, q, s
+      complex(kind=dp) :: cm, cp, cm_term(0:l_max), cp_term(0:2*l_max), x3_term(0:2*l_max)
+      real(dp) :: factorials(0:2*l_max)
+      real(dp) :: normsq_x
+      complex(dp) :: tt
+
+      GradSphericalYCartesian_all = CPLX_ZERO
+ 
+      cm = cmplx(-0.5_dp * x(1), -0.5_dp * x(2), dp)
+      cp = cmplx(0.5_dp * x(1), -0.5_dp * x(2), dp)
+ 
+      ! p = 0 .. l
+      do p=0, l_max
+          cm_term(p) = cm**p
+      end do
+      ! q, s = 0 .. 2l
+      do q=0, 2*l_max
+         cp_term(q) = cp**q
+         x3_term(q) = x(3)**q
+         factorials(q) = factorial(q)
+      end do
+
+      normsq_x = normsq(x)
+ 
+      do l=0, l_max
+      do m=-l, l
+          do p = 0, l
+             q = p - m
+             s = l - p - q
+
+             if ((p >= 1) .and. (q >= 0) .and. (s >= 0)) then
+                tt = (cm_term(p-1) * cp_term(q) * x3_term(s) &
+                      * 0.5_dp &
+                      / (factorials(p - 1) * factorials(q) * factorials(s)))
+                GradSphericalYCartesian_all(l,m,1) = GradSphericalYCartesian_all(l,m,1) &
+                                           - tt
+                GradSphericalYCartesian_all(l,m,2) = GradSphericalYCartesian_all(l,m,2) &
+                                           - tt * cmplx(0.0_dp, 1.0_dp, dp)
+             end if
+
+             if ((p >= 0) .and. (q >= 1) .and. (s >= 0)) then
+                tt = (cm_term(p) * cp_term(q-1) * x3_term(s) &
+                      * 0.5_dp &
+                      / (factorials(p) * factorials(q - 1) * factorials(s)))
+                GradSphericalYCartesian_all(l,m,1) = GradSphericalYCartesian_all(l,m,1) &
+                                           + tt
+                GradSphericalYCartesian_all(l,m,2) = GradSphericalYCartesian_all(l,m,2) &
+                                           - tt * cmplx(0.0_dp, 1.0_dp, dp)
+             end if
+
+             if ((p >= 0) .and. (q >= 0) .and. (s >= 1)) then
+                GradSphericalYCartesian_all(l,m,3) = GradSphericalYCartesian_all(l,m,3) &
+                                           + (cm_term(p) * cp_term(q) * x3_term(s-1) &
+                                           / (factorials(p) * factorials(q) * factorials(s - 1)))
+             end if
+          end do
+
+          GradSphericalYCartesian_all(l,m,:) = GradSphericalYCartesian_all(l,m,:) &
+                                  * sqrt(factorials(l + m) * factorials(l - m) * ((2.0_dp * l) + 1) / (4.0_dp * PI)) &
+                                  * (normsq_x**(-0.5_dp * l))
+
+          GradSphericalYCartesian_all(l,m,:) = GradSphericalYCartesian_all(l,m,:) &
+                                  - (l * x * SphericalYCartesian(l, m, x) / normsq_x)
+        end do
+        end do
+
+    end function GradSphericalYCartesian_all
 
    subroutine cg_initialise(j,denom)
 

@@ -2414,15 +2414,15 @@ contains
        call read(bulk, params%crack_bulk_filename)
 
        if (params%elastic_read) then
-          c = params%elastic_cij/GPA
+          c = params%elastic_cij/EV_A3_IN_GPA
        else
           call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=params%crack_relax_bulk, return_relaxed=params%crack_relax_bulk)
           
           call print('Relaxed elastic constants (GPa):')
-          call print(c*GPA)
+          call print(c*EV_A3_IN_GPA)
           call print('')
           call print('Unrelaxed elastic constants (GPa):')
-          call print(c0*GPA)
+          call print(c0*EV_A3_IN_GPA)
           call print('')
           
           call print('Relaxed lattice')
@@ -2574,15 +2574,15 @@ contains
           endif
 
           if (params%elastic_read) then
-             c = params%elastic_cij/GPA
+             c = params%elastic_cij/EV_A3_IN_GPA
           else
              call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=params%crack_relax_bulk, return_relaxed=params%crack_relax_bulk)
 
              call print('Relaxed elastic constants (GPa):')
-             call print(c*GPA)
+             call print(c*EV_A3_IN_GPA)
              call print('')
              call print('Unrelaxed elastic constants (GPa):')
-             call print(c0*GPA)
+             call print(c0*EV_A3_IN_GPA)
              call print('')
 
              call print('Relaxed lattice')
@@ -2608,7 +2608,7 @@ contains
           end if
 
           ! Get elastic constants relevant for a pull in y direction
-          E = Youngs_Modulus(C, axes(:,2))*GPA
+          E = Youngs_Modulus(C, axes(:,2))*EV_A3_IN_GPA
           v = Poisson_Ratio(C, axes(:,2), axes(:,1))
           v2 = Poisson_Ratio(C, axes(:,2), axes(:,3))
 

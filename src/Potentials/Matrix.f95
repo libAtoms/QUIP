@@ -194,6 +194,11 @@ interface transpose_sub
   module procedure MatrixD_transpose_sub, MatrixZ_transpose_sub
 end interface transpose_sub
 
+public :: make_hermitian
+interface make_hermitian
+  module procedure MatrixD_make_hermitian, MatrixZ_make_hermitian
+end interface make_hermitian
+
 contains
 
 subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
@@ -528,10 +533,11 @@ subroutine MatrixZ_add_block(this, block, block_nr, block_nc, first_row, first_c
   endif
 end subroutine
 
-subroutine MatrixD_diagonalise(this, evals, evecs, error)
+subroutine MatrixD_diagonalise(this, evals, evecs, ignore_symmetry, error)
   type(MatrixD), intent(in), target :: this
   real(dp), intent(inout) :: evals(:)    !% Eigenvalues
   type(MatrixD), intent(inout), target, optional :: evecs  !% Eigenvectors
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   real(dp), pointer :: u_evecs(:,:)
@@ -551,7 +557,7 @@ subroutine MatrixD_diagonalise(this, evals, evecs, error)
   if (this%ScaLAPACK_Info_obj%active) then
     call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, error = error)
   else
-    call diagonalise(this%data, evals, u_evecs, error = error)
+    call diagonalise(this%data, evals, u_evecs, ignore_symmetry = ignore_symmetry, error = error)
   endif
 
   if (.not.present(evecs)) then
@@ -563,11 +569,12 @@ subroutine MatrixD_diagonalise(this, evals, evecs, error)
 
 end subroutine MatrixD_diagonalise
 
-subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, error)
+subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry, error)
   type(MatrixD), intent(in), target :: this
   type(MatrixD), intent(in) :: overlap
   real(dp), intent(inout) :: evals(:)
   type(MatrixD), intent(inout), target, optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   real(dp), pointer :: u_evecs(:,:)
@@ -600,10 +607,11 @@ subroutine MatrixD_diagonalise_gen(this, overlap, evals, evecs, error)
 
 end subroutine MatrixD_diagonalise_gen
 
-subroutine MatrixZ_diagonalise(this, evals, evecs, error)
+subroutine MatrixZ_diagonalise(this, evals, evecs, ignore_symmetry, error)
   type(MatrixZ), intent(in), target :: this
   real(dp), intent(inout) :: evals(:)
   type(MatrixZ), intent(inout), target, optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   complex(dp), pointer :: u_evecs(:,:)
@@ -623,7 +631,7 @@ subroutine MatrixZ_diagonalise(this, evals, evecs, error)
   if (this%ScaLAPACK_Info_obj%active) then
     call diagonalise(this%ScaLAPACK_Info_obj, this%data, evals, evecs_ScaLAPACK_Info, u_evecs, error)
   else
-    call diagonalise(this%data, evals, u_evecs, error = error)
+    call diagonalise(this%data, evals, u_evecs, ignore_symmetry = ignore_symmetry, error = error)
   endif
 
   if (.not.present(evecs)) then
@@ -635,11 +643,12 @@ subroutine MatrixZ_diagonalise(this, evals, evecs, error)
 
 end subroutine MatrixZ_diagonalise
 
-subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, error)
+subroutine MatrixZ_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry, error)
   type(MatrixZ), intent(in), target :: this
   type(MatrixZ), intent(in) :: overlap
   real(dp), intent(inout) :: evals(:)
   type(MatrixZ), intent(inout), target, optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   complex(dp), pointer :: u_evecs(:,:)
@@ -1518,5 +1527,25 @@ subroutine MatrixZ_transpose_sub(this, m)
     this%data = transpose(m%data)
   endif
 end subroutine MatrixZ_transpose_sub
+
+subroutine MatrixD_make_hermitian(this)
+  type(MatrixD), intent(inout) :: this
+
+  if (this%ScaLAPACK_Info_obj%active) then
+    call system_abort("MatrixD_make_hermitian not yet implemented for ScaLAPACK matrices")
+  else
+    call make_hermitian(this%data)
+  endif
+end subroutine MatrixD_make_hermitian
+
+subroutine MatrixZ_make_hermitian(this)
+  type(MatrixZ), intent(inout) :: this
+
+  if (this%ScaLAPACK_Info_obj%active) then
+    call system_abort("MatrixZ_make_hermitian not yet implemented for ScaLAPACK matrices")
+  else
+    call make_hermitian(this%data)
+  endif
+end subroutine MatrixZ_make_hermitian
 
 end module matrix_module

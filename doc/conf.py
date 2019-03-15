@@ -178,6 +178,12 @@ html_favicon = 'favicon.ico'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# Fix for RTD tables
+html_context = {
+    'css_files': [
+        '_static/theme_overrides.css',
+    ],
+}
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -238,7 +244,7 @@ texinfo_documents = [
 intersphinx_mapping = {'python': ('https://docs.python.org/2.7', None),
                        'ase': ('https://wiki.fysik.dtu.dk/ase/', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-                       'matplotlib': ('http://matplotlib.org/', None)}
+                       'matplotlib': ('https://matplotlib.org/', None)}
 
 ###
 ### sphinx-quickstart output ends here

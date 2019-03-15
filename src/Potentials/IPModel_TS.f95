@@ -820,7 +820,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-        read (value, *), parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
         call system_abort("Can't find n_types in TS_params")
       endif
@@ -877,7 +877,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       parse_ip%tdip_sr = .true.
       call QUIP_FoX_get_value(attributes, "tdip_sr", value, status)
-      if (status == 0) read (value, *), parse_ip%tdip_sr
+      if (status == 0) read (value, *) parse_ip%tdip_sr
 
     endif
 

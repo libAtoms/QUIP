@@ -56,6 +56,14 @@ __all__ = _atoms.__all__ + ['NeighbourInfo', 'get_lattice_params_', 'get_lattice
 
 if 'ase' in available_modules:
     import ase
+    from ase.spacegroup import Spacegroup
+    # adsorbate_info as a property is deprecated in ase
+    # since it shows up in `dir()` the methods in
+    # oo_fortran will error when trying to access it as
+    # a property. Just remove it so that it doesn't show up
+    # at all as a property any more.
+    if hasattr(ase.Atoms, 'adsorbate_info'):
+        delattr(ase.Atoms, 'adsorbate_info')
 else:
     raise ImportError("mandatory dependency ase cannot be imported. Install using 'pip install ase'.")
 
@@ -309,7 +317,8 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
     name_map = {'positions'       : 'pos',
                 'numbers'         : 'Z',
-                'charges'         : 'charge'}
+                'initial_charges' : 'charge',
+                'initial_magmoms' : 'magmoms'}
 
     rev_name_map = dict(zip(name_map.values(), name_map.keys()))
 
@@ -352,7 +361,7 @@ class Atoms(_atoms.Atoms, ase.Atoms):
 
         # Phonopy compatibility
         if 'phonopy' in available_modules:
-            if symbols is not None and isinstance(symbols, PhonopyAtoms):
+            if symbols is not None and isinstance(symbols, type(PhonopyAtoms)):
                 atoms = symbols
                 symbols = atoms.get_chemical_symbols()
                 cell = atoms.get_cell()
@@ -733,10 +742,12 @@ class Atoms(_atoms.Atoms, ase.Atoms):
                 if 'cutoff' in other.info:
                     self.set_cutoff(other.info['cutoff'],
                                     other.info.get('cutoff_break'))
+                if isinstance(other.info.get('spacegroup', None), Spacegroup):
+                    self.params['spacegroup'] = other.info['spacegroup'].symbol
 
             # create extra properties for any non-standard arrays
-            standard_ase_arrays = ['positions', 'numbers', 'masses', 'charges',
-                                   'momenta', 'tags', 'magmoms' ]
+            standard_ase_arrays = ['positions', 'numbers', 'masses', 'initial_charges',
+                                   'momenta', 'tags', 'initial_magmoms' ]
 
             for ase_name, value in other.arrays.iteritems():
                 quippy_name = self.name_map.get(ase_name, ase_name)

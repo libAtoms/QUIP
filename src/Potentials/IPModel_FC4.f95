@@ -519,53 +519,53 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *), parse_ip%n_types
+	read (value, *) parse_ip%n_types
       else
 	call system_abort("Can't find n_types in FC4_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *), parse_ip%cutoff
+	read (value, *) parse_ip%cutoff
       else
 	call system_abort("Can't find cutoff in FC4_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'nfc2', value, status)
       if (status == 0) then
-         read (value, *), parse_ip%nfc2
+         read (value, *) parse_ip%nfc2
       else
          call system_abort("Can't find nfc2 in FC4_params")
       endif
       call QUIP_FoX_get_value(attributes, 'nfc2_indep', value, status)
       if (status == 0)  then
-         read (value, *), parse_ip%nfc2_indep
+         read (value, *) parse_ip%nfc2_indep
       else
          parse_ip%nfc2_indep = parse_ip%nfc2
       endif 
 
       call QUIP_FoX_get_value(attributes, 'nfc3', value, status)
       if (status == 0) then
-         read (value, *), parse_ip%nfc3
+         read (value, *) parse_ip%nfc3
       else
          parse_ip%nfc3 = 0
       endif
       call QUIP_FoX_get_value(attributes, 'nfc3_indep', value, status)
       if (status == 0)  then
-         read (value, *), parse_ip%nfc3_indep
+         read (value, *) parse_ip%nfc3_indep
       else
          parse_ip%nfc3_indep = parse_ip%nfc3
       endif 
 
       call QUIP_FoX_get_value(attributes, 'nfc4', value, status)
       if (status == 0) then
-         read (value, *), parse_ip%nfc4
+         read (value, *) parse_ip%nfc4
       else
          parse_ip%nfc4 = 0
       endif
       call QUIP_FoX_get_value(attributes, 'nfc4_indep', value, status)
       if (status == 0)  then
-         read (value, *), parse_ip%nfc4_indep
+         read (value, *) parse_ip%nfc4_indep
       else
          parse_ip%nfc4_indep = parse_ip%nfc4
       endif 
@@ -748,10 +748,11 @@ subroutine read_fcs(rank, nfc, file, igroup, iatomterm, ixyzterm, ampterm, fcs)
   character(len=999) line
   
   integer, parameter :: iunit = 1111
+
   open(unit=iunit, file=file)
 
   read (iunit,'(a)') line
-  read (iunit,*,err=92) (t,igroup(i), (iatomterm(r,i), ixyzterm(r,i), r=1,rank), fcs(i), ampterm(i), i=1,nfc)
+  read (iunit,*,err=92,end=92) (t,igroup(i), (iatomterm(r,i), ixyzterm(r,i), r=1,rank), fcs(i), ampterm(i), i=1,nfc)
   return
 92 call system_abort("IPModel_FC4_Initialise_str: End of file while reading force constants from "//file//", after t="//t)
 end subroutine read_fcs

@@ -464,7 +464,7 @@ contains
 
           call QUIP_FoX_get_value(attributes, 'n_types', value, status)
           if (status == 0) then
-             read (value, *), parse_ip%n_types
+             read (value, *) parse_ip%n_types
           else
              call system_abort("Can't find n_types in BornMayer_params")
           endif

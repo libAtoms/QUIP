@@ -72,7 +72,9 @@ real(dp), parameter :: N_A = 6.0221479e23_dp !% Avogadro's number
 real(dp), parameter :: KCAL_MOL = 4.3383e-2_dp !% eV
 real(dp), parameter :: DEGREES_PER_RADIAN = 180.0_dp / PI
 real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
-real(dp), parameter :: GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
+real(dp), parameter :: GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals (DEPRECATED)
+real(dp), parameter :: EV_A3_IN_GPA = 1.6022e-19_dp*1.0e30_dp/1.0e9_dp !% Same thing but with a less misleading name
+real(dp), parameter :: GPA_TO_EV_A3 = 1.0e9_dp/ELEM_CHARGE/1.0e30_dp !% The inverse of the above, convention consistent with all other conversion factors
 real(dp), parameter :: EPSILON_0 = 8.854187817e-12_dp / ELEM_CHARGE * 1.0e-10_dp !% epsilon_0 in e / V Angstrom
 real(dp), parameter :: DEBYE = 1.0e-21_dp/299792458.0_dp/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
 real(dp), parameter :: SQRT_TWO = sqrt(2.0_dp)
@@ -81,6 +83,7 @@ real(dp), parameter :: GRAM = 1e-3_dp  !% in kg
 real(dp), parameter :: ELECTRONMASS = ELECTRONMASS_GPERMOL*GRAM/N_A
 real(dp), parameter :: EPSILON_0_AU = EPSILON_0*ELEM_CHARGE/1.0e-10_dp
 real(dp), parameter :: VACUUM_C = 299792458.0_dp  !% exact in m/s
+real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% 
 #else
 ! CODATA 2014 taken from
 ! http://arxiv.org/pdf/1507.07956.pdf
@@ -113,9 +116,12 @@ real(dp), parameter :: MASSCONVERT = (1.0_dp/ELECTRONMASS_GPERMOL*HARTREE*AU_FS*
 real(dp), parameter :: KCAL_MOL = 4.184*1000/(ELEM_CHARGE*N_A) !% Thermochemical definition in eV
 real(dp), parameter :: DEGREES_PER_RADIAN = 180.0_dp / PI
 real(dp), parameter :: RADIANS_PER_DEGREE = PI / 180.0_dp
-real(dp), parameter :: GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals
+real(dp), parameter :: GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Convert from \textsc{libAtoms} units to Gigapascals (DEPRECATED)
+real(dp), parameter :: EV_A3_IN_GPA = ELEM_CHARGE*1.0e30_dp/1.0e9_dp !% Same thing but with a less misleading name
+real(dp), parameter :: GPA_TO_EV_A3 = 1.0e9_dp/ELEM_CHARGE/1.0e30_dp !% The inverse of the above, convention consistent with all other conversion factors
 real(dp), parameter :: EPSILON_0 = EPSILON_0_AU/ELEM_CHARGE*1.0e-10_dp !% epsilon_0 in e / V Angstrom
 real(dp), parameter :: DEBYE = 1.0e-21_dp/VACUUM_C/ELEM_CHARGE*1e10_dp !% 1D $= 10^{-18}$ statcoulomb-centrimetre in e-A
+real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% cm^{-1} * h * c
 #endif
 
 complex(dp), parameter :: CPLX_ZERO = (0.0_dp,0.0_dp)
@@ -135,7 +141,7 @@ integer, parameter :: have_cp2k = 1
 integer, parameter :: have_cp2k = 0
 #endif
 
-#ifdef HAVE_NETCDF
+#ifdef HAVE_NETCDF4
 integer, parameter :: have_netcdf = 1
 #else
 integer, parameter :: have_netcdf = 0

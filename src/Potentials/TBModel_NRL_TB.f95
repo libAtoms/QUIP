@@ -36,6 +36,8 @@
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#include "error.inc"
+
 module TBModel_NRL_TB_module
 
 use system_module, only : dp, print, inoutput, optional_default, system_abort, verbosity_push_decrement, verbosity_pop
@@ -46,6 +48,7 @@ use dictionary_module
 use extendable_str_module
 use paramreader_module
 use atoms_module
+use error_module
 
 use TB_Common_module
 use QUIP_Common_module
@@ -62,7 +65,7 @@ public :: TBModel_NRL_TB
 type TBModel_NRL_TB
   integer :: n_types = 0, n_mag = 0
   logical :: is_orthogonal = .true., is_magnetic = .false., has_pair_repulsion = .false., &
-	     overlap_zero_limit = .true., force_harrison_signs = .false.
+	     overlap_zero_limit = .true., force_harrison_signs = .false., has_short_ranged_splines = .false.
   character(len=STRING_LENGTH) label
 
   real(dp) :: cutoff = 0.0_dp
@@ -74,6 +77,7 @@ type TBModel_NRL_TB
   real(dp), allocatable :: atomic_mass(:)
   real(dp), allocatable :: r_cut(:,:), screen_l(:,:)
   real(dp), allocatable :: pair_rep_inner(:,:), pair_rep_outer(:,:)
+  real(dp), allocatable :: r_min_spline(:,:), sigma_spline(:,:)
 
   real(dp), allocatable :: lambda_sq(:,:)
   real(dp), allocatable :: abcd(:,:,:,:,:)
@@ -89,6 +93,8 @@ integer :: parse_cur_type_i, parse_cur_type_j
 type(extendable_str), private, save :: parse_cur_data
 logical, private :: parse_in_tbm, parse_matched_label
 type (TBModel_NRL_TB), pointer :: parse_tbm
+
+
 
 interface Initialise
   module procedure TBModel_NRL_TB_Initialise_str
@@ -213,6 +219,8 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
 
   integer ii, ti, tj
 
+  print *, "TBM_startElement_handler"
+
   call zero(parse_cur_data)
 
   if (name == 'NRL_TB_params') then ! new NRL_TB stanza
@@ -283,6 +291,8 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     if (status == 0) read (value, *) parse_tbm%overlap_zero_limit
     call QUIP_FoX_get_value(attributes, "force_harrison_signs", value, status)
     if (status == 0) read (value, *) parse_tbm%force_harrison_signs
+    call QUIP_FoX_get_value(attributes, "has_short_ranged_splines", value, status)
+    if (status == 0) read (value, *) parse_tbm%has_short_ranged_splines
 
   elseif (parse_in_tbm .and. name == 'n_types') then
 
@@ -301,6 +311,10 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     if (parse_tbm%has_pair_repulsion) then
       allocate(parse_tbm%pair_rep_inner(parse_tbm%n_types,parse_tbm%n_types))
       allocate(parse_tbm%pair_rep_outer(parse_tbm%n_types,parse_tbm%n_types))
+    endif
+    if (parse_tbm%has_short_ranged_splines) then
+      allocate(parse_tbm%r_min_spline(parse_tbm%n_types,parse_tbm%n_types))
+      allocate(parse_tbm%sigma_spline(parse_tbm%n_types,parse_tbm%n_types))
     endif
     allocate(parse_tbm%lambda_sq(parse_tbm%n_types,parse_tbm%n_mag))
     allocate(parse_tbm%abcd(4,max_n_orb_sets,parse_tbm%n_types,parse_tbm%n_types,parse_tbm%n_mag))
@@ -370,6 +384,13 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "pair_rep_outer", value, status);
       if (status == 0) read (value, *) parse_tbm%pair_rep_outer(ti,tj)
     endif
+    if (parse_tbm%has_short_ranged_splines) then
+      call QUIP_FoX_get_value(attributes, "r_min_spline", value, status);
+      if (status == 0) read (value, *) parse_tbm%r_min_spline(ti,tj)
+      call QUIP_FoX_get_value(attributes, "sigma_spline", value, status);
+      if (status == 0) read (value, *) parse_tbm%sigma_spline(ti,tj)
+    endif
+
     parse_cur_type_i = ti
     parse_cur_type_j = tj
 
@@ -539,6 +560,11 @@ subroutine TBModel_NRL_TB_change_units(this)
     this%pair_rep_outer = this%pair_rep_outer * BOHR
   endif
 
+  if (this%has_short_ranged_splines) then
+    this%r_min_spline = this%r_min_spline * BOHR
+    this%sigma_spline = this%sigma_spline * BOHR
+  endif
+
   this%lambda_sq = this%lambda_sq / BOHR
   this%abcd = this%abcd * RYDBERG
 
@@ -576,7 +602,7 @@ subroutine TBModel_NRL_TB_Print(this,file)
 
   call Print ('TBModel_NRL_TB: is_orthogonal ' // this%is_orthogonal // &
    ' is_magnetic '// this%is_magnetic// ' has_pair_repulsion '// this%has_pair_repulsion//  &
-   ' overlap_zero_limit '// this%overlap_zero_limit// ' force_harrison_signs '// this%force_harrison_signs, file=file)
+   ' overlap_zero_limit '// this%overlap_zero_limit// ' force_harrison_signs '// this%force_harrison_signs// ' has_short_ranged_splines '//this%has_short_ranged_splines, file=file)
 
   if (any(this%orb_set_type == ORB_F)) then
      n_sk_use = 20
@@ -595,6 +621,9 @@ subroutine TBModel_NRL_TB_Print(this,file)
       call Print ('TBModel_NRL_TB: r_cut screen_l ' // this%r_cut(i,j) // " " //  this%screen_l(i,j), file=file)
       if (this%has_pair_repulsion) then
 	call Print ('TBModel_NRL_TB: pair_rep inner outer ' // this%pair_rep_inner(i,j) // " " // this%pair_rep_outer(i,j), file=file)
+      endif
+      if (this%has_short_ranged_splines) then
+        call Print ('TBModel_NRL_TB: r_min_spline sigma_spline ' // this%r_min_spline(i,j) // " " // this%sigma_spline(i,j), file=file)
       endif
       do i_mag=1, this%n_mag
 	if (this%is_magnetic .and. i_mag == 1) call print("TBModel_NRL_TB: spin up")
@@ -1203,31 +1232,54 @@ subroutine dradial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_
   endif
 end subroutine  dradial_functions
 
-function calc_SK_coeff_H(this, SK_type, ti, tj, dist, i_mag)
+recursive function calc_SK_coeff_H(this, SK_type, ti, tj, dist, i_mag) result(calc_SK_coeff_H_result)
   type(TBModel_NRL_TB), intent(in) :: this
   integer, intent(in) :: SK_type
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dist
   integer, intent(in), optional :: i_mag
-  real(dp) :: calc_SK_coeff_H
+  real(dp) :: calc_SK_coeff_H_result, R_min, sigma
 
+  real(dp) :: H_0, H_0_d, H_0_dd
   integer :: u_i_mag
+
 
   u_i_mag = optional_default(1, i_mag)
 
-  calc_SK_coeff_H = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist) 
-  calc_SK_coeff_H = calc_SK_coeff_H * NRLTB_cutoff_function(this,  dist, ti, tj)
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_H_result = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist)
+      calc_SK_coeff_H_result = calc_SK_coeff_H_result * NRLTB_cutoff_function(this,  dist, ti, tj)
+    else
+      H_0 = calc_SK_coeff_H(this, SK_type, ti, tj, R_min, i_mag)
+      H_0_d = calc_SK_coeff_H_d(this, SK_type, ti, tj, R_min, i_mag)
+      H_0_dd = calc_SK_coeff_H_dd(this, SK_type, ti, tj, R_min, i_mag)
+      if (dist < R_min - sigma) then
+        calc_SK_coeff_H_result = short_ranged_spline(H_0, H_0_d, H_0_dd, sigma, 0.0_dp)
+      else
+        calc_SK_coeff_H_result = short_ranged_spline(H_0, H_0_d, H_0_dd, sigma, dist-R_min+sigma)
+      endif
+    endif
+  else
+    calc_SK_coeff_H_result = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist)
+    calc_SK_coeff_H_result = calc_SK_coeff_H_result * NRLTB_cutoff_function(this,  dist, ti, tj)
+  endif
 end function calc_SK_coeff_H
 
-function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag)
+recursive function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag) result(calc_SK_coeff_H_d_result)
   type(TBModel_NRL_TB), intent(in) :: this
   integer, intent(in) :: SK_type
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dist
   integer, intent(in), optional :: i_mag
-  real(dp) :: calc_SK_coeff_H_d
+  real(dp) :: calc_SK_coeff_H_d_result
 
+  real(dp) :: R_min, sigma
+  real(dp) :: H_0, H_0_d, H_0_dd
   real(dp) :: SK, SKd, co, cod
+  real(dp) :: SK_0, SK_0_d, co_0, co_0_d
   integer :: u_i_mag
 
   u_i_mag = optional_default(1, i_mag)
@@ -1237,37 +1289,120 @@ function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag)
   co = NRLTB_cutoff_function(this,  dist, ti, tj)
   cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
 
-  calc_SK_coeff_H_d = SK*cod + SKd*co
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_H_d_result = SK*cod + SKd*co
+    elseif (dist < R_min - sigma) then
+      calc_SK_coeff_H_d_result = 0.0_dp
+    else
+      H_0 = calc_SK_coeff_H(this, SK_type, ti, tj, R_min, i_mag)
+      H_0_d = calc_SK_coeff_H_d(this, SK_type, ti, tj, R_min, i_mag) 
+      H_0_dd = calc_SK_coeff_H_dd(this, SK_type, ti, tj, R_min, i_mag)
+
+      calc_SK_coeff_H_d_result = short_ranged_spline_d(H_0, H_0_d, H_0_dd, sigma, dist-R_min+sigma)
+    endif
+  else
+    calc_SK_coeff_H_d_result = SK*cod + SKd*co
+  endif
+
+
 end function calc_SK_coeff_H_d
 
-function calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+
+function calc_SK_coeff_H_dd(this, SK_type, ti, tj, dist, i_mag, error)
+  type(TBModel_NRL_TB), intent(in) :: this
+  integer, intent(in) :: SK_type
+  integer, intent(in) :: ti, tj
+  real(dp), intent(in) :: dist
+  integer, intent(in), optional :: i_mag
+  real(dp) :: calc_SK_coeff_H_dd
+
+  real(dp) :: R_min, sigma
+  real(dp) :: SK, SKd, SKdd, co, cod, codd
+  integer :: u_i_mag
+
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
+
+  u_i_mag = optional_default(1, i_mag)
+
+  SK = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist)
+  SKd = calc_SK_poly_deriv(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist)
+  SKdd = calc_SK_poly_2nd_deriv(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist)
+
+  co = NRLTB_cutoff_function(this,  dist, ti, tj)
+  cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
+  codd = NRLTB_cutoff_function_dd(this,  dist, ti, tj)
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_H_dd = SK*codd + 2.0_dp*SKd*cod + SKdd*co
+    else
+      RAISE_ERROR("calc_SK_coeff_H_dd not defined yet below R_min if short ranged spline active.", error)
+    endif
+  else
+    calc_SK_coeff_H_dd = SK*codd + 2.0_dp*SKd*cod + SKdd*co
+  endif
+end function calc_SK_coeff_H_dd
+
+recursive function calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_ti_eq_orb_tj, i_mag) &
+                   result(calc_SK_coeff_S_zero_limit_result)
   type(TBModel_NRL_TB), intent(in) :: this
   integer, intent(in) :: SK_type
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dist
   logical, intent(in) :: ti_eq_tj, orb_ti_eq_orb_tj
   integer, intent(in), optional :: i_mag
-  real(dp) :: calc_SK_coeff_S_zero_limit
+  real(dp) :: calc_SK_coeff_S_zero_limit_result
 
+  real(dp) :: R_min, sigma
+  real(dp) :: S_0, S_0_d, S_0_dd
   integer :: u_i_mag
 
   u_i_mag = optional_default(1, i_mag)
 
-  calc_SK_coeff_S_zero_limit = calc_SK_poly_zero_limit(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
-    this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
-  calc_SK_coeff_S_zero_limit = calc_SK_coeff_S_zero_limit * NRLTB_cutoff_function(this,  dist, ti, tj)
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_S_zero_limit_result = calc_SK_poly_zero_limit(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
+        this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+      calc_SK_coeff_S_zero_limit_result = calc_SK_coeff_S_zero_limit_result * NRLTB_cutoff_function(this,  dist, ti, tj)
+    else
+      S_0 = calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+      S_0_d = calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+      S_0_dd = calc_SK_coeff_S_dd_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+      if (dist < R_min - sigma) then
+        calc_SK_coeff_S_zero_limit_result = short_ranged_spline(S_0, S_0_d, S_0_dd, sigma, 0.0_dp)
+      else
+        calc_SK_coeff_S_zero_limit_result = short_ranged_spline(S_0, S_0_d, S_0_dd, sigma, dist-R_min+sigma)
+      endif
+    endif
+  else
+    calc_SK_coeff_S_zero_limit_result = calc_SK_poly_zero_limit(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
+      this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+    calc_SK_coeff_S_zero_limit_result = calc_SK_coeff_S_zero_limit_result * NRLTB_cutoff_function(this,  dist, ti, tj)
+  endif
 end function calc_SK_coeff_S_zero_limit
 
 
-function calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+recursive function calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_ti_eq_orb_tj, i_mag) &
+                   result(calc_SK_coeff_S_d_zero_limit_result)
   type(TBModel_NRL_TB), intent(in) :: this
   integer, intent(in) :: SK_type
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: dist
   logical, intent(in) :: ti_eq_tj, orb_ti_eq_orb_tj
   integer, intent(in), optional :: i_mag
-  real(dp) :: calc_SK_coeff_S_d_zero_limit
+  real(dp) :: calc_SK_coeff_S_d_zero_limit_result
 
+  real(dp) :: R_min, sigma
+  real(dp) :: SK_0, SK_0_d, co_0, co_0_d
+  real(dp) :: S_0, S_0_d, S_0_dd
   real(dp) :: SK, SKd, co, cod
   integer :: u_i_mag
 
@@ -1280,8 +1415,70 @@ function calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb
   co = NRLTB_cutoff_function(this,  dist, ti, tj)
   cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
 
-  calc_SK_coeff_S_d_zero_limit = SK*cod + SKd*co
+
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_S_d_zero_limit_result = SK*cod + SKd*co
+    elseif (dist < R_min - sigma) then
+      calc_SK_coeff_S_d_zero_limit_result = 0.0_dp
+    else
+      S_0 = calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+      S_0_d = calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag) 
+      S_0_dd = calc_SK_coeff_S_dd_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
+      calc_SK_coeff_S_d_zero_limit_result = short_ranged_spline_d(S_0, S_0_d, S_0_dd, sigma, dist-R_min+sigma)
+    endif
+  else
+    calc_SK_coeff_S_d_zero_limit_result = SK*cod + SKd*co
+  endif
+
 end function calc_SK_coeff_S_d_zero_limit
+
+
+function calc_SK_coeff_S_dd_zero_limit(this, SK_type, ti, tj, dist, ti_eq_tj, orb_ti_eq_orb_tj, i_mag, error)
+  type(TBModel_NRL_TB), intent(in) :: this
+  integer, intent(in) :: SK_type
+  integer, intent(in) :: ti, tj
+  real(dp), intent(in) :: dist
+  logical, intent(in) :: ti_eq_tj, orb_ti_eq_orb_tj
+  integer, intent(in), optional :: i_mag
+  real(dp) :: calc_SK_coeff_S_dd_zero_limit
+
+  real(dp) :: R_min, sigma
+  real(dp) :: SK, SKd, SKdd, co, cod, codd
+  integer :: u_i_mag
+
+  integer, intent(out), optional :: error
+
+  INIT_ERROR(error)
+
+  u_i_mag = optional_default(1, i_mag)
+
+  SK = calc_SK_poly_zero_limit(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
+    this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+  SKd = calc_SK_poly_zero_limit_deriv(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
+    this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+  SKdd = calc_SK_poly_zero_limit_2nd_deriv(this%S_coeff(1:4,SK_type, ti, tj, u_i_mag),  dist, &
+    this%overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+  co = NRLTB_cutoff_function(this,  dist, ti, tj)
+  cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
+  codd = NRLTB_cutoff_function_dd(this,  dist, ti, tj)
+
+  if (this%has_short_ranged_splines) then
+    R_min = this%r_min_spline(ti,tj)
+    sigma = this%sigma_spline(ti,tj)
+    if (dist >= R_min) then
+      calc_SK_coeff_S_dd_zero_limit = SK*codd + 2.0_dp*SKd*cod + SKdd*co
+    else
+      RAISE_ERROR("calc_SK_coeff_S_dd_zero_limit not defined yet below R_min if short ranged spline active.", error)
+    endif
+  else
+    calc_SK_coeff_S_dd_zero_limit = SK*codd + 2.0_dp*SKd*cod + SKdd*co
+  endif
+
+end function calc_SK_coeff_S_dd_zero_limit
+
 
 function calc_SK_poly(coeff, dist)
   real(dp), intent(in) :: coeff(4)
@@ -1305,6 +1502,26 @@ function calc_SK_poly_deriv(coeff, dist)
 
   calc_SK_poly_deriv = expv*poly_d + expv_d*poly
 end function calc_SK_poly_deriv
+
+function calc_SK_poly_2nd_deriv(coeff, dist)
+
+  real(dp), intent(in) :: coeff(4)
+  real(dp), intent(in) :: dist
+  real(dp) :: calc_SK_poly_2nd_deriv
+
+  real(dp) poly, poly_d, poly_dd, expv, expv_d, expv_dd
+
+  expv = exp(-coeff(MC_G_SQ)*dist)
+  expv_d = expv*(-coeff(MC_G_SQ))
+  expv_dd = expv*(-coeff(MC_G_SQ))**2
+
+  poly = (coeff(MC_E) + dist*(coeff(MC_F) + coeff(MC_FB)*dist))
+  poly_d = coeff(MC_F) + 2.0_dp*coefF(MC_FB)*dist
+  poly_dd = 2.0_dp*coefF(MC_FB)
+
+  calc_SK_poly_2nd_deriv = expv*poly_dd + 2*expv_d*poly_d + expv_dd * poly
+
+end function calc_SK_poly_2nd_deriv
 
 function calc_SK_poly_zero_limit(coeff, dist, overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
   real(dp), intent(in) :: coeff(4)
@@ -1357,6 +1574,39 @@ function calc_SK_poly_zero_limit_deriv(coeff, dist, overlap_zero_limit, ti_eq_tj
 
   calc_SK_poly_zero_limit_deriv = expv * poly_d + expv_d * poly
 end function calc_SK_poly_zero_limit_deriv
+
+function calc_SK_poly_zero_limit_2nd_deriv(coeff, dist, overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj)
+  real(dp), intent(in) :: coeff(4)
+  real(dp), intent(in) :: dist
+  logical, intent(in) :: overlap_zero_limit, ti_eq_tj, orb_ti_eq_orb_tj
+  real(dp) :: calc_SK_poly_zero_limit_2nd_deriv
+
+  real(dp) zero_limit
+  real(dp) poly, poly_d, poly_dd, expv, expv_d, expv_dd
+
+  if (overlap_zero_limit .and. ti_eq_tj .and. orb_ti_eq_orb_tj) then
+    zero_limit = 1.0_dp
+  else
+    zero_limit = 0.0_dp
+  end if
+
+  expv = exp(-COEFF(MC_G_SQ)*dist)
+  expv_d = expv*(-COEFF(MC_G_SQ))
+  expv_dd = expv*(-COEFF(MC_G_SQ))**2
+
+  if (overlap_zero_limit .and. ti_eq_tj) then
+    poly = (zero_limit + dist*(coeff(MC_E) + dist*(coeff(MC_F) + coeff(MC_FB)*dist)))
+    poly_d = coeff(MC_E) + dist*(2.0_dp*coeff(MC_F) + 3.0_dp*coeff(MC_FB)*dist)
+    poly_dd = 2.0_dp*coeff(MC_F) + 6.0_dp*coeff(MC_FB)*dist
+  else
+    poly = (coeff(MC_E) + dist*(coeff(MC_F) + coeff(MC_FB)*dist))
+    poly_d = coeff(MC_F) + 2.0_dp*coeff(MC_FB)*dist
+    poly_dd = 2.0_dp*coeff(MC_FB)
+  endif
+
+  calc_SK_poly_zero_limit_2nd_deriv = expv*poly_dd + 2*expv_d*poly_d + expv_dd * poly
+end function calc_SK_poly_zero_limit_2nd_deriv
+
 
 function onsite_function(this, at, at_i, orb_set_type,i_mag)
   type(TBModel_NRL_TB), intent(in) :: this
@@ -1474,6 +1724,27 @@ function donsite_poly(abcd, density, density_d)
 end function donsite_poly
 
 
+function short_ranged_spline(H_0, H_0_d, H_0_dd, sigma, u)
+! spline function for TB potential evaluation proposed by Trinkle et al., Empirical tight-binding model for titanium phase transformations, Phys. Rev. B 73 (2006) 094123
+  real(dp), intent(in) :: H_0, H_0_d, H_0_dd, sigma, u
+  real(dp) :: short_ranged_spline
+
+  short_ranged_spline = H_0 - 0.5_dp*sigma*H_0_d + 1.0_dp/12.0_dp*sigma**2*H_0_dd + &
+    (sigma*H_0_d - 1.0_dp/3.0_dp*sigma**2*H_0_dd)*u**3/sigma**3 + &
+    (-0.5_dp*sigma*H_0_d + 0.25_dp*sigma**2*H_0_dd)*u**4/sigma**4
+end function short_ranged_spline
+
+function short_ranged_spline_d(H_0, H_0_d, H_0_dd, sigma, u)
+! derivative of the above given spline function of Trinkle et al., Empirical tight-binding model for titanium phase transformations, Phys. Rev. B 73 (2006) 094123
+  real(dp), intent(in) :: H_0, H_0_d, H_0_dd, sigma, u
+  real(dp) :: short_ranged_spline_d
+
+  short_ranged_spline_d = 3.0_dp*(sigma*H_0_d - 1.0_dp/3.0_dp*sigma**2*H_0_dd)*u**2/sigma**3 + &
+    4.0_dp*(-0.5_dp*sigma*H_0_d + 0.25_dp*sigma**2*H_0_dd)*u**3/sigma**4
+  
+
+end function short_ranged_spline_d
+
 function NRLTB_cutoff_function(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
   real(dp), intent(in) :: r
@@ -1525,6 +1796,37 @@ function NRLTB_cutoff_function_d(this, r, ti, tj)
   end if
 
 end function NRLTB_cutoff_function_d
+
+
+function NRLTB_cutoff_function_dd(this, r, ti, tj)
+  type(TBModel_NRL_TB), intent(in) :: this
+  real(dp), intent(in) :: r
+  integer, intent(in) :: ti, tj
+  real(dp) :: NRLTB_cutoff_function_dd
+
+  double precision screen_R0
+  double precision cutoff_smooth, cutoff_smooth_d, cutoff_smooth_dd
+  double precision expv, expv_d, expv_dd
+
+  if (r .gt. 10.0_dp**(-4)) then
+
+    screen_R0 = this%r_cut(ti,tj) - 5.0D0*abs(this%screen_l(ti,tj))
+
+    expv = exp((r-screen_R0)/abs(this%screen_l(ti,tj)))
+    expv_d = expv * 1.0_dp/abs(this%screen_l(ti,tj))
+    expv_dd = expv_d * 1.0_dp/abs(this%screen_l(ti,tj))
+
+    cutoff_smooth = NRLTB_cutoff_func_smooth(this, r, ti, tj)
+    cutoff_smooth_d = NRLTB_cutoff_func_smooth_d(this, r, ti, tj)
+    cutoff_smooth_dd = NRLTB_cutoff_func_smooth_dd(this, r, ti, tj)
+
+    NRLTB_cutoff_function_dd = ( -1.0_dp/(1.0_dp+expv)**2 )*expv_d * cutoff_smooth_d + ( 1.0_dp/(1.0_dp+expv) ) * cutoff_smooth_dd - &
+     ((-2.0_dp/(1.0_dp+expv)**3)*expv_d**2 * cutoff_smooth + (1.0_dp/(1.0_dp+expv)**2)*expv_dd * cutoff_smooth + (1.0_dp/(1.0_dp+expv)**2)*expv_d * cutoff_smooth_d)
+  else
+    NRLTB_cutoff_function_dd = 0.0_dp
+  end if
+
+end function NRLTB_cutoff_function_dd
 
 function NRLTB_cutoff_func_smooth(this, r, ti, tj)
   type(TBModel_NRL_TB), intent(in) :: this
@@ -1585,5 +1887,35 @@ function NRLTB_cutoff_func_smooth_d(this, r, ti, tj)
   end if
 
 end function NRLTB_cutoff_func_smooth_d
+
+function NRLTB_cutoff_func_smooth_dd(this, r, ti, tj)
+  type(TBModel_NRL_TB), intent(in) :: this
+  real(dp), intent(in) :: r
+  integer, intent(in) :: ti, tj
+  real(dp) :: NRLTB_cutoff_func_smooth_dd
+
+  double precision R_MIN, R_MAX
+
+  double precision PI
+  parameter (PI = 3.14159265358979323846264338327950288_dp)
+
+
+  if (this%screen_l(ti,tj) .lt. 0.0_dp) then
+    NRLTB_cutoff_func_smooth_dd = 0.0_dp
+    return
+  endif
+
+  R_MAX = this%r_cut(ti,tj)
+  R_MIN = R_MAX - abs(this%screen_l(ti,tj))
+
+  if (r .lt. R_MIN) then
+    NRLTB_cutoff_func_smooth_dd = 0.0_dp
+  else if (r .gt. R_MAX) then
+    NRLTB_cutoff_func_smooth_dd = 0.0_dp
+  else
+    NRLTB_cutoff_func_smooth_dd = -cos( (r-R_MIN)*PI / (R_MAX-R_MIN) )/2.0_dp * (PI/(R_MAX-R_MIN))**2
+  end if
+
+end function NRLTB_cutoff_func_smooth_dd
 
 end module TBModel_NRL_TB_module

@@ -113,8 +113,8 @@ implicit none
 #ifdef HAVE_GAP
   type(descriptor) :: eval_descriptor
 #endif
-  real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_array
-  real(dp), dimension(:), allocatable :: grad_descriptor_pos
+  real(dp), dimension(:,:), allocatable :: descriptor_array, grad_descriptor_pos
+  real(dp), dimension(:,:,:), allocatable :: grad_descriptor_array
   integer, dimension(:,:), allocatable :: grad_descriptor_index
   character(STRING_LENGTH) :: descriptor_str
   logical :: has_descriptor_str, do_grad_descriptor
@@ -163,7 +163,7 @@ implicit none
   call param_register(cli_params, 'frozen_phonons', 'F', do_frozen_phonons, help_string="Refine phonon frequencies by displacing along computed phonon vectors?")
   call param_register(cli_params, 'phonons_zero_rotation', 'F', do_phonons_zero_rotation, help_string="project out rotation components from phonons?")
   call param_register(cli_params, 'force_const_mat', 'F', do_force_const_mat, help_string="print out force constant matrix from phonon calculation?")
-  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: The (fine) supercells created by QUIP are not the same as the ones created by phonopy. They cannot be used interchangeably.")
+  call param_register(cli_params, 'phonopy_force_const_mat', 'F', do_phonopy_force_const_mat, help_string="Print out force constant matrix and atomic positions in phonopy 1.12.4 format. Atomic positions and force constants are the ones resulting from the (fine) supercell. WARNING: It is not guaranteed to work with versions different from phonopy 1.12.4 and does only support a single atomic species at a time (no alloys).")
   call param_register(cli_params, 'parallel_phonons', 'F', do_parallel_phonons, help_string="compute phonons in parallel?")
   call param_register(cli_params, 'dipole_moment', 'F', do_dipole_moment, help_string="compute dipole moment?")
   call param_register(cli_params, 'absorption', 'F', do_absorption, help_string="compute absorption spectrum (electronic, TB only)?")
@@ -403,7 +403,7 @@ implicit none
 	did_anything = .true.
         do_calc = .true.
         call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
-	! call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
+!       call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
 	call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
         if(relax_rattle > 0.0) then
            call randomise(at%pos, relax_rattle)
@@ -434,7 +434,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .true., print_cinoutput=relax_io, &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 	length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
      res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu) 
               call system_timer('quip/precon_minim')
@@ -447,7 +447,7 @@ implicit none
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride, &
                      bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
@@ -461,7 +461,7 @@ implicit none
               call system_timer('quip/minim')
 	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
 		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
               call system_timer('quip/minim')
 	   endif
@@ -473,7 +473,7 @@ implicit none
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
 	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
 		 do_print = .false., &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
 		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
    res2=precond_res2, infoverride=precond_infoverride,convchoice=precond_conv_method,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_minim')
@@ -486,7 +486,7 @@ implicit none
               
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
-                         external_pressure = external_pressure/GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                         external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
                          length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, &
                          precon_id=trim(precond_method), res2=precond_res2,infoverride=precond_infoverride,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_dimer')
@@ -498,7 +498,7 @@ implicit none
               call system_timer('quip/minim')
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/GPA, &
+                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
 		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
               call system_timer('quip/minim')
            end if
@@ -525,12 +525,12 @@ implicit none
         endif
         if (do_c0ij) then
            mainlog%prefix="C0IJ"
-           call print(c0*GPA)
+           call print(c0*EV_A3_IN_GPA)
            mainlog%prefix=""
         endif
         if (do_cij) then
            mainlog%prefix="CIJ"
-           call print(c*GPA)
+           call print(c*EV_A3_IN_GPA)
            mainlog%prefix=""
         endif
         call print("")
@@ -739,7 +739,7 @@ implicit none
               call print ("Virial " // V0(i,:))
            end do
            do i=1, 3
-              call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*GPA))
+              call print ("Pressure eV/A^3 " // P0(i,:) // "   GPa " // (P0(i,:)*EV_A3_IN_GPA))
            end do
         end if
 
@@ -787,14 +787,14 @@ implicit none
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
         if(do_grad_descriptor) &
-           allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3*n_cross), &
-                    grad_descriptor_index(3, 3*n_cross), grad_descriptor_pos(3*n_cross) )
+           allocate(grad_descriptor_array(descriptor_dimensions(eval_descriptor),3,n_cross), &
+                    grad_descriptor_index(2, n_cross), grad_descriptor_pos(3,n_cross) )
 
         if(do_grad_descriptor) then
-           call calc(eval_descriptor,at,descriptor_array,&
+           call calc(eval_descriptor,at,descriptor_out=descriptor_array,&
              grad_descriptor_out=grad_descriptor_array,grad_descriptor_index=grad_descriptor_index,grad_descriptor_pos=grad_descriptor_pos,args_str=trim(calc_args))
         else
-           call calc(eval_descriptor,at,descriptor_array,args_str=trim(calc_args))
+           call calc(eval_descriptor,at,descriptor_out=descriptor_array,args_str=trim(calc_args))
         endif
         mainlog%prefix = "DESC"
         do i = 1, n_descriptors
@@ -802,8 +802,10 @@ implicit none
         end do
         if(do_grad_descriptor) then
            mainlog%prefix = "GRAD_DSC"
-           do i = 1, 3*n_cross
-              call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(i)//"  "//grad_descriptor_array(:,i), PRINT_ALWAYS, mainlog)
+           do i = 1, n_cross
+              do j = 1, 3
+                 call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(j,i)//"  "//grad_descriptor_array(:,j,i), PRINT_ALWAYS, mainlog)
+              enddo
            enddo
         endif
         mainlog%prefix = ""

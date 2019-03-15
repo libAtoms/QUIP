@@ -13,6 +13,7 @@ p.add_option('-s','--min_step', action='store', help="""frame to start from""", 
 p.add_option('-I','--interval', action='store', help="""interval between calculated configs""", type='int', default=1)
 p.add_option('-m','--mask', action='store', help="""mask of atoms to include (must resolve to python logical array)""", default="")
 p.add_option('-f','--fake_smooth_pos_mixing', action='store', help="""mixing coefficient for fake smooth pos""", type='float', default=-1.0)
+p.add_option('-c','--cell_fixed', action='store_true', help="""ignore cell changes""")
 
 opt, args = p.parse_args()
 
@@ -21,7 +22,12 @@ aw = AtomsWriter(opt.outfile)
 
 step=0
 eff_step=0
+cell = None
 for at in ar:
+   if opt.cell_fixed:
+      if cell is None:
+        cell = at.lattice.copy()
+      at.set_lattice(cell, True)
    at.undo_pbc_jumps(persistent=False)
    at.undo_com_motion(persistent=False)
    if (opt.mask != ""):

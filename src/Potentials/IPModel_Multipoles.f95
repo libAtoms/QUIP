@@ -371,7 +371,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       if (status /= 0) then
         value='0'
       endif
-      read (value, *), parse_ip%n_monomer_types
+      read (value, *) parse_ip%n_monomer_types
 
       allocate(parse_ip%multipoles%monomer_types(parse_ip%n_monomer_types))
 
@@ -384,11 +384,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       if (status /= 0) then
         value='0.0D0'
       endif
-      read (value, *), parse_ip%multipoles%dipole_tolerance
+      read (value, *) parse_ip%multipoles%dipole_tolerance
 
       call QUIP_FoX_get_value(attributes, 'intermolecular_only', value, status)
       if (status == 0) then 
-        read (value, *), parse_ip%multipoles%intermolecular_only
+        read (value, *) parse_ip%multipoles%intermolecular_only
       endif
 
 

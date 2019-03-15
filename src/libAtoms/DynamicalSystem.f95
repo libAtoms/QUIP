@@ -898,13 +898,14 @@ contains
    !X
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-   subroutine ds_set_barostat(this,type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,W_epsilon,T,W_epsilon_factor)
+   subroutine ds_set_barostat(this,type,p_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,tau_epsilon,W_epsilon,T,W_epsilon_factor,thermalise)
      type(dynamicalsystem), intent(inout) :: this
      integer,               intent(in)    :: type
      real(dp),              intent(in)    :: p_ext
-     logical,              intent(in)    :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
+     logical,              intent(in)     :: hydrostatic_strain, diagonal_strain, finite_strain_formulation
      real(dp),              intent(in)    :: tau_epsilon
      real(dp), optional,    intent(in)    :: W_epsilon, T, W_epsilon_factor
+     logical, optional,    intent(in)     :: thermalise
 
      real(dp) :: gamma_epsilon
 
@@ -916,7 +917,7 @@ contains
 
      call initialise(this%barostat, type=type, p_ext=p_ext, hydrostatic_strain=hydrostatic_strain, diagonal_strain=diagonal_strain, &
         finite_strain_formulation=finite_strain_formulation, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, &
-	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T, W_epsilon_factor=W_epsilon_factor)
+	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T, W_epsilon_factor=W_epsilon_factor, thermalise=thermalise)
 
    end subroutine ds_set_barostat
 
@@ -987,7 +988,7 @@ contains
         endif
 
         my_cell_oscillation_time = optional_default(10.0_dp/gamma_cell,cell_oscillation_time)
-        my_bulk_modulus_estimate = optional_default(100.0_dp/GPA,bulk_modulus_estimate)
+        my_bulk_modulus_estimate = optional_default(100.0_dp/EV_A3_IN_GPA,bulk_modulus_estimate)
 
         w_p = 3.0_dp * my_bulk_modulus_estimate * volume_0 * my_cell_oscillation_time**2 / ((2.0_dp*PI)**2)
 

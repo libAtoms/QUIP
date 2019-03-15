@@ -59,11 +59,11 @@ print a.lattice[1,1]
 print
 
 print 'Unrelaxed elastic constants'
-print (c0*GPA).round(decimals=3)
+print (c0*EV_A3_IN_GPA).round(decimals=3)
 print
 
 print 'Relaxed elastic constants'
-print (c*GPA).round(decimals=3)
+print (c*EV_A3_IN_GPA).round(decimals=3)
 print
 
 if len(sys.argv[1:]) == 1:

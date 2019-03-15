@@ -66,7 +66,7 @@ egrep '^ST' ${TEST}.out.raw > ${TEST}.out
 tail -8 ${TEST}.traj.xyz | awk '{print $1" "$2" "$3" "$4}' > ${TEST}.traj_pos.xyz
 
 diff=diff
-which ndiff > /dev/null && diff=ndiff
+which ndiff > /dev/null && diff="ndiff -abserr 1.0e-10"
 
 error=0
 echo -n "$0: "

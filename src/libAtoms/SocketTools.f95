@@ -104,7 +104,7 @@ contains
     i = 1
 
     ! first line is label
-    write(line, '('//MSG_INT_FORMAT//')'), label
+    write(line, '('//MSG_INT_FORMAT//')') label
     do j=1,len_trim(line)
        data(i) = line(j:j)
        i = i + 1
@@ -113,7 +113,7 @@ contains
     i = i + 1
 
     ! second line is n_atoms
-    write(line, '('//MSG_INT_FORMAT//')'), n_atoms
+    write(line, '('//MSG_INT_FORMAT//')') n_atoms
     do j=1,len_trim(line)
        data(i) = line(j:j)
        i = i + 1
@@ -122,7 +122,7 @@ contains
     i = i + 1
    
     ! third line is energy
-    write(line, '('//MSG_FLOAT_FORMAT//')'), energy
+    write(line, '('//MSG_FLOAT_FORMAT//')') energy
     do j=1,len_trim(line)
        data(i) = line(j:j)
        i = i + 1
@@ -132,7 +132,7 @@ contains
 
     ! next are the 3*N forces, three components per line
     do n = 1, size(force, 2)
-       write(line,'(3'//MSG_FLOAT_FORMAT//')'), force(:, n)
+       write(line,'(3'//MSG_FLOAT_FORMAT//')') force(:, n)
        do j=1,len_trim(line)
           data(i) = line(j:j)
           i = i + 1
@@ -142,7 +142,7 @@ contains
     end do
 
     ! finally the virial, as six components in order xx yy zz xy yz xz (NB: not Voigt order)
-    write(line, '(6'//MSG_FLOAT_FORMAT//')'), &
+    write(line, '(6'//MSG_FLOAT_FORMAT//')') &
          virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
     do j=1,len_trim(line)
        data(i) = line(j:j)

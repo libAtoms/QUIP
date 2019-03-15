@@ -48,16 +48,25 @@ export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 
+ifneq ($(findstring mpi, ${QUIP_ARCH}),)
+QUIP_MPI_SUFFIX=_mpi
+endif
+
+export QUIP_MPI_SUFFIX
+
 -include ${BUILDDIR}/Makefile.inc
 
 # create modules list
 
-MODULES=
-# add any third party packages first
+MODULES = libAtoms
+
+# add any third party packages first, but after libAtoms in case they want to
+# use it
 ifeq (${HAVE_THIRDPARTY},1)
    THIRDPARTY = ThirdParty
    MODULES += ThirdParty
    THIRDPARTY_LIBS := libthirdparty.a
+
 ifeq (${HAVE_FX},1)
    THIRDPARTY_LIBS += libfx.a
 endif
@@ -67,9 +76,18 @@ endif
 ifeq (${HAVE_MTP},1)
    THIRDPARTY_LIBS += libmtp.a
 endif
+ifeq (${HAVE_MBD},1)
+   THIRDPARTY_LIBS += libmbd.a
+endif
+ifeq (${HAVE_TTM_NF},1)
+   THIRDPARTY_LIBS += libttm_nf.a
+endif
+ifeq (${HAVE_CH4},1)
+   THIRDPARTY_LIBS += libch4.a
 endif
 
-MODULES += libAtoms
+endif
+
 
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
@@ -86,7 +104,6 @@ endif
 
 # now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
-
 
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
@@ -154,6 +171,7 @@ ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler: libAtoms GAP Potentials Utils
 endif
 
+ThirdParty: libAtoms
 Potentials: libAtoms  ${GAP}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
@@ -228,7 +246,7 @@ test: quippy
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 
 git_pull_all:
-	git pull
+	git pull --recurse-submodules
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
 distribution:
