@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Command line options of the teach_sparse main program &mdash; quippy 4b78a17+ documentation</title>
+  <title>Command line options of the teach_sparse main program &mdash; quippy 2d08204+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                4b78a17+
+                2d08204+
               </div>
             
           
@@ -210,10 +210,10 @@
 <p class="rubric">args_str options</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="30%" />
+<col width="33%" />
 <col width="6%" />
 <col width="17%" />
-<col width="47%" />
+<col width="45%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -274,17 +274,7 @@ input).</td>
 <td>To enable or not timing of the
 interatomic potential.</td>
 </tr>
-<tr class="row-even"><td>e0</td>
-<td>str</td>
-<td>0.0</td>
-<td>Atomic energy value to be subtracted
-from energies before fitting (and added
-back on after prediction). Specifiy a
-single number (used for all species) or
-by species: {Ti:-150.0:O:-320}. energy
-= core + GAP + e0</td>
-</tr>
-<tr class="row-odd"><td>e0_method</td>
+<tr class="row-even"><td>e0_method</td>
 <td>str</td>
 <td>isolated</td>
 <td>Method to determine e0, if not
@@ -295,7 +285,7 @@ representative, with a valid energy),
 average (e0 is the average of all total
 energies across the XYZ)</td>
 </tr>
-<tr class="row-even"><td>e0_offset</td>
+<tr class="row-odd"><td>e0_offset</td>
 <td>float</td>
 <td>0.0</td>
 <td>Offset of baseline. If zero, the offset
@@ -303,39 +293,45 @@ is the average atomic energy of the
 input data or the e0 specified
 manually.</td>
 </tr>
-<tr class="row-odd"><td>energy_parameter_name</td>
+<tr class="row-even"><td>energy_parameter_name</td>
 <td>str</td>
 <td>energy</td>
 <td>Name of energy property in the at_file
 that describes the data</td>
 </tr>
-<tr class="row-even"><td>force_parameter_name</td>
+<tr class="row-odd"><td>force_parameter_name</td>
 <td>str</td>
 <td>force</td>
 <td>Name of force property in the at_file
 that describes the data</td>
 </tr>
-<tr class="row-odd"><td>gap</td>
+<tr class="row-even"><td>gap</td>
 <td>str</td>
 <td>//MANDATORY//</td>
 <td>Initialisation string for GAPs</td>
 </tr>
-<tr class="row-even"><td>gp_file</td>
+<tr class="row-odd"><td>gp_file</td>
 <td>str</td>
 <td>gp_new.xml</td>
 <td>Output XML file</td>
 </tr>
-<tr class="row-odd"><td>hessian_delta</td>
+<tr class="row-even"><td>hessian_delta</td>
 <td>float</td>
 <td>1.0e-2</td>
 <td>Delta to use in numerical
 differentiation when obtaining second
 derivative for the Hessian covariance</td>
 </tr>
-<tr class="row-even"><td>hessian_parameter_name</td>
+<tr class="row-odd"><td>hessian_parameter_name</td>
 <td>str</td>
 <td>hessian</td>
 <td>Name of hessian property in the at_file
+that describes the data</td>
+</tr>
+<tr class="row-even"><td>local_property_parameter_name</td>
+<td>str</td>
+<td>local_property</td>
+<td>Name of local_property in the at_file
 that describes the data</td>
 </tr>
 <tr class="row-odd"><td>rnd_seed</td>
