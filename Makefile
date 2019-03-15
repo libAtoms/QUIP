@@ -192,13 +192,9 @@ ${BUILDDIR}:
 #	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
 
 quippy: libquip.a
-	echo milestone_1 ### for debugging DONE
 	rm -f ${BUILDDIR}/Makefile
-	echo milestone_2 ### for debugging DONE
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
-	echo milestone_3 ### for debugging DONE
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
-	echo milestone_4 ### for debugging
 	rm ${BUILDDIR}/Makefile
 
 install-quippy: quippy

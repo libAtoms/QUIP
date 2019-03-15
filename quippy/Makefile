@@ -17,8 +17,6 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-# default to be overridden by site-specific config
-#QUIPPY_INSTALL_DIR = ${HOME}/anaconda2/lib/python2.7/site-packages     #fixme: this was for debug only
 
 # include other makefiles and export env variables
 export QUIP_ARCH
@@ -30,7 +28,7 @@ include Makefile.${QUIP_ARCH}
 include ${BUILDDIR}/Makefile.inc
 include Makefile.rules
 
-# working on python3
+# working on python3 only
 PYTHON := python3
 
 QUIPPY_SRC_DIR := ../../quippy
@@ -38,10 +36,10 @@ QUIPPY_SRC_DIR := ../../quippy
 FPP = gfortran -E -cpp
 CFLAGS = -fPIC
 
-
-LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95   # Table.f95
+# The following files will be wrapped
+LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95
 POT_SOURCES =  Potential.f95
-GAP_SOURCES =  descriptors.f95 # descriptors_wrapper.f95
+GAP_SOURCES =  descriptors.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
@@ -62,47 +60,39 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 F2PY_LINK_ARGS = $(shell python -c 'import sys; print " ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")])' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
 
-###
+#################################
 .PHONY: build clean install
 
 build: _quippy.so
-	echo WRAP_SOURCES__ ${WRAP_SOURCES}
-	echo WRAP_FILES___ ${WRAP_FILES}
 
 clean:
-	-rm _castep.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
-	-rm -r castep
-	-rm -r f90wrap_*.o
-	-rm -rf src.*
+	rm _quippy.so
+	rm _castep.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
+	rm -r castep
+	rm -r f90wrap_*.o
+	rm -rf src.*
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
-	echo quippy_stone_1 ### debug
 	for f in ${WRAP_FILES}; do \
 	    echo ${FPP} $$f > $$(basename $${f%.*}).fpp ; \
 	    ${FPP} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
-	echo ${WRAP_FILES}
-	echo ${WRAP_SOURCES}
-	echo quippy_stone_2 ### debug
-	-rm -r quippy
+	rm -r quippy
 	mkdir quippy
-	echo quippy_stone_3 ### debug
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
-	echo quippy_stone_4 ### debug
 	f90wrap -v -m quippy ${WRAP_FPP_FILES} -P \
 	   -a c_error_abort --init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		 --shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		 --skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
 		         potential_initialise_inoutput \
 			 cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type
-	echo quippy_stone_5 ### debug
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
 
 install: build
-	QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages       #fixme: this was for debug only
-	cp -r quippy ${QUIPPY_INSTALL_DIR}
-	cp _quippy.so ${QUIPPY_INSTALL_DIR}
+	#QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages       #fixme: this was for debug only
+	#cp -r quippy ${QUIPPY_INSTALL_DIR}
+	#cp _quippy.so ${QUIPPY_INSTALL_DIR}
