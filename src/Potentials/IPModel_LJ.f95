@@ -45,6 +45,12 @@
 !% (plus energy and linear force shift, if applicable)
 !% hence the factor 4 has to be included in the potential XML file.
 !%
+!% If requested, tail corrections are added for all pairs with a
+!% nonzero $\epsilon_6$ (i.e. a nonzero sixth-power tail).  This
+!% requires all such pairs to have equal cutoffs and smooth cutoff
+!% widths.  See the documentation for the 'DispTS' potential for
+!% more information on how these corrections are computed in QUIP.
+!%
 !% The IPModel_LJ object contains all the parameters read from a
 !% 'LJ_params' XML stanza.
 !X
@@ -59,6 +65,7 @@ use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosi
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
+use units_module, only : PI
 use atoms_types_module
 use atoms_module
 
@@ -79,6 +86,12 @@ type IPModel_LJ
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
   real(dp), allocatable :: sigma(:,:), eps6(:,:), eps12(:,:), cutoff_a(:,:), energy_shift(:,:), linear_force_shift(:,:), smooth_cutoff_width(:,:) !% IP parameters.
+  real(dp) :: tail_corr_smooth_factor
+  real(dp) :: tail_corr_const
+  real(dp), allocatable :: tail_c6_coeffs(:,:)
+  logical :: only_inter_resid = .false.
+  logical :: do_tail_corrections = .false.
+  logical :: tail_smooth_cutoff = .false.
 
   character(len=STRING_LENGTH) label
 
@@ -109,6 +122,10 @@ subroutine IPModel_LJ_Initialise_str(this, args_str, param_str)
   type(IPModel_LJ), intent(inout) :: this
   character(len=*), intent(in) :: args_str, param_str
 
+  real(dp) :: tc_cutoff = -1.0_dp
+  real(dp) :: tc_ctw = -1.0_dp
+  integer :: ti,tj
+
   type(Dictionary) :: params
 
   call Finalise(this)
@@ -125,6 +142,53 @@ subroutine IPModel_LJ_Initialise_str(this, args_str, param_str)
 
   this%cutoff = maxval(this%cutoff_a)
 
+  ! Check whether we can even do tail corrections, then set up the constants
+  if (this%do_tail_corrections) then
+    tc_cutoff = -1.0_dp
+    allocate(this%tail_c6_coeffs(this%n_types, this%n_types))
+    do ti = 1,this%n_types
+      do tj = ti,this%n_types
+        if (this%eps6(ti,tj) .fne. 0.0_dp) then
+
+          if ((this%energy_shift(ti,tj) .fne. 0.0_dp) .or. &
+              (this%linear_force_shift(ti,tj) .fne. 0.0_dp)) then
+            call system_abort("IPModel_LJ_Initialise_str: Tail corrections not implemented with &
+                               energy or force shifts")
+          endif
+
+          if (tc_cutoff .feq. -1.0_dp) then
+            tc_cutoff = this%cutoff_a(ti,tj)
+            tc_ctw = this%smooth_cutoff_width(ti,tj)
+          else if (this%cutoff_a(ti,tj) .fne. tc_cutoff) then
+            call system_abort("IPModel_LJ_Initialise_str: Tail corrections require all &
+                               cutoffs to be equal; " // this%cutoff_a(ti,tj) //" =/= "// tc_cutoff)
+          else if (this%smooth_cutoff_width(ti,tj) .fne. tc_ctw) then
+            call system_abort("IPModel_LJ_Initialise_str: Tail corrections require all &
+                               cutoff transition widths to be equal; " // this%smooth_cutoff_width(ti,tj) //" =/= "// tc_ctw)
+          endif
+          this%tail_c6_coeffs(ti,tj) = this%eps6(ti,tj) * this%sigma(ti,tj)**6
+        else
+          this%tail_c6_coeffs(ti,tj) = 0.0_dp
+        endif
+        this%tail_c6_coeffs(tj,ti) = this%tail_c6_coeffs(ti,tj)
+      enddo
+    enddo
+    if (tc_cutoff .fgt. 0.0_dp) then
+      if (tc_ctw .fgt. 0.0_dp) then
+        this%tail_smooth_cutoff = .true.
+        this%tail_corr_const = -2.0_dp * PI / 3.0_dp * &
+            ((1.0_dp - this%tail_corr_smooth_factor) / (tc_cutoff - tc_ctw)**3 &
+             + this%tail_corr_smooth_factor / tc_cutoff**3)
+      else
+        this%tail_smooth_cutoff = .false.
+        this%tail_corr_const = -2.0_dp * PI / 3.0_dp / tc_cutoff**3
+      endif
+    else
+      this%tail_corr_const = 0.0_dp
+      this%do_tail_corrections = .false.
+    endif
+  endif
+
 end subroutine IPModel_LJ_Initialise_str
 
 subroutine IPModel_LJ_Finalise(this)
@@ -140,6 +204,7 @@ subroutine IPModel_LJ_Finalise(this)
   if (allocated(this%energy_shift)) deallocate(this%energy_shift)
   if (allocated(this%linear_force_shift)) deallocate(this%linear_force_shift)
   if (allocated(this%smooth_cutoff_width)) deallocate(this%smooth_cutoff_width)
+  if (allocated(this%tail_c6_coeffs)) deallocate(this%tail_c6_coeffs)
 
   this%n_types = 0
   this%label = ''
@@ -162,7 +227,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   integer, intent(out), optional :: error
 
   real(dp), pointer :: w_e(:)
-  integer i, ji, j, ti, tj
+  integer i, ji, j, ti, tj, d
   real(dp) :: dr(3), dr_mag
   real(dp) :: de, de_dr
   logical :: i_is_min_image
@@ -173,6 +238,9 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   logical :: do_flux = .false.
   real(dp), pointer :: velo(:,:)
   real(dp) :: flux(3)
+
+  integer, pointer :: resid(:)
+  real(dp) :: c6_sum, tail_correction
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
@@ -197,6 +265,12 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      local_virial = 0.0_dp
      RAISE_ERROR("IPModel_LJ_Calc: local_virial calculation requested but not supported yet.", error)
   endif
+
+  if (this%only_inter_resid) then
+     if (.not. assign_pointer(at, "resid", resid)) then
+       RAISE_ERROR("IPModel_LJ_Calc calculation with only_inter_resid=T requires resid field", error)
+     endif
+  end if
 
   if (present(args_str)) then
     if (len_trim(args_str) > 0) then
@@ -236,6 +310,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   if (.not. assign_pointer(at, "weight", w_e)) nullify(w_e)
 
+  c6_sum = 0.0_dp
   do i = 1, at%N
     i_is_min_image = is_min_image(at,i)
 
@@ -245,6 +320,22 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
        endif
     endif
 
+    ti = get_type(this%type_of_atomic_num, at%Z(i))
+
+    ! Might be optimized if we have only_inter_resid=F
+    ! Can then just count number of pairs of each type
+    if (this%do_tail_corrections) then
+      do j = i+1, at%N
+        if (this%only_inter_resid) then
+          if (resid(i) == resid(j)) cycle
+        endif
+        tj = get_type(this%type_of_atomic_num, at%Z(j))
+        if (this%tail_c6_coeffs(tj,ti) .fne. 0.0_dp) then
+          c6_sum = c6_sum + 2*this%tail_c6_coeffs(tj,ti)
+        endif
+      enddo
+    endif
+
     do ji = 1, n_neighbours(at, i)
       j = neighbour(at, i, ji, dr_mag, cosines = dr)
 
@@ -252,7 +343,10 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       !if ((i < j) .and. i_is_min_image) cycle
       if ((i < j)) cycle
 
-      ti = get_type(this%type_of_atomic_num, at%Z(i))
+      if (this%only_inter_resid) then
+	 if (resid(i) == resid(j)) cycle
+      end if
+
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       if (present(e) .or. present(local_e)) then
@@ -306,6 +400,21 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       endif
     end do
   end do
+
+  if (this%do_tail_corrections) then
+     tail_correction = c6_sum * this%tail_corr_const / cell_volume(at)
+     if (present(e)) e = e + tail_correction
+     if (present(virial)) then
+        do d = 1, 3
+          if (this%tail_smooth_cutoff) then
+            ! Seems counterintuitive, but the math works out (for r^-6 potentials)
+            virial(d,d) = virial(d,d) + tail_correction
+          else
+            virial(d,d) = virial(d,d) + 2*tail_correction
+          endif
+        enddo
+     endif
+  endif
 
   if (present(mpi)) then
      if (present(e)) e = sum(mpi, e)
@@ -430,9 +539,24 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *), parse_ip%n_types
+	read (value, *) parse_ip%n_types
       else
 	call system_abort("Can't find n_types in LJ_params")
+      endif
+
+      call QUIP_FoX_get_value(attributes, 'only_inter_resid', value, status)
+      if (status == 0) then
+	read (value, *) parse_ip%only_inter_resid
+      else
+	parse_ip%only_inter_resid = .false.
+      endif
+
+      call QUIP_FoX_get_value(attributes, 'tail_corr_factor', value, status)
+      if (status == 0) then
+        read (value, *) parse_ip%tail_corr_smooth_factor
+        parse_ip%do_tail_corrections = .true.
+      else
+        parse_ip%do_tail_corrections = .false.
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -583,7 +707,8 @@ subroutine IPModel_LJ_Print (this, file)
   integer :: ti, tj
 
   call Print("IPModel_LJ : Lennard-Jones", file=file)
-  call Print("IPModel_LJ : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
+  call Print("IPModel_LJ : n_types = " // this%n_types // " cutoff = " // this%cutoff // &
+      " only_inter_resid = " // this%only_inter_resid // " do_tail_corrections = " // this%do_tail_corrections, file=file)
 
   do ti=1, this%n_types
     call Print ("IPModel_LJ : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)

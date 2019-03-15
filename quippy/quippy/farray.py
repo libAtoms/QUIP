@@ -251,7 +251,10 @@ class FortranArray(np.ndarray):
 
         if one_dim and not islist:
             if len(self.shape) > 1:
-                res = (Ellipsis,nindx[0])
+                if nindx[0] is Ellipsis:
+                    res = Ellipsis
+                else:
+                    res = (Ellipsis,nindx[0])
             else:
                 res = nindx[0]
         else:
@@ -267,7 +270,10 @@ class FortranArray(np.ndarray):
                 res = nindx
             else:
                 if len(self.shape) > len(nindx):
-                    res = tuple([Ellipsis] + nindx)
+                    if nindx[0] is Ellipsis:
+                        res = tuple(nindx)
+                    else:
+                        res = tuple([Ellipsis] + nindx)
                 else:
                     res = tuple(nindx)
 
@@ -277,6 +283,17 @@ class FortranArray(np.ndarray):
         "Overloaded __getitem__ which accepts one-based indices."
         if getattr(self, 'parent', None) and self.parent() is None:
             raise RuntimeError("array's parent has gone out of scope!")
+        # logic moved from __getslice__ which is no longer called
+        # from numpy 1.13 and Python 3
+        if isinstance(indx, slice):
+            if indx.start != 0:
+                indx = slice(FortranArray.map_int(indx.start), indx.stop,
+                             indx.step)
+            obj = np.ndarray.__getitem__(self, indx)
+            if isinstance(obj, np.ndarray):
+                fa = obj.view(self.__class__)
+                return fa
+
         indx = self.mapindices(indx)
         obj = np.ndarray.__getitem__(self, indx)
         if isinstance(obj, np.ndarray):
@@ -317,24 +334,13 @@ class FortranArray(np.ndarray):
 
     def __getslice__(self, i, j):
         "Overloaded __getslice__ which accepts one-based indices."
-        if getattr(self, 'parent', None) and self.parent() is None:
-            raise RuntimeError("array's parent has gone out of scope!")
-
-        if i != 0:
-            i = FortranArray.map_int(i)
-        obj = np.ndarray.__getslice__(self, i, j)
-        if isinstance(obj, np.ndarray):
-            fa = obj.view(self.__class__)
-            return fa
+        # Removed in Numpy 1.13 and Python 3
+        return self.__getitem__(slice(i, j))
 
     def __setslice__(self, i, j, value):
         "Overloaded __setslice__ which accepts one-based indices."
-        if getattr(self, 'parent', None) and self.parent() is None:
-            raise RuntimeError("array's parent has gone out of scope!")
-
-        if i != 0:
-            i = FortranArray.map_int(i)
-        np.ndarray.__setslice__(self, i, j, value)
+        # Removed in Numpy 1.13 and Python 3
+        self.__setitem__(slice(i, j), value)
 
     def nonzero(self):
         """Return the one-based indices of the elements of a which are not zero."""

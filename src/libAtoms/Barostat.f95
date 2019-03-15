@@ -124,7 +124,7 @@ contains
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine barostat_initialise(this,type,p_ext,stress_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,deformation_grad,cell_volume,W_epsilon,Ndof,gamma_epsilon,T,W_epsilon_factor)
+  subroutine barostat_initialise(this,type,p_ext,stress_ext,hydrostatic_strain,diagonal_strain,finite_strain_formulation,deformation_grad,cell_volume,W_epsilon,Ndof,gamma_epsilon,T,W_epsilon_factor, thermalise)
 
     type(barostat),   intent(inout) :: this
     integer,            intent(in)    :: type
@@ -139,8 +139,10 @@ contains
     real(dp), optional, intent(in)    :: gamma_epsilon
     real(dp), optional, intent(in)    :: T
     real(dp), optional, intent(in)    :: W_epsilon_factor
+    logical, optional, intent(in)     :: thermalise
 
     real(dp) :: use_T
+    logical :: use_thermalise
 
     if (type /= BAROSTAT_NONE .and. .not.present(p_ext) .and. .not. present(stress_ext)) &
          call system_abort('barostat_initialise: p_ext or stress_ext must be specified when turning on a barostat')
@@ -204,7 +206,8 @@ contains
 	  this%W_epsilon = barostat_mass(maxval(abs(this%stress_ext)), cell_volume, Ndof, gamma_epsilon, T, W_epsilon_factor)
        endif
        use_T = optional_default(-1.0_dp, T)
-       if (use_T > 0.0_dp) then
+       use_thermalise = optional_default(.true., thermalise)
+       if (use_thermalise .and. use_T > 0.0_dp) then
 	 this%gamma_epsilon = gamma_epsilon
        else
 	 this%gamma_epsilon = 0.0_dp
@@ -300,15 +303,15 @@ contains
 
        case(BAROSTAT_HOOVER_LANGEVIN)
 	  call print('Hoover-Langevin, stress_ext = '// &
-	  round(this%stress_ext(1,1)/GPA,5)//' '// &
-	  round(this%stress_ext(1,2)/GPA,5)//' '// &
-	  round(this%stress_ext(1,3)/GPA,5)//' '// &
-	  round(this%stress_ext(2,1)/GPA,5)//' '// &
-	  round(this%stress_ext(2,2)/GPA,5)//' '// &
-	  round(this%stress_ext(2,3)/GPA,5)//' '// &
-	  round(this%stress_ext(3,1)/GPA,5)//' '// &
-	  round(this%stress_ext(3,2)/GPA,5)//' '// &
-	  round(this%stress_ext(3,3)/GPA,5)//' GPa , hydrostatic_strain = '//this%hydrostatic_strain//&
+	  round(this%stress_ext(1,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(1,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(1,3)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(2,3)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,1)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,2)/EV_A3_IN_GPA,5)//' '// &
+	  round(this%stress_ext(3,3)/EV_A3_IN_GPA,5)//' GPa , hydrostatic_strain = '//this%hydrostatic_strain//&
 	    ' diagonal_strain = '//this%diagonal_strain//' finite_strain_formulation = '//this%finite_strain_formulation//&
 	    ' gamma_epsilon = '//round(this%gamma_epsilon,5)//' fs^-1, '// &
 	    ' W_epsilon = '//round(this%W_epsilon,5)//' eV/fs, T = '//round(this%T,2)//' K, Ndof = '// round(this%Ndof,1),file=file)

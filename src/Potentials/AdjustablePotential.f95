@@ -365,7 +365,7 @@ contains
 
        if (ratio < AP_bad_atom_threshold) then
 
-          write (line,'(a,i6,a,i6,a,f10.3)'), 'Atom ', i, ' with ', springs%N, &
+          write (line,'(a,i6,a,i6,a,f10.3)') 'Atom ', i, ' with ', springs%N, &
                ' springs has ratio ', ratio
           call print(line, PRINT_VERBOSE)
           call print('Smallest evect ='//small_evec, PRINT_VERBOSE)

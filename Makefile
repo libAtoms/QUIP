@@ -48,16 +48,25 @@ export QUIP_ROOT
 export SCRIPT_PATH=${QUIP_ROOT}/bin
 export BUILDDIR=${QUIP_ROOT}/build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX}
 
--include ${BUILDDIR}/Makefile.inc   
+ifneq ($(findstring mpi, ${QUIP_ARCH}),)
+QUIP_MPI_SUFFIX=_mpi
+endif
 
-# create modules list 
+export QUIP_MPI_SUFFIX
 
-MODULES=
-# add any third party packages first
+-include ${BUILDDIR}/Makefile.inc
+
+# create modules list
+
+MODULES = libAtoms
+
+# add any third party packages first, but after libAtoms in case they want to
+# use it
 ifeq (${HAVE_THIRDPARTY},1)
    THIRDPARTY = ThirdParty
    MODULES += ThirdParty
    THIRDPARTY_LIBS := libthirdparty.a
+
 ifeq (${HAVE_FX},1)
    THIRDPARTY_LIBS += libfx.a
 endif
@@ -67,17 +76,26 @@ endif
 ifeq (${HAVE_MTP},1)
    THIRDPARTY_LIBS += libmtp.a
 endif
+ifeq (${HAVE_MBD},1)
+   THIRDPARTY_LIBS += libmbd.a
+endif
+ifeq (${HAVE_TTM_NF},1)
+   THIRDPARTY_LIBS += libttm_nf.a
+endif
+ifeq (${HAVE_CH4},1)
+   THIRDPARTY_LIBS += libch4.a
 endif
 
-MODULES += libAtoms
+endif
+
 
 # add GAP modules if we have them - they need to come before other modules, except for libAtoms
 ifeq (${HAVE_GAP},1)
-MODULES += GAP 
+MODULES += GAP
 GAP += GAP
 GAP_LIBS += libgap_predict.a
 else
-GAP = 
+GAP =
 endif
 
 ifeq (${HAVE_GAP_FILLER},1)
@@ -85,8 +103,7 @@ MODULES += GAP-filler
 endif
 
 # now add the rest of the modules
-MODULES += Potentials Utils Programs FilePot_drivers Structure_processors 
-
+MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
 
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
@@ -102,7 +119,7 @@ export FOX_INCDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/finclude
 include Makefile.config
 include Makefile.rules
 
-${BUILDDIR}/Makefile.inc: 
+${BUILDDIR}/Makefile.inc:
 	@if [ "$(MAKECMDGOALS)" != config ]; then\
 		echo ;\
 		echo "${BUILDDIR}/Makefile.inc not found. Perhaps you forgot to run \`make config'?" ;\
@@ -110,11 +127,18 @@ ${BUILDDIR}/Makefile.inc:
 		exit 1 ;\
 		fi
 
+# Automatically pull the submodules if the user didn't.
+# Remove the Makefile.QUIP if it has failed previously.
+src/${FOX}/configure:
+	@echo "Attempting to automatically clone fox submodule"
+	rm -f src/${FOX}/Makefile.QUIP
+	git submodule update --init src/${FOX} || \
+	    { echo "fox clone failed. Download it manually" ; exit 1 ; }
 
-${FOX}: src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
+${FOX}: src/${FOX}/configure src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a
 src/${FOX}/objs.${QUIP_ARCH}/lib/libFoX_common.a:
 	cp Makefile.fox src/${FOX}/Makefile.QUIP
-	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP 
+	make -C src/${FOX} -I${PWD} -I${PWD}/arch -I${BUILDDIR} -f Makefile.QUIP
 
 FOX_STATIC_LIBFILES = $(patsubst -l%,${FOX_LIBDIR}/lib%.a,${FOX_LIBS})
 FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)
@@ -127,6 +151,16 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
 	rm ${BUILDDIR}/Makefile
 
+# general rule to make a program in the Programs
+# src directory, makes sure everything else is
+# built first
+
+Programs/% src/Programs/% : ${MODULES}
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/src/Programs/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch $(lastword $(subst /, ,$@))
+	rm ${BUILDDIR}/Makefile
+
 # dependencies between modules
 
 ifeq (${HAVE_GAP},1)
@@ -137,6 +171,7 @@ ifeq (${HAVE_GAP_FILLER},1)
 GAP-filler: libAtoms GAP Potentials Utils
 endif
 
+ThirdParty: libAtoms
 Potentials: libAtoms  ${GAP}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
@@ -150,7 +185,7 @@ libquip.a: ${MODULES}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBS}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
-${BUILDDIR}: 
+${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a
@@ -160,9 +195,10 @@ install-quippy: quippy
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
 clean-quippy:
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean	
+	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 
-clean: ${BUILDDIR} clean-quippy
+clean: ${BUILDDIR}
+	-${MAKE} clean-quippy
 	for mods in ${MODULES} ; do \
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
@@ -170,7 +206,7 @@ clean: ${BUILDDIR} clean-quippy
 	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/arch clean ; \
 	done
 	rm -f ${BUILDDIR}/libquip.a
-	rm -rf src/${FOX}/objs.${QUIP_ARCH} 
+	rm -rf src/${FOX}/objs.${QUIP_ARCH}
 
 deepclean: clean
 
@@ -178,11 +214,18 @@ distclean: clean
 	rm -rf build
 
 install-structures:
+ifeq (${QUIP_STRUCTS_DIR},)
+	@echo
+	@echo "QUIP_STRUCTS_DIR must be defined to install structures"
+else
 	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
+endif
 
 install: ${MODULES} install-structures
 ifeq (${QUIP_INSTALLDIR},)
-	@echo "make install needs QUIP_INSTALLDIR defined"
+	@echo
+	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
+	@echo "programs"
 else
 	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
@@ -203,7 +246,7 @@ test: quippy
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 
 git_pull_all:
-	git pull
+	git pull --recurse-submodules
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
 distribution:

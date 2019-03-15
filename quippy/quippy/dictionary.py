@@ -85,6 +85,8 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
     _array_types  = (T_INTEGER_A, T_REAL_A, T_COMPLEX_A, T_CHAR_A,
                      T_LOGICAL_A, T_INTEGER_A2, T_REAL_A2)
 
+    _max_repr_length = 255  # repr on unknown types will be truncated
+
     def __init__(self, D=None, *args, **kwargs):
         _dictionary.Dictionary.__init__(self, *args, **kwargs)
         self._cache = {}
@@ -228,7 +230,14 @@ class Dictionary(DictMixin, ParamReaderMixin, _dictionary.Dictionary):
             try:
                 self.set_value(k, v)
             except TypeError:
-                self.set_value(k,s2a(v,pad=None))
+                try:
+                    self.set_value(k,s2a(v,pad=None))
+                except TypeError:
+                    vstr = repr(v).replace('\n', ' ').replace('\r', '')
+                    if len(vstr) > self._max_repr_length:
+                        vstr = '...'.join([vstr[:self._max_repr_length - 15],
+                                           vstr[-12:]])
+                    self.set_value(k, vstr)
 
     def __delitem__(self, k):
         if not k in self:

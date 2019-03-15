@@ -39,7 +39,7 @@ module CInOutput_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
   use Extendable_str_module, only: Extendable_str, operator(//), string, concat, assignment(=)
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
-       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case
+       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case, print_warning
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, &
@@ -173,6 +173,15 @@ module CInOutput_module
         character(kind=c_char), dimension(*) :: path
         character(kind=c_char), dimension(*) :: basename
      endsubroutine quip_basename_wrapper
+
+     function fmd5sum(filename,md5sum) bind(c,name="fmd5sum_")
+        use, intrinsic :: iso_c_binding, only : c_int, c_char
+        implicit none
+        integer(kind=c_int) :: fmd5sum
+        character(kind=c_char), dimension(*) :: filename
+        character(kind=c_char), dimension(33) :: md5sum
+     endfunction fmd5sum
+
   end interface
 
   integer, parameter :: XYZ_FORMAT = 1
@@ -266,7 +275,7 @@ module CInOutput_module
   end interface quip_basename
 
   public :: CInOutput, initialise, finalise, close, read, write
-  public :: quip_getcwd, quip_chdir, quip_dirname, quip_basename
+  public :: quip_getcwd, quip_chdir, quip_dirname, quip_basename, quip_md5sum
 
 contains
 
@@ -978,7 +987,7 @@ contains
     quip_getcwd = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_getcwd,c(i))
+       call concat(quip_getcwd,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)
@@ -1013,7 +1022,7 @@ contains
     quip_basename_char = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_basename_char,c(i))
+       call concat(quip_basename_char,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)
@@ -1042,7 +1051,7 @@ contains
     quip_dirname_char = ""
     do i = 1, n
        if( c(i) == C_NULL_CHAR ) exit
-       call concat(quip_dirname_char,c(i))
+       call concat(quip_dirname_char,c(i),no_trim=.true.)
     enddo
 
     deallocate(c)
@@ -1055,5 +1064,26 @@ contains
 
     quip_dirname_extendable_str = quip_dirname(string(path))
   endfunction quip_dirname_extendable_str
+
+  subroutine quip_md5sum(filename,md5sum,stat)
+     character(len=*), intent(in) :: filename
+     character(len=32), intent(out) :: md5sum
+     integer, intent(out), optional :: stat
+
+     integer :: my_stat
+     character(len=33) :: tmp_md5sum
+     logical :: l
+
+     my_stat = fmd5sum(trim(filename)//C_NULL_CHAR,tmp_md5sum)
+     if( my_stat /= 0 ) then
+        call print_warning("quip_md5sum: could not obtain md5 sum of "//trim(filename))
+        md5sum = ""
+     else
+        md5sum = tmp_md5sum(1:32)
+     endif
+
+     if(present(stat)) stat = my_stat
+
+  endsubroutine quip_md5sum
 
 end module CInOutput_module

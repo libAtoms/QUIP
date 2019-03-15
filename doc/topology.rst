@@ -17,8 +17,8 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-Utilities for topological analysis
-==================================
+Some utilities for topological analysis
+=======================================
 
 .. automodule:: quippy.topology
    :synopsis: utilities for topological analysis

@@ -29,10 +29,10 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IP module 
+!X IP module
 !X
-!% Contain objects for handling TB matrices (\texttt{type TBMatrix}) and vectors 
-!% (\texttt{type TBVector}). 
+!% Contain objects for handling TB matrices (\texttt{type TBMatrix}) and vectors
+!% (\texttt{type TBVector}).
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -41,7 +41,7 @@
 module TBMatrix_module
 
 use error_module
-use system_module, only : dp, current_verbosity, inoutput, PRINT_NORMAL, operator(//)
+use system_module, only : dp, current_verbosity, inoutput, PRINT_NORMAL, operator(//), optional_default
 use mpi_context_module
 use linearalgebra_module
 use atoms_module
@@ -69,7 +69,7 @@ type TBMatrix
   integer :: N = 0
   integer :: n_matrices = 0
   logical :: is_complex = .false.   !% Logical variable to define if matrix elements are complex
-  logical :: is_sparse = .false.    !% Logical variable to define if such matrix is sparse 
+  logical :: is_sparse = .false.    !% Logical variable to define if such matrix is sparse
 
   type(MatrixD), allocatable :: data_d(:)
   type(MatrixZ), allocatable :: data_z(:)
@@ -102,6 +102,12 @@ public :: Print
 interface Print
   module procedure TBMatrix_Print, TBVector_Print
 end interface Print
+
+public :: copy
+interface copy
+  module procedure TBMatrix_copy_d
+  module procedure TBMatrix_copy_z
+end interface copy
 
 public :: add_block
 interface add_block
@@ -192,6 +198,12 @@ public :: transpose_sub
 interface transpose_sub
   module procedure TBMatrix_transpose_sub
 end interface transpose_sub
+
+
+public :: make_hermitian
+interface make_hermitian
+  module procedure TBMatrix_make_hermitian
+end interface make_hermitian
 
 contains
 
@@ -417,18 +429,62 @@ subroutine TBMatrix_Print(this,file)
   if (allocated(this%sdata_d)) then
     do i=1, size(this%sdata_d)
       call Print ('TBMatrix : sdata_d ' // i, file=file)
-      call Print(this%sdata_d(i), file=file)
+      call print_simple(this%sdata_d(i), file=file)
+      !call Print(this%sdata_d(i), file=file)
     end do
   endif
 
   if (allocated(this%sdata_z)) then
     do i=1, size(this%sdata_z)
       call Print ('TBMatrix : sdata_z ' // i, file=file)
+      !call print_simple(this%sdata_z(i), file=file)
       call Print(this%sdata_z(i), file=file)
     end do
   endif
 
 end subroutine  TBMatrix_Print
+
+subroutine TBMatrix_copy_d(this, data_d, index)
+  type(TBMatrix),    intent(in)           :: this
+  real(dp), intent(inout), dimension(:,:) :: data_d
+  integer, optional, intent(in) :: index
+  integer my_index
+
+  my_index = optional_default(1, index)
+
+  call Print('TBMatrix : ')
+  call Print ('TBMatrix : N n_matrices ' // this%N // " " // this%n_matrices)
+  call Print ('TBMatrix : is_complex ' // this%is_complex)
+
+  if (allocated(this%data_d)) then
+    if (my_index > size(this%data_d)) call system_abort("index > size(data_d)")
+    data_d(:,:) = this%data_d(my_index)%data
+  else if (allocated(this%sdata_d)) then
+    if (my_index > size(this%sdata_d)) call system_abort("index > size(sdata_d)")
+    call copy(this%sdata_d(my_index), data_d)
+  endif
+end subroutine TBmatrix_copy_d
+
+subroutine TBMatrix_copy_z(this, data_z, index)
+  type(TBMatrix),    intent(in)           :: this
+  complex(dp), intent(inout), dimension(:,:) :: data_z
+  integer, optional, intent(in) :: index
+  integer my_index
+
+  my_index = optional_default(1, index)
+
+  call Print('TBMatrix : ')
+  call Print ('TBMatrix : N n_matrices ' // this%N // " " // this%n_matrices)
+  call Print ('TBMatrix : is_complex ' // this%is_complex)
+
+  if (allocated(this%data_z)) then
+    if (my_index > size(this%data_z)) call system_abort("index > size(data_z)")
+    if (any(shape(data_z) /= shape(this%data_z(my_index)%data))) call system_abort("data_z size mismatch")
+    data_z(:,:) = this%data_z(my_index)%data
+  else if (allocated(this%sdata_z)) then
+    call copy(this%sdata_z(my_index), data_z)
+  endif
+end subroutine TBMatrix_copy_z
 
 subroutine TBVector_Initialise(this, N, n_vectors, is_complex)
   type(TBVector), intent(inout) :: this
@@ -555,11 +611,12 @@ subroutine TBMatrix_add_block_z(this, im, block, block_nr, block_nc, first_row, 
 
 end subroutine TBMatrix_add_block_z
 
-subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
+subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBMatrix), intent(in) :: overlap
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -573,27 +630,28 @@ subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   endif
   PASS_ERROR(error)
 end subroutine TBMatrix_diagonalise_gen
 
-subroutine TBMatrix_diagonalise(this, evals, evecs, error)
+subroutine TBMatrix_diagonalise(this, evals, evecs, ignore_symmetry, error)
   type(TBMatrix), intent(in) :: this
   type(TBVector), intent(inout) :: evals
   type(TBMatrix), intent(inout), optional :: evecs
+  logical, intent(in), optional :: ignore_symmetry
   integer, intent(out), optional :: error
 
   integer i
@@ -607,17 +665,17 @@ subroutine TBMatrix_diagonalise(this, evals, evecs, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry = ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), evals%data_d(:,i), error = error)
+	call diagonalise(this%data_d(i), evals%data_d(:,i), ignore_symmetry = ignore_symmetry, error = error)
       endif
     end do
   endif
@@ -754,7 +812,7 @@ end function TBMatrix_partial_TraceMult_spinor
 function TBMatrix_Re_diag(a)
   type(TBMatrix), intent(in) :: a
   real(dp) :: TBMatrix_Re_diag(a%N, a%n_matrices)
-  
+
   integer im
 
   do im=1, a%n_matrices
@@ -770,7 +828,7 @@ end function TBMatrix_Re_diag
 function TBMatrix_diag_spinor(a)
   type(TBMatrix), intent(in) :: a
   complex(dp) :: TBMatrix_diag_spinor(2,2,a%N/2, a%n_matrices)
-  
+
   integer im
 
   do im=1, a%n_matrices
@@ -903,7 +961,7 @@ subroutine TBMatrix_multDiag(this, A, diag)
   type(TBMatrix), intent(inout) :: this
   type(TBMatrix), intent(in) :: A
   type(TBVector), intent(in) :: diag
-  
+
   integer im
 
   if (this%N /= diag%N) then
@@ -937,7 +995,7 @@ subroutine TBMatrix_multDiag_d(this, A, diag)
   type(TBMatrix), intent(inout) :: this
   type(TBMatrix), intent(in) :: A
   real(dp), intent(in) :: diag(:)
-  
+
   integer im
 
   if (this%N /= size(diag)) then
@@ -964,7 +1022,7 @@ subroutine TBMatrix_multDiag_z(this, A, diag)
   type(TBMatrix), intent(inout) :: this
   type(TBMatrix), intent(in) :: A
   complex(dp), intent(in) :: diag(:)
-  
+
   integer im
 
   if (this%N /= size(diag)) then
@@ -990,7 +1048,7 @@ subroutine TBMatrix_multDiagRL_d(this, A, diag)
   type(TBMatrix), intent(inout) :: this
   type(TBMatrix), intent(in) :: A
   real(dp) :: diag(:)
-  
+
   integer im
 
   if (this%N /= size(diag)) &
@@ -1084,7 +1142,7 @@ subroutine TBMatrix_matrix_product_sub(C, A, B, A_transpose, A_conjugate, B_tran
 	      call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
 	    call matrix_product_sub(C%data_z(im), A%data_d(im), B%data_z(im), a_transp .or. a_conjg, b_transpose, b_conjugate)
 	  endif
-	else 
+	else
 	  call system_abort ("No TBMatrix_matrix_product_sub for C = R R")
 	endif
       endif
@@ -1231,5 +1289,22 @@ subroutine TBMatrix_transpose_sub(this, m)
   end do
 
 end subroutine TBMatrix_transpose_sub
+
+subroutine TBMatrix_make_hermitian(this)
+  type(TBMatrix), intent(inout) :: this
+
+  integer :: im
+
+  if (this%is_sparse) call system_abort("Can't do TBMatrix_make_hermitian on a sparse TBMatrix")
+
+  do im=1, this%n_matrices
+    if (this%is_complex) then
+      call make_hermitian(this%data_z(im))
+    else
+      call make_hermitian(this%data_d(im))
+    endif
+  end do
+
+end subroutine TBMatrix_make_hermitian
 
 end module TBMatrix_module

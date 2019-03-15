@@ -44,6 +44,10 @@ endif
 include Makefile.inc
 include Makefile.rules
 
+# indicator that compiler is not set up properly
+ifeq (${SIZEOF_FORTRAN_T},)
+  $(error SIZEOF_FORTRAN_T is not set. Check compiler and re-run 'make config')
+endif
 
 LIBATOMS_F95_FILES = \
   error \

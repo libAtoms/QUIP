@@ -1901,22 +1901,28 @@ contains
   end function real_array_cat_string
 
   pure function real_format_length(r) result(len)
-    real(dp), intent(in)::r
-    integer::len
+    real(dp), intent(in) :: r
+    integer :: len
+    integer :: space_for_sign, space_for_exponent
+    character(len=256) :: tmp
 
     if(isnan(r)) then
        len = 3
-    else       !         sign                           int part         space?          decimal point                                                        fractional part
-       len = int(0.5_dp-sign(0.5_dp,r)) + int(log10(max(1.0_dp,abs(r)))) + 1 + & 
-           & int(sign(0.5_dp,real(mainlog%default_real_precision,dp)-0.5_dp)+0.5_dp) &
-           & + max(0,mainlog%default_real_precision)
+    elseif( mainlog%default_real_precision > 0 .or. abs(r) > huge(1) / 10 ) then
+       space_for_sign = int(0.5_dp-sign(0.5_dp,r))
+       space_for_exponent = merge(0,5,abs(r) > 0.1_dp .and. abs(r) < 10.0_dp**mainlog%default_real_precision )
+       !     NULL/-           .   12345                                                                         NULL/E-000
+       len = space_for_sign + 1 + merge(mainlog%default_real_precision,15,mainlog%default_real_precision > 0) + space_for_exponent
+    else
+       write(tmp,'(i0)') int(r)
+       len = len_trim(tmp)
+    end if
 
 #ifdef GFORTRAN_ZERO_HACK
-       !gfortran hack - 0.0000... is printed as .00000000
-       if (r == 0.0) len = len - 1
+    !gfortran hack - 0.0000... is printed as .00000000
+    if (r == 0.0_dp) then len = len - 1
 #endif
 
-    end if
   end function real_format_length
 
   pure function complex_format_length(c) result(len)
@@ -1930,38 +1936,52 @@ contains
     character(*),      intent(in)  :: string
     real(dp),          intent(in)  :: r
     ! we work out the exact length of the resultant string
-    character( len(string)+real_format_length(r)) :: real_cat_string
+    character( len(string)+real_format_length(r) ) :: real_cat_string
     character(12) :: format
 
-    if (mainlog%default_real_precision > 0) then
-       write(format,'(a,i0,a)')'(f0.',max(0,mainlog%default_real_precision),',a)'
-       if (isnan(r)) then
-          write(real_cat_string,'(a,a)') "NaN", string
+    integer :: len_r
+
+    len_r = real_format_length(r)
+
+    if (isnan(r)) then
+       write(real_cat_string,'(a,a)') "NaN", string
+    elseif( mainlog%default_real_precision > 0 .or. abs(r) > huge(1) / 10 ) then
+       if( abs(r) > 0.1_dp .and. abs(r) < 10.0_dp**mainlog%default_real_precision ) then
+          write(format,'(a,i0,a,i0,a)')'(f',len_r,'.',mainlog%default_real_precision-floor(log10(abs(r)))-1,',a)'
        else
-          write(real_cat_string,format) r, string
+          write(format,'(a,i0,a,i0,a)')'(e',len_r,'.',merge(mainlog%default_real_precision,15,mainlog%default_real_precision > 0),'E3,a)'
        endif
+       write(real_cat_string,format) r, string
     else
        write(real_cat_string,'(i0,a)') int(r), string
-    end if
+    endif
+
   end function real_cat_string
 
-  function string_cat_real(string, r)
+  function string_cat_real(string,r)
     character(*),      intent(in)  :: string
     real(dp),          intent(in)  :: r
     ! we work out the exact length of the resultant string
-    character( len(string)+real_format_length(r)) :: string_cat_real
+    character( len(string)+real_format_length(r) ) :: string_cat_real
     character(12) :: format
 
-    if (mainlog%default_real_precision > 0) then
-       if (isnan(r)) then
-	 write(string_cat_real,'(a,a)') string,"NaN"
+    integer :: len_r
+
+    len_r = real_format_length(r)
+
+    if (isnan(r)) then
+       write(string_cat_real,'(a,a)') string, "NaN"
+    elseif( mainlog%default_real_precision > 0 .or. abs(r) > huge(1) / 10 ) then
+       if( abs(r) > 0.1_dp .and. abs(r) < 10.0_dp**mainlog%default_real_precision ) then
+          write(format,'(a,i0,a,i0,a)')'(a,f',len_r,'.',mainlog%default_real_precision-floor(log10(abs(r)))-1,')'
        else
-	 write(format,'(a,i0,a)')'(a,f0.',max(0,mainlog%default_real_precision),')'
-	 write(string_cat_real,format) string, r
+          write(format,'(a,i0,a,i0,a)')'(a,e',len_r,'.',merge(mainlog%default_real_precision,15,mainlog%default_real_precision > 0),'E3)'
        endif
+       write(string_cat_real,format) string, r
     else
-       write(string_cat_real,'(a,i0)') string, int(r)
-    end if
+       write(string_cat_real,'(i0,a)') string, int(r)
+    endif
+
   end function string_cat_real
 
   function string_cat_complex(string, c)
@@ -1971,13 +1991,8 @@ contains
     character( len(string)+complex_format_length(c)) :: string_cat_complex
     character(24) :: format
 
-    if (mainlog%default_real_precision > 0) then
-       write(format,'(a,i0,a,i0,a)')'(a,f0.',max(0,mainlog%default_real_precision),'," ",f0.', &
- 	                                     max(0,mainlog%default_real_precision),')'
-       write(string_cat_complex,format) string, c
-    else
-       write(string_cat_complex,'(i0," ",i0)') string, int(real(c)), int(imag(c))
-    end if
+    string_cat_complex = string//real(c)//","//aimag(c)
+
   end function string_cat_complex
 
 
@@ -2204,9 +2219,10 @@ contains
 #endif
   end subroutine system_finalise
 
-  !% Print a warning message to default mainlog, but don't quit
+  !% Print a warning message to log
   subroutine print_warning(message)
     character(*), intent(in) :: message
+    !write (0,*) 'WARNING: '//message
     call print('WARNING: '//message)
   end subroutine print_warning
 
@@ -2480,7 +2496,7 @@ contains
 
    subroutine current_times(cpu_t, wall_t, mpi_t)
       real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
-      integer wall_t_count, count_rate, max_count
+      integer(kind=8) wall_t_count, count_rate, max_count
 #ifdef _MPI
      include "mpif.h"
 #endif
@@ -3363,6 +3379,7 @@ end function pad
     end do
   end function lower_case
 
+  !% Print a progress bar
   subroutine progress(total,current, name)
      integer, intent(in) :: total, current
      character(len=*), intent(in) :: name
@@ -3382,12 +3399,69 @@ end function pad
           bar(6+k:6+k)="*"
         enddo
         ! print the progress bar.
-        write(unit=mainlog%unit,fmt="(a1,a,$)") ,char(13), trim(name) // " " // bar
+        write(unit=mainlog%unit,fmt="(a1,a,$)") char(13), trim(name) // " " // bar
      else
         write(unit=mainlog%unit,fmt=*)
      endif
 
    end subroutine progress
+
+  !% Print a progress bar with an estimate of time to completion
+  !% based on the elapsed time so far
+  subroutine progress_timer(total, current, name, elapsed_seconds)
+     integer, intent(in) :: total, current
+     character(len=*), intent(in) :: name
+     real(dp), intent(in) :: elapsed_seconds
+
+     integer :: current_percent, k
+     real(dp) :: elapsed_time, estimated_time
+     character(len=1) :: time_units
+
+     character(len=27) :: bar
+
+     bar="???% |                    |"
+
+     if(total >= current) then
+        current_percent = ceiling( 100.0_dp * real(current,dp) / real(total,dp) )
+        estimated_time = elapsed_seconds * real(total,dp) / real(current,dp)
+
+        write(unit=bar(1:3),fmt="(i3)") current_percent
+
+        ! fill the progress bar
+        do k = 1, current_percent / 5
+          bar(6+k:6+k)="*"
+        enddo
+        ! convert time to readable units
+        if (estimated_time / 60.0_dp > 2.0_dp) then
+            if (estimated_time / 3600.0_dp > 2.0_dp) then
+                if (estimated_time / 86400.0_dp > 3.0_dp) then
+                    elapsed_time = elapsed_seconds / 86400.0_dp
+                    estimated_time = estimated_time / 86400.0_dp
+                    time_units = 'd'
+                else
+                    elapsed_time = elapsed_seconds / 3600.0_dp
+                    estimated_time = estimated_time / 3600.0_dp
+                    time_units = 'h'
+                endif
+            else
+                elapsed_time = elapsed_seconds / 60.0_dp
+                estimated_time = estimated_time / 60.0_dp
+                time_units = 'm'
+            endif
+        else
+            elapsed_time = elapsed_seconds
+            time_units = 's'
+        endif
+
+        ! print the progress bar.
+        write(unit=mainlog%unit,fmt="(a1,a,f5.1,a,f5.1,a)",advance="no") char(13), &
+            trim(name) // " " // bar // " ", &
+            elapsed_time, " / ", estimated_time, " " // time_units
+     else
+        write(unit=mainlog%unit,fmt=*)
+     endif
+
+   end subroutine progress_timer
 
 
 end module system_module

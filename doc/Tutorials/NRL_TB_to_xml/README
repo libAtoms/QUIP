@@ -1,0 +1,20 @@
+Set QUIP_ARCH environment variable
+  export QUIP_ARCH=your_quip_arch # for sh/bash
+or
+  setenv QUIP_ARCH your_quip_arch # for csh/tcsh
+
+Set QUIP_ROOT environment variable to the path to your top level QUIP
+  source directory (where the src/, subdirectory is)
+
+Configure the build, TB must be enabled
+  make config
+
+Create executables
+  make src/Programs/NRL_TB_to_xml
+
+Fix TBMD format input file (let's call it nrl_tb_param_file), as downloaded
+  from http://cst-www.nrl.navy.mil/bind by adding after each atomic mass
+  the atomic number for that element
+
+Create XML format NRL-TB parameter file for QUIP
+  ${QUIP_ROOT}/build/${QUIP_ARCH}/NRL_TB_to_xml tightbind.parms.NRL_TB.element_name.xml < nrl_tb_param_file

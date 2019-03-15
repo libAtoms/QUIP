@@ -40,8 +40,11 @@ if (major, minor) < (2, 4):
 
 def find_quip_root_and_arch():
     """Find QUIP root directory."""
-    quip_root = os.path.abspath(os.path.join(os.getcwd(), '../'))
-    os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
+    if not 'QUIP_ROOT' in os.environ:
+        quip_root = os.path.abspath(os.path.join(os.getcwd(), '../'))
+        os.environ['QUIP_ROOT'] = quip_root # export to enviroment for Makefile variables
+    else:
+        quip_root = os.environ['QUIP_ROOT']
 
     if not 'QUIP_ARCH' in os.environ:
         raise ValueError('QUIP_ARCH environment variable not set')
@@ -246,11 +249,11 @@ def find_wrap_sources(makefile, quip_root):
 
     libatoms_dir   = os.path.join(quip_root, 'src/libAtoms/')
     wrap_sources += [os.path.join(libatoms_dir, s) for s in
-                     ['System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95', 
-                     'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
-                     'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95', 'Spline.f95',
-		     'frametools.f95', 'Topology.f95', 'find_surface_atoms.f95', 'ringstat.f95', 'angular_functions.f95',
-                     'steinhardt_nelson_qw.f95', 'nye_tensor.f95']]
+                     ['error.f95', 'System.f95', 'ExtendableStr.f95', 'MPI_context.f95', 'Units.f95', 'linearalgebra.f95', 'Quaternions.f95',
+                      'Dictionary.f95', 'Table.f95', 'PeriodicTable.f95', 'Atoms_types.f95', 'Atoms.f95', 'Connection.f95', 'DynamicalSystem.f95',
+                      'clusters.f95','Structures.f95', 'DomainDecomposition.f95', 'CInOutput.f95', 'ParamReader.f95', 'Spline.f95',
+                      'frametools.f95', 'Topology.f95', 'find_surface_atoms.f95', 'ringstat.f95', 'angular_functions.f95',
+                      'steinhardt_nelson_qw.f95', 'nye_tensor.f95']]
     wrap_types += ['inoutput', 'mpi_context', 'dictionary', 'table', 'atoms', 'connection', 'quaternion',
                    'dynamicalsystem', 'domaindecomposition', 'cinoutput', 'extendable_str', 'spline']
     source_dirs.append(libatoms_dir)
@@ -263,7 +266,7 @@ def find_wrap_sources(makefile, quip_root):
         libraries = ['gap_predict'] + libraries
         targets.extend([(quip_root, 'GAP')])
         wrap_sources += [os.path.join(quip_root, 'src/GAP', 'descriptors.f95')]
-        wrap_types += ['descriptor']
+        wrap_types += ['descriptor', 'soap', 'general_monomer']
 
     if 'HAVE_GAP_FILLER' in makefile and int(makefile['HAVE_GAP_FILLER']) == 1:
         gp_dir = os.path.join(quip_root, 'src/GAP-filler')
@@ -418,7 +421,10 @@ if 'QUIPPY_INSTALL_OPTS' in makefile:
     install_opts = makefile['QUIPPY_INSTALL_OPTS'].split()
     default_options['install'] = {}
     for opt in install_opts:
-        n, v = opt.split('=')
+        if '=' in opt:
+            n, v = opt.split('=')
+        else:
+            n, v = opt, True
         n = n[2:] # remove --
         default_options['install'][n] = v
 

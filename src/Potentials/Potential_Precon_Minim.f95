@@ -3,11 +3,11 @@
 module Potential_Precon_Minim_module
 
 
-  use Potential_Module, only : Potential, potential_minimise, energy_func, gradient_func, cutoff, max_rij_change, calc, print_hook, constrain_virial_post, fix_atoms_deform_grad, pack_pos_dg, unpack_pos_dg, prep_atoms_deform_grad
+  use Potential_Module, only : Potential, potential_minimise, energy_func, gradient_func, cutoff, max_rij_change, calc, print_hook, constrain_virial, fix_atoms_deform_grad, pack_pos_dg, unpack_pos_dg, prep_atoms_deform_grad
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
    optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push,verbosity_push_increment, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
-  use units_module, only : GPA
+  use units_module, only : EV_A3_IN_GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
   use linearalgebra_module , only : norm, trace, matrix3x3_det, normsq, least_squares, add_identity, inverse, diagonalise, symmetric_linear_solve, operator(.fne.), operator(.mult.), operator(.feq.), print
@@ -1184,10 +1184,10 @@ module Potential_Precon_Minim_module
 
       f = transpose(deform_grad) .mult. f
 
+      call constrain_virial(am%minim_at, virial)
+
       call inverse(deform_grad, deform_grad_inv)
       virial = virial .mult. transpose(deform_grad_inv)
-
-      call constrain_virial_post(am%minim_at, virial)
 
       call pack_pos_dg(-f, -virial, gradient_inout, 1.0_dp/am%pos_lat_preconditioner_factor)
     end if

@@ -17,8 +17,10 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import logging
+import os
 import weakref
 from math import sqrt
+from os import path
 
 import numpy as np
 
@@ -152,8 +154,10 @@ with `atoms` to the new :class:`Potential` instance, by calling
             if init_args is None:
                 init_args = 'callbackpot'
 
+        param_dirname = None
         if param_filename is not None:
             param_str = open(param_filename).read()
+            param_dirname = path.dirname(param_filename) or None
 
         if init_args is None and param_str is None:
             raise ValueError('Need one of init_args,param_str,param_filename')
@@ -177,12 +181,22 @@ with `atoms` to the new :class:`Potential` instance, by calling
             else:
                 init_args = dict_to_args_str(kwargs)
 
-        _potential.Potential.__init__(self, init_args, pot1=pot1, pot2=pot2,
-                                         param_str=param_str,
-                                         bulk_scale=bulk_scale,
-                                         mpi_obj=mpi_obj,
-                                         fpointer=fpointer, finalise=finalise,
-                                         error=error)
+        # Change to the xml directory to initialise, so that extra files
+        # like sparseX can be found.
+        old_dir = os.getcwd()
+        try:
+            if param_dirname is not None:
+                os.chdir(param_dirname)
+
+            _potential.Potential.__init__(self, init_args,
+                                          pot1=pot1, pot2=pot2,
+                                          param_str=param_str,
+                                          bulk_scale=bulk_scale,
+                                          mpi_obj=mpi_obj,
+                                          fpointer=fpointer, finalise=finalise,
+                                          error=error)
+        finally:
+            os.chdir(old_dir)
 
         if init_args is not None and init_args.lower().startswith('callbackpot'):
             _potential.Potential.set_callback(self, Potential.callback)
@@ -417,6 +431,9 @@ with `atoms` to the new :class:`Potential` instance, by calling
                 else:
                     self.results[key] = self.quippy_atoms.info[key]
 
+
+    def get_potential_energy(self, atoms, force_consistent=True):
+        return self.get_property('energy', atoms)
 
     def get_potential_energies(self, atoms):
         """
@@ -694,30 +711,25 @@ class ForceMixingPotential(Potential):
                            atoms=atoms, fpointer=fpointer, finalise=finalise,
                            error=error)
         if qm_list is not None:
-            self.set_qm_atoms(qm_list)
+            self.set_qm_atoms(qm_list, atoms)
         self.set(**kwargs)
 
 
-    def get_qm_atoms(self):
+    def get_qm_atoms(self, atoms):
         """
         Return the current list of QM atom indices as a list
         """
-        if self.atoms is None:
-            raise RuntimeError('No atoms assocated with this ForceMixingPotential!')
         return list((self.atoms.hybrid == HYBRID_ACTIVE_MARK).nonzero()[0])
 
 
-    def set_qm_atoms(self, qm_list):
+    def set_qm_atoms(self, qm_list, atoms):
         """
         Set the QM atoms, given as a list of atom indices
         """
-        if self.atoms is None:
-            raise RuntimeError('No atoms assocated with this ForceMixingPotential!')
-        if not self.atoms.has_property('hybrid'):
-            self.atoms.add_property('hybrid', HYBRID_NO_MARK)
-        self.atoms.hybrid[:] = HYBRID_NO_MARK
-        self.atoms.hybrid[qm_list] = HYBRID_ACTIVE_MARK
-
+        if not atoms.has_property('hybrid'):
+            atoms.add_property('hybrid', HYBRID_NO_MARK)
+        atoms.hybrid[:] = HYBRID_NO_MARK
+        atoms.hybrid[qm_list] = HYBRID_ACTIVE_MARK
 
 
 def force_test(at, p, dx=1e-4):

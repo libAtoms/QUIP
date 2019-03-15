@@ -247,8 +247,9 @@ subroutine calc_binning_effective_N(data, over_bins, effective_N)
 
 	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
 	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
-	    bin_size_d = bin_size_d * 4
+	    bin_size_d = bin_size_d * 2
 	 end do
+         call print("", verbosity=PRINT_VERBOSE)
 
 	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
 
@@ -271,8 +272,9 @@ subroutine calc_binning_effective_N(data, over_bins, effective_N)
 
 	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
 	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
-	    bin_size_d = bin_size_d * 4
+	    bin_size_d = bin_size_d * 2
 	 end do
+         call print("", verbosity=PRINT_VERBOSE)
 
 	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
 
@@ -313,11 +315,14 @@ program mean_var_correl
 use libatoms_module
 use mean_var_correl_util_mod
 implicit none
-  integer :: n_bins, n_data, i, j, bin_i, skip, max_frame
-  real(dp), allocatable :: data(:,:), dummy(:)
+  integer :: n_bins, n_data, n_weights, i, j, bin_i, skip, max_frame
+  logical :: do_weights
+  real(dp), allocatable :: data(:,:), weights(:), data_line(:), data_t(:,:), weights_t(:), weighted_data(:,:)
+  integer :: stat, new_data_array_size
   character(len=128), allocatable :: bin_labels(:)
   type(Dictionary) :: cli_params, data_params
   logical :: do_mean, do_var, do_histogram, do_correl, correlation_subtract_mean, do_correlation_var_effective_N, do_summed_ac_effective_N, do_sliding_window_effective_N, do_binning_effective_N, do_exp_smoothing
+  logical :: do_bimod
   real(dp) :: exp_smoothing_time
   integer :: exp_smoothing_bin_i
   integer :: histogram_n_bins
@@ -327,6 +332,7 @@ implicit none
   character(len=102400) :: myline
   type(inoutput) :: infile, outfile
   real(dp), allocatable :: data_mean(:), data_var(:), data_correl(:,:), data_histogram(:,:,:), data_histogram_data(:,:,:), data_histogram_correl(:,:)
+  real(dp), allocatable :: data_bimod(:), data_3_mom(:), data_4_mom(:)
   real(dp), allocatable :: smooth_data_v(:)
   integer :: reduction_index, other_index, sz, r_sz, correlation_max_lag, n_correl_print, correlation_var_effective_N_long_lag, sliding_window_effective_N_max_k, summed_ac_effective_N_max_lag
   logical :: over_bins, over_time
@@ -345,6 +351,7 @@ implicit none
   call param_register(cli_params, "exp_smoothing_time", "100", exp_smoothing_time, help_string="time constant for exponential smoothing (in units of frames). 0 => no smoothing")
   call param_register(cli_params, "exp_smoothing_bin_i", "0", exp_smoothing_bin_i, help_string="bin to evaluate for exponential smoothing")
   call param_register(cli_params, "variance", "F", do_var, help_string="calculate variance")
+  call param_register(cli_params, "bimodality", "F", do_bimod, help_string="calculate Sarle's bimodality coefficient")
   call param_register(cli_params, "correlation_var_effective_N", "F", do_correlation_var_effective_N, help_string="calculate effective N from ratio of initial variance to long time autocorrelation variance")
   call param_register(cli_params, "correlation_var_effective_N_long_lag", "1001", &
     correlation_var_effective_N_long_lag, help_string="lag after which autocorrelation is assumed to be in long time regime (for effective_N calculation)")
@@ -394,8 +401,9 @@ implicit none
   endif
 
   call initialise(data_params)
-  call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(data_params, "n_data", param_mandatory, n_data, help_string="No help yet.  This source file was $LastChangedBy$")
+  call param_register(data_params, "n_bins", param_mandatory, n_bins, help_string="number of bins at each data timepoint")
+  call param_register(data_params, "n_data", '-1', n_data, help_string="number of data timepoints, < 0 to figure out from length of file")
+  call param_register(data_params, "do_weights", 'F', do_weights, help_string="If true, do weighted mean")
 
   call initialise(infile, infile_name, INPUT)
   myline=read_line(infile) ! comment
@@ -403,48 +411,173 @@ implicit none
   if (.not.param_read_line(data_params, trim(myline), ignore_unknown=.false.)) &
     call system_abort("Couldn't parse n_bins or n_data in 2nd line of file")
 
+  if (do_weights) then
+    if (over_bins) call system_abort("Can't do weighted mean over bins")
+    n_weights = 1
+  else
+    n_weights = 0
+  end if
+
   allocate(bin_labels(n_bins))
   do i=1, n_bins
     bin_labels(i) = read_line(infile)
   end do
-  if(max_frame > 0 .and. max_frame <= n_data) then
-     n_data = max_frame
-  end if
+  allocate(data_line(n_bins+n_weights))
   if(skip > 0) then
-     allocate(dummy(n_bins))
      do i=1,skip
-        call read_ascii(infile, dummy(:))
+        call read_ascii(infile, data_line(:))
      end do
      n_data = n_data-skip
-     deallocate(dummy)
   end if
-  allocate(data(n_bins, n_data))
-  do i=1, n_data
-    call read_ascii(infile, data(:,i))
-  end do
-
+  if (n_data > 0) then
+      if(max_frame > 0 .and. max_frame <= n_data) then
+         n_data = max_frame
+      end if
+      allocate(data(n_bins, n_data))
+      if (n_weights > 0) then
+        allocate(weights(n_data))
+      endif
+      do i=1, n_data
+        call read_ascii(infile, data_line(:))
+        if (n_weights > 0) then
+            weights(i) = data_line(1)
+            data(:,i) = data_line(2:)
+        else
+            data(:,i) = data_line(:)
+        endif
+      end do
+  else ! n_data <= 0, figure out by reading
+      print *, "doing n_data = 0"
+      ! initial counters and storage
+      n_data = 0
+      allocate(data(n_bins,1))
+      if (n_weights > 0) allocate(weights(1))
+      ! read a line
+      do while (.true.)
+          call read_ascii(infile, data_line(:), stat)
+          if (stat < 0 .or. (max_frame > 0 .and. n_data == max_frame)) then ! end
+              ! if we have extra space, reallocate to precise space
+              if (size(data,2) /= n_data) then
+                  ! allocate temporary space
+                  allocate(data_t(n_bins, n_data))
+                  ! copy into temporary
+                  data_t = data(:,1:n_data)
+                  ! reallocate intended space to exact size
+                  deallocate(data)
+                  allocate(data(n_bins, n_data))
+                  data = data_t
+                  ! clear up temporary
+                  deallocate(data_t)
+                  ! do the same for weights
+                  if (n_weights > 0) then
+                      allocate(weights_t(n_data))
+                      weights_t = weights(1:n_data)
+                      deallocate(weights)
+                      allocate(weights(n_data))
+                      weights = weights_t
+                      deallocate(weights_t)
+                  endif
+              endif
+              exit ! from while loop
+          elseif (stat == 0) then ! add this line
+              ! if we don't have space for additional entry, reallocate it
+              if (n_data >= size(data,2)) then
+                ! allocate temporary space
+                allocate(data_t(n_bins,n_data))
+                data_t = data
+                deallocate(data)
+                new_data_array_size = max(int(1.5*n_data),2)
+                allocate(data(n_bins, new_data_array_size))
+                data(1:n_bins,1:n_data) = data_t(:,:)
+                deallocate(data_t)
+                if (n_weights > 0) then
+                    allocate(weights_t(n_data))
+                    weights_t = weights
+                    deallocate(weights)
+                    allocate(weights(new_data_array_size))
+                    weights(1:n_data) = weights_t(:)
+                    deallocate(weights_t)
+                endif
+              endif
+              ! add additional entry
+              n_data = n_data + 1
+              if (n_weights > 0) then
+                  weights(n_data) = data_line(1)
+                  data(:,n_data) = data_line(2:)
+              else
+                  data(:,n_data) = data_line(:)
+              endif
+          else ! real error
+              call system_abort("Read error in data " // stat)
+          endif
+      end do ! while
+  endif
+  deallocate(data_line)
+  print *, "final n_data", n_data
 
   sz = size(data, other_index)
   r_sz = size(data, reduction_index)
 
-  allocate(data_mean(sz))
-  data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
-
   call initialise(outfile, outfile_name, OUTPUT)
 
-  if (do_var) then
+
+  allocate(data_mean(sz))
+  if (n_weights > 0) then
+      allocate(weighted_data(size(data,1),size(data,2)))
+      do i=1, n_data
+         weighted_data(:,i) = data(:,i) * weights(i)
+      end do
+      data_mean = sum(weighted_data,reduction_index) / sum(weights)
+      deallocate(weighted_data)
+  else
+      data_mean = sum(data,reduction_index)/real(size(data,reduction_index),dp)
+  endif
+
+  if (do_var .or. do_bimod) then
     allocate(data_var(sz))
     if (over_bins) then
       do i=1, sz
         data_var(i) = sum((data(:,i)-data_mean(i))**2)/size(data,reduction_index)
       end do
     else 
-      do i=1, sz
-        data_var(i) = sum((data(i,:)-data_mean(i))**2)/size(data,reduction_index)
-      end do
+      if (n_weights > 0) then
+          do i=1, sz
+            data_var(i) = sum(weights(:)*(data(i,:)-data_mean(i))**2)/sum(weights)
+          end do
+       else
+          do i=1, sz
+            data_var(i) = sum((data(i,:)-data_mean(i))**2)/size(data,reduction_index)
+          end do
+       endif
     endif
   endif
 
+  ! b = \frac{(\mu_3^2/\mu_2^3) + 1.0}{\mu_4/\mu_2^2},
+  if (do_bimod) then
+    allocate(data_bimod(sz))
+    allocate(data_3_mom(sz))
+    allocate(data_4_mom(sz))
+    if (over_bins) then
+      do i=1, sz
+        data_3_mom(i) = sum((data(:,i)-data_mean(i))**3)/size(data,reduction_index)
+        data_4_mom(i) = sum((data(:,i)-data_mean(i))**4)/size(data,reduction_index)
+      end do
+    else 
+      if (n_weights > 0) then
+          do i=1, sz
+            data_3_mom(i) = sum(weights(:)*(data(i,:)-data_mean(i))**3)/sum(weights)
+            data_4_mom(i) = sum(weights(:)*(data(i,:)-data_mean(i))**4)/sum(weights)
+          end do
+       else
+          do i=1, sz
+            data_3_mom(i) = sum((data(i,:)-data_mean(i))**3)/size(data,reduction_index)
+            data_4_mom(i) = sum((data(i,:)-data_mean(i))**4)/size(data,reduction_index)
+          end do
+       endif
+    endif
+    data_bimod = ((data_3_mom**2 / data_var**3) + 1.0) / (data_4_mom/data_var**2)
+    deallocate(data_3_mom, data_4_mom)
+  endif
 
   if (do_correl .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N) then
     call calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, correlation_subtract_mean, data_correl)
@@ -507,7 +640,7 @@ implicit none
     endif
   end if ! do_exp_smoothing
 
-  if (do_mean .or. do_var .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N .or. do_sliding_window_effective_N .or. do_binning_effective_N) then
+  if (do_mean .or. do_var .or. do_bimod .or. do_correlation_var_effective_N .or. do_summed_ac_effective_N .or. do_sliding_window_effective_N .or. do_binning_effective_N) then
     if (over_bins) then
       myline = "#"
     else
@@ -515,6 +648,7 @@ implicit none
     endif
     if (do_mean) myline = trim(myline) //" mean"
     if (do_var) myline = trim(myline) //" var N"
+    if (do_bimod) myline = trim(myline) //" bimod"
     if (do_correlation_var_effective_N) myline = trim(myline) // " correlation_var_effective_N correlation_var_effective_decorrel_time"
     if (do_summed_ac_effective_N) myline = trim(myline) // " summed_ac_effective_N summed_ac_effective_decorrel_time"
     if (do_sliding_window_effective_N) myline = trim(myline) // " sliding_window_effective_N sliding_window_effective_decorrel_time"
@@ -530,6 +664,7 @@ implicit none
       endif
       if (do_mean) myline = trim(myline) //" " // data_mean(i)
       if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
+      if (do_bimod) myline = trim(myline) //" " // data_bimod(i)
       if (do_correlation_var_effective_N) then
 	if (correlation_var_effective_N(i) > 0) then
 	  myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // (size(data,reduction_index)/correlation_var_effective_N(i))

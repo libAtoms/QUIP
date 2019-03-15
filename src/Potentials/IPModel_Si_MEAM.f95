@@ -239,11 +239,11 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
         tj = get_type(this%type_of_atomic_num, at%Z(j))
 
         if( r_ij < this%r_cut_phi(ti,tj) ) then
-            if(present(local_e) .or. present(e)) phi_ij = calc_y(this%phi(ti,tj),r_ij)
+            if(present(local_e) .or. present(e)) phi_ij = spline_value(this%phi(ti,tj),r_ij)
             if(present(local_e)) local_e(i) = local_e(i) + phi_ij*0.5_dp
             if(present(e)) e = e + phi_ij*0.5_dp
 
-            if(present(f) .or. present(virial) ) dphi_ij = calc_dy(this%phi(ti,tj),r_ij)
+            if(present(f) .or. present(virial) ) dphi_ij = spline_deriv(this%phi(ti,tj),r_ij)
             if(present(f)) then
                f(:,i) = f(:,i) + 0.5_dp*dphi_ij*u_ij
                f(:,j) = f(:,j) - 0.5_dp*dphi_ij*u_ij
@@ -253,15 +253,15 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
         if( (r_ij >= this%r_cut_rho(ti,tj)).or.(r_ij >= this%r_cut_f(ti,tj)) ) cycle
 
-        n_i = n_i + calc_y(this%rho(ti,tj),r_ij)
+        n_i = n_i + spline_value(this%rho(ti,tj),r_ij)
         if(present(f) .or. present(virial) ) then
-           dn_i_dr_ij = calc_dy(this%rho(ti,tj),r_ij)*u_ij
+           dn_i_dr_ij = spline_deriv(this%rho(ti,tj),r_ij)*u_ij
            if(present(f)) dn_i = dn_i + dn_i_dr_ij
            if(present(virial)) dn_i_drij_outer_rij = dn_i_drij_outer_rij + (dn_i_dr_ij .outer. u_ij) * r_ij
         endif
  
-        f_ij = calc_y(this%f(ti,tj),r_ij)
-        if(present(f) .or. present(virial)) df_ij = calc_dy(this%f(ti,tj),r_ij)
+        f_ij = spline_value(this%f(ti,tj),r_ij)
+        if(present(f) .or. present(virial)) df_ij = spline_deriv(this%f(ti,tj),r_ij)
 
         do nn = 1, n_neighbours(at,i)
 
@@ -274,11 +274,11 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
            theta_jik = dot_product(u_ij,u_ik) !cosine( at, i, j, k )
 
-           f_ik = calc_y(this%f(ti,tk),r_ik)
-           if(present(f) .or. present(virial)) df_ik = calc_dy(this%f(ti,tk),r_ik)
+           f_ik = spline_value(this%f(ti,tk),r_ik)
+           if(present(f) .or. present(virial)) df_ik = spline_deriv(this%f(ti,tk),r_ik)
 
-           g_jik = calc_y(this%g(ti,tj,tk),theta_jik)
-           if(present(f) .or. present(virial)) dg_jik = calc_dy(this%g(ti,tj,tk),theta_jik)
+           g_jik = spline_value(this%g(ti,tj,tk),theta_jik)
+           if(present(f) .or. present(virial)) dg_jik = spline_deriv(this%g(ti,tj,tk),theta_jik)
 
            n_i = n_i + 0.5_dp * f_ij * f_ik * g_jik
 
@@ -300,8 +300,8 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
         enddo
 
      enddo
-     if(present(local_e) .or. present(e)) U_i = calc_y(this%U(ti),n_i)
-     if(present(f) .or. present(virial)) dU_i = calc_dy(this%U(ti),n_i)
+     if(present(local_e) .or. present(e)) U_i = spline_value(this%U(ti),n_i)
+     if(present(f) .or. present(virial)) dU_i = spline_deriv(this%U(ti),n_i)
 
      if(present(local_e)) local_e(i) = local_e(i) + U_i
      if(present(e)) e = e + U_i
@@ -316,12 +316,12 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
            tj = get_type(this%type_of_atomic_num, at%Z(j))
            if( (r_ij >= this%r_cut_rho(ti,tj)).or.(r_ij >= this%r_cut_f(ti,tj)) ) cycle
 
-           drho_ij = calc_dy(this%rho(ti,tj),r_ij)
+           drho_ij = spline_deriv(this%rho(ti,tj),r_ij)
 
            f(:,j) = f(:,j) - dU_i * drho_ij * u_ij
 
-           f_ij = calc_y(this%f(ti,tj),r_ij)
-           df_ij = calc_dy(this%f(ti,tj),r_ij)
+           f_ij = spline_value(this%f(ti,tj),r_ij)
+           df_ij = spline_deriv(this%f(ti,tj),r_ij)
 
            dn_j = 0.0_dp
 
@@ -335,11 +335,11 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
               theta_jik = dot_product(u_ij,u_ik) !cosine( at, i, j, k )
 
-              f_ik = calc_y(this%f(ti,tk),r_ik)
-              df_ik = calc_dy(this%f(ti,tk),r_ik)
+              f_ik = spline_value(this%f(ti,tk),r_ik)
+              df_ik = spline_deriv(this%f(ti,tk),r_ik)
 
-              g_jik = calc_y(this%g(ti,tj,tk),theta_jik)
-              dg_jik = calc_dy(this%g(ti,tj,tk),theta_jik)
+              g_jik = spline_value(this%g(ti,tj,tk),theta_jik)
+              dg_jik = spline_deriv(this%g(ti,tj,tk),theta_jik)
 
               dn_j = dn_j +  df_ij * f_ik * g_jik * u_ij + &
                    & f_ij * f_ik * dg_jik * ( u_ik / r_ij - theta_jik * u_ij / r_ij )
@@ -359,40 +359,6 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
   endif
 
 endsubroutine IPModel_Si_MEAM_Calc   
-
-function calc_y(this,x)
-
-   type(Spline), intent(in) :: this
-   real(dp), intent(in)     :: x
-
-   real(dp)                 :: calc_y
-
-   if( x < min_knot(this) ) then
-       calc_y = this%yp1 * (x - min_knot(this))
-   elseif( x > max_knot(this) ) then
-       calc_y = this%ypn * (x - max_knot(this))
-   else
-       calc_y = spline_value(this,x)
-   endif
-
-endfunction calc_y
-
-function calc_dy(this,x)
-
-   type(Spline), intent(in) :: this
-   real(dp), intent(in)     :: x
-
-   real(dp)                 :: calc_dy
-
-   if( x < min_knot(this) ) then
-       calc_dy = this%yp1
-   elseif( x > max_knot(this) ) then
-       calc_dy = this%ypn
-   else
-       calc_dy = spline_deriv(this,x)
-   endif
-
-endfunction calc_dy
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X 

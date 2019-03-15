@@ -324,7 +324,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
           pair_e_ij = eam_spline_pair(this,ti,tj,r_ij_mag)
           if( present(local_e) .or. present(e) ) local_e_in(i) = local_e_in(i) + 0.5_dp * pair_e_ij
           if( present(f) .or. present(virial) .or. present(local_virial) ) dpair_e_ij = eam_spline_pair_deriv(this,ti, tj, r_ij_mag)
-          if( present(f) ) f_in(:,i) = f_in(:,i) + dpair_e_ij * r_ij_hat
+          if( present(f) ) f_in(:,i) = f_in(:,i) + 0.5 * dpair_e_ij * r_ij_hat
+          if( present(f) ) f_in(:,j) = f_in(:,j) - 0.5 * dpair_e_ij * r_ij_hat
           if( present(virial) .or. present(local_virial) ) local_virial_in(:,:,j) = local_virial_in(:,:,j) - 0.5_dp * dpair_e_ij * (r_ij_hat .outer. r_ij_hat) * r_ij_mag
        endif
 
@@ -623,7 +624,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-        read (value, *), parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
         call system_abort("Can't find n_types in Glue_params")
       endif

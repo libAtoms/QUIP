@@ -106,7 +106,7 @@ module linearalgebra_module
   public :: frobenius_norm
   public :: heap_sort, is_orthogonal, find_in_array, is_in_array, trace, trace_mult, diag
   public :: ran_normal3, matrix_exp, matrix3x3_det, matrix3x3_inverse, operator(.outer.), operator(.cross.)
-  public :: check_size, sort_array, trapezoidintegral, print, int_array_ge, int_array_gt, int_array_lt
+  public :: check_size, sort_array, trapezoidintegral, print, print_mathematica, int_array_ge, int_array_gt, int_array_lt
   public :: angle, unit_vector, random_unit_vector, arrays_lt, is_symmetric, permutation_symbol
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, pseudo_inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
@@ -115,6 +115,7 @@ module linearalgebra_module
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
   public :: is_diagonal, integerDigits
+  public :: make_hermitian
 
   logical :: use_intrinsic_blas = .false. 
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
@@ -367,6 +368,12 @@ module linearalgebra_module
      module procedure matrix_z_is_hermitian
   end interface
 
+  !% Test for matrix hermiticity (with floating point equals test).
+  private :: matrix_z_make_hermitian, matrix_d_make_hermitian
+  interface make_hermitian
+     module procedure matrix_z_make_hermitian, matrix_d_make_hermitian
+  end interface
+
   !% Test if matrix is square 
   private :: matrix_square, matrix_z_square, int_matrix_square, logical_matrix_square
   interface is_square
@@ -522,7 +529,7 @@ module linearalgebra_module
   private :: check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
   interface check_size
      module procedure check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
-     module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2
+     module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2, check_size_real_dim3
 #ifdef HAVE_QP
      module procedure check_size_quad_dim1, check_size_quad_dim1_s, check_size_quad_dim2
 #endif
@@ -725,6 +732,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -739,6 +747,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -755,6 +764,7 @@ CONTAINS
 
     integer  :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -771,6 +781,7 @@ CONTAINS
 
     integer :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
@@ -787,6 +798,7 @@ CONTAINS
 
     integer :: i
      
+!$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i)=vect(i)*matrix(:,i)
     end do
@@ -1546,17 +1558,21 @@ CONTAINS
   
   ! the following stuff only with lapack        
   ! diagonalise matrix, only symmetric case
-  subroutine matrix_diagonalise(this,evals,evects, error)
+  subroutine matrix_diagonalise(this,evals,evects, ignore_symmetry, error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     real(dp),intent(inout), target, optional, dimension(:,:) :: evects
+    logical, intent(in), optional :: ignore_symmetry
     integer, intent(out), optional :: error
 
+    logical :: use_ignore_symmetry
     real(8),allocatable::WORK(:), r8_evals(:)
     real(8), pointer :: r8_evects(:,:)
     integer::N,INFO,LWORK
 
     INIT_ERROR(error)
+
+    use_ignore_symmetry = optional_default(.false., ignore_symmetry)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_Diagonalise')
@@ -1564,7 +1580,7 @@ CONTAINS
     if (present(evects)) &
       call check_size('Eigenvector Array',evects,shape(this),'Matrix_Diagonalise')
 
-    if (is_symmetric(this)) then
+    if (use_ignore_symmetry .or. is_symmetric(this)) then
 
        LWORK=3*N
        allocate(WORK(LWORK))     
@@ -1610,20 +1626,25 @@ CONTAINS
 
   ! the following stuff only with lapack        
   ! diagonalise complex matrix, only hermitian positive definite case
-  subroutine matrix_z_diagonalise(this,evals,evects,error)
+  subroutine matrix_z_diagonalise(this,evals,evects,ignore_symmetry, error)
     complex(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(inout), dimension(:) ::evals
     complex(dp),intent(inout), optional, target, dimension(:,:) :: evects
+    logical, intent(in), optional :: ignore_symmetry
     integer, intent(out), optional :: error
+
     integer::N,INFO,LWORK
     integer NB
     integer, external :: ILAENV
 
+    logical :: use_ignore_symmetry
     complex(8), pointer :: z8_evects(:,:)
     real(8), allocatable :: r8_evals(:), RWORK(:)
     complex(8), pointer :: WORK(:)
 
     INIT_ERROR(error)
+
+    use_ignore_symmetry = optional_default(.false., ignore_symmetry)
 
     N=size(this,2)
     call check_size('Eigenvalue Vector',evals,N,'Matrix_z_Diagonalise')
@@ -1631,7 +1652,7 @@ CONTAINS
     if (present(evects)) &
       call check_size('Eigenvector Array',evects,shape(this),'Matrix_z_Diagonalise')
 
-    if (is_hermitian(this)) then
+    if (use_ignore_symmetry .or. is_hermitian(this)) then
 
        NB = ILAENV(1, "ZHETRD", "U", N, N, N, N)
        LWORK=(NB+1)*N
@@ -1680,7 +1701,7 @@ CONTAINS
 
   ! generalised eigenproblem
   ! just works for symmetric systems 
-  subroutine  matrix_diagonalise_generalised(this,other,evals,evects,error)
+  subroutine matrix_diagonalise_generalised(this,other,evals,evects,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(in), dimension(:,:) :: other
     real(dp),intent(inout), dimension(:) :: evals
@@ -2968,6 +2989,7 @@ CONTAINS
     real(dp) :: tmp
     character(len=1) :: jobu, jobvt
     integer :: lwork, info, i, j
+    integer(kind=8) :: lwork_min
 
     INIT_ERROR(error)
 
@@ -3018,7 +3040,20 @@ CONTAINS
     allocate(work(1))
     lwork = -1
     call dgesvd(jobu, jobvt, this%n, this%m, a, this%n, my_s, my_u, this%n, my_vt, this%m, work, lwork, info)
-    lwork = ceiling(work(1))
+    if( work(1) > huge(lwork) ) then ! optimal size of work is a bit too large.
+       ! that's the minimum size of the work array
+       lwork_min = max( 3*min(this%m, this%n) + max(this%n,this%m), 5*min(this%m,this%n) )
+       if( lwork_min > huge(lwork) ) then
+          RAISE_ERROR("LA_Matrix_SVD: temporary array for SVD would be too large.", error)
+       else
+          ! max out the work array
+          lwork = huge(lwork)
+       endif
+    else
+       ! otherwise just go with the optimum
+       lwork = ceiling(work(1))
+    endif
+       
     deallocate(work)
 
     allocate(work(lwork))
@@ -3613,14 +3648,15 @@ CONTAINS
 
   end subroutine matrix_z_print
 
-  subroutine matrix_print_mathematica(this, verbosity, file)
+  subroutine matrix_print_mathematica(label, this, verbosity, file)
+    character(len=*), intent(in) :: label
     real(dp),    intent(in), dimension(:,:)  :: this
     integer, optional                           :: verbosity
     type(inoutput), intent(in), optional        :: file
 
     integer i, j
 
-    call print("M = { ", verbosity, file)
+    call print(trim(label)//"  = { ", verbosity, file)
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
@@ -3639,14 +3675,15 @@ CONTAINS
     call print ("};", verbosity, file)
   end subroutine matrix_print_mathematica
 
-  subroutine matrix_z_print_mathematica(this, verbosity, file)
+  subroutine matrix_z_print_mathematica(label, this, verbosity, file)
+    character(len=*), intent(in) :: label
     complex(dp),    intent(in), dimension(:,:)  :: this
     integer, optional                           :: verbosity
     type(inoutput), intent(in), optional        :: file
 
     integer i, j
 
-    call print("M = { ", verbosity, file)
+    call print(trim(label)//" = { ", verbosity, file)
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
@@ -4784,6 +4821,45 @@ CONTAINS
     end if
 
   end subroutine check_size_real_dim2
+
+  subroutine check_size_real_dim3(arrayname,realarray,n,caller, error)
+
+    character(*),              intent(in) :: arrayname 
+    real(dp), dimension(:,:,:),intent(in) :: realarray 
+    integer,  dimension(:),    intent(in) :: n        
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error  
+
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed      
+    integer                            :: i          
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(realarray)) ) )
+    actual_size = shape(realarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       RAISE_ERROR(trim(caller) //': Size checking failed. Expected: ' // n // ', got: ' // actual_size, error)
+    end if
+
+  end subroutine check_size_real_dim3
 
 #ifdef HAVE_QP
   subroutine check_size_quad_dim1(arrayname,quadarray,n,caller,error)
@@ -7408,6 +7484,50 @@ CONTAINS
 !!$
 !!$   endfunction d_ln_fermi_dirac_function
 
+    subroutine matrix_z_make_hermitian(m, error)
+        complex(dp), intent(inout)  :: m(:,:)
+        integer, intent(out), optional :: error
+        integer i, j
+
+        complex(dp) :: v
+
+        INIT_ERROR(error)
+
+        if (.not. is_square(m)) then
+            RAISE_ERROR("matrix_z_make_hermitian got non-square matrix", error)
+        endif
+
+        do i=1, size(m,1)
+            do j=i, size(m,2)
+                v = 0.5_dp*(m(i,j) + conjg(m(j,i)))
+                m(i,j) = v
+                m(j,i) = conjg(v)
+            end do
+        end do
+    end subroutine matrix_z_make_hermitian
+
+
+    subroutine matrix_d_make_hermitian(m, error)
+        real(dp), intent(inout)  :: m(:,:)
+        integer, intent(out), optional :: error
+        integer i, j
+
+        real(dp) :: v
+
+        INIT_ERROR(error)
+
+        if (.not. is_square(m)) then
+            RAISE_ERROR("matrix_d_make_hermitian got non-square matrix", error)
+        endif
+
+        do i=1, size(m,1)
+            do j=i+1, size(m,2)
+                v = 0.5_dp*(m(i,j) + m(j,i))
+                m(i,j) = v
+                m(j,i) = v
+            end do
+        end do
+    end subroutine matrix_d_make_hermitian
 
 
 end module linearalgebra_module

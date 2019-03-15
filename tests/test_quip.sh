@@ -35,7 +35,7 @@ EOF
 
 error=0
 echo -n "$0: "
-${MPIRUN} $bindir/quip at_file=${TEST}.in.xyz E F V init_args='{IP SW}' test param_file=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml | grep 'test is OK' || error=1
+${MPIRUN} $bindir/quip atoms_filename=${TEST}.in.xyz E F V init_args='{IP SW}' test param_filename=$QUIP_ROOT/share/Parameters/ip.parms.SW.xml | grep 'test is OK' || error=1
 
 rm -f ${TEST}.*
 exit $error

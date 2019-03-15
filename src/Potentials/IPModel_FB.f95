@@ -312,14 +312,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *), parse_ip%n_types
+	read (value, *) parse_ip%n_types
       else
 	call system_abort("Can't find n_types in FB_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *), parse_ip%cutoff
+	read (value, *) parse_ip%cutoff
       else
 	call system_abort("Can't find cutoff in FB_params")
       endif

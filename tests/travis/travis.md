@@ -1,12 +1,21 @@
 Travis CI Build
 ============
 
-QUIP makes use of [Travis CI](travisci.org) for running build testing and regression tests for pushed commits. All of the Travis specific files are in the `tests/travis` directory. Some of the files need to be edited to build all features successfully:
+QUIP makes use of [Travis CI](travisci.org) for running build testing and regression tests for pushed commits. All builds can be viewed on the [Travis Website](https://travis-ci.org/libAtoms/QUIP). All of the Travis specific files are in the `tests/travis` directory. Some of the files need to be edited to build all features successfully:
 
 Setup
 -------
 
-The build should work as-is for basic builds. The `ALL` builds and documentation will fail on pull requests since they cannot access the dependencies or push to the repository. To set up the build to work for these the [Travis Client](https://github.com/travis-ci/travis.rb) Is needed to encrypt sensitive data. Install this and work from inside a clone of the repository.
+The build should work as-is for basic builds:
+
+* On push requests only `VANILLA` configurations will be built, and only for the default compiler set, all other configurations will run but not do anything (so appearing as successful jobs).
+* Daily cron jobs will build the `ALL` configurations (i.e. including all modules like GAP and ThirdParty) and refresh the documentation (setup for crons is on the Travis website).
+* A weekly cron job builds everything for large range of gcc versions.
+* If any parts of the last build failed, then they will be rebuilt until they pass again.
+* The `ALL` builds can be triggered by adding `[ci all]` to the commit message.
+* The documentation can be rebuilt by adding `[ci all]` and `[ci docs]` to the commit message.
+
+To set up the build to work for GAP and pushing the docs the [Travis Client](https://github.com/travis-ci/travis.rb) Is needed to encrypt sensitive data. Install this and work from inside a clone of the repository.
 
 Some of the dependencies are hosted elsewhere, with limited access. It is assumed that these can be retrieved over SSH with an SSH key.
 
@@ -36,16 +45,20 @@ Replace the `secure: "..."` line in the `.travis.yml` file with the new value. C
 Compilers
 ------------
 
-The current default compiler on Travis is `gcc-4.6`, the build pulls in `gcc-4.4` and `gcc-5` packages from `ubuntu-toolchain-r-test`.  More compilers can be added by adding their `apt` packages and adding the appropriate `GCC_VERSION` value in `env`. Intel compiler compatibility is tested elsewhere.
+The current default compiler on Travis is `gcc-4.6`, the weekly build  also tests `gcc-4.4` `gcc-4.9`, `gcc-5` and `gcc-6` packages from `ubuntu-toolchain-r-test`.  More compilers can be added by adding their `apt` packages and adding the appropriate `GCC_VERSION` value in `env`. Intel compiler compatibility is tested elsewhere.
 
-Tests are also run against Python versions 2.6 and 2.7.
+Tests are also run against Python 2.7 only (2.6 support has been dropped Feb 2017).
+
+Builds use the `sudo` enabled runners as installing each compiler is one of the slowest steps of the build. Using sudo allows only the required compilers to be installed for the specific build and to skip dependencies altogether for skipped builds.
 
 Procedure
 ------------
 
 Several steps are carried out in the build and testing:
 
-* Set the compilers according to the value of `GCC_VERSION`.
+* Check to see if the sub-job should run
+* Install dependencies
+* Set the compilers according to the value of `GCC_VERSION`
 * Pull the dependencies, if required
 * make
 * make libquip

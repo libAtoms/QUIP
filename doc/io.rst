@@ -102,6 +102,8 @@ reading from or writing to XYZ or NetCDF files.
    +----------------+----------------------------+
    | ``nc``         | :ref:`netcdf`              |
    +----------------+----------------------------+
+   | ``nmd``        | :ref:`nmwiz`               |
+   +----------------+----------------------------+
    | ``pos``        | :ref:`asap`                |
    +----------------+----------------------------+
    | ``pov``        | :ref:`povray`              |
@@ -368,6 +370,49 @@ IMD checkpoint
 .. automodule:: quippy.imd
    :synopsis: IMD checkpoint reader
    :members:
+
+.. _nmwiz:
+
+NMWiz plugin for VMD
+------------------------------------
+
+Supports the ``.nmd`` format used by ProDy_ and the NMWiz_ plugin for
+VMD_.  The files can be read directly into VMD to visualise a molecule's
+normal modes.
+
+.. _ProDy: http://prody.csb.pitt.edu/
+.. _NMWiz: http://www.ks.uiuc.edu/Research/vmd/plugins/nmwiz/
+.. _VMD: http://www.ks.uiuc.edu/Research/vmd/
+
+.. py:module:: quippy.nmwiz
+
+.. I have to copy the docstring explicitly so it doesn't get
+   the ugly and unnecessary numpydoc autosummary
+.. py:class:: NMDWriter
+
+
+    Writer for the ``.nmd`` format
+
+    The Atoms object must have normal modes -- both eigenvectors and
+    eigenvalues (force constants in the normal-mode basis) of the
+    Hessian matrix -- stored in ``atoms.info['hessian_eigenvalue_X']``
+    and ``atoms.arrays['hessian_eigenvector_X']``, where ``X`` ranges
+    from 1 to the number of stored normal modes.
+
+    This writer implements the context manager protocol, so you can
+    use it like so::
+
+        with NMDWriter(filename) as writer:
+            writer.write(atoms)
+
+    and the associated file will be closed automatically when done.
+
+    The ``.nmd`` file format only supports single configurations, so
+    this writer doesn't accept trajectories.
+
+    .. automethod:: __init__
+    .. automethod:: write
+    .. automethod:: close
 
 .. _povray:
 
