@@ -74,12 +74,12 @@ clean:
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	for f in ${WRAP_FILES}; do \
-	    echo ${FPP} $$f > $$(basename $${f%.*}).fpp ; \
-	    ${FPP} $$f > $$(basename $${f%.*}).fpp ; \
+	    echo ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
+	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
-	rm -r quippy
+	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
 	f90wrap -v -m quippy ${WRAP_FPP_FILES} -P \
