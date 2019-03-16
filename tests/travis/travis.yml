@@ -17,6 +17,11 @@ install:
   - sudo apt-get -yq update;
   - sudo apt-get install -y gfortran liblapack-dev libblas-dev python-numpy libhdf5-serial-dev
   - pip install ase
+  # install f90wrap
+  - sudo apt-get install -y python-scipy
+  - cd src/f90wrap
+  - python setup.py install
+  - cd ../../
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
