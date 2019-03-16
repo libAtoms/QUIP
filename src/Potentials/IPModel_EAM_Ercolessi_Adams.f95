@@ -310,7 +310,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
       if (present(f) .or. present(virial) .or. present(local_virial)) then
 !         spline_rho_d_val = eam_spline_rho_d(this,tj,r_ij_mag)
 !HL
-         spline_rho_d_val = eam_spline_rho_d_mod, (this,ti,tj,r_ij_mag)
+         spline_rho_d_val = eam_spline_rho_d_mod(this,ti,tj,r_ij_mag)
          spline_V_d_val = eam_spline_V_d(this,ti,tj,r_ij_mag)
          spline_V_d_val = spline_V_d_val - 2.0_dp*this%V_F_shift(ti)*spline_rho_d_val
          if (present(f)) then
@@ -454,28 +454,27 @@ function eam_spline_rho(this, ti, r)
 
 end function eam_spline_rho
 
-function eam_spline_rho_mod(this, ti, tj, r)
-  type(IPModel_EAM_ErcolAd), intent(in) :: this
-  integer, intent(in)  :: ti, tj
-  real(dp), intent(in) :: r
-  real(dp)             :: eam_spline_rho_mod
-!This routine will get confused if we study Einsteinium(100) or Fermium(100)!
-!with an embedded atom method                                     !
-  if (r < min_knot(this%rho(tj)) .or. r >= max_knot(this%rho(tj))) then
-    eam_spline_rho_mod = 0.0_dp
-  else
-    if ti == tj:
-      eam_spline_rho_mod = spline_value(this%rho(tj),r)
-    else if ti == 26 and tj == 1:
-      eam_spline_rho_mod = spline_value(this%rho(99), r)
-    else if ti == 1 and tj == 26:
-      eam_spline_rho_mod = spline_value(this%rho(100), r)
-    else
-      call system_abort("IPModel_EAM_ErcolAd_Initialise_str failed to parse label from args_str="//trim(args_str))
-    endif
-  endif
-
-end function eam_spline_rho_mod
+!function eam_spline_rho_mod(this, ti, tj, r)
+!  type(IPModel_EAM_ErcolAd), intent(in) :: this
+!  integer, intent(in)  :: ti, tj
+!  real(dp), intent(in) :: r
+!  real(dp)             :: eam_spline_rho_mod
+!!This routine will get confused if we study Einsteinium(100) or Fermium(100)!
+!!with an embedded atom method                                     !
+!  if (r < min_knot(this%rho(tj)) .or. r >= max_knot(this%rho(tj))) then
+!    eam_spline_rho_mod = 0.0_dp
+!  else
+!    if ti == tj:
+!      eam_spline_rho_mod = spline_value(this%rho(tj),r)
+!    else if ti == 26 and tj == 1:
+!      eam_spline_rho_mod = spline_value(this%rho(99), r)
+!    else if ti == 1 and tj == 26:
+!      eam_spline_rho_mod = spline_value(this%rho(100), r)
+!    else
+!      call system_abort("IPModel_EAM_ErcolAd_Initialise_str failed to parse label from args_str="//trim(args_str))
+!    endif
+!  endif
+!end function eam_spline_rho_mod
 
 function eam_spline_F(this, ti, rho)
   type(IPModel_EAM_ErcolAd), intent(in) :: this
