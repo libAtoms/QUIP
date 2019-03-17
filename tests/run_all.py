@@ -37,9 +37,12 @@ platform = '{0}-{1}'.format(get_platform(), get_python_version())
 print('platform', platform)
 
 # extend sys.path
-sys.path.insert(0, os.path.join(quip_root, 'build/{0}/lib.{1}'.format(quip_arch, platform)))
+print(os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
+sys.path.insert(0, os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
+
+import quippy
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE
-suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_filepot.py')  # fixme run all tests not just one
+suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_descriptor.py')  # fixme run all tests not just one
 unittest.TextTestRunner().run(suite)
