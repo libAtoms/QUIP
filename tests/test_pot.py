@@ -16,11 +16,6 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys
-sys.path.append('/home/tks32/james_work/QUIP/build/linux_x86_64_gfortran')
-
-
-
 """ Si structure to be studied was generated with the old vesion:
 $bash: python2
 > import quippy
@@ -128,7 +123,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
     def test_virial(self):
         self.assertArrayAlmostEqual(self.pot_calculator.get_virial(self.at), self.virial_ref, tol=1E-06)
 
-    #def test_numeric_forces(self):
+    # def test_numeric_forces(self):
     #    self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.at), self.f_ref.T, tol=1e-4)
 
 

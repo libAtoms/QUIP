@@ -16,8 +16,6 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-import sys
-sys.path.append('/home/tks32/james_work/save_package/QUIP/build/linux_x86_64_gfortran')
 import unittest
 import quippy
 import numpy as np
@@ -37,8 +35,6 @@ class TestCalculator_GAP_Potential(quippytest.QuippyTestCase):
 
         self.energy_ref = self.at_orig.info['energy']
         self.forces_ref = self.at_orig.arrays['force']
-
-
 
         self.at.set_calculator(self.pot_calculator)
 
