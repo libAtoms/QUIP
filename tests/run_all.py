@@ -44,5 +44,5 @@ import quippy
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE
-suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_descriptor.py')  # fixme run all tests not just one
+suite = unittest.defaultTestLoader.discover(os.getcwd())  # fixme run all tests not just one
 unittest.TextTestRunner().run(suite)
