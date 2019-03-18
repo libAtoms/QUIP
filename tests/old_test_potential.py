@@ -2,7 +2,7 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2010
+# HQ X   Copyright James Kermode 2019
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -18,13 +18,14 @@
 
 # from quippy import *
 
-import unittest, quippy
+import unittest
+import quippy
 import numpy as np
-from quippytest import *
+from . import quippytest
 
-if hasattr(quippy, 'Potential'):
+if hasattr(quippy.potential, 'potential'):
 
-    class TestPotential_SW(QuippyTestCase):
+    class TestPotential_SW(quippytest.QuippyTestCase):
 
         def setUp(self):
             xml = """
@@ -56,8 +57,8 @@ if hasattr(quippy, 'Potential'):
          </SW_params>
          """
 
-            system_reseed_rng(2065775975)
-            self.pot = Potential('IP SW', param_str=xml)
+            quippy.system_module.system_reseed_rng(2065775975)
+            self.pot = quippy.potential.potential('IP SW', param_str=xml)
 
             self.at = diamond(5.44, 14)
             randomise(self.at.pos, 0.1)

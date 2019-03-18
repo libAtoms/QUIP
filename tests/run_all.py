@@ -34,10 +34,12 @@ except KeyError:
 print('QUIP_ARCH', quip_arch)
 
 # extend sys.path
-sys.path.insert(0, os.path.join(quip_root, 'build', quip_arch))
-print(sys.path)
+print(os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
+sys.path.insert(0, os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
+
+import quippy
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE
-suite = unittest.defaultTestLoader.discover(os.getcwd(), pattern='test_pot.py')  # fixme run all tests not just one
+suite = unittest.defaultTestLoader.discover(os.getcwd())  # fixme run all tests not just one
 unittest.TextTestRunner().run(suite)
