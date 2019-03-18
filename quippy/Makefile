@@ -36,7 +36,7 @@ include ${BUILDDIR}/Makefile.inc
 include Makefile.rules
 
 # working on python3
-PYTHON := python
+PYTHON := python3
 
 QUIPPY_SRC_DIR := ../../quippy
 
@@ -100,8 +100,8 @@ _quippy.so: ${WRAP_FPP_FILES}
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
+	[[ ! -f _quippy.so ]] && ln -s _quippy.*.so _quippy.so # to prevent unnecessary rebuilds
 
 install: build
-	QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages
 	cp -r quippy ${QUIPPY_INSTALL_DIR}
 	cp _quippy.so ${QUIPPY_INSTALL_DIR}
