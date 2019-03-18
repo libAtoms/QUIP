@@ -33,11 +33,9 @@ except KeyError:
     raise RuntimeError('You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.')
 print('QUIP_ARCH', quip_arch)
 
-platform = '{0}-{1}'.format(get_platform(), get_python_version())
-print('platform', platform)
-
 # extend sys.path
-sys.path.insert(0, os.path.join(quip_root, 'build/{0}/lib.{1}'.format(quip_arch, platform)))
+sys.path.insert(0, os.path.join(quip_root, 'build', quip_arch))
+print(sys.path)
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE
