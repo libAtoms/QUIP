@@ -18,7 +18,7 @@
 
 
 """
-ASE-compatible Calculator from a quip-potential object
+ASE-compatible Calculator wrapping a QUIP Potential object
 
 """
 
@@ -29,10 +29,10 @@ from copy import deepcopy as cp
 
 import quippy
 
-__all__ = ['potential']
+__all__ = ['Potential']
 
 
-class potential(ase.calculators.calculator.Calculator):
+class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
     implemented_properties = ['energy', 'forces', 'virial', 'stress',
@@ -94,7 +94,7 @@ class potential(ase.calculators.calculator.Calculator):
             callback=None
             calculation_always_required=False
             finalise=True
-                """
+        """
 
         self._default_properties = ['energy', 'forces']
         self.calculation_always_required = calculation_always_required
