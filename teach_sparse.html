@@ -496,13 +496,7 @@ sparsification of the Gaussian process</td>
 sparse points, their 1-based indices
 are appended to this file</td>
 </tr>
-<tr class="row-even"><td>sparse_file</td>
-<td>str</td>
-<td>None</td>
-<td>Sparse points from a file. Integers, in
-single line.</td>
-</tr>
-<tr class="row-odd"><td>sparse_method</td>
+<tr class="row-even"><td>sparse_method</td>
 <td>str</td>
 <td>RANDOM</td>
 <td>Sparsification method. RANDOM(default),
@@ -510,7 +504,7 @@ PIVOT, CLUSTER, UNIFORM, KMEANS,
 COVARIANCE, NONE, FUZZY, FILE,
 INDEX_FILE, CUR_COVARIANCE, CUR_POINTS</td>
 </tr>
-<tr class="row-even"><td>theta_fac</td>
+<tr class="row-odd"><td>theta_fac</td>
 <td>str</td>
 <td>1.0</td>
 <td>Set the width of Gaussians for the
@@ -520,7 +514,7 @@ Can be a single number or different for
 each dimension. For multiple theta_fac
 separate each value by whitespaces.</td>
 </tr>
-<tr class="row-odd"><td>theta_file</td>
+<tr class="row-even"><td>theta_file</td>
 <td>str</td>
 <td>None</td>
 <td>Set the width of Gaussians for the
@@ -528,26 +522,26 @@ ARD_SE kernel from a file. There should
 be as many real numbers as the number
 of dimensions, in a single line</td>
 </tr>
-<tr class="row-even"><td>theta_uniform</td>
+<tr class="row-odd"><td>theta_uniform</td>
 <td>float</td>
 <td>0.0</td>
 <td>Set the width of Gaussians for the
 ARD_SE and PP kernel, same in each
 dimension.</td>
 </tr>
-<tr class="row-odd"><td>unique_descriptor_tolerance</td>
+<tr class="row-even"><td>unique_descriptor_tolerance</td>
 <td>float</td>
 <td>1.0e-10</td>
 <td>Descriptor tolerance when filtering out
 duplicate data points</td>
 </tr>
-<tr class="row-even"><td>unique_hash_tolerance</td>
+<tr class="row-odd"><td>unique_hash_tolerance</td>
 <td>float</td>
 <td>1.0e-10</td>
 <td>Hash tolerance when filtering out
 duplicate data points</td>
 </tr>
-<tr class="row-odd"><td>zeta</td>
+<tr class="row-even"><td>zeta</td>
 <td>float</td>
 <td>1.0</td>
 <td>Exponent of soap type dot product
