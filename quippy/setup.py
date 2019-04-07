@@ -362,7 +362,7 @@ for defn in makefile['DEFINES'].split():
             v = v.replace("'", "")
             n = n.replace('"', "")
             v = v.replace('"', "")
-            v = r'\"%s\"' % v
+            #v = r'\"%s\"' % v
             macros.append((n,v))
         else:
             macros.append((defn[2:], None))
