@@ -73,7 +73,7 @@ RUN cd ${QUIP_ROOT} \
     && cp docker/arch/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc \
     && make > /dev/null \
     && QUIP_INSTALLDIR=${QUIP_ROOT}/bin make install \
-    && make install-quippy > /dev/null \
+    && make install-quippy \
     && find build/${QUIP_ARCH} -type f ! \( -name '*.a' -o -name 'Makefile.inc' \) -delete
 
 # AtomEye needs to link with QUIP for xyz read-write
