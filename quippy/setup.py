@@ -358,6 +358,7 @@ for defn in makefile['DEFINES'].split():
     if defn[:2] == '-D':
         if '=' in defn:
             n, v = defn[2:].split('=')
+            v = r'\"%s\"' % v
             macros.append((n,v))
         else:
             macros.append((defn[2:], None))
