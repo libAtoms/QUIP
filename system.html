@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Low-level system routines &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -691,13 +691,13 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optional_default</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.optional_default" title="quippy.system.optional_default"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optional_default</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>takes as arguments a default value and an optional argument, and returns the optional argument value if it’s present, otherwise the default value</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">string_to_numerical</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.string_to_numerical" title="quippy.system.string_to_numerical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">string_to_numerical</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">string_to_numerical</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_" title="quippy.system.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Overloaded interface for printing.</td>
 </tr>
 </tbody>
@@ -839,19 +839,19 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.activate" title="quippy.system.InOutput.activate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">activate</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.activate" title="quippy.system.InOutput.activate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">activate</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>inoutput_activate</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.backspace" title="quippy.system.InOutput.backspace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backspace</span></code></a>([n])</td>
 <td>Move the file pointer back by <code class="docutils literal notranslate"><span class="pre">n</span></code> (defaults to 1) records.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.close" title="quippy.system.InOutput.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.close" title="quippy.system.InOutput.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Close file but don’t finalise this Inoutput</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.deactivate" title="quippy.system.InOutput.deactivate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deactivate</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.deactivate" title="quippy.system.InOutput.deactivate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deactivate</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>inoutput_deactivate</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.do_output" title="quippy.system.InOutput.do_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">do_output</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.do_output" title="quippy.system.InOutput.do_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">do_output</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -862,7 +862,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.mpi_all_inoutput" title="quippy.system.InOutput.mpi_all_inoutput"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_all_inoutput</span></code></a>([value])</td>
@@ -885,26 +885,26 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.print_mpi_id" title="quippy.system.InOutput.print_mpi_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_mpi_id</span></code></a>([value])</td>
 <td>inoutput_print_mpi_id([value])</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ascii</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.read_ascii" title="quippy.system.InOutput.read_ascii"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ascii</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">read_ascii</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.system.InOutput.read_line" title="quippy.system.InOutput.read_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_line</span></code></a>([status])</td>
 <td>Read a line of text from a file (up to a line break, or 1024 characters).</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rewind</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.InOutput.rewind" title="quippy.system.InOutput.rewind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rewind</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Rewind to the start of this file.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.system.InOutput.activate">
-<code class="descname">activate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.activate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">activate</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>inoutput_activate</p>
 <p>Activate an Inoutput object temporarily.</p>
 <p class="rubric">References</p>
@@ -934,7 +934,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.close">
-<code class="descname">close</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.close" title="Permalink to this definition">¶</a></dt>
+<code class="descname">close</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close file but don’t finalise this Inoutput</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">inoutput_close</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
@@ -942,7 +942,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.deactivate">
-<code class="descname">deactivate</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.deactivate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">deactivate</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.deactivate" title="Permalink to this definition">¶</a></dt>
 <dd><p>inoutput_deactivate</p>
 <p>Deactivate an Inoutput object temporarily.</p>
 <p class="rubric">References</p>
@@ -951,7 +951,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.do_output">
-<code class="descname">do_output</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.do_output" title="Permalink to this definition">¶</a></dt>
+<code class="descname">do_output</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.do_output" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1059,7 +1059,7 @@ formatted and unformatted files.</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.read_ascii">
-<code class="descname">read_ascii</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_ascii" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_ascii</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">read_ascii</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -1146,7 +1146,7 @@ end{itemize}</p>
 
 <dl class="method">
 <dt id="quippy.system.InOutput.rewind">
-<code class="descname">rewind</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.rewind" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rewind</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.InOutput.rewind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rewind to the start of this file. Works for both formatted and unformatted files.</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">rewind</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>

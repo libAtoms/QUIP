@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Descriptors for atomic environments &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Descriptors for atomic environments &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -247,17 +247,17 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.calc_descriptor" title="quippy.descriptors.Descriptor.calc_descriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_descriptor</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.calc_descriptor" title="quippy.descriptors.Descriptor.calc_descriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_descriptor</span></code></a>(self,&nbsp;at,&nbsp;\*args,&nbsp;\*\*kw)</td>
 <td>Calculates all descriptors of this type in the Atoms object, and returns the array of descriptor values.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.count" title="quippy.descriptors.Descriptor.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a>(at,&nbsp;*args,&nbsp;**kw)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.descriptors.Descriptor.count" title="quippy.descriptors.Descriptor.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a>(self,&nbsp;at,&nbsp;\*args,&nbsp;\*\*kw)</td>
 <td>Returns how many descriptors of this type are found in the Atoms object.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.calc">
-<code class="descname">calc</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc</code><span class="sig-paren">(</span><em>self</em>, <em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates all descriptors of this type in the Atoms object, and
 gradients if grad=True. Results can be accessed dictionary- or
 attribute-style; ‘descriptor’ contains descriptor values, 
@@ -306,7 +306,7 @@ Cutoffs and gradients of cutoffs are also returned.</p>
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.calc_descriptor">
-<code class="descname">calc_descriptor</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc_descriptor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_descriptor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_descriptor</code><span class="sig-paren">(</span><em>self</em>, <em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.calc_descriptor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.calc_descriptor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates all descriptors of this type in the Atoms object, and
 returns the array of descriptor values. Does not compute gradients; use
 calc(at, grad=True, …) for that.</p>
@@ -314,7 +314,7 @@ calc(at, grad=True, …) for that.</p>
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.count">
-<code class="descname">count</code><span class="sig-paren">(</span><em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.count" title="Permalink to this definition">¶</a></dt>
+<code class="descname">count</code><span class="sig-paren">(</span><em>self</em>, <em>at</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns how many descriptors of this type are found in the Atoms
 object.</p>
 </dd></dl>
@@ -451,7 +451,7 @@ object.</p>
 
 <dl class="method">
 <dt id="quippy.descriptors.Descriptor.permutations">
-<code class="descname">permutations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.permutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.permutations" title="Permalink to this definition">¶</a></dt>
+<code class="descname">permutations</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/descriptors.html#Descriptor.permutations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.descriptors.Descriptor.permutations" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns array containing all valid permutations of this descriptor.</p>
 </dd></dl>
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MPI parallel interface &mdash; quippy 7ea04c5+ documentation</title>
+  <title>MPI parallel interface &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -317,7 +317,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.barrier" title="quippy.mpi_context.MPI_context.barrier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">barrier</span></code></a>([error])</td>
 <td>mpi_context_barrier([error])</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.bcast" title="quippy.mpi_context.MPI_context.bcast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bcast</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">bcast</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.cart_shift" title="quippy.mpi_context.MPI_context.cart_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_shift</span></code></a>(direction,displ,[error])</td>
@@ -340,13 +340,13 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.free_context" title="quippy.mpi_context.MPI_context.free_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">free_context</span></code></a>([error])</td>
 <td>mpi_context_free_context([error])</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.max" title="quippy.mpi_context.MPI_context.max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">max</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.min" title="quippy.mpi_context.MPI_context.min"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">min</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.mpi_print" title="quippy.mpi_context.MPI_context.mpi_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_print</span></code></a>(lines)</td>
@@ -363,22 +363,22 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.print_" title="quippy.mpi_context.MPI_context.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file])</td>
 <td>mpi_context_print([file])</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sendrecv</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sendrecv" title="quippy.mpi_context.MPI_context.sendrecv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sendrecv</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sendrecv</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.split_context" title="quippy.mpi_context.MPI_context.split_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_context</span></code></a>(split_index,[error])</td>
 <td>mpi_context_split_context(split_index,[error])</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum" title="quippy.mpi_context.MPI_context.sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum_in_place</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.mpi_context.MPI_context.sum_in_place" title="quippy.mpi_context.MPI_context.sum_in_place"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum_in_place</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum_in_place</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -461,7 +461,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.bcast">
-<code class="descname">bcast</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.bcast" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bcast</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.bcast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">bcast</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -843,7 +843,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.max">
-<code class="descname">max</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.max" title="Permalink to this definition">¶</a></dt>
+<code class="descname">max</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">max</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -893,7 +893,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.min">
-<code class="descname">min</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.min" title="Permalink to this definition">¶</a></dt>
+<code class="descname">min</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">min</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -982,7 +982,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sendrecv">
-<code class="descname">sendrecv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sendrecv" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sendrecv</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sendrecv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sendrecv</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -1097,7 +1097,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sum">
-<code class="descname">sum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sum</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -1147,7 +1147,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.mpi_context.MPI_context.sum_in_place">
-<code class="descname">sum_in_place</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum_in_place" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sum_in_place</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.mpi_context.MPI_context.sum_in_place" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">sum_in_place</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy 7ea04c5+ documentation</title>
+  <title>AtomsList and AtomsReader objects for I/O &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -264,16 +264,16 @@ manipulate it use an <a class="reference internal" href="#quippy.io.AtomsList" t
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsWriter" title="quippy.io.AtomsWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AtomsWriter</span></code></a>(dest[,&nbsp;format])</td>
 <td>Returns a file-like object for writing Atoms to <cite>dest</cite> which should be either a filename or an initiliased output object.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read_dataset" title="quippy.io.read_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_dataset</span></code></a>(dirs,&nbsp;pattern,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read_dataset" title="quippy.io.read_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_dataset</span></code></a>(dirs,&nbsp;pattern,&nbsp;\*\*kwargs)</td>
 <td>Read atomic configurations matching glob <cite>pattern</cite> from each of the directories in <cite>dir</cite> in turn.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.io.time_ordered_series" title="quippy.io.time_ordered_series"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_ordered_series</span></code></a>(source[,&nbsp;dt])</td>
 <td>Given a source of Atoms configurations, return a time ordered list of filename and frame references</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read" title="quippy.io.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(filename,&nbsp;**readargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.read" title="quippy.io.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(filename,&nbsp;\*\*readargs)</td>
 <td>Read Atoms from file <cite>filename</cite></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.io.write" title="quippy.io.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(filename,&nbsp;atoms,&nbsp;**writeargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.write" title="quippy.io.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(filename,&nbsp;atoms,&nbsp;\*\*writeargs)</td>
 <td>Write <cite>atoms</cite> to the file <cite>filename</cite></td>
 </tr>
 </tbody>
@@ -371,32 +371,32 @@ indices start from 0 and run up to <code class="docutils literal notranslate"><s
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.close" title="quippy.io.AtomsReader.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.close" title="quippy.io.AtomsReader.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(self)</td>
 <td>Close any open files associated with this <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsReader.filter" title="quippy.io.AtomsReader.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(at)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.io.AtomsReader.filter" title="quippy.io.AtomsReader.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(self,&nbsp;at)</td>
 <td>Apply read-time filters to <cite>at</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.iterframes" title="quippy.io.AtomsReader.iterframes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterframes</span></code></a>([reverse])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.io.AtomsReader.iterframes" title="quippy.io.AtomsReader.iterframes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterframes</span></code></a>(self[,&nbsp;reverse])</td>
 <td>Return an interator over all the frames in this trajectory.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.io.AtomsReader.close">
-<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.close" title="Permalink to this definition">¶</a></dt>
+<code class="descname">close</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close any open files associated with this <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.io.AtomsReader.filter">
-<code class="descname">filter</code><span class="sig-paren">(</span><em>at</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.filter" title="Permalink to this definition">¶</a></dt>
+<code class="descname">filter</code><span class="sig-paren">(</span><em>self</em>, <em>at</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply read-time filters to <cite>at</cite></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.io.AtomsReader.iterframes">
-<code class="descname">iterframes</code><span class="sig-paren">(</span><em>reverse=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.iterframes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.iterframes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iterframes</code><span class="sig-paren">(</span><em>self</em>, <em>reverse=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsReader.iterframes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsReader.iterframes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an interator over all the frames in this trajectory. This
 is the default iterator for an <a class="reference internal" href="#quippy.io.AtomsReader" title="quippy.io.AtomsReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomsReader</span></code></a> instance
 <cite>al</cite>, and can be accessed with <code class="docutils literal notranslate"><span class="pre">iter(al)</span></code>.</p>
@@ -442,7 +442,7 @@ stored in a <code class="xref py py-class docutils literal notranslate"><span cl
 methods.</p>
 <dl class="method">
 <dt id="quippy.io.AtomsList.sort">
-<code class="descname">sort</code><span class="sig-paren">(</span><em>cmp=None</em>, <em>key=None</em>, <em>reverse=False</em>, <em>attr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsList.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsList.sort" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sort</code><span class="sig-paren">(</span><em>self</em>, <em>cmp=None</em>, <em>key=None</em>, <em>reverse=False</em>, <em>attr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/io.html#AtomsList.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.io.AtomsList.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the AtomsList in place. This is the same as the standard
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">list.sort()</span></code> method, except for the additional <cite>attr</cite>
 argument. If this is present then the sorted list will be
@@ -873,13 +873,13 @@ NetCDF reading and writing routines, in pure Python.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_dirname</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_dirname" title="quippy.cinoutput.quip_dirname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_dirname</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_dirname</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_chdir</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.quip_chdir" title="quippy.cinoutput.quip_chdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_chdir</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_chdir</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_basename</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.quip_basename" title="quippy.cinoutput.quip_basename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quip_basename</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">quip_basename</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -918,19 +918,19 @@ NetCDF reading and writing routines, in pure Python.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutput.close" title="quippy.cinoutput.CInOutput.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutput.close" title="quippy.cinoutput.CInOutput.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>cinoutput_close</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.cinoutput.CInOutput.read" title="quippy.cinoutput.CInOutput.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(…)</td>
 <td>Read an Atoms object from this CInOutput stream.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.cinoutput.CInOutput.write" title="quippy.cinoutput.CInOutput.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(…)</td>
@@ -940,7 +940,7 @@ NetCDF reading and writing routines, in pure Python.</p>
 </table>
 <dl class="method">
 <dt id="quippy.cinoutput.CInOutput.close">
-<code class="descname">close</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cinoutput.CInOutput.close" title="Permalink to this definition">¶</a></dt>
+<code class="descname">close</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.cinoutput.CInOutput.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>cinoutput_close</p>
 <p>Close file. After a call to close(), you can can call initialise() again
 to reopen a new file.</p>
@@ -1310,28 +1310,28 @@ by Paul Tangney and Sandro Scandolo.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell.read" title="quippy.castep.CastepCell.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(cellfile)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepCell.read" title="quippy.castep.CastepCell.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(self,&nbsp;cellfile)</td>
 <td>Read a CASTEP .cell file.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepCell.write" title="quippy.castep.CastepCell.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([cellfile])</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepCell.write" title="quippy.castep.CastepCell.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(self[,&nbsp;cellfile])</td>
 <td>Write CASTEP .cell file.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.castep.CastepCell.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a shallow copy of D<a class="reference internal" href="_modules/quippy/castep.html#CastepCell.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.copy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="quippy.castep.CastepCell.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>cellfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>self</em>, <em>cellfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a CASTEP .cell file. cellfile can be a mapping type, filename or an open file</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.castep.CastepCell.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>cellfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>self</em>, <em>cellfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x2b530ae15150&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepCell.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepCell.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write CASTEP .cell file. cellfile can be a filename or an open file</p>
 </dd></dl>
 
@@ -1348,37 +1348,37 @@ by Paul Tangney and Sandro Scandolo.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.read" title="quippy.castep.CastepParam.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(paramfile)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.read" title="quippy.castep.CastepParam.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(self,&nbsp;paramfile)</td>
 <td>Read a CASTEP .param file.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam.read_from_castep_output" title="quippy.castep.CastepParam.read_from_castep_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_castep_output</span></code></a>(castep_output)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.castep.CastepParam.read_from_castep_output" title="quippy.castep.CastepParam.read_from_castep_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from_castep_output</span></code></a>(self,&nbsp;castep_output)</td>
 <td>Read user parameters from .castep output.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.write" title="quippy.castep.CastepParam.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([paramfile])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.castep.CastepParam.write" title="quippy.castep.CastepParam.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(self[,&nbsp;paramfile])</td>
 <td>Write CASTEP .param file</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.castep.CastepParam.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; a shallow copy of D<a class="reference internal" href="_modules/quippy/castep.html#CastepParam.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.copy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="quippy.castep.CastepParam.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>paramfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>self</em>, <em>paramfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a CASTEP .param file. paramfile can be a filename or an open file</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.castep.CastepParam.read_from_castep_output">
-<code class="descname">read_from_castep_output</code><span class="sig-paren">(</span><em>castep_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read_from_castep_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read_from_castep_output" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_from_castep_output</code><span class="sig-paren">(</span><em>self</em>, <em>castep_output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.read_from_castep_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.read_from_castep_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read user parameters from .castep output. Input should be filename, file-like object or list of lines</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.castep.CastepParam.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>paramfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>self</em>, <em>paramfile=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x2b530ae15150&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/castep.html#CastepParam.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.castep.CastepParam.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write CASTEP .param file</p>
 </dd></dl>
 
@@ -1464,19 +1464,19 @@ use it like so:</p>
 this writer doesn’t accept trajectories.</p>
 <dl class="method">
 <dt id="quippy.nmwiz.NMDWriter.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open <code class="docutils literal notranslate"><span class="pre">filename</span></code> for writing (use <code class="docutils literal notranslate"><span class="pre">-</span></code> for stdout)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.nmwiz.NMDWriter.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>atoms</em>, <em>title=u'quippy atoms'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>title=u'quippy atoms'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write out the atoms and modes with an optional title</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.nmwiz.NMDWriter.close">
-<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.close" title="Permalink to this definition">¶</a></dt>
+<code class="descname">close</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/nmwiz.html#NMDWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.nmwiz.NMDWriter.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the file (unnecessary if using the <code class="docutils literal notranslate"><span class="pre">with</span></code> statment)</p>
 </dd></dl>
 

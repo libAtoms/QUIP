@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Real-space covariance representation of atomic environments &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Real-space covariance representation of atomic environments &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -353,13 +353,13 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="quippy.real_space_covariance.RealSpaceCovariance.align"><code class="xref py py-obj docutils literal notranslate"><span class="pre">align</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="quippy.real_space_covariance.RealSpaceCovariance.align"><code class="xref py py-obj docutils literal notranslate"><span class="pre">align</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">align</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.covariance" title="quippy.real_space_covariance.RealSpaceCovariance.covariance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">covariance</span></code></a>(…)</td>
 <td>realspacecovariance_covariance(at1,at2,q,[distance,force_covariance,force_difference,do_align])</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.predict" title="quippy.real_space_covariance.RealSpaceCovariance.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(test)</td>
@@ -374,10 +374,10 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.set_n" title="quippy.real_space_covariance.RealSpaceCovariance.set_n"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_n</span></code></a>(n)</td>
 <td>realspacecovariance_set_n(n)</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.real_space_covariance.RealSpaceCovariance.teach" title="quippy.real_space_covariance.RealSpaceCovariance.teach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">teach</span></code></a>(do_optimise,use_qr)</td>
@@ -387,7 +387,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 </table>
 <dl class="method">
 <dt id="quippy.real_space_covariance.RealSpaceCovariance.align">
-<code class="descname">align</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="Permalink to this definition">¶</a></dt>
+<code class="descname">align</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.real_space_covariance.RealSpaceCovariance.align" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">align</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">

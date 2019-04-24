@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Structure building routines &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Structure building routines &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -512,7 +512,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.slab" title="quippy.structures.slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slab</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.slab" title="quippy.structures.slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slab</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">slab</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.structures.orthorhombic_slab" title="quippy.structures.orthorhombic_slab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">orthorhombic_slab</span></code></a>(at[,&nbsp;tol,&nbsp;min_nrep,&nbsp;…])</td>
@@ -578,38 +578,38 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerIndex.latex" title="quippy.structures.MillerIndex.latex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">latex</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerIndex.latex" title="quippy.structures.MillerIndex.latex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">latex</span></code></a>(self)</td>
 <td>Format this <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">MillerIndex</span></code></a> as a LaTeX string</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.MillerIndex.parse" title="quippy.structures.MillerIndex.parse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse</span></code></a>(s)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.structures.MillerIndex.parse" title="quippy.structures.MillerIndex.parse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse</span></code></a>(cls,&nbsp;s)</td>
 <td>Parse a Miller index string</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerIndex.simplify" title="quippy.structures.MillerIndex.simplify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simplify</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.structures.MillerIndex.simplify" title="quippy.structures.MillerIndex.simplify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simplify</span></code></a>(self)</td>
 <td>Simplify by dividing through by greatest common denominator</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.structures.MillerIndex.hat">
-<code class="descname">hat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.MillerIndex.hat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">hat</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.structures.MillerIndex.hat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a normalised copy of this array</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.structures.MillerIndex.latex">
-<code class="descname">latex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.latex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.latex" title="Permalink to this definition">¶</a></dt>
+<code class="descname">latex</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.latex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.latex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format this <a class="reference internal" href="#quippy.structures.MillerIndex" title="quippy.structures.MillerIndex"><code class="xref py py-class docutils literal notranslate"><span class="pre">MillerIndex</span></code></a> as a LaTeX string</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.structures.MillerIndex.normalised">
-<code class="descname">normalised</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.normalised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.normalised" title="Permalink to this definition">¶</a></dt>
+<code class="descname">normalised</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.normalised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.normalised" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a normalised copy of this array</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="quippy.structures.MillerIndex.parse">
-<em class="property">classmethod </em><code class="descname">parse</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.parse" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">parse</code><span class="sig-paren">(</span><em>cls</em>, <em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a Miller index string</p>
 <dl class="docutils">
 <dt>Negative indices can be denoted by:</dt>
@@ -627,7 +627,7 @@ i.e. <code class="docutils literal notranslate"><span class="pre">[001]</span></
 
 <dl class="method">
 <dt id="quippy.structures.MillerIndex.simplify">
-<code class="descname">simplify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.simplify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.simplify" title="Permalink to this definition">¶</a></dt>
+<code class="descname">simplify</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/structures.html#MillerIndex.simplify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.structures.MillerIndex.simplify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simplify by dividing through by greatest common denominator</p>
 </dd></dl>
 

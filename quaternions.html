@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Quaternions and rotation &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Quaternions and rotation &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -250,7 +250,7 @@ i^2 = j^2 = k^2 = ijk = -1 \\ ij = k \quad jk = i \quad ki = j
 <tr class="row-even"><td><a class="reference internal" href="#quippy.quaternions.rotation" title="quippy.quaternions.rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation</span></code></a>(axis,angle)</td>
 <td>Many rotations can be collapsed into one, e.g.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.rotate" title="quippy.quaternions.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.rotate" title="quippy.quaternions.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">rotate</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -288,10 +288,10 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.assignment" title="quippy.quaternions.Quaternion.assignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assignment</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.assignment" title="quippy.quaternions.Quaternion.assignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assignment</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">assignment</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.print_" title="quippy.quaternions.Quaternion.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file])</td>
@@ -309,17 +309,17 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.quaternions.Quaternion.rotation_parameters" title="quippy.quaternions.Quaternion.rotation_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation_parameters</span></code></a>(q)</td>
 <td>Returns the angle and rotation axis of a (normalised) quaternion</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.quaternions.Quaternion.assignment">
-<code class="descname">assignment</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.assignment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">assignment</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.quaternions.Quaternion.assignment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">assignment</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">

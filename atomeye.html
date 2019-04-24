@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AtomEye atomistic configuration viewer &mdash; quippy 7ea04c5+ documentation</title>
+  <title>AtomEye atomistic configuration viewer &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -287,7 +287,7 @@ of new windows. The initial value is as follows:</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.view" title="atomeye.view"><code class="xref py py-obj docutils literal notranslate"><span class="pre">view</span></code></a>(atoms,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.view" title="atomeye.view"><code class="xref py py-obj docutils literal notranslate"><span class="pre">view</span></code></a>(atoms,&nbsp;\*\*kwargs)</td>
 <td>Convenience wrapper to create/reuse a default <cite>AtomEyeViewer</cite></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#atomeye.redraw" title="atomeye.redraw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redraw</span></code></a>()</td>
@@ -568,243 +568,243 @@ when an atom is clicked</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.advance" title="atomeye.AtomEyeViewer.advance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">advance</span></code></a>(delta)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.advance" title="atomeye.AtomEyeViewer.advance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">advance</span></code></a>(self,&nbsp;delta)</td>
 <td>Move the camera forward by <cite>delta</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.aux_property_coloring" title="atomeye.AtomEyeViewer.aux_property_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aux_property_coloring</span></code></a>(auxprop)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.aux_property_coloring" title="atomeye.AtomEyeViewer.aux_property_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aux_property_coloring</span></code></a>(self,&nbsp;auxprop)</td>
 <td>Colour the atoms by the auxiliary property with name or index <cite>auxprop</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.backward" title="atomeye.AtomEyeViewer.backward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backward</span></code></a>([delta])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.backward" title="atomeye.AtomEyeViewer.backward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">backward</span></code></a>(self[,&nbsp;delta])</td>
 <td>Move backward by <cite>delta</cite> frames (default values is self.delta).</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.capture" title="atomeye.AtomEyeViewer.capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture</span></code></a>(filename[,&nbsp;resolution])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.capture" title="atomeye.AtomEyeViewer.capture"><code class="xref py py-obj docutils literal notranslate"><span class="pre">capture</span></code></a>(self,&nbsp;filename[,&nbsp;resolution])</td>
 <td>Render the current view to image <cite>filename</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.central_symmetry_coloring" title="atomeye.AtomEyeViewer.central_symmetry_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">central_symmetry_coloring</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.central_symmetry_coloring" title="atomeye.AtomEyeViewer.central_symmetry_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">central_symmetry_coloring</span></code></a>(self)</td>
 <td>Colour atoms by centro-symmetry parameter.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_atom_r_ratio" title="atomeye.AtomEyeViewer.change_atom_r_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_atom_r_ratio</span></code></a>(delta)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_atom_r_ratio" title="atomeye.AtomEyeViewer.change_atom_r_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_atom_r_ratio</span></code></a>(self,&nbsp;delta)</td>
 <td>Change the size of the balls used to draw the atoms by <cite>delta</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_aux_colormap" title="atomeye.AtomEyeViewer.change_aux_colormap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_aux_colormap</span></code></a>(n)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_aux_colormap" title="atomeye.AtomEyeViewer.change_aux_colormap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_aux_colormap</span></code></a>(self,&nbsp;n)</td>
 <td>Select the <cite>n</cite>-th auxiliary property colourmap.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_aux_property_threshold" title="atomeye.AtomEyeViewer.change_aux_property_threshold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_aux_property_threshold</span></code></a>(lower,&nbsp;upper)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_aux_property_threshold" title="atomeye.AtomEyeViewer.change_aux_property_threshold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_aux_property_threshold</span></code></a>(self,&nbsp;lower,&nbsp;upper)</td>
 <td>Change the lower and upper aux property thresholds.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_bgcolor" title="atomeye.AtomEyeViewer.change_bgcolor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_bgcolor</span></code></a>(color)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_bgcolor" title="atomeye.AtomEyeViewer.change_bgcolor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_bgcolor</span></code></a>(self,&nbsp;color)</td>
 <td>Change the viewer background colour to <cite>color</cite>, which should be a RGB tuple with three floats in range 0..1.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_bond_radius" title="atomeye.AtomEyeViewer.change_bond_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_bond_radius</span></code></a>(delta)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.change_bond_radius" title="atomeye.AtomEyeViewer.change_bond_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_bond_radius</span></code></a>(self,&nbsp;delta)</td>
 <td>Change the radius of the cylinders used the draw bonds by <cite>delta</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.close" title="atomeye.AtomEyeViewer.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.close" title="atomeye.AtomEyeViewer.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>(self)</td>
 <td>Close this viewer window.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.cutting_plane" title="atomeye.AtomEyeViewer.cutting_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cutting_plane</span></code></a>(n,&nbsp;d,&nbsp;s)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.cutting_plane" title="atomeye.AtomEyeViewer.cutting_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cutting_plane</span></code></a>(self,&nbsp;n,&nbsp;d,&nbsp;s)</td>
 <td>Create a new cutting plane with index <cite>n</cite>, normal <cite>d</cite>, and fractional displacement <cite>s</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.display" title="atomeye.AtomEyeViewer.display"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.display" title="atomeye.AtomEyeViewer.display"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display</span></code></a>(self)</td>
 <td>Display snapshot from AtomEye session in IPython notebook</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.draw_arrows" title="atomeye.AtomEyeViewer.draw_arrows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_arrows</span></code></a>(property[,&nbsp;scale_factor,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.draw_arrows" title="atomeye.AtomEyeViewer.draw_arrows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_arrows</span></code></a>(self,&nbsp;property[,&nbsp;scale_factor,&nbsp;…])</td>
 <td>Draw arrows on each atom, based on a vector property</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.find_atom" title="atomeye.AtomEyeViewer.find_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_atom</span></code></a>(i)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.find_atom" title="atomeye.AtomEyeViewer.find_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_atom</span></code></a>(self,&nbsp;i)</td>
 <td>Set the anchor to the atom with index <cite>i</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.first" title="atomeye.AtomEyeViewer.first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.first" title="atomeye.AtomEyeViewer.first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">first</span></code></a>(self)</td>
 <td>Show the first frame (frame 0).</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.forward" title="atomeye.AtomEyeViewer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>([delta])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.forward" title="atomeye.AtomEyeViewer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self[,&nbsp;delta])</td>
 <td>Move forward by <cite>delta</cite> frames (default value is self.delta).</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.gcat" title="atomeye.AtomEyeViewer.gcat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gcat</span></code></a>([update])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.gcat" title="atomeye.AtomEyeViewer.gcat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gcat</span></code></a>(self[,&nbsp;update])</td>
 <td>Get current atoms - return Atoms object currently being visualised.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_size_angstrom" title="atomeye.AtomEyeViewer.get_size_angstrom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size_angstrom</span></code></a>([state])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_size_angstrom" title="atomeye.AtomEyeViewer.get_size_angstrom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size_angstrom</span></code></a>(self[,&nbsp;state])</td>
 <td>Return (width, height) in Angstrom of currently projected view</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_size_pixels" title="atomeye.AtomEyeViewer.get_size_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size_pixels</span></code></a>([state])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_size_pixels" title="atomeye.AtomEyeViewer.get_size_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size_pixels</span></code></a>(self[,&nbsp;state])</td>
 <td>Return (width, height) in pixels of this viewer</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_visible" title="atomeye.AtomEyeViewer.get_visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_visible</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.get_visible" title="atomeye.AtomEyeViewer.get_visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_visible</span></code></a>(self)</td>
 <td>Return list of indices of atoms currently visible in this viewer.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.key" title="atomeye.AtomEyeViewer.key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key</span></code></a>(key)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.key" title="atomeye.AtomEyeViewer.key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key</span></code></a>(self,&nbsp;key)</td>
 <td>Simulate pressing <cite>key</cite> on the keyboard.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.last" title="atomeye.AtomEyeViewer.last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">last</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.last" title="atomeye.AtomEyeViewer.last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">last</span></code></a>(self)</td>
 <td>Show the last frame, i.e.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_atom_color" title="atomeye.AtomEyeViewer.load_atom_color"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_atom_color</span></code></a>(filename)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_atom_color" title="atomeye.AtomEyeViewer.load_atom_color"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_atom_color</span></code></a>(self,&nbsp;filename)</td>
 <td>Load atom colours from a .clr file.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_aux" title="atomeye.AtomEyeViewer.load_aux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_aux</span></code></a>(filename)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_aux" title="atomeye.AtomEyeViewer.load_aux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_aux</span></code></a>(self,&nbsp;filename)</td>
 <td>Load aux property values from a .aux file.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_script" title="atomeye.AtomEyeViewer.load_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_script</span></code></a>(filename)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.load_script" title="atomeye.AtomEyeViewer.load_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_script</span></code></a>(self,&nbsp;filename)</td>
 <td>Load AtomEye viewer settings from a file using the AtomEye <code class="docutils literal notranslate"><span class="pre">load_script</span></code> command</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.normal_coloring" title="atomeye.AtomEyeViewer.normal_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normal_coloring</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.normal_coloring" title="atomeye.AtomEyeViewer.normal_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normal_coloring</span></code></a>(self)</td>
 <td>Return to normal colouring of the atoms (key “o”).</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.rcut_patch" title="atomeye.AtomEyeViewer.rcut_patch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rcut_patch</span></code></a>(sym1,&nbsp;sym2,&nbsp;value[,&nbsp;absolute])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.rcut_patch" title="atomeye.AtomEyeViewer.rcut_patch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rcut_patch</span></code></a>(self,&nbsp;sym1,&nbsp;sym2,&nbsp;value[,&nbsp;absolute])</td>
 <td>Change the cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds by <cite>delta</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.redraw" title="atomeye.AtomEyeViewer.redraw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redraw</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.redraw" title="atomeye.AtomEyeViewer.redraw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redraw</span></code></a>(self)</td>
 <td>Redraw this AtomEye window, keeping Atoms and settings the same.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.reset_aux_property_thresholds" title="atomeye.AtomEyeViewer.reset_aux_property_thresholds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_aux_property_thresholds</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.reset_aux_property_thresholds" title="atomeye.AtomEyeViewer.reset_aux_property_thresholds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_aux_property_thresholds</span></code></a>(self)</td>
 <td>Reset aux property thresholds to automatic values.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.resize" title="atomeye.AtomEyeViewer.resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resize</span></code></a>(width,&nbsp;height)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.resize" title="atomeye.AtomEyeViewer.resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resize</span></code></a>(self,&nbsp;width,&nbsp;height)</td>
 <td>Resize the current window to <cite>width</cite> x <cite>height</cite> pixels.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.rotate" title="atomeye.AtomEyeViewer.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(axis,&nbsp;theta)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.rotate" title="atomeye.AtomEyeViewer.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(self,&nbsp;axis,&nbsp;theta)</td>
 <td>Rotate around <cite>axis</cite> by angle <cite>theta</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.run_command" title="atomeye.AtomEyeViewer.run_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_command</span></code></a>(command)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.run_command" title="atomeye.AtomEyeViewer.run_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_command</span></code></a>(self,&nbsp;command)</td>
 <td>Run a command in this AtomEye thread.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.run_script" title="atomeye.AtomEyeViewer.run_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_script</span></code></a>(script)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.run_script" title="atomeye.AtomEyeViewer.run_script"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_script</span></code></a>(self,&nbsp;script)</td>
 <td>Run commands from the file script, in a blocking fashion.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.save" title="atomeye.AtomEyeViewer.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(filename)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.save" title="atomeye.AtomEyeViewer.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(self,&nbsp;filename)</td>
 <td>Save AtomEye viewer settings to a file.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.scat" title="atomeye.AtomEyeViewer.scat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scat</span></code></a>(atoms[,&nbsp;frame])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.scat" title="atomeye.AtomEyeViewer.scat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scat</span></code></a>(self,&nbsp;atoms[,&nbsp;frame])</td>
 <td>Set current atoms (and optionally also current frame)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.setp" title="atomeye.AtomEyeViewer.setp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setp</span></code></a>(key,&nbsp;value)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.setp" title="atomeye.AtomEyeViewer.setp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setp</span></code></a>(self,&nbsp;key,&nbsp;value)</td>
 <td>Run the AtomEye command “set key value”.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.shift_cutting_plane" title="atomeye.AtomEyeViewer.shift_cutting_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_cutting_plane</span></code></a>(delta)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.shift_cutting_plane" title="atomeye.AtomEyeViewer.shift_cutting_plane"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_cutting_plane</span></code></a>(self,&nbsp;delta)</td>
 <td>Shift the current cutting plane by an amount <cite>delta</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.shift_xtal" title="atomeye.AtomEyeViewer.shift_xtal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_xtal</span></code></a>(axis,&nbsp;delta)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.shift_xtal" title="atomeye.AtomEyeViewer.shift_xtal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_xtal</span></code></a>(self,&nbsp;axis,&nbsp;delta)</td>
 <td>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key “Shift+left/right/up/down”).</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.show" title="atomeye.AtomEyeViewer.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a>([atoms,&nbsp;property,&nbsp;frame,&nbsp;arrows])</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.show" title="atomeye.AtomEyeViewer.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a>(self[,&nbsp;atoms,&nbsp;property,&nbsp;frame,&nbsp;arrows])</td>
 <td>Update what is shown in this AtomEye viewer window.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.start" title="atomeye.AtomEyeViewer.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>([copy,&nbsp;nowindow])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.start" title="atomeye.AtomEyeViewer.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>(self[,&nbsp;copy,&nbsp;nowindow])</td>
 <td>Start the AtomEye thread, wait for it to load and apply default commands.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid" title="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_aux_property_thresholds_rigid</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid" title="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_aux_property_thresholds_rigid</span></code></a>(self)</td>
 <td>Toggle between floating and rigid aux property thresholds when moving between frames</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation" title="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_aux_property_thresholds_saturation</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation" title="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_aux_property_thresholds_saturation</span></code></a>(self)</td>
 <td>Toggle between saturated colouring and invisibility for values outside aux prop thresholds.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_bond_mode" title="atomeye.AtomEyeViewer.toggle_bond_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_bond_mode</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_bond_mode" title="atomeye.AtomEyeViewer.toggle_bond_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_bond_mode</span></code></a>(self)</td>
 <td>Turn on or off bonds.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_coordination_coloring" title="atomeye.AtomEyeViewer.toggle_coordination_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_coordination_coloring</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_coordination_coloring" title="atomeye.AtomEyeViewer.toggle_coordination_coloring"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_coordination_coloring</span></code></a>(self)</td>
 <td>Turn on or off colouring by coordination number (key “k”)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_parallel_projection" title="atomeye.AtomEyeViewer.toggle_parallel_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_parallel_projection</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_parallel_projection" title="atomeye.AtomEyeViewer.toggle_parallel_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_parallel_projection</span></code></a>(self)</td>
 <td>Toggle between parallel and perspective projections.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_small_cell_mode" title="atomeye.AtomEyeViewer.toggle_small_cell_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_small_cell_mode</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.toggle_small_cell_mode" title="atomeye.AtomEyeViewer.toggle_small_cell_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toggle_small_cell_mode</span></code></a>(self)</td>
 <td>Toggle between two different behaviours for when cell is smaller than r_cut/2:</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.translate" title="atomeye.AtomEyeViewer.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a>(axis,&nbsp;delta)</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.translate" title="atomeye.AtomEyeViewer.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a>(self,&nbsp;axis,&nbsp;delta)</td>
 <td>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key “Ctrl+left/right/up/down”)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.update" title="atomeye.AtomEyeViewer.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>(state)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.update" title="atomeye.AtomEyeViewer.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>(self,&nbsp;state)</td>
 <td>Update settings from the dictionary <cite>state</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.wait" title="atomeye.AtomEyeViewer.wait"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.wait" title="atomeye.AtomEyeViewer.wait"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait</span></code></a>(self)</td>
 <td>Sleep until this AtomEye viewer has finished processing all queued events.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.xtal_origin_goto" title="atomeye.AtomEyeViewer.xtal_origin_goto"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xtal_origin_goto</span></code></a>(s)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#atomeye.AtomEyeViewer.xtal_origin_goto" title="atomeye.AtomEyeViewer.xtal_origin_goto"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xtal_origin_goto</span></code></a>(self,&nbsp;s)</td>
 <td>Move the crystal origin to fractional coordinates <cite>s</cite></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.advance">
-<code class="descname">advance</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.advance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.advance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">advance</code><span class="sig-paren">(</span><em>self</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.advance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move the camera forward by <cite>delta</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.aux_property_coloring">
-<code class="descname">aux_property_coloring</code><span class="sig-paren">(</span><em>auxprop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.aux_property_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.aux_property_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="descname">aux_property_coloring</code><span class="sig-paren">(</span><em>self</em>, <em>auxprop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.aux_property_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.aux_property_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colour the atoms by the auxiliary property with name or index <cite>auxprop</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.backward">
-<code class="descname">backward</code><span class="sig-paren">(</span><em>delta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.backward" title="Permalink to this definition">¶</a></dt>
+<code class="descname">backward</code><span class="sig-paren">(</span><em>self</em>, <em>delta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.backward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move backward by <cite>delta</cite> frames (default values is self.delta).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.capture">
-<code class="descname">capture</code><span class="sig-paren">(</span><em>filename</em>, <em>resolution=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.capture" title="Permalink to this definition">¶</a></dt>
+<code class="descname">capture</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em>, <em>resolution=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.capture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.capture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render the current view to image <cite>filename</cite></p>
 <p>Format is determined from file extension: .png, .jpeg, or .eps.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.central_symmetry_coloring">
-<code class="descname">central_symmetry_coloring</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.central_symmetry_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.central_symmetry_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="descname">central_symmetry_coloring</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.central_symmetry_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.central_symmetry_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colour atoms by centro-symmetry parameter.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.change_atom_r_ratio">
-<code class="descname">change_atom_r_ratio</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_atom_r_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_atom_r_ratio" title="Permalink to this definition">¶</a></dt>
+<code class="descname">change_atom_r_ratio</code><span class="sig-paren">(</span><em>self</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_atom_r_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_atom_r_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the size of the balls used to draw the atoms by <cite>delta</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.change_aux_colormap">
-<code class="descname">change_aux_colormap</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_aux_colormap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_aux_colormap" title="Permalink to this definition">¶</a></dt>
+<code class="descname">change_aux_colormap</code><span class="sig-paren">(</span><em>self</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_aux_colormap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_aux_colormap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select the <cite>n</cite>-th auxiliary property colourmap.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.change_aux_property_threshold">
-<code class="descname">change_aux_property_threshold</code><span class="sig-paren">(</span><em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_aux_property_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_aux_property_threshold" title="Permalink to this definition">¶</a></dt>
+<code class="descname">change_aux_property_threshold</code><span class="sig-paren">(</span><em>self</em>, <em>lower</em>, <em>upper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_aux_property_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_aux_property_threshold" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the lower and upper aux property thresholds.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.change_bgcolor">
-<code class="descname">change_bgcolor</code><span class="sig-paren">(</span><em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_bgcolor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_bgcolor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">change_bgcolor</code><span class="sig-paren">(</span><em>self</em>, <em>color</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_bgcolor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_bgcolor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the viewer background colour to <cite>color</cite>, which should be a RGB tuple with three floats in range 0..1.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.change_bond_radius">
-<code class="descname">change_bond_radius</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_bond_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_bond_radius" title="Permalink to this definition">¶</a></dt>
+<code class="descname">change_bond_radius</code><span class="sig-paren">(</span><em>self</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.change_bond_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.change_bond_radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the radius of the cylinders used the draw bonds by <cite>delta</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.close">
-<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.close" title="Permalink to this definition">¶</a></dt>
+<code class="descname">close</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close this viewer window.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.cutting_plane">
-<code class="descname">cutting_plane</code><span class="sig-paren">(</span><em>n</em>, <em>d</em>, <em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.cutting_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.cutting_plane" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cutting_plane</code><span class="sig-paren">(</span><em>self</em>, <em>n</em>, <em>d</em>, <em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.cutting_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.cutting_plane" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new cutting plane with index <cite>n</cite>, normal <cite>d</cite>, and fractional displacement <cite>s</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.display">
-<code class="descname">display</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.display" title="Permalink to this definition">¶</a></dt>
+<code class="descname">display</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.display" title="Permalink to this definition">¶</a></dt>
 <dd><p>Display snapshot from AtomEye session in IPython notebook</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.draw_arrows">
-<code class="descname">draw_arrows</code><span class="sig-paren">(</span><em>property</em>, <em>scale_factor=0.0</em>, <em>head_height=0.1</em>, <em>head_width=0.05</em>, <em>up=(0.0</em>, <em>1.0</em>, <em>0.0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.draw_arrows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.draw_arrows" title="Permalink to this definition">¶</a></dt>
+<code class="descname">draw_arrows</code><span class="sig-paren">(</span><em>self</em>, <em>property</em>, <em>scale_factor=0.0</em>, <em>head_height=0.1</em>, <em>head_width=0.05</em>, <em>up=(0.0</em>, <em>1.0</em>, <em>0.0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.draw_arrows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.draw_arrows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw arrows on each atom, based on a vector property</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -839,25 +839,25 @@ Default is <code class="docutils literal notranslate"><span class="pre">[0.,1.,0
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.find_atom">
-<code class="descname">find_atom</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.find_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.find_atom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_atom</code><span class="sig-paren">(</span><em>self</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.find_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.find_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the anchor to the atom with index <cite>i</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.first">
-<code class="descname">first</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.first"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.first" title="Permalink to this definition">¶</a></dt>
+<code class="descname">first</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.first"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.first" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show the first frame (frame 0).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.forward">
-<code class="descname">forward</code><span class="sig-paren">(</span><em>delta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.forward" title="Permalink to this definition">¶</a></dt>
+<code class="descname">forward</code><span class="sig-paren">(</span><em>self</em>, <em>delta=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move forward by <cite>delta</cite> frames (default value is self.delta).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.gcat">
-<code class="descname">gcat</code><span class="sig-paren">(</span><em>update=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.gcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.gcat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">gcat</code><span class="sig-paren">(</span><em>self</em>, <em>update=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.gcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.gcat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get current atoms - return Atoms object currently being visualised.</p>
 <p>If update=False (the default), we return what is currently being visualised,
 even if this is not in sync with self.atoms[self.frame].</p>
@@ -865,26 +865,26 @@ even if this is not in sync with self.atoms[self.frame].</p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.get_size_angstrom">
-<code class="descname">get_size_angstrom</code><span class="sig-paren">(</span><em>state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_size_angstrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_size_angstrom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_size_angstrom</code><span class="sig-paren">(</span><em>self</em>, <em>state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_size_angstrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_size_angstrom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return (width, height) in Angstrom of currently projected view</p>
 <p>Assumes object lies in plane z=0</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.get_size_pixels">
-<code class="descname">get_size_pixels</code><span class="sig-paren">(</span><em>state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_size_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_size_pixels" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_size_pixels</code><span class="sig-paren">(</span><em>self</em>, <em>state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_size_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_size_pixels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return (width, height) in pixels of this viewer</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.get_visible">
-<code class="descname">get_visible</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_visible" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_visible</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.get_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.get_visible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return list of indices of atoms currently visible in this viewer.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.key">
-<code class="descname">key</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.key" title="Permalink to this definition">¶</a></dt>
+<code class="descname">key</code><span class="sig-paren">(</span><em>self</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate pressing <cite>key</cite> on the keyboard.</p>
 <p>The syntax for keystrokes is described on the <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A3/A3.html#commands">AtomEye 3
 commands help page</a></p>
@@ -892,25 +892,25 @@ commands help page</a></p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.last">
-<code class="descname">last</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.last" title="Permalink to this definition">¶</a></dt>
+<code class="descname">last</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.last"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.last" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show the last frame, i.e. len(self.atoms)-1</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.load_atom_color">
-<code class="descname">load_atom_color</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_atom_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_atom_color" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_atom_color</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_atom_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_atom_color" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load atom colours from a .clr file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.load_aux">
-<code class="descname">load_aux</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_aux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_aux" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_aux</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_aux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_aux" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load aux property values from a .aux file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.load_script">
-<code class="descname">load_script</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_script" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load_script</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.load_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.load_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load AtomEye viewer settings from a file using the AtomEye <code class="docutils literal notranslate"><span class="pre">load_script</span></code> command</p>
 <p><a class="reference internal" href="#atomeye.run_script" title="atomeye.run_script"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_script()</span></code></a> is more robust as the script is run line by
 line in a blocking sense.</p>
@@ -918,13 +918,13 @@ line in a blocking sense.</p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.normal_coloring">
-<code class="descname">normal_coloring</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.normal_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.normal_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="descname">normal_coloring</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.normal_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.normal_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return to normal colouring of the atoms (key “o”).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.rcut_patch">
-<code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.rcut_patch" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rcut_patch</code><span class="sig-paren">(</span><em>self</em>, <em>sym1</em>, <em>sym2</em>, <em>value</em>, <em>absolute=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.rcut_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.rcut_patch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds by <cite>delta</cite>.</p>
 <p>e.g. to increase cutoff for Si-Si bonds by 0.5 A use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">viewer</span><span class="o">.</span><span class="n">rcut_patch</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
@@ -939,31 +939,31 @@ absolute cutoff distance for <cite>sym1</cite>–<cite>sym2</cite> bonds, e.g.:<
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.redraw">
-<code class="descname">redraw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.redraw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.redraw" title="Permalink to this definition">¶</a></dt>
+<code class="descname">redraw</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.redraw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.redraw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redraw this AtomEye window, keeping Atoms and settings the same.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.reset_aux_property_thresholds">
-<code class="descname">reset_aux_property_thresholds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.reset_aux_property_thresholds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.reset_aux_property_thresholds" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_aux_property_thresholds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.reset_aux_property_thresholds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.reset_aux_property_thresholds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset aux property thresholds to automatic values.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.resize">
-<code class="descname">resize</code><span class="sig-paren">(</span><em>width</em>, <em>height</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.resize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">resize</code><span class="sig-paren">(</span><em>self</em>, <em>width</em>, <em>height</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.resize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize the current window to <cite>width</cite> x <cite>height</cite> pixels.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.rotate">
-<code class="descname">rotate</code><span class="sig-paren">(</span><em>axis</em>, <em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.rotate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>self</em>, <em>axis</em>, <em>theta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate around <cite>axis</cite> by angle <cite>theta</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.run_command">
-<code class="descname">run_command</code><span class="sig-paren">(</span><em>command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.run_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.run_command" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run_command</code><span class="sig-paren">(</span><em>self</em>, <em>command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.run_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.run_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a command in this AtomEye thread.</p>
 <p>The command is queued for later execution, unless <a class="reference internal" href="#atomeye.AtomEyeViewer.block" title="atomeye.AtomEyeViewer.block"><code class="xref py py-attr docutils literal notranslate"><span class="pre">block</span></code></a> is True.</p>
 <p>This functionality is also available by calling an instance
@@ -989,43 +989,43 @@ directly, i.e. the following commands are equivalent:</p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.run_script">
-<code class="descname">run_script</code><span class="sig-paren">(</span><em>script</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.run_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.run_script" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run_script</code><span class="sig-paren">(</span><em>self</em>, <em>script</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.run_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.run_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run commands from the file script, in a blocking fashion.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>self</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save AtomEye viewer settings to a file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.scat">
-<code class="descname">scat</code><span class="sig-paren">(</span><em>atoms</em>, <em>frame=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.scat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.scat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">scat</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>frame=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.scat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.scat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set current atoms (and optionally also current frame)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.setp">
-<code class="descname">setp</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.setp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.setp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setp</code><span class="sig-paren">(</span><em>self</em>, <em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.setp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.setp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the AtomEye command “set key value”.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.shift_cutting_plane">
-<code class="descname">shift_cutting_plane</code><span class="sig-paren">(</span><em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.shift_cutting_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.shift_cutting_plane" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shift_cutting_plane</code><span class="sig-paren">(</span><em>self</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.shift_cutting_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.shift_cutting_plane" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shift the current cutting plane by an amount <cite>delta</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.shift_xtal">
-<code class="descname">shift_xtal</code><span class="sig-paren">(</span><em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.shift_xtal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.shift_xtal" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shift_xtal</code><span class="sig-paren">(</span><em>self</em>, <em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.shift_xtal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.shift_xtal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shift crystal within periodic boundaries along <cite>axis</cite> by <cite>delta</cite> (key “Shift+left/right/up/down”).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.show">
-<code class="descname">show</code><span class="sig-paren">(</span><em>atoms=None</em>, <em>property=None</em>, <em>frame=None</em>, <em>arrows=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.show" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em>, <em>property=None</em>, <em>frame=None</em>, <em>arrows=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update what is shown in this AtomEye viewer window.</p>
 <p>When called with no arguments, <a class="reference internal" href="#atomeye.AtomEyeViewer.show" title="atomeye.AtomEyeViewer.show"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show()</span></code></a> is equivalent to
 <a class="reference internal" href="#atomeye.redraw" title="atomeye.redraw"><code class="xref py py-meth docutils literal notranslate"><span class="pre">redraw()</span></code></a>.</p>
@@ -1056,7 +1056,7 @@ colour the atoms (e.g. <code class="docutils literal notranslate"><span class="p
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.start">
-<code class="descname">start</code><span class="sig-paren">(</span><em>copy=None</em>, <em>nowindow=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.start" title="Permalink to this definition">¶</a></dt>
+<code class="descname">start</code><span class="sig-paren">(</span><em>self</em>, <em>copy=None</em>, <em>nowindow=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the AtomEye thread, wait for it to load and apply
 default commands.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1081,37 +1081,37 @@ window. Useful for rendering movies.</p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid">
-<code class="descname">toggle_aux_property_thresholds_rigid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_aux_property_thresholds_rigid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_aux_property_thresholds_rigid</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_aux_property_thresholds_rigid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_rigid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Toggle between floating and rigid aux property thresholds when moving between frames</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation">
-<code class="descname">toggle_aux_property_thresholds_saturation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_aux_property_thresholds_saturation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_aux_property_thresholds_saturation</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_aux_property_thresholds_saturation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_aux_property_thresholds_saturation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Toggle between saturated colouring and invisibility for values outside aux prop thresholds.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_bond_mode">
-<code class="descname">toggle_bond_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_bond_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_bond_mode" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_bond_mode</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_bond_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_bond_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turn on or off bonds.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_coordination_coloring">
-<code class="descname">toggle_coordination_coloring</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_coordination_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_coordination_coloring" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_coordination_coloring</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_coordination_coloring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_coordination_coloring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turn on or off colouring by coordination number (key “k”)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_parallel_projection">
-<code class="descname">toggle_parallel_projection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_parallel_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_parallel_projection" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_parallel_projection</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_parallel_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_parallel_projection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Toggle between parallel and perspective projections.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.toggle_small_cell_mode">
-<code class="descname">toggle_small_cell_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_small_cell_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_small_cell_mode" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toggle_small_cell_mode</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.toggle_small_cell_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.toggle_small_cell_mode" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Toggle between two different behaviours for when cell is smaller than r_cut/2:</dt>
 <dd><ol class="first last arabic simple">
@@ -1124,13 +1124,13 @@ window. Useful for rendering movies.</p>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.translate">
-<code class="descname">translate</code><span class="sig-paren">(</span><em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.translate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">translate</code><span class="sig-paren">(</span><em>self</em>, <em>axis</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.translate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Translate system along <cite>axis</cite> by an amount <cite>delta</cite> (key “Ctrl+left/right/up/down”)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.update">
-<code class="descname">update</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.update" title="Permalink to this definition">¶</a></dt>
+<code class="descname">update</code><span class="sig-paren">(</span><em>self</em>, <em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update settings from the dictionary <cite>state</cite>.</p>
 <p>Runs the AtomEye command <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">key</span> <span class="pre">value</span></code> for each pair. Valid settings
 are listed on the <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A3/A3.html#redraw">AtomEye 3 settings help page</a></p>
@@ -1138,13 +1138,13 @@ are listed on the <a class="reference external" href="http://mt.seas.upenn.edu/A
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.wait">
-<code class="descname">wait</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.wait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.wait" title="Permalink to this definition">¶</a></dt>
+<code class="descname">wait</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.wait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.wait" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sleep until this AtomEye viewer has finished processing all queued events.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="atomeye.AtomEyeViewer.xtal_origin_goto">
-<code class="descname">xtal_origin_goto</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.xtal_origin_goto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.xtal_origin_goto" title="Permalink to this definition">¶</a></dt>
+<code class="descname">xtal_origin_goto</code><span class="sig-paren">(</span><em>self</em>, <em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/atomeye.html#AtomEyeViewer.xtal_origin_goto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#atomeye.AtomEyeViewer.xtal_origin_goto" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move the crystal origin to fractional coordinates <cite>s</cite></p>
 <p>For example, use <code class="docutils literal notranslate"><span class="pre">s=[0.5,</span> <span class="pre">0.5,</span> <span class="pre">0.5]</span></code> to shift by half the cell along
 the <span class="math notranslate nohighlight">\(\mathbf{a}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{b}\)</span> and <span class="math notranslate nohighlight">\(\mathbf{c}\)</span>

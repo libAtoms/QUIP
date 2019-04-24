@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Interactive visualisation of atomic systems with qlab &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -673,13 +673,13 @@ into a single namespace, so <code class="docutils literal notranslate"><span cla
 <dd><p>Subclass of Atoms and AtomEyeViewer</p>
 <dl class="method">
 <dt id="qlab.AtomsViewer.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of this <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> object</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="qlab.AtomsViewer.gcat">
-<code class="descname">gcat</code><span class="sig-paren">(</span><em>update=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.gcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.gcat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">gcat</code><span class="sig-paren">(</span><em>self</em>, <em>update=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.gcat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.gcat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get current atoms - return Atoms object currently being visualised.</p>
 <p>If update=False (the default), we return what is currently being visualised,
 even if this is not in sync with self.atoms[self.frame].</p>
@@ -687,7 +687,7 @@ even if this is not in sync with self.atoms[self.frame].</p>
 
 <dl class="method">
 <dt id="qlab.AtomsViewer.scat">
-<code class="descname">scat</code><span class="sig-paren">(</span><em>atoms</em>, <em>frame=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.scat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.scat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">scat</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>frame=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#AtomsViewer.scat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.AtomsViewer.scat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set current atoms (and optionally also current frame)</p>
 </dd></dl>
 
@@ -704,35 +704,35 @@ even if this is not in sync with self.atoms[self.frame].</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.clip_visible" title="qlab.QuippyViewer.clip_visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_visible</span></code></a>([orig_index])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.clip_visible" title="qlab.QuippyViewer.clip_visible"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_visible</span></code></a>(self[,&nbsp;orig_index])</td>
 <td>Remove atoms outside the visible window from the Atoms object.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.render_movie" title="qlab.QuippyViewer.render_movie"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_movie</span></code></a>(moviefile[,&nbsp;start,&nbsp;stop,&nbsp;step,&nbsp;…])</td>
+<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.render_movie" title="qlab.QuippyViewer.render_movie"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_movie</span></code></a>(self,&nbsp;moviefile[,&nbsp;start,&nbsp;stop,&nbsp;…])</td>
 <td>Render a movie for the trajectory.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.select_atoms" title="qlab.QuippyViewer.select_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_atoms</span></code></a>([reset,&nbsp;markname,&nbsp;value])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#qlab.QuippyViewer.select_atoms" title="qlab.QuippyViewer.select_atoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_atoms</span></code></a>(self[,&nbsp;reset,&nbsp;markname,&nbsp;value])</td>
 <td>Select atoms by clicking on them.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.set_cutoffs" title="qlab.QuippyViewer.set_cutoffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_cutoffs</span></code></a>([nneighb_only])</td>
+<tr class="row-even"><td><a class="reference internal" href="#qlab.QuippyViewer.set_cutoffs" title="qlab.QuippyViewer.set_cutoffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_cutoffs</span></code></a>(self[,&nbsp;nneighb_only])</td>
 <td>Set cutoffs for AtomEye bonds and coordination colouring</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="qlab.QuippyViewer.clip_visible">
-<code class="descname">clip_visible</code><span class="sig-paren">(</span><em>orig_index=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.clip_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.clip_visible" title="Permalink to this definition">¶</a></dt>
+<code class="descname">clip_visible</code><span class="sig-paren">(</span><em>self</em>, <em>orig_index=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.clip_visible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.clip_visible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove atoms outside the visible window from the Atoms object. Also sets indices for frames not yet loaded from disk.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.render_movie">
-<code class="descname">render_movie</code><span class="sig-paren">(</span><em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
+<code class="descname">render_movie</code><span class="sig-paren">(</span><em>self</em>, <em>moviefile</em>, <em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>hook=None</em>, <em>offset=0</em>, <em>encoder='ffmpeg -i %s -r 25 -b 30M %s'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.render_movie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.render_movie" title="Permalink to this definition">¶</a></dt>
 <dd><p>Render a movie for the trajectory.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.select_atoms">
-<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select_atoms</code><span class="sig-paren">(</span><em>self</em>, <em>reset=True</em>, <em>markname='selection_mark'</em>, <em>value=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.select_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.select_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select atoms by clicking on them. Returns a list of atom indices.</p>
 <p>Specify reset=False to modify an existing property. The name of the
 property is <cite>markname</cite> (default “selection_mark”) and the value of
@@ -741,7 +741,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.set_cutoffs">
-<code class="descname">set_cutoffs</code><span class="sig-paren">(</span><em>nneighb_only=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.set_cutoffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.set_cutoffs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_cutoffs</code><span class="sig-paren">(</span><em>self</em>, <em>nneighb_only=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.set_cutoffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.set_cutoffs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set cutoffs for AtomEye bonds and coordination colouring</p>
 <p>Cutoff lengths are set to match quippy <code class="xref py py-attr docutils literal notranslate"><span class="pre">nneightol</span></code>
 (if <cite>nneighb_only</cite> is True, the default) or <code class="xref py py-attr docutils literal notranslate"><span class="pre">cutoff</span></code>
@@ -750,7 +750,7 @@ clicked atoms is given by the <cite>value</cite> argument (default True).</p>
 
 <dl class="method">
 <dt id="qlab.QuippyViewer.show">
-<code class="descname">show</code><span class="sig-paren">(</span><em>property=None</em>, <em>frame=None</em>, <em>arrows=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.show" title="Permalink to this definition">¶</a></dt>
+<code class="descname">show</code><span class="sig-paren">(</span><em>self</em>, <em>property=None</em>, <em>frame=None</em>, <em>arrows=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/qlab.html#QuippyViewer.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qlab.QuippyViewer.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update what is shown in this AtomEye viewer window.</p>
 <p><cite>property</cite> should be the name of the auxiliary property used to colour the atoms (e.g. “charge”)
 <cite>frame</cite> is the (zero-based) index of the frame to show.

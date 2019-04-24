@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tools for fracture simulations &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Tools for fracture simulations &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -458,7 +458,7 @@
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_print" title="quippy.crack.crack_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_print</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.crack_print" title="quippy.crack.crack_print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_print</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Print crack slab to XYZ file, using properties defined in ‘params%io_print_properties’ or all properties if ‘params%io_print_all_properties’ is true.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.crack_strain_energy_release_rate" title="quippy.crack.crack_strain_energy_release_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crack_strain_energy_release_rate</span></code></a>(at[,&nbsp;bulk,&nbsp;…])</td>
@@ -963,7 +963,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.any_per_atom_tau" title="quippy.crack.CrackParams.any_per_atom_tau"><code class="xref py py-obj docutils literal notranslate"><span class="pre">any_per_atom_tau</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.any_per_atom_tau" title="quippy.crack.CrackParams.any_per_atom_tau"><code class="xref py py-obj docutils literal notranslate"><span class="pre">any_per_atom_tau</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -977,14 +977,14 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <tr class="row-even"><td><a class="reference internal" href="#quippy.crack.CrackParams.print_" title="quippy.crack.CrackParams.print_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_</span></code></a>([file])</td>
 <td>Print out this CrackParams structure</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.read_xml" title="quippy.crack.CrackParams.read_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_xml</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.CrackParams.read_xml" title="quippy.crack.CrackParams.read_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_xml</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">read_xml</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.crack.CrackParams.any_per_atom_tau">
-<code class="descname">any_per_atom_tau</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.any_per_atom_tau" title="Permalink to this definition">¶</a></dt>
+<code class="descname">any_per_atom_tau</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.any_per_atom_tau" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1023,7 +1023,7 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 
 <dl class="method">
 <dt id="quippy.crack.CrackParams.read_xml">
-<code class="descname">read_xml</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.read_xml" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_xml</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.crack.CrackParams.read_xml" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">read_xml</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -1891,14 +1891,14 @@ converged when <span class="math notranslate nohighlight">\(|\mathbf{f}|^2 &lt;\
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate.apply_strain" title="quippy.crack.ConstantStrainRate.apply_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_strain</span></code></a>(atoms[,&nbsp;rigid_constraints])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.crack.ConstantStrainRate.apply_strain" title="quippy.crack.ConstantStrainRate.apply_strain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_strain</span></code></a>(self,&nbsp;atoms[,&nbsp;rigid_constraints])</td>
 <td>Applies a constant strain to the system.</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.crack.ConstantStrainRate.apply_strain">
-<code class="descname">apply_strain</code><span class="sig-paren">(</span><em>atoms</em>, <em>rigid_constraints=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#ConstantStrainRate.apply_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.ConstantStrainRate.apply_strain" title="Permalink to this definition">¶</a></dt>
+<code class="descname">apply_strain</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>rigid_constraints=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/crack.html#ConstantStrainRate.apply_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.crack.ConstantStrainRate.apply_strain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies a constant strain to the system.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -3249,7 +3249,10 @@ far field contribution to the stress <code class="docutils literal notranslate">
 have the same meaning as there.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#quippy.crack.fit_crack_stress_field" title="quippy.crack.fit_crack_stress_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_crack_stress_field</span></code></a></p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="#quippy.crack.fit_crack_stress_field" title="quippy.crack.fit_crack_stress_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_crack_stress_field</span></code></a></dt>
+<dd></dd>
+</dl>
 </div>
 </dd></dl>
 

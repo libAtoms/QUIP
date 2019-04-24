@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Learn on the Fly embedding scheme &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Learn on the Fly embedding scheme &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -276,41 +276,41 @@ method for a description of the algorithm.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="quippy.lotf.LOTFDynamics.advance_verlet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">advance_verlet</span></code></a>(f)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="quippy.lotf.LOTFDynamics.advance_verlet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">advance_verlet</span></code></a>(self,&nbsp;f)</td>
 <td>Single advance using velocity Verlet with forces <cite>f</cite></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.fit_forces" title="quippy.lotf.LOTFDynamics.fit_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_forces</span></code></a>(atoms)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.fit_forces" title="quippy.lotf.LOTFDynamics.fit_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_forces</span></code></a>(self,&nbsp;atoms)</td>
 <td>Evaluate QM forces and optimise the adjustable potential to reproduce them</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="quippy.lotf.LOTFDynamics.get_extrapolation_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_extrapolation_forces</span></code></a>(atoms,&nbsp;i)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="quippy.lotf.LOTFDynamics.get_extrapolation_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_extrapolation_forces</span></code></a>(self,&nbsp;atoms,&nbsp;i)</td>
 <td>Get LOTF forces at extrapolation step <cite>i</cite></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="quippy.lotf.LOTFDynamics.get_interpolation_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolation_forces</span></code></a>(atoms,&nbsp;i)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="quippy.lotf.LOTFDynamics.get_interpolation_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolation_forces</span></code></a>(self,&nbsp;atoms,&nbsp;i)</td>
 <td>Get LOTF forces at interpolation step <cite>i</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="quippy.lotf.LOTFDynamics.get_reference_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_reference_forces</span></code></a>(atoms,&nbsp;i)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="quippy.lotf.LOTFDynamics.get_reference_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_reference_forces</span></code></a>(self,&nbsp;atoms,&nbsp;i)</td>
 <td>Do a reference QM calculation and return forces resulting from standard force mixing.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_state" title="quippy.lotf.LOTFDynamics.get_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_state</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.get_state" title="quippy.lotf.LOTFDynamics.get_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_state</span></code></a>(self)</td>
 <td>Save dynamical state, including random number seeds</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="quippy.lotf.LOTFDynamics.initialise_adjustable_potential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise_adjustable_potential</span></code></a>(atoms)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="quippy.lotf.LOTFDynamics.initialise_adjustable_potential"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise_adjustable_potential</span></code></a>(self,&nbsp;atoms)</td>
 <td>Bootstrap the potential by doing a QM calculation and fitting the adj.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="quippy.lotf.LOTFDynamics.set_qm_update_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_qm_update_func</span></code></a>(qm_update_func)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="quippy.lotf.LOTFDynamics.set_qm_update_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_qm_update_func</span></code></a>(self,&nbsp;qm_update_func)</td>
 <td>Specify a function that will be called up update the QM region</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_state" title="quippy.lotf.LOTFDynamics.set_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_state</span></code></a>(saved_state)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.set_state" title="quippy.lotf.LOTFDynamics.set_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_state</span></code></a>(self,&nbsp;saved_state)</td>
 <td>Restore dynamics to a previously saved state.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>(self)</td>
 <td>Advance the dynamics by one LOTF cycle</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.advance_verlet">
-<code class="descname">advance_verlet</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.advance_verlet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="Permalink to this definition">¶</a></dt>
+<code class="descname">advance_verlet</code><span class="sig-paren">(</span><em>self</em>, <em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.advance_verlet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.advance_verlet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Single advance using velocity Verlet with forces <cite>f</cite></p>
 <p>Do not call this method directly: it is invoked by <a class="reference internal" href="#quippy.lotf.LOTFDynamics.step" title="quippy.lotf.LOTFDynamics.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a>
 once for each extrapolation and interpolation step.</p>
@@ -321,32 +321,32 @@ are half-stepped outside of this routine.</p>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.fit_forces">
-<code class="descname">fit_forces</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.fit_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.fit_forces" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_forces</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.fit_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.fit_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate QM forces and optimise the adjustable potential to reproduce them</p>
 <p>Returns the QM forces on the atoms at the fit point</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_extrapolation_forces">
-<code class="descname">get_extrapolation_forces</code><span class="sig-paren">(</span><em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_extrapolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_extrapolation_forces</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_extrapolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_extrapolation_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get LOTF forces at extrapolation step <cite>i</cite></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_interpolation_forces">
-<code class="descname">get_interpolation_forces</code><span class="sig-paren">(</span><em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_interpolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_interpolation_forces</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_interpolation_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_interpolation_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get LOTF forces at interpolation step <cite>i</cite></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_number_of_steps">
-<code class="descname">get_number_of_steps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_number_of_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_number_of_steps" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_number_of_steps</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_number_of_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_number_of_steps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return number of steps taken since start of dynamics</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_reference_forces">
-<code class="descname">get_reference_forces</code><span class="sig-paren">(</span><em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_reference_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_reference_forces</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_reference_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_reference_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do a reference QM calculation and return forces resulting from standard force mixing.</p>
 <p>Useful for checking errors during predictor/corrector extrapolation and interpolation.
 Does not change the current set of adjustable potential parameters.</p>
@@ -354,33 +354,33 @@ Does not change the current set of adjustable potential parameters.</p>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_state">
-<code class="descname">get_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_state" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_state</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save dynamical state, including random number seeds</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.get_time">
-<code class="descname">get_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_time" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_time</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.get_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.get_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return current time (in ASE time units)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.initialise_adjustable_potential">
-<code class="descname">initialise_adjustable_potential</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.initialise_adjustable_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initialise_adjustable_potential</code><span class="sig-paren">(</span><em>self</em>, <em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.initialise_adjustable_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.initialise_adjustable_potential" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bootstrap the potential by doing a QM calculation and fitting the adj. pot.</p>
 <p>Returns the initial QM/MM forces on the atoms</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>steps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run</code><span class="sig-paren">(</span><em>self</em>, <em>steps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run LOTF dynamics forwards for given number of small time steps</p>
 <p>Number of LOTF cycles is given by <code class="docutils literal notranslate"><span class="pre">step/extrapolate_steps</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.set_qm_update_func">
-<code class="descname">set_qm_update_func</code><span class="sig-paren">(</span><em>qm_update_func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_qm_update_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_qm_update_func</code><span class="sig-paren">(</span><em>self</em>, <em>qm_update_func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_qm_update_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_qm_update_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specify a function that will be called up update the QM region</p>
 <p><cite>qm_update_func</cite> should take a single argument, which is the
 <a class="reference internal" href="atoms.html#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object representing the current state of the
@@ -389,14 +389,14 @@ dynamical system.</p>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.set_state">
-<code class="descname">set_state</code><span class="sig-paren">(</span><em>saved_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_state" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_state</code><span class="sig-paren">(</span><em>self</em>, <em>saved_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.set_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.set_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore dynamics to a previously saved state.
 Sets arrays directly, ignoring any constraints.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.lotf.LOTFDynamics.step">
-<code class="descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.step" title="Permalink to this definition">¶</a></dt>
+<code class="descname">step</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/lotf.html#LOTFDynamics.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.lotf.LOTFDynamics.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advance the dynamics by one LOTF cycle</p>
 <p>The <em>Learn on the Fly</em> algorithm proceeds as follows:</p>
 <blockquote>

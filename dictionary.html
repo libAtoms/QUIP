@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -247,7 +247,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.bcast" title="quippy.dictionary.bcast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bcast</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.bcast" title="quippy.dictionary.bcast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bcast</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Routine is wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">bcast</span></code> containing multiple routines:</td>
 </tr>
 </tbody>
@@ -427,7 +427,7 @@ files:</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_array</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.add_array" title="quippy.dictionary.Dictionary.add_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_array</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">add_array</span></code> containing multiple routines:</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.assignment" title="quippy.dictionary.Dictionary.assignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assignment</span></code></a>(from)</td>
@@ -442,7 +442,7 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.expand_string" title="quippy.dictionary.Dictionary.expand_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expand_string</span></code></a>(in,[error])</td>
 <td>Copy extendable string from <code class="docutils literal notranslate"><span class="pre">in</span></code> to <code class="docutils literal notranslate"><span class="pre">out</span></code>, expanding variables formatted as <code class="docutils literal notranslate"><span class="pre">\:math:`KEY</span></code> or <code class="docutils literal notranslate"><span class="pre">\`\{KEY\}</span></code> using values in this Dictionary.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_array" title="quippy.dictionary.Dictionary.get_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_array</span></code></a>(key)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_array" title="quippy.dictionary.Dictionary.get_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_array</span></code></a>(self,&nbsp;key)</td>
 <td>Return a _reference_ to an array stored in this Dictionary</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_key" title="quippy.dictionary.Dictionary.get_key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_key</span></code></a>(i,[error])</td>
@@ -456,7 +456,7 @@ files:</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_type" title="quippy.dictionary.Dictionary.get_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_type</span></code></a>(key)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_type" title="quippy.dictionary.Dictionary.get_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_type</span></code></a>(self,&nbsp;key)</td>
 <td>Return an integer code for the type of the value associated with a key</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_type_and_size" title="quippy.dictionary.Dictionary.get_type_and_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_type_and_size</span></code></a>(key,[error])</td>
@@ -470,13 +470,13 @@ files:</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_value" title="quippy.dictionary.Dictionary.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a>(k)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.get_value" title="quippy.dictionary.Dictionary.get_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_value</span></code></a>(self,&nbsp;k)</td>
 <td>Return a _copy_ of a value stored in Dictionary</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_same_fortran_object</span></code>(self,&nbsp;other)</td>
 <td>Test if <cite>self</cite> and <cite>other</cite> point to the same Fortan object.</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterkeys</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterkeys</span></code>(self)</td>
 <td></td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.lookup_entry_i" title="quippy.dictionary.Dictionary.lookup_entry_i"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lookup_entry_i</span></code></a>(key,[case_sensitive])</td>
@@ -494,16 +494,16 @@ files:</p>
 <tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.remove_value" title="quippy.dictionary.Dictionary.remove_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_value</span></code></a>(key)</td>
 <td>Remove an entry from a Dictionary</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value" title="quippy.dictionary.Dictionary.set_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Set a value in a Dictionary</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value_pointer" title="quippy.dictionary.Dictionary.set_value_pointer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value_pointer</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.set_value_pointer" title="quippy.dictionary.Dictionary.set_value_pointer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value_pointer</span></code></a>(self,&nbsp;\*args,&nbsp;\*\*kwargs)</td>
 <td>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">set_value_pointer</span></code> containing multiple routines:</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>()</td>
+<tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy</span></code>(self)</td>
 <td>Return a shallow copy of <cite>self</cite>.</td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(other)</td>
+<tr class="row-odd"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">shallow_copy_from</span></code>(self,&nbsp;other)</td>
 <td>Transform <cite>self</cite> into a shallow copy of <cite>other</cite>.</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#quippy.dictionary.Dictionary.swap" title="quippy.dictionary.Dictionary.swap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">swap</span></code></a>(key1,key2,[case_sensitive,error])</td>
@@ -516,7 +516,7 @@ files:</p>
 </table>
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.add_array">
-<code class="descname">add_array</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.add_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_array</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.add_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">add_array</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -876,7 +876,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.get_array">
-<code class="descname">get_array</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_array</code><span class="sig-paren">(</span><em>self</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a _reference_ to an array stored in this Dictionary</p>
 </dd></dl>
 
@@ -909,7 +909,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.get_type">
-<code class="descname">get_type</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_type" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_type</code><span class="sig-paren">(</span><em>self</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an integer code for the type of the value associated with a key</p>
 </dd></dl>
 
@@ -942,13 +942,13 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.get_value">
-<code class="descname">get_value</code><span class="sig-paren">(</span><em>k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>self</em>, <em>k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.get_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a _copy_ of a value stored in Dictionary</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.has_key">
-<code class="descname">has_key</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.has_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.has_key" title="Permalink to this definition">¶</a></dt>
+<code class="descname">has_key</code><span class="sig-paren">(</span><em>self</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.has_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.has_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return true if <code class="docutils literal notranslate"><span class="pre">key</span></code> is in Dictionary or false if not</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -976,7 +976,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.keys">
-<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.keys" title="Permalink to this definition">¶</a></dt>
+<code class="descname">keys</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>array of keys</p>
 </dd></dl>
 
@@ -1099,7 +1099,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.set_value">
-<code class="descname">set_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.set_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_value</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.set_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a value in a Dictionary</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">set_value</span></code> containing multiple routines:</p>
 <blockquote>
@@ -1374,7 +1374,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.set_value_pointer">
-<code class="descname">set_value_pointer</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.set_value_pointer" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_value_pointer</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.dictionary.Dictionary.set_value_pointer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">set_value_pointer</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -1508,7 +1508,7 @@ is raised if a key is not found, or if the string ends with a dollar sign or bra
 
 <dl class="method">
 <dt id="quippy.dictionary.Dictionary.subset">
-<code class="descname">subset</code><span class="sig-paren">(</span><em>keys</em>, <em>out=None</em>, <em>case_sensitive=None</em>, <em>out_no_initialise=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.subset" title="Permalink to this definition">¶</a></dt>
+<code class="descname">subset</code><span class="sig-paren">(</span><em>self</em>, <em>keys</em>, <em>out=None</em>, <em>case_sensitive=None</em>, <em>out_no_initialise=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary.html#Dictionary.subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary.Dictionary.subset" title="Permalink to this definition">¶</a></dt>
 <dd><p>dictionary_subset(keys,out,[case_sensitive,out_no_initialise,error])</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

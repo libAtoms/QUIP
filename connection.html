@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Connection objects &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Connection objects &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -341,19 +341,19 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.distances" title="quippy.atoms.Connection.distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distances</span></code></a>([Z1,&nbsp;Z2])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.distances" title="quippy.atoms.Connection.distances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distances</span></code></a>(self[,&nbsp;Z1,&nbsp;Z2])</td>
 <td>Distances between pairs of neighbours, optionally filtered by species (Z1,Z2)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbors" title="quippy.atoms.Connection.get_neighbors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_neighbors</span></code></a>(i)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbors" title="quippy.atoms.Connection.get_neighbors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_neighbors</span></code></a>(self,&nbsp;i)</td>
 <td>Variant spelling of <a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_neighbours()</span></code></a></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_neighbours</span></code></a>(i)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_neighbours</span></code></a>(self,&nbsp;i)</td>
 <td>Return neighbours of atom i</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.iterneighbours" title="quippy.atoms.Connection.iterneighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterneighbours</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Connection.iterneighbours" title="quippy.atoms.Connection.iterneighbours"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterneighbours</span></code></a>(self)</td>
 <td>Iterate over the neighbours of all atoms</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.pairs" title="quippy.atoms.Connection.pairs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pairs</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Connection.pairs" title="quippy.atoms.Connection.pairs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pairs</span></code></a>(self)</td>
 <td>Yield pairs of atoms (i,j) with i &lt; j which are neighbours</td>
 </tr>
 </tbody>
@@ -607,7 +607,7 @@ any atoms are moved (e.g. it is called by <code class="docutils literal notransl
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.distances">
-<code class="descname">distances</code><span class="sig-paren">(</span><em>Z1=None</em>, <em>Z2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.distances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">distances</code><span class="sig-paren">(</span><em>self</em>, <em>Z1=None</em>, <em>Z2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Distances between pairs of neighbours, optionally
 filtered by species (Z1,Z2)</p>
 </dd></dl>
@@ -651,13 +651,13 @@ filtered by species (Z1,Z2)</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.get_neighbors">
-<code class="descname">get_neighbors</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbors" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_neighbors</code><span class="sig-paren">(</span><em>self</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Variant spelling of <a class="reference internal" href="#quippy.atoms.Connection.get_neighbours" title="quippy.atoms.Connection.get_neighbours"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_neighbours()</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.get_neighbours">
-<code class="descname">get_neighbours</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbours" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_neighbours</code><span class="sig-paren">(</span><em>self</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.get_neighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.get_neighbours" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return neighbours of atom i</p>
 <p>Return arrays of indices and offsets to neighbouring
 atoms. The positions of the neighbor atoms can be calculated like
@@ -674,13 +674,13 @@ self_interaction=False.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.iterneighbours">
-<code class="descname">iterneighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.iterneighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.iterneighbours" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iterneighbours</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.iterneighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.iterneighbours" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over the neighbours of all atoms</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.n_neighbours">
-<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.n_neighbours" title="Permalink to this definition">¶</a></dt>
+<code class="descname">n_neighbours</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.n_neighbours" title="Permalink to this definition">¶</a></dt>
 <dd><p>Neighbour list stuff</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">n_neighbours</span></code> containing multiple routines:</p>
 <blockquote>
@@ -764,7 +764,7 @@ then only neighbours closer than this cutoff are included.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.neighbour">
-<code class="descname">neighbour</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.neighbour" title="Permalink to this definition">¶</a></dt>
+<code class="descname">neighbour</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.neighbour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">neighbour</span></code> containing multiple routines:</p>
 <blockquote>
 <div><dl class="function">
@@ -836,7 +836,7 @@ if <span class="math notranslate nohighlight">\(i &gt; j\)</span>, it is an inde
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.pairs">
-<code class="descname">pairs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.pairs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pairs</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Connection.pairs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Connection.pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield pairs of atoms (i,j) with i &lt; j which are neighbours</p>
 </dd></dl>
 
@@ -941,7 +941,7 @@ logger or to a specificied Inoutput object.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Connection.wipe">
-<code class="descname">wipe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.wipe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">wipe</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Connection.wipe" title="Permalink to this definition">¶</a></dt>
 <dd><p>connection_wipe</p>
 <p>Wipe the contents of the connection tables, but keep the allocation</p>
 <p class="rubric">References</p>

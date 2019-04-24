@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Atoms objects &mdash; quippy 7ea04c5+ documentation</title>
+  <title>Atoms objects &mdash; quippy ad62f72+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7ea04c5+
+                ad62f72+
               </div>
             
           
@@ -297,10 +297,10 @@ topology and neighbour lists, and the <a class="reference internal" href="domain
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.cell_volume" title="quippy.atoms.cell_volume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cell_volume</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.cell_volume" title="quippy.atoms.cell_volume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cell_volume</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>calculate volume of unit cell</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_into_cell</span></code></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.map_into_cell" title="quippy.atoms.map_into_cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_into_cell</span></code></a>(\*args,&nbsp;\*\*kwargs)</td>
 <td>Map atomic positions into the unit cell so that lattice</td>
 </tr>
 <tr class="row-even"><td><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lattice_params_</span></code>(…)</td>
@@ -432,38 +432,38 @@ Class is wrapper around Fortran type <code class="docutils literal notranslate">
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_from" title="quippy.atoms.Atoms.copy_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy_from</span></code></a>(other)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.copy_from" title="quippy.atoms.Atoms.copy_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy_from</span></code></a>(self,&nbsp;other)</td>
 <td>Replace contents of this Atoms object with data from <cite>other</cite>.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.density" title="quippy.atoms.Atoms.density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">density</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.density" title="quippy.atoms.Atoms.density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">density</span></code></a>(self)</td>
 <td>Density in units of <span class="math notranslate nohighlight">\(g/m^3\)</span>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.equivalent" title="quippy.atoms.Atoms.equivalent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">equivalent</span></code></a>(other)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.equivalent" title="quippy.atoms.Atoms.equivalent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">equivalent</span></code></a>(self,&nbsp;other)</td>
 <td>Test for equivalence of two Atoms objects.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_atom" title="quippy.atoms.Atoms.get_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_atom</span></code></a>(i)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.get_atom" title="quippy.atoms.Atoms.get_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_atom</span></code></a>(self,&nbsp;i)</td>
 <td>Return a dictionary containing the properties of the atom with index <cite>i</cite>.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.iteratoms" title="quippy.atoms.Atoms.iteratoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iteratoms</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.iteratoms" title="quippy.atoms.Atoms.iteratoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iteratoms</span></code></a>(self)</td>
 <td>Iterate over atoms, calling get_atom() for each one</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.md5_hash" title="quippy.atoms.Atoms.md5_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">md5_hash</span></code></a>(ndigits)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.md5_hash" title="quippy.atoms.Atoms.md5_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">md5_hash</span></code></a>(self,&nbsp;ndigits)</td>
 <td>Hash an atoms object with a precision of ndigits decimal digits.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.mem_estimate" title="quippy.atoms.Atoms.mem_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_estimate</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.mem_estimate" title="quippy.atoms.Atoms.mem_estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_estimate</span></code></a>(self)</td>
 <td>Estimate memory usage of this Atoms object, in bytes</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_atom" title="quippy.atoms.Atoms.print_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_atom</span></code></a>(i)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.atoms.Atoms.print_atom" title="quippy.atoms.Atoms.print_atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_atom</span></code></a>(self,&nbsp;i)</td>
 <td>Pretty-print the properties of the atom with index <cite>i</cite></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from</span></code></a>(source,&nbsp;**readargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.atoms.Atoms.read_from" title="quippy.atoms.Atoms.read_from"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_from</span></code></a>(self,&nbsp;source,&nbsp;\*\*readargs)</td>
 <td>Replace contents of this Atoms object with Atoms read from <cite>source</cite></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="quippy.atoms.Atoms.add_atoms">
-<code class="descname">add_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.add_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_atoms</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.add_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add one or more atoms to an Atoms object.
 To add a single atom, ‘pos’ should be an array of size 3 and ‘z a
 single integer. To add multiple atoms either arrays of length
@@ -566,7 +566,7 @@ the pair in the quantum list.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.add_property">
-<code class="descname">add_property</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>n_cols=None</em>, <em>overwrite=None</em>, <em>property_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.add_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.add_property" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_property</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>value</em>, <em>n_cols=None</em>, <em>overwrite=None</em>, <em>property_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.add_property"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.add_property" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new property to this Atoms object.</p>
 <p><cite>name</cite> is the name of the new property and <cite>value</cite> should be
 either a scalar or an array representing the value, which should
@@ -604,7 +604,7 @@ that given in <cite>value</cite>, otherwise the old value is retained.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.add_property_from_pointer">
-<code class="descname">add_property_from_pointer</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.add_property_from_pointer" title="Permalink to this definition">¶</a></dt>
+<code class="descname">add_property_from_pointer</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.add_property_from_pointer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a per-atom property to this atoms object, but point to existing space
 rather than allocating new space for it (as add_property does).</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">add_property_from_pointer</span></code> containing multiple routines:</p>
@@ -757,7 +757,7 @@ rather than allocating new space for it (as add_property does).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.append">
-<code class="descname">append</code><span class="sig-paren">(</span><em>atom</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.append" title="Permalink to this definition">¶</a></dt>
+<code class="descname">append</code><span class="sig-paren">(</span><em>self</em>, <em>atom</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append atom to end.</p>
 </dd></dl>
 
@@ -1108,7 +1108,7 @@ usually desirable to call undo_pbc_jumps and undo_CoM_motion first</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.cell_volume">
-<code class="descname">cell_volume</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cell_volume" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cell_volume</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.cell_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>atoms_cell_volume</p>
 <p>calculate volume of unit cell
 Returns the (unsigned) volume of the simulation cell of this Atoms</p>
@@ -1130,7 +1130,7 @@ Returns the (unsigned) volume of the simulation cell of this Atoms</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.center">
-<code class="descname">center</code><span class="sig-paren">(</span><em>vacuum=None</em>, <em>axis=(0</em>, <em>1</em>, <em>2)</em>, <em>about=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.center" title="Permalink to this definition">¶</a></dt>
+<code class="descname">center</code><span class="sig-paren">(</span><em>self</em>, <em>vacuum=None</em>, <em>axis=(0</em>, <em>1</em>, <em>2)</em>, <em>about=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.center" title="Permalink to this definition">¶</a></dt>
 <dd><p>Center atoms in unit cell.</p>
 <p>Centers the atoms in the unit cell, so there is the same
 amount of vacuum on all sides.</p>
@@ -1286,7 +1286,7 @@ in list. Result is in outlist on exit.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.copy">
-<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.copy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of this <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object</p>
 </dd></dl>
 
@@ -1320,7 +1320,7 @@ The destination will be overriden.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.copy_from">
-<code class="descname">copy_from</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.copy_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.copy_from" title="Permalink to this definition">¶</a></dt>
+<code class="descname">copy_from</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.copy_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.copy_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace contents of this Atoms object with data from <cite>other</cite>.</p>
 </dd></dl>
 
@@ -1446,7 +1446,7 @@ cost.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.density">
-<code class="descname">density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.density" title="Permalink to this definition">¶</a></dt>
+<code class="descname">density</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.density" title="Permalink to this definition">¶</a></dt>
 <dd><p>Density in units of <span class="math notranslate nohighlight">\(g/m^3\)</span>. If <cite>mass</cite> property exists,
 use that, otherwise we use <cite>z</cite> and ElementMass table.</p>
 </dd></dl>
@@ -1486,7 +1486,7 @@ use that, otherwise we use <cite>z</cite> and ElementMass table.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.diff_min_image">
-<code class="descname">diff_min_image</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.diff_min_image" title="Permalink to this definition">¶</a></dt>
+<code class="descname">diff_min_image</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.diff_min_image" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Return the minimum image difference vector between two atoms or</dt>
 <dd>positions. End points can be specified by any combination of
@@ -1730,7 +1730,7 @@ of <code class="docutils literal notranslate"><span class="pre">shift</span></co
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.distance_min_image">
-<code class="descname">distance_min_image</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.distance_min_image" title="Permalink to this definition">¶</a></dt>
+<code class="descname">distance_min_image</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.distance_min_image" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>This interface calculates the distance between the nearest periodic images of two points (or atoms).</dt>
 <dd>Return minimum image distance between two atoms or positions.
@@ -1834,7 +1834,7 @@ be returned in it.</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.edit">
-<code class="descname">edit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.edit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">edit</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.edit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.edit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modify atoms interactively through ASE’s GUI viewer.</p>
 <p>Conflicts leading to undesirable behaviour might arise
 when matplotlib has been pre-imported with certain
@@ -1846,7 +1846,7 @@ method.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.equivalent">
-<code class="descname">equivalent</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.equivalent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.equivalent" title="Permalink to this definition">¶</a></dt>
+<code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.equivalent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test for equivalence of two Atoms objects.</p>
 <p>Equivalence is less strong than equality.  Equality (written
 <cite>self == other</cite>) requires all properties and parameters to be
@@ -1864,7 +1864,7 @@ this method.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.euler_rotate">
-<code class="descname">euler_rotate</code><span class="sig-paren">(</span><em>phi=0.0</em>, <em>theta=0.0</em>, <em>psi=0.0</em>, <em>center=(0</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.euler_rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.euler_rotate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">euler_rotate</code><span class="sig-paren">(</span><em>self</em>, <em>phi=0.0</em>, <em>theta=0.0</em>, <em>psi=0.0</em>, <em>center=(0</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.euler_rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.euler_rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate atoms via Euler angles (in degrees).</p>
 <p>See e.g <a class="reference external" href="http://mathworld.wolfram.com/EulerAngles.html">http://mathworld.wolfram.com/EulerAngles.html</a> for explanation.</p>
 <p>Parameters:</p>
@@ -1884,7 +1884,7 @@ select center of positions or ‘COU’ to select center of cell.</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.extend">
-<code class="descname">extend</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.extend" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extend</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.extend" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extend atoms object by appending atoms from <em>other</em>.</p>
 </dd></dl>
 
@@ -1913,14 +1913,14 @@ select center of positions or ‘COU’ to select center of cell.</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_all_distances">
-<code class="descname">get_all_distances</code><span class="sig-paren">(</span><em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_all_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_all_distances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_all_distances</code><span class="sig-paren">(</span><em>self</em>, <em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_all_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_all_distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return distances of all of the atoms with all of the atoms.</p>
 <p>Use mic=True to use the Minimum Image Convention.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_angle">
-<code class="descname">get_angle</code><span class="sig-paren">(</span><em>a1</em>, <em>a2</em>, <em>a3</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_angle</code><span class="sig-paren">(</span><em>self</em>, <em>a1</em>, <em>a2</em>, <em>a3</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get angle formed by three atoms.</p>
 <p>calculate angle in degrees between the vectors a2-&gt;a1 and
 a2-&gt;a3.</p>
@@ -1930,7 +1930,7 @@ angle across periodic boundaries.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_angles">
-<code class="descname">get_angles</code><span class="sig-paren">(</span><em>indices</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_angles</code><span class="sig-paren">(</span><em>self</em>, <em>indices</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get angle formed by three atoms for multiple groupings.</p>
 <p>calculate angle in degrees between vectors between atoms a2-&gt;a1
 and a2-&gt;a3, where a1, a2, and a3 are in each row of indices.</p>
@@ -1940,20 +1940,20 @@ the angle across periodic boundaries.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_angular_momentum">
-<code class="descname">get_angular_momentum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angular_momentum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angular_momentum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_angular_momentum</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_angular_momentum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_angular_momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get total angular momentum with respect to the center of mass.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_array">
-<code class="descname">get_array</code><span class="sig-paren">(</span><em>name</em>, <em>copy=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_array</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>copy=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an array.</p>
 <p>Returns a copy unless the optional argument copy is false.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_atom">
-<code class="descname">get_atom</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.get_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_atom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_atom</code><span class="sig-paren">(</span><em>self</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.get_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dictionary containing the properties of the atom with
 index <cite>i</cite>. If fortran_indexing=True (the default), <cite>i</cite> should be in
 range 1..self.n, otherwise it should be in range 0..(self.n-1).</p>
@@ -1961,25 +1961,25 @@ range 1..self.n, otherwise it should be in range 0..(self.n-1).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_atomic_numbers">
-<code class="descname">get_atomic_numbers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_atomic_numbers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_atomic_numbers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_atomic_numbers</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_atomic_numbers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_atomic_numbers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get integer array of atomic numbers.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_calculator">
-<code class="descname">get_calculator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_calculator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_calculator" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_calculator</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_calculator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_calculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get currently attached calculator object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_cell">
-<code class="descname">get_cell</code><span class="sig-paren">(</span><em>complete=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_cell" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_cell</code><span class="sig-paren">(</span><em>self</em>, <em>complete=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_cell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the three unit cell vectors as a 3x3 ndarray.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_cell_lengths_and_angles">
-<code class="descname">get_cell_lengths_and_angles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_cell_lengths_and_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_cell_lengths_and_angles" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_cell_lengths_and_angles</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_cell_lengths_and_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_cell_lengths_and_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get unit cell parameters. Sequence of 6 numbers.</p>
 <p>First three are unit cell vector lengths and second three
 are angles between them:</p>
@@ -1991,13 +1991,13 @@ are angles between them:</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_celldisp">
-<code class="descname">get_celldisp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_celldisp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_celldisp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_celldisp</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_celldisp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_celldisp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the unit cell displacement vectors.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_center_of_mass">
-<code class="descname">get_center_of_mass</code><span class="sig-paren">(</span><em>scaled=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_center_of_mass</code><span class="sig-paren">(</span><em>self</em>, <em>scaled=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_center_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_center_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the center of mass.</p>
 <p>If scaled=True the center of mass in scaled coordinates
 is returned.</p>
@@ -2005,13 +2005,13 @@ is returned.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_charges">
-<code class="descname">get_charges</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_charges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_charges</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_charges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get calculated charges.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_chemical_formula">
-<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>mode='hill'</em>, <em>empirical=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chemical_formula</code><span class="sig-paren">(</span><em>self</em>, <em>mode='hill'</em>, <em>empirical=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_formula" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the chemical formula as a string based on the chemical symbols.</p>
 <p>Parameters:</p>
 <dl class="docutils">
@@ -2037,13 +2037,13 @@ an empirical formula. Only for mode <cite>metal</cite> and <cite>hill</cite>.</d
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_chemical_symbols">
-<code class="descname">get_chemical_symbols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_symbols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_symbols" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_chemical_symbols</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_chemical_symbols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_chemical_symbols" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list of chemical symbol strings.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_dihedral">
-<code class="descname">get_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_dihedral</code><span class="sig-paren">(</span><em>self</em>, <em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>mic=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate dihedral angle.</p>
 <p>Calculate dihedral angle (in degrees) between the vectors a1-&gt;a2
 and a3-&gt;a4.</p>
@@ -2053,7 +2053,7 @@ angle across periodic boundaries.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_dipole_moment">
-<code class="descname">get_dipole_moment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_dipole_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_dipole_moment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_dipole_moment</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_dipole_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_dipole_moment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the electric dipole moment for the atoms object.</p>
 <p>Only available for calculators which has a get_dipole_moment()
 method.</p>
@@ -2061,7 +2061,7 @@ method.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_distance">
-<code class="descname">get_distance</code><span class="sig-paren">(</span><em>a0</em>, <em>a1</em>, <em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_distance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_distance</code><span class="sig-paren">(</span><em>self</em>, <em>a0</em>, <em>a1</em>, <em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return distance between two atoms.</p>
 <p>Use mic=True to use the Minimum Image Convention.
 vector=True gives the distance vector (from a0 to a1).</p>
@@ -2069,7 +2069,7 @@ vector=True gives the distance vector (from a0 to a1).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_distances">
-<code class="descname">get_distances</code><span class="sig-paren">(</span><em>a</em>, <em>indices</em>, <em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_distances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_distances</code><span class="sig-paren">(</span><em>self</em>, <em>a</em>, <em>indices</em>, <em>mic=False</em>, <em>vector=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_distances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return distances of atom No.i with a list of atoms.</p>
 <p>Use mic=True to use the Minimum Image Convention.
 vector=True gives the distance vector (from a to self[indices]).</p>
@@ -2077,7 +2077,7 @@ vector=True gives the distance vector (from a to self[indices]).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_forces">
-<code class="descname">get_forces</code><span class="sig-paren">(</span><em>apply_constraint=True</em>, <em>md=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_forces" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_forces</code><span class="sig-paren">(</span><em>self</em>, <em>apply_constraint=True</em>, <em>md=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate atomic forces.</p>
 <p>Ask the attached calculator to calculate the forces and apply
 constraints.  Use <em>apply_constraint=False</em> to get the raw
@@ -2088,49 +2088,49 @@ to the forces but to the momenta.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_initial_charges">
-<code class="descname">get_initial_charges</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_initial_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_initial_charges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_initial_charges</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_initial_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_initial_charges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of initial charges.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_initial_magnetic_moments">
-<code class="descname">get_initial_magnetic_moments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_initial_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_initial_magnetic_moments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_initial_magnetic_moments</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_initial_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_initial_magnetic_moments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of initial magnetic moments.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_kinetic_energy">
-<code class="descname">get_kinetic_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_kinetic_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_kinetic_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_kinetic_energy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_kinetic_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_kinetic_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the kinetic energy.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_magnetic_moment">
-<code class="descname">get_magnetic_moment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_magnetic_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_magnetic_moment" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_magnetic_moment</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_magnetic_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_magnetic_moment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get calculated total magnetic moment.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_magnetic_moments">
-<code class="descname">get_magnetic_moments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_magnetic_moments</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get calculated local magnetic moments.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_masses">
-<code class="descname">get_masses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_masses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_masses</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_masses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of masses in atomic mass units.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_momenta">
-<code class="descname">get_momenta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_momenta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_momenta" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_momenta</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_momenta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_momenta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of momenta.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_moments_of_inertia">
-<code class="descname">get_moments_of_inertia</code><span class="sig-paren">(</span><em>vectors=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_moments_of_inertia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_moments_of_inertia" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_moments_of_inertia</code><span class="sig-paren">(</span><em>self</em>, <em>vectors=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_moments_of_inertia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_moments_of_inertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the moments of inertia along the principal axes.</p>
 <p>The three principal moments of inertia are computed from the
 eigenvalues of the symmetric inertial tensor. Periodic boundary
@@ -2140,7 +2140,7 @@ amu*angstrom**2.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_number_of_atoms">
-<code class="descname">get_number_of_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_number_of_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_number_of_atoms</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_number_of_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the global number of atoms in a distributed-atoms parallel
 simulation.</p>
 <p>DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!</p>
@@ -2154,7 +2154,7 @@ situations.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_param_value">
-<code class="descname">get_param_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.get_param_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_param_value</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.get_param_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>get a (per-configuration) value from the atoms%params dictionary</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">get_param_value</span></code> containing multiple routines:</p>
 <blockquote>
@@ -2333,20 +2333,20 @@ situations.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_pbc">
-<code class="descname">get_pbc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_pbc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_pbc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_pbc</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_pbc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_pbc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get periodic boundary condition flags.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_positions">
-<code class="descname">get_positions</code><span class="sig-paren">(</span><em>wrap=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_positions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_positions</code><span class="sig-paren">(</span><em>self</em>, <em>wrap=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of positions. If wrap==True, wraps atoms back
 into unit cell.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_potential_energies">
-<code class="descname">get_potential_energies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_potential_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_potential_energies" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_potential_energies</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_potential_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_potential_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the potential energies of all the atoms.</p>
 <p>Only available with calculators supporting per-atom energies
 (e.g. classical potentials).</p>
@@ -2354,7 +2354,7 @@ into unit cell.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_potential_energy">
-<code class="descname">get_potential_energy</code><span class="sig-paren">(</span><em>force_consistent=False</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_potential_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_potential_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_potential_energy</code><span class="sig-paren">(</span><em>self</em>, <em>force_consistent=False</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_potential_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_potential_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate potential energy.</p>
 <p>Ask the attached calculator to calculate the potential energy and
 apply constraints.  Use <em>apply_constraint=False</em> to get the raw
@@ -2366,7 +2366,7 @@ energy) can be returned.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_reciprocal_cell">
-<code class="descname">get_reciprocal_cell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_reciprocal_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_reciprocal_cell" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_reciprocal_cell</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_reciprocal_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_reciprocal_cell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the three reciprocal lattice vectors as a 3x3 ndarray.</p>
 <p>Note that the commonly used factor of 2 pi for Fourier
 transforms is not included here.</p>
@@ -2374,7 +2374,7 @@ transforms is not included here.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_scaled_positions">
-<code class="descname">get_scaled_positions</code><span class="sig-paren">(</span><em>wrap=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_scaled_positions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_scaled_positions</code><span class="sig-paren">(</span><em>self</em>, <em>wrap=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_scaled_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get positions relative to unit cell.</p>
 <p>If wrap is True, atoms outside the unit cell will be wrapped into
 the cell in those directions with periodic boundary conditions
@@ -2383,7 +2383,7 @@ so that the scaled coordinates are between zero and one.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_stress">
-<code class="descname">get_stress</code><span class="sig-paren">(</span><em>voigt=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_stress" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_stress</code><span class="sig-paren">(</span><em>self</em>, <em>voigt=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate stress tensor.</p>
 <p>Returns an array of the six independent components of the
 symmetric stress tensor, in the traditional Voigt order
@@ -2393,7 +2393,7 @@ order.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_stresses">
-<code class="descname">get_stresses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_stresses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_stresses</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_stresses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the stress-tensor of all the atoms.</p>
 <p>Only available with calculators supporting per-atom energies and
 stresses (e.g. classical potentials).  Even for such calculators
@@ -2402,37 +2402,37 @@ there is a certain arbitrariness in defining per-atom stresses.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_tags">
-<code class="descname">get_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_tags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_tags</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get integer array of tags.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_temperature">
-<code class="descname">get_temperature</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_temperature" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_temperature</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_temperature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the temperature in Kelvin.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_total_energy">
-<code class="descname">get_total_energy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_total_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_total_energy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_total_energy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_total_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_total_energy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the total energy - potential plus kinetic energy.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_velocities">
-<code class="descname">get_velocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_velocities" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_velocities</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_velocities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get array of velocities.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.get_volume">
-<code class="descname">get_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_volume" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_volume</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.get_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.get_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get volume of unit cell.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.has">
-<code class="descname">has</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.has"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.has" title="Permalink to this definition">¶</a></dt>
+<code class="descname">has</code><span class="sig-paren">(</span><em>self</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.has"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.has" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check for existence of array.</p>
 <p>name must be one of: ‘tags’, ‘momenta’, ‘masses’, ‘initial_magmoms’,
 ‘initial_charges’.</p>
@@ -2493,7 +2493,7 @@ of property type is done. Property names are case-insensitive.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.is_domain_decomposed">
-<code class="descname">is_domain_decomposed</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_domain_decomposed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_domain_decomposed</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.is_domain_decomposed" title="Permalink to this definition">¶</a></dt>
 <dd><p>atoms_is_domain_decomposed</p>
 <p>Is this atoms object domain decomposed?</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2624,7 +2624,7 @@ of property type is done. Property names are case-insensitive.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.iteratoms">
-<code class="descname">iteratoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.iteratoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.iteratoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iteratoms</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.iteratoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.iteratoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over atoms, calling get_atom() for each one</p>
 </dd></dl>
 
@@ -2739,7 +2739,7 @@ if more than half its nearest neighbours are in the list.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.map_into_cell">
-<code class="descname">map_into_cell</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.map_into_cell" title="Permalink to this definition">¶</a></dt>
+<code class="descname">map_into_cell</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.map_into_cell" title="Permalink to this definition">¶</a></dt>
 <dd><p>atoms_map_into_cell</p>
 <dl class="docutils">
 <dt>Map atomic positions into the unit cell so that lattice</dt>
@@ -2815,7 +2815,7 @@ if more than half its nearest neighbours are in the list.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.md5_hash">
-<code class="descname">md5_hash</code><span class="sig-paren">(</span><em>ndigits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.md5_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.md5_hash" title="Permalink to this definition">¶</a></dt>
+<code class="descname">md5_hash</code><span class="sig-paren">(</span><em>self</em>, <em>ndigits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.md5_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.md5_hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hash an atoms object with a precision of ndigits decimal
 digits.  Atomic numbers, lattice and fractional positions are
 fed to MD5 to form the hash.</p>
@@ -2823,7 +2823,7 @@ fed to MD5 to form the hash.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.mem_estimate">
-<code class="descname">mem_estimate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.mem_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.mem_estimate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">mem_estimate</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.mem_estimate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.mem_estimate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate memory usage of this Atoms object, in bytes</p>
 </dd></dl>
 
@@ -2998,14 +2998,14 @@ and <code class="docutils literal notranslate"><span class="pre">intent(out)</sp
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.new_array">
-<code class="descname">new_array</code><span class="sig-paren">(</span><em>name</em>, <em>a</em>, <em>dtype=None</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.new_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.new_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">new_array</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>a</em>, <em>dtype=None</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.new_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.new_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add new array.</p>
 <p>If <em>shape</em> is not <em>None</em>, the shape of <em>a</em> will be checked.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.pop">
-<code class="descname">pop</code><span class="sig-paren">(</span><em>i=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.pop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pop</code><span class="sig-paren">(</span><em>self</em>, <em>i=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.pop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove and return atom at index <em>i</em> (default last).</p>
 </dd></dl>
 
@@ -3036,7 +3036,7 @@ logger or to a specificied Inoutput object.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.print_atom">
-<code class="descname">print_atom</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.print_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.print_atom" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_atom</code><span class="sig-paren">(</span><em>self</em>, <em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.print_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.print_atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pretty-print the properties of the atom with index <cite>i</cite></p>
 </dd></dl>
 
@@ -3069,7 +3069,7 @@ logger or to a specificied Inoutput object.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.rattle">
-<code class="descname">rattle</code><span class="sig-paren">(</span><em>stdev=0.001</em>, <em>seed=42</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rattle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rattle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rattle</code><span class="sig-paren">(</span><em>self</em>, <em>stdev=0.001</em>, <em>seed=42</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rattle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rattle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly displace atoms.</p>
 <p>This method adds random displacements to the atomic positions,
 taking a possible constraint into account.  The random numbers are
@@ -3080,7 +3080,7 @@ seed on all processors!</p>
 
 <dl class="classmethod">
 <dt id="quippy.atoms.Atoms.read">
-<em class="property">classmethod </em><code class="descname">read</code><span class="sig-paren">(</span><em>source</em>, <em>format=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.read" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">read</code><span class="sig-paren">(</span><em>cls</em>, <em>source</em>, <em>format=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class method to read Atoms object from file <cite>source</cite> according to <cite>format</cite></p>
 <p>If <cite>format</cite> is None, filetype is inferred from filename.
 Returns a new Atoms instance; to read into an existing Atoms
@@ -3130,7 +3130,7 @@ expected to be an iterator returning <a class="reference internal" href="#quippy
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.read_from">
-<code class="descname">read_from</code><span class="sig-paren">(</span><em>source</em>, <em>**readargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.read_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.read_from" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_from</code><span class="sig-paren">(</span><em>self</em>, <em>source</em>, <em>**readargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.read_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.read_from" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace contents of this Atoms object with Atoms read from <cite>source</cite></p>
 </dd></dl>
 
@@ -3163,7 +3163,7 @@ stored travel across the periodic boundary conditions.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.remove_atoms">
-<code class="descname">remove_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.remove_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_atoms</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.remove_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove one or more atoms from an Atoms object.</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">remove_atoms</span></code> containing multiple routines:</p>
 <blockquote>
@@ -3248,7 +3248,7 @@ stored travel across the periodic boundary conditions.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.repeat">
-<code class="descname">repeat</code><span class="sig-paren">(</span><em>rep</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.repeat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.repeat" title="Permalink to this definition">¶</a></dt>
+<code class="descname">repeat</code><span class="sig-paren">(</span><em>self</em>, <em>rep</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.repeat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.repeat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create new repeated atoms object.</p>
 <p>The <em>rep</em> argument should be a sequence of three positive
 integers like <em>(2,3,1)</em> or a single integer (<em>r</em>) equivalent
@@ -3257,7 +3257,7 @@ to <em>(r,r,r)</em>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.repoint">
-<code class="descname">repoint</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.repoint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">repoint</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.repoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>OMIT</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">atoms_repoint</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/Atoms_types.f95">src/libAtoms/Atoms_types.f95</a>.</p>
@@ -3291,7 +3291,7 @@ to <em>(r,r,r)</em>.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.rotate_dihedral">
-<code class="descname">rotate_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rotate_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rotate_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate_dihedral</code><span class="sig-paren">(</span><em>self</em>, <em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.rotate_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.rotate_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate dihedral angle.</p>
 <p>Same usage as in <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html#ase.Atoms.set_dihedral" title="(in ASE)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ase.Atoms.set_dihedral()</span></code></a>: Rotate a group by a
 predefined dihedral angle, starting from its current configuration.</p>
@@ -3299,7 +3299,7 @@ predefined dihedral angle, starting from its current configuration.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.select">
-<code class="descname">select</code><span class="sig-paren">(</span><em>mask=None</em>, <em>list=None</em>, <em>orig_index=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.select" title="Permalink to this definition">¶</a></dt>
+<code class="descname">select</code><span class="sig-paren">(</span><em>self</em>, <em>mask=None</em>, <em>list=None</em>, <em>orig_index=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.select" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> containing a subset of the atoms in this Atoms object</p>
 <p>One of either <cite>mask</cite> or <cite>list</cite> should be present.  If <cite>mask</cite>
 is given it should be a rank one array of length <cite>self.n</cite>. In
@@ -3313,7 +3313,7 @@ back to the original larger Atoms object.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_angle">
-<code class="descname">set_angle</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_angle" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_angle</code><span class="sig-paren">(</span><em>self</em>, <em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set angle (in degrees) formed by three atoms.</p>
 <p>Sets the angle between vectors <em>a2</em>-&gt;*a1* and <em>a2</em>-&gt;*a3*.</p>
 <p>If <em>add</em> is <cite>True</cite>, the angle will be changed by the value given.</p>
@@ -3324,7 +3324,7 @@ only <em>a3</em> is moved.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_array">
-<code class="descname">set_array</code><span class="sig-paren">(</span><em>name</em>, <em>a</em>, <em>dtype=None</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_array" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_array</code><span class="sig-paren">(</span><em>self</em>, <em>name</em>, <em>a</em>, <em>dtype=None</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update array.</p>
 <p>If <em>shape</em> is not <em>None</em>, the shape of <em>a</em> will be checked.
 If <em>a</em> is <em>None</em>, then the array is deleted.</p>
@@ -3332,13 +3332,13 @@ If <em>a</em> is <em>None</em>, then the array is deleted.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_atomic_numbers">
-<code class="descname">set_atomic_numbers</code><span class="sig-paren">(</span><em>numbers</em>, <em>set_species=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_atomic_numbers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_atomic_numbers" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_atomic_numbers</code><span class="sig-paren">(</span><em>self</em>, <em>numbers</em>, <em>set_species=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_atomic_numbers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_atomic_numbers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set atomic numbers and optionally also species property (default True)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_atoms">
-<code class="descname">set_atoms</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_atoms</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Set atomic numbers (in the ‘z’ integer property), species names</dt>
 <dd>(in ‘species’ string property) and optionally masses (if ‘mass’
@@ -3385,13 +3385,13 @@ If <code class="docutils literal notranslate"><span class="pre">mass</span></cod
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_calculator">
-<code class="descname">set_calculator</code><span class="sig-paren">(</span><em>calc=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_calculator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_calculator" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_calculator</code><span class="sig-paren">(</span><em>self</em>, <em>calc=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_calculator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_calculator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach calculator object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_cell">
-<code class="descname">set_cell</code><span class="sig-paren">(</span><em>cell</em>, <em>scale_atoms=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_cell" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_cell</code><span class="sig-paren">(</span><em>self</em>, <em>cell</em>, <em>scale_atoms=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_cell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set unit cell vectors.</p>
 <p>Parameters:</p>
 <dl class="docutils">
@@ -3432,13 +3432,13 @@ Default behavior is to <em>not</em> move the atoms (scale_atoms=False).</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_celldisp">
-<code class="descname">set_celldisp</code><span class="sig-paren">(</span><em>celldisp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_celldisp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_celldisp" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_celldisp</code><span class="sig-paren">(</span><em>self</em>, <em>celldisp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_celldisp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_celldisp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the unit cell displacement vectors.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_chemical_symbols">
-<code class="descname">set_chemical_symbols</code><span class="sig-paren">(</span><em>symbols</em>, <em>set_species=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_chemical_symbols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_chemical_symbols" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_chemical_symbols</code><span class="sig-paren">(</span><em>self</em>, <em>symbols</em>, <em>set_species=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_chemical_symbols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_chemical_symbols" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set chemical symbols - sets Z and optionally also species properties (default True)</p>
 </dd></dl>
 
@@ -3482,7 +3482,7 @@ propagated on the domain they reside in only.</dd>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_constraint">
-<code class="descname">set_constraint</code><span class="sig-paren">(</span><em>constraint=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_constraint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_constraint</code><span class="sig-paren">(</span><em>self</em>, <em>constraint=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply one or more constrains.</p>
 <p>The <em>constraint</em> argument must be one constraint object or a
 list of constraint objects.</p>
@@ -3538,7 +3538,7 @@ Optionally set <code class="docutils literal notranslate"><span class="pre">cuto
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_dihedral">
-<code class="descname">set_dihedral</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_dihedral" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_dihedral</code><span class="sig-paren">(</span><em>self</em>, <em>a1</em>, <em>a2=None</em>, <em>a3=None</em>, <em>a4=None</em>, <em>angle=None</em>, <em>mask=None</em>, <em>indices=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_dihedral" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the dihedral angle (degrees) between vectors a1-&gt;a2 and
 a3-&gt;a4 by changing the atom indexed by a4.</p>
 <p>If mask is not None, all the atoms described in mask
@@ -3559,7 +3559,7 @@ ethane-like molecule and twists one half of it by 30 degrees.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_distance">
-<code class="descname">set_distance</code><span class="sig-paren">(</span><em>a0</em>, <em>a1</em>, <em>distance</em>, <em>fix=0.5</em>, <em>mic=False</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em>, <em>factor=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_distance" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_distance</code><span class="sig-paren">(</span><em>self</em>, <em>a0</em>, <em>a1</em>, <em>distance</em>, <em>fix=0.5</em>, <em>mic=False</em>, <em>mask=None</em>, <em>indices=None</em>, <em>add=False</em>, <em>factor=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the distance between two atoms.</p>
 <p>Set the distance between atoms <em>a0</em> and <em>a1</em> to <em>distance</em>.
 By default, the center of the two atoms will be fixed.  Use
@@ -3575,13 +3575,13 @@ with <em>a1</em>. If <em>fix=1</em>, only <em>a0</em> will therefore be moved.</
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_initial_charges">
-<code class="descname">set_initial_charges</code><span class="sig-paren">(</span><em>charges=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_initial_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_initial_charges" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_initial_charges</code><span class="sig-paren">(</span><em>self</em>, <em>charges=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_initial_charges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_initial_charges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the initial charges.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_initial_magnetic_moments">
-<code class="descname">set_initial_magnetic_moments</code><span class="sig-paren">(</span><em>magmoms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_initial_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_initial_magnetic_moments" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_initial_magnetic_moments</code><span class="sig-paren">(</span><em>self</em>, <em>magmoms=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_initial_magnetic_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_initial_magnetic_moments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the initial magnetic moments.</p>
 <p>Use either one or three numbers for every atom (collinear
 or non-collinear spins).</p>
@@ -3589,7 +3589,7 @@ or non-collinear spins).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_lattice">
-<code class="descname">set_lattice</code><span class="sig-paren">(</span><em>lattice</em>, <em>scale_positions=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_lattice" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_lattice</code><span class="sig-paren">(</span><em>self</em>, <em>lattice</em>, <em>scale_positions=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.set_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the lattice vectors, keeping the inverse lattice vectors
 up to date. Optionally map the existing atoms into the new cell
 and recalculate connectivity (by default scale_positions=False).</p>
@@ -3616,7 +3616,7 @@ and recalculate connectivity (by default scale_positions=False).</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_masses">
-<code class="descname">set_masses</code><span class="sig-paren">(</span><em>masses='defaults'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_masses</code><span class="sig-paren">(</span><em>self</em>, <em>masses='defaults'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_masses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_masses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set atomic masses in atomic mass units.</p>
 <p>The array masses should contain a list of masses.  In case
 the masses argument is not given or for those elements of the
@@ -3625,13 +3625,13 @@ masses list that are None, standard values are set.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_momenta">
-<code class="descname">set_momenta</code><span class="sig-paren">(</span><em>momenta</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_momenta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_momenta" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_momenta</code><span class="sig-paren">(</span><em>self</em>, <em>momenta</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_momenta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_momenta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set momenta.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_param_value">
-<code class="descname">set_param_value</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_param_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_param_value</code><span class="sig-paren">(</span><em>self</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.set_param_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>set a (per-configuration) value from the atoms%params dictionary</p>
 <p>Wrapper around Fortran interface <code class="docutils literal notranslate"><span class="pre">set_param_value</span></code> containing multiple routines:</p>
 <blockquote>
@@ -3766,33 +3766,33 @@ masses list that are None, standard values are set.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_pbc">
-<code class="descname">set_pbc</code><span class="sig-paren">(</span><em>pbc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_pbc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_pbc" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_pbc</code><span class="sig-paren">(</span><em>self</em>, <em>pbc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_pbc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_pbc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set periodic boundary condition flags.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_positions">
-<code class="descname">set_positions</code><span class="sig-paren">(</span><em>newpositions</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_positions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_positions</code><span class="sig-paren">(</span><em>self</em>, <em>newpositions</em>, <em>apply_constraint=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set positions, honoring any constraints. To ignore constraints,
 use <em>apply_constraint=False</em>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_scaled_positions">
-<code class="descname">set_scaled_positions</code><span class="sig-paren">(</span><em>scaled</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_scaled_positions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_scaled_positions</code><span class="sig-paren">(</span><em>self</em>, <em>scaled</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_scaled_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_scaled_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set positions relative to unit cell.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_tags">
-<code class="descname">set_tags</code><span class="sig-paren">(</span><em>tags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_tags" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_tags</code><span class="sig-paren">(</span><em>self</em>, <em>tags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set tags for all atoms. If only one tag is supplied, it is
 applied to all atoms.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.set_velocities">
-<code class="descname">set_velocities</code><span class="sig-paren">(</span><em>velocities</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_velocities" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_velocities</code><span class="sig-paren">(</span><em>self</em>, <em>velocities</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.set_velocities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.set_velocities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the momenta by specifying the velocities.</p>
 </dd></dl>
 
@@ -3917,7 +3917,7 @@ rank1 and rank2 arguments.</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.translate">
-<code class="descname">translate</code><span class="sig-paren">(</span><em>displacement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.translate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">translate</code><span class="sig-paren">(</span><em>self</em>, <em>displacement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.translate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Translate atomic positions.</p>
 <p>The displacement argument can be a float an xyz vector or an
 nx3 array (where n is the number of atoms).</p>
@@ -3998,7 +3998,7 @@ interspersed will not work</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.wrap">
-<code class="descname">wrap</code><span class="sig-paren">(</span><em>center=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>pbc=None</em>, <em>eps=1e-07</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.wrap" title="Permalink to this definition">¶</a></dt>
+<code class="descname">wrap</code><span class="sig-paren">(</span><em>self</em>, <em>center=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>pbc=None</em>, <em>eps=1e-07</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/atoms.html#Atoms.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.wrap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrap positions to unit cell.</p>
 <p>Parameters:</p>
 <dl class="docutils">
@@ -4028,7 +4028,7 @@ Example:</p>
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>dest=None</em>, <em>format=None</em>, <em>properties=None</em>, <em>prefix=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>self</em>, <em>dest=None</em>, <em>format=None</em>, <em>properties=None</em>, <em>prefix=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/atoms.html#Atoms.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.atoms.Atoms.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write this <a class="reference internal" href="#quippy.atoms.Atoms" title="quippy.atoms.Atoms"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code></a> object to <cite>dest</cite>. If <cite>format</cite> is
 absent it is inferred from the file extension or type of <cite>dest</cite>,
 as described for the <a class="reference internal" href="#quippy.atoms.Atoms.read" title="quippy.atoms.Atoms.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a> method.  If <cite>properties</cite> is
@@ -4133,7 +4133,7 @@ this doesn``t finalise it or change it``s size. We zero <code class="docutils li
 
 <dl class="method">
 <dt id="quippy.atoms.Atoms.zero_angular_momentum">
-<code class="descname">zero_angular_momentum</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero_angular_momentum" title="Permalink to this definition">¶</a></dt>
+<code class="descname">zero_angular_momentum</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.atoms.Atoms.zero_angular_momentum" title="Permalink to this definition">¶</a></dt>
 <dd><p>give the system a rigid body rotation so as to zero the angular momentum about the centre of mass</p>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">zero_angular_momentum</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/DynamicalSystem.f95">src/libAtoms/DynamicalSystem.f95</a>.</p>
