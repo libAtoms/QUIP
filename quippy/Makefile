@@ -63,7 +63,7 @@ F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in s
 #################################
 .PHONY: build clean install
 
-build: _quippy.so
+install: build
 
 clean:
 	rm _quippy.so
@@ -78,7 +78,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-_quippy.so: ${WRAP_FPP_FILES}
+build: ${WRAP_FPP_FILES}
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
@@ -92,7 +92,3 @@ _quippy.so: ${WRAP_FPP_FILES}
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		 -L. -lquip --link-lapack
 
-install: build
-	#QUIPPY_INSTALL_DIR=/home/tks32/.local/lib/python3.6/site-packages       #fixme: this was for debug only
-	#cp -r quippy ${QUIPPY_INSTALL_DIR}
-	#cp _quippy.so ${QUIPPY_INSTALL_DIR}
