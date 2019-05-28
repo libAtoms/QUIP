@@ -25,7 +25,9 @@ install:
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
-  - cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
+  #- cp tests/rules/${BUILD}_Makefile.${QUIP_ARCH}.inc build/${QUIP_ARCH}/Makefile.inc
+  - cp tests/rules/py3_test.inc build/${QUIP_ARCH}/Makefile.inc
+    
   # only install quippy as on the computer
   
   # Deal with deps (GAP...) --- copied from old verison without if statement
