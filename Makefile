@@ -199,6 +199,10 @@ quippy: libquip.a
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
 	rm ${BUILDDIR}/Makefile
+	# debug for travis, see what is the exit code and why we have it, perhaps the rm?
+	EXIT_CODE=$$?;\
+	echo "build of quippy exited with $$EXIT_CODE";\
+    	exit 0    # remove this after debugging!!!!!!!!!
 
 install-quippy: quippy
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
