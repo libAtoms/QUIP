@@ -41,6 +41,7 @@ print(os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
 sys.path.insert(0, os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
 
 import quippy
+print('Successfully imported quippy3')
 
 # find tests and run them
 # ONLY RUNS ONE NOW, THE ONE THAT IS DONE

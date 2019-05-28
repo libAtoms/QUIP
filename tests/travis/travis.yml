@@ -37,7 +37,10 @@ install:
   - make quippy 2>&1
   
   # test if the test run with the result
-  - cd tests; python run_all.py ; cd ../
+  - cd tests
+  - python --version
+  - python run_all.py
+  - cd ../
 
 
     #  # Deal with deps (GAP...); should only run with cron, so no failures
