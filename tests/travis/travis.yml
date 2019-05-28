@@ -37,7 +37,7 @@ install:
   - cat src/GAP/descriptors.f95 | grep "behler_g3, soap_express"
 
   # The actual work
-  - make quippy > /dev/null 2>&1
+  - make quippy 2>&1
        
     #  # Deal with deps (GAP...); should only run with cron, so no failures
     #- if [ "${BUILD}" == "ALL" ] && [ "${RUN}" == "true" ]; then
