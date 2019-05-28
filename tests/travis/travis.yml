@@ -10,7 +10,10 @@ env:
     secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
   - 3.6
-install:
+
+before_install:
+  # setting up the dependencies
+  # TODO: see how much of this is needed in the Makefile and is redundant here
   - export QUIP_ARCH=linux_x86_64_gfortran${PAR+_${PAR}}
   - echo ${QUIP_ARCH}
   - sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test";
@@ -22,6 +25,8 @@ install:
   - cd src/f90wrap
   - python setup.py install
   - cd ../../
+
+install:
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
@@ -36,8 +41,9 @@ install:
   - bash get_deps.sh > /dev/null 2>&1
 
   # The actual work
-  - make quippy 2>&1
-  
+  - make quippy 2>&1 > /dev/null
+ 
+script:
   # test if the test run with the result
   - cd tests
   - python --version
