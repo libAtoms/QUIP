@@ -33,12 +33,13 @@ install:
   - openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
   - bash get_deps.sh > /dev/null 2>&1
 
-  # debug: see if update of GAP worked
-  - cat src/GAP/descriptors.f95 | grep "behler_g3, soap_express"
-
   # The actual work
   - make quippy 2>&1
-       
+  
+  # test if the test run with the result
+  - cd tests; python run_all.py ; cd ../
+
+
     #  # Deal with deps (GAP...); should only run with cron, so no failures
     #- if [ "${BUILD}" == "ALL" ] && [ "${RUN}" == "true" ]; then
     #  echo "Pulling deps";
