@@ -187,17 +187,15 @@ libquip.a: ${MODULES}
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-#quippy: libquip.a
-#	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
-
 quippy: libquip.a
+	# fixme: restore the old functionality with commands like: 
+	# ${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
 	rm ${BUILDDIR}/Makefile
 
 install-quippy: quippy
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
 clean-quippy:
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
@@ -246,7 +244,10 @@ else
 endif
 
 test: quippy
-	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
+	- cd tests
+	- make
+	- cd ..
+	#${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
 

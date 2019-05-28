@@ -5,21 +5,27 @@ git:
   depth: false
 env:
   matrix:
+    # Every build (gcc-4.8 on Ubuntu 14.04)
     - BUILD=VANILLA
+    # # Daily deps
+    # - BUILD=ALL DOCS=true
+
   global:
     secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
   - 3.6
 
 before_install:
-  # setting up the dependencies
   # TODO: see how much of this is needed in the Makefile and is redundant here
   - export QUIP_ARCH=linux_x86_64_gfortran${PAR+_${PAR}}
   - echo ${QUIP_ARCH}
+
+  # setting up the dependencies
   - sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test";
   - sudo apt-get -yq update;
   - sudo apt-get install -y gfortran liblapack-dev libblas-dev python-numpy libhdf5-serial-dev
   - pip install ase
+
   # install f90wrap
   - sudo apt-get install -y python-scipy
   - cd src/f90wrap
@@ -40,14 +46,16 @@ install:
   - openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
   - bash get_deps.sh > /dev/null 2>&1
 
-  # The actual work
-  - make quippy 2>&1 > /dev/null
+  # The actual worik
+  - gfortran --version
+  - gcc --version
+  - g++ --version
+  - make quippy > /dev/null
  
 script:
   # test if the test run with the result
   - cd tests
-  - python --version
-  - python run_all.py
+  - make 
   - cd ../
 
 
