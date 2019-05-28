@@ -28,8 +28,7 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-### debug option added to it only for quippy development
-.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip debug-clean
+.PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip
 
 ifndef QUIP_ARCH
 $(error "You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.")
@@ -146,9 +145,6 @@ FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i;
 # general rule to make a module
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
-	echo SIZEOF_FORTRAN_T is ${SIZEOF_FORTRAN_T} before exporting it
-	export SIZEOF_FORTRAN_T=2
-	echo SIZEOF_FORTRAN_T expoted, did it change?
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/src/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
@@ -221,12 +217,6 @@ deepclean: clean
 
 distclean: clean
 	rm -rf build
-
-debug-clean:
-	# for debugging only, deletes some files laying around from previous builds
-	cd ${BUILDDIR}
-	rm *.fpp f90wrap_*.f95 _quippy*.so
-	cd ${QUIP_ROOT}
 
 install-structures:
 ifeq (${QUIP_STRUCTS_DIR},)
