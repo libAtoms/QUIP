@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy ad62f72+ documentation</title>
+  <title>Potential objects &mdash; quippy 41420fe+ documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                ad62f72+
+                41420fe+
               </div>
             
           
@@ -574,18 +574,6 @@ to mix 2 other potentials</td>
 <td>Potential that’s force-mixing of 2
 other potentials</td>
 </tr>
-<tr class="row-even"><td>Local_E_Mix</td>
-<td>None</td>
-<td>false</td>
-<td>Potential that’s local energy mixing of
-2 other potentials</td>
-</tr>
-<tr class="row-odd"><td>ONIOM</td>
-<td>None</td>
-<td>false</td>
-<td>Potential from ONIOM mixing of two
-other potential energies</td>
-</tr>
 <tr class="row-even"><td>Sum</td>
 <td>None</td>
 <td>false</td>
@@ -1082,51 +1070,6 @@ default arguments.</p>
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">calc_electrostatic_potential</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Potentials/ElectrostaticEmbed.f95">src/Potentials/ElectrostaticEmbed.f95</a>.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="quippy.potential.Potential.calc_tb_matrices">
-<code class="descname">calc_tb_matrices</code><span class="sig-paren">(</span><em>at</em><span class="optional">[</span>, <em>args_str</em>, <em>hd</em>, <em>sd</em>, <em>hz</em>, <em>sz</em>, <em>dh</em>, <em>ds</em>, <em>index</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calc_tb_matrices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate TB Hamiltonian and overlap matrices and optionally their derivatives wrt atomic positions.
-This always triggers a force calculation, since the elements for dH and dS are assembled on the fly for each atom.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>at</strong> <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">atoms</span></code> object</span></dt>
-<dd><p class="first last">Atomic structure to use for TB matrix calculation</p>
-</dd>
-<dt><strong>args_str</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input string(len=-1), optional</span></dt>
-<dd><p class="first last">Additional arguments to pass to TB <cite>calc()</cite> routine</p>
-</dd>
-<dt><strong>hd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n0,qp_n1), optional</span></dt>
-<dd><p class="first last">Hamiltonian and overlap for real wavefunctions (gamma point)</p>
-</dd>
-<dt><strong>sd</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘d’) with bounds (qp_n2,qp_n3), optional</span></dt>
-<dd><p class="first last">Hamiltonian and overlap for real wavefunctions (gamma point)</p>
-</dd>
-<dt><strong>hz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘D’) with bounds (qp_n4,qp_n5), optional</span></dt>
-<dd><p class="first last">Complex Hamiltonian and overlap (multiple kpoints)</p>
-</dd>
-<dt><strong>sz</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-2 array(‘D’) with bounds (qp_n6,qp_n7), optional</span></dt>
-<dd><p class="first last">Complex Hamiltonian and overlap (multiple kpoints)</p>
-</dd>
-<dt><strong>dh</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-4 array(‘d’) with bounds (qp_n8,qp_n9,qp_n10,qp_n11), optional</span></dt>
-<dd><p class="first last">Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
-</dd>
-<dt><strong>ds</strong> <span class="classifier-delimiter">:</span> <span class="classifier">in/output rank-4 array(‘d’) with bounds (qp_n12,qp_n13,qp_n14,qp_n15), optional</span></dt>
-<dd><p class="first last">Derivative of H and S wrt atomic positiions. Shape is <cite>(3, N_atoms, N_elecs, N_elecs)</cite></p>
-</dd>
-<dt><strong>index</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int, optional</span></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">calc_tb_matrices</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/Potentials/Potential.f95">src/Potentials/Potential.f95</a>.</p>
 </dd></dl>
 
 <dl class="method">
