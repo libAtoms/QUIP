@@ -39,7 +39,7 @@ install:
 jobs:
   include:
     - stage: Compile Quippy
-      install: required
+      install: true
       script:
         # Make the build directory manually for rules
         - mkdir -p build/${QUIP_ARCH}
@@ -61,7 +61,7 @@ jobs:
         - make quippy > /dev/null
 
     - stage: Test
-      install: required
+      install: true
       script:
       # test if the test run with the result
       - cd tests
