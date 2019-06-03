@@ -4,12 +4,6 @@ sudo: required
 git:
   depth: false
 env:
-  matrix:
-    # Every build (gcc-4.8 on Ubuntu 14.04)
-    - BUILD=VANILLA
-    # # Daily deps
-    # - BUILD=ALL DOCS=true
-
   global:
     secure: "Y5dAhnGQrytV8tJX1oCQMVqAQ2LJIXilFJCgvBMxfaJrs3tORf0gRCKiG7RmUnfWrJtweKkHlXUf4oBWdfg8cCL2rqw3iwun+AV8GY70jd2zUpegv39I5AoLda+BoFaFWYkpdq5jgrFs/DmBgGGZ14dGiIljsAS02MRcGMwxBMg="
 python:
@@ -17,7 +11,7 @@ python:
 
 before_install:
   # TODO: see how much of this is needed in the Makefile and is redundant here
-  - export QUIP_ARCH=linux_x86_64_gfortran${PAR+_${PAR}}
+  - export QUIP_ARCH=linux_x86_64_gfortran_openmp
   - echo ${QUIP_ARCH}
 
   # setting up the dependencies
@@ -58,10 +52,4 @@ script:
   - make 
   - cd ../
 
-
-    #  # Deal with deps (GAP...); should only run with cron, so no failures
-    #- if [ "${BUILD}" == "ALL" ] && [ "${RUN}" == "true" ]; then
-    #  echo "Pulling deps";
-    #  openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
-    #  bash get_deps.sh > /dev/null 2>&1;
 
