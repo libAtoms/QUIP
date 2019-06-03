@@ -38,6 +38,10 @@ install:
                             libgsl0-dev
                             libxpm-dev;
 
+  - python --version
+  - pip install ase
+  - pip freeze --all
+
   # Deal with deps (GAP...); should only run with cron, so no failures
   - echo "Pulling deps";
   - openssl aes-256-cbc -K $encrypted_73ca9e4f056f_key -iv $encrypted_73ca9e4f056f_iv -in tests/travis/get_deps.sh.enc -out get_deps.sh -d;
@@ -63,8 +67,8 @@ script:
   # Install ASE from PyPI as GitLab is unreliable for pulling git master.
   # Quippy should have built successfully -> start tests
   - python --version
-  - pip install ase
-  - pip freeze --all
+    #- pip install ase
+    #- pip freeze --all
   - make test
 
 # Public and private docker images with GAP, pushed from here
