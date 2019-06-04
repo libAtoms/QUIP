@@ -36,7 +36,7 @@ install:
 jobs:
   include:
     - stage: Compile Quippy
-      install: true
+      #install: true
       script:
         
         # TODO: see how much of this is needed in the Makefile and is redundant here
@@ -62,8 +62,8 @@ jobs:
         - g++ --version
         - make quippy > /dev/null
 
-    - stage: Test
-      install: true
+    #- stage: Test
+      #install: true
       script:
         # test if the test run with the result
         - cd tests
