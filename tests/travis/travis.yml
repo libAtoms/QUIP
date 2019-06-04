@@ -64,7 +64,7 @@ jobs:
 
     #- stage: Test
       #install: true
-      script:
+      #script:
         # test if the test run with the result
         - cd tests
         - make
