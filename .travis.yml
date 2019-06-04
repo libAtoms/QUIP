@@ -28,7 +28,7 @@ addons:
     - python-numpy
 
 install:
-  - echo "!!!!!!!!!!! hello !!!!!!!!!!!!!!!!!!!!"
+  - echo "HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO"
 
 stages:
   - test
