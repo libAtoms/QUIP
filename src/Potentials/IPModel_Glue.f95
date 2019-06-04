@@ -194,7 +194,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
-  logical :: do_rescale_r, do_rescale_E
+  logical :: do_rescale_r, do_rescale_E, unknown_type
   ! Loop variables
   integer :: i, ji, j, ti, tj  
 
@@ -268,19 +268,21 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   allocate(rho_local(at%N))
   rho_local = 0.0_dp
 
-!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local) private(i,j,ji,ti,tj,r_ij_mag)
+!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local) private(i,j,ji,ti,tj,r_ij_mag,unknown_type)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
      ! Get the type of this species from its atomic number
-     ti = get_type(this%type_of_atomic_num, at%Z(i))
+     ti = get_type(this%type_of_atomic_num, at%Z(i), unknown_type=unknown_type)
+     if( unknown_type ) cycle
  
      ! Iterate over our nighbours
      do ji = 1, n_neighbours(at, i)
         j = neighbour(at, i, ji, distance = r_ij_mag)
-        tj = get_type(this%type_of_atomic_num, at%Z(j))
+        tj = get_type(this%type_of_atomic_num, at%Z(j), unknown_type=unknown_type)
+        if( unknown_type ) cycle
  
         if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
            rho_local(i) = rho_local(i) + eam_density(this, tj, r_ij_mag)
@@ -291,21 +293,24 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   ! Iterate over atoms
 !$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local,local_e_in,e,f,virial,local_e,local_virial) &
-!$omp private(i,ji,j,ti,tj,r_ij_mag,r_ij_hat,dpotential_drho, dpotential_drho_drho_i_drij, pair_e_ij, dpair_e_ij) reduction(+:f_in,local_virial_in)
+!$omp private(i,ji,j,ti,tj,r_ij_mag,r_ij_hat,dpotential_drho, dpotential_drho_drho_i_drij, pair_e_ij, dpair_e_ij, unknown_type) &
+!$omp reduction(+:f_in,local_virial_in)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
      endif
 
     ! Get the type of this species from its atomic number
-    ti = get_type(this%type_of_atomic_num, at%Z(i))
+    ti = get_type(this%type_of_atomic_num, at%Z(i), unknown_type=unknown_type)
+    if( unknown_type ) cycle
 
     dpotential_drho = eam_spline_potential_deriv(this, ti, rho_local(i))
 
     ! Iterate over our nighbours
     do ji = 1, n_neighbours(at, i)
        j = neighbour(at, i, ji, r_ij_mag, cosines=r_ij_hat)
-       tj = get_type(this%type_of_atomic_num, at%Z(j))
+       tj = get_type(this%type_of_atomic_num, at%Z(j), unknown_type=unknown_type)
+       if( unknown_type ) cycle
 
        if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
           if( present(f) .or. present(virial) .or. present(local_virial) ) then
