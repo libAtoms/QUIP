@@ -7,9 +7,8 @@ branches:
   only:
     - public
 
-env:
-  global: # only serial version of QUIP
-    - QUIP_ARCH=linux_x86_64_gfortran
+env:  # only serial version of QUIP
+  - QUIP_ARCH=linux_x86_64_gfortran
 
 addons:
   apt:
@@ -29,6 +28,8 @@ addons:
     - pandoc
 
 before_install:
+  - echo ${QUIP_ARCH}
+
   - pip install ase
 
   # Make the build directory manually for rules
@@ -52,35 +53,35 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
 script: # Quippy should have built successfully -> start tests
   - make test
 
-# Public and private docker images with GAP, pushed from here
-# Strip ThirdParty from the public image
-jobs:
-  include:      
-    - stage: generate documetation
-
-      before_install:
-        - sudo apt-get install -y pandoc
-
-      install: # packages for building docs
-        - pip install
-            sphinx
-            sphinx-rtd-theme
-            nbsphinx
-            numpydoc
-
-        # needed to nbconvert ipynb files and to process the rst files
-        - pip install 'nbconvert[execute]' 'ipython<6'
-
-        # quippy is working, install it
-        - make install-quippy
-
-        # Install atomeye from src
-        - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
-        - cd src/AtomEye/Python && python setup.py install
-
-      script:
-        - cd docs; make html
-
+## Public and private docker images with GAP, pushed from here
+## Strip ThirdParty from the public image
+#jobs:
+#  include:
+#    - stage: generate documetation
+#
+#      before_install:
+#        - sudo apt-get install -y pandoc
+#
+#      install: # packages for building docs
+#        - pip install
+#            sphinx
+#            sphinx-rtd-theme
+#            nbsphinx
+#            numpydoc
+#
+#        # needed to nbconvert ipynb files and to process the rst files
+#        - pip install 'nbconvert[execute]' 'ipython<6'
+#
+#        # quippy is working, install it
+#        - make install-quippy
+#
+#        # Install atomeye from src
+#        - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
+#        - cd src/AtomEye/Python && python setup.py install
+#
+#      script:
+#        - cd docs; make html
+#
 #      deploy:
 #        provider: pages
 #        local_dir: docs/_build/html
