@@ -50,6 +50,10 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
 script: # Quippy should have built successfully -> start tests
   - make test
 
+stages:
+  - test
+  - documetation
+
 jobs:
   include:
     - stage: documetation
