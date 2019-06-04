@@ -268,7 +268,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   allocate(rho_local(at%N))
   rho_local = 0.0_dp
 
-!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local) private(i,j,ji,ti,tj,r_ij_mag)
+!$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local) private(i,j,ji,ti,tj,r_ij_mag,unknown_type)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
@@ -293,7 +293,8 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   ! Iterate over atoms
 !$omp parallel do default(none) shared(this,at,atom_mask_pointer,rho_local,local_e_in,e,f,virial,local_e,local_virial) &
-!$omp private(i,ji,j,ti,tj,r_ij_mag,r_ij_hat,dpotential_drho, dpotential_drho_drho_i_drij, pair_e_ij, dpair_e_ij) reduction(+:f_in,local_virial_in)
+!$omp private(i,ji,j,ti,tj,r_ij_mag,r_ij_hat,dpotential_drho, dpotential_drho_drho_i_drij, pair_e_ij, dpair_e_ij, unknown_type) &
+!$omp reduction(+:f_in,local_virial_in)
   do i = 1, at%N
      if(associated(atom_mask_pointer)) then
         if(.not. atom_mask_pointer(i)) cycle
