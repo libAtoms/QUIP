@@ -27,28 +27,8 @@ addons:
     - libhdf5-serial-dev
     - python-numpy
 
-before_install:
-  - echo ${QUIP_ARCH}
-  - gfortran --version
-  - gcc --version
-  - g++ --version
-
-  # Make the build directory manually for rules
-  - mkdir -p build/${QUIP_ARCH}
-
-  # Copy the rules file (rather than make config)
-  - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
-
-  - pip install ase
-
-install: # Compile QUIP, libquip and quippy, if a non-skipped build.
-  # stdout is redirected as it generates too much output.
-  - make > /dev/null
-  - make libquip > /dev/null
-  - make quippy > /dev/null
-
-script: # Quippy should have built successfully -> start tests
-  - make test
+install:
+  - echo "!!!!!!!!!!! hello !!!!!!!!!!!!!!!!!!!!"
 
 stages:
   - test
@@ -56,6 +36,31 @@ stages:
 
 jobs:
   include:
+    - stage: test
+      before_install:
+        - echo ${QUIP_ARCH}
+        - python --version
+        - gfortran --version
+        - gcc --version
+        - g++ --version
+
+        # Make the build directory manually for rules
+        - mkdir -p build/${QUIP_ARCH}
+
+        # Copy the rules file (rather than make config)
+        - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+
+        - pip install ase
+
+      install: # Compile QUIP, libquip and quippy, if a non-skipped build.
+        # stdout is redirected as it generates too much output.
+        - make > /dev/null
+        - make libquip > /dev/null
+        - make quippy > /dev/null
+
+      script: # Quippy should have built successfully -> start tests
+        - make test
+
     - stage: documetation
       python:
         - "2.7"
