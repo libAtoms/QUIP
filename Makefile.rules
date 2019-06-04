@@ -88,14 +88,10 @@ ifeq (${HAVE_FX},1)
   DEFINES += -DHAVE_FX
   SYSLIBS += ${FX_LIB}
 endif
-ifeq (${HAVE_GAP_FILLER},1)
-  DEFINES += -DHAVE_GAP_FILLER
-  HAVE_GAP = 1
-endif
 ifeq (${HAVE_GAP},1)
   DEFINES += -DHAVE_GAP
-  GP_LIB += -lgap_predict
-  GP_LIBFILE += libgap_predict.a
+  GAP_LIB += -lgap
+  GAP_LIBFILE += libgap.a
 endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB

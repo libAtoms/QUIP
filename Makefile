@@ -93,13 +93,10 @@ endif
 ifeq (${HAVE_GAP},1)
 MODULES += GAP
 GAP += GAP
-GAP_LIBS += libgap_predict.a
+GAP_PROGRAMS = gap_programs
 else
 GAP =
-endif
-
-ifeq (${HAVE_GAP_FILLER},1)
-MODULES += GAP-filler
+GAP_PROGRAMS = 
 endif
 
 # now add the rest of the modules
@@ -109,7 +106,7 @@ MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
 # the first target
-all: ${MODULES}
+all: ${MODULES} ${GAP_PROGRAMS}
 
 FOX = fox
 export FOX_LIBDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/lib
@@ -146,6 +143,11 @@ FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i;
 # general rule to make a module
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
+	@echo "********************************************"
+	@echo "" 
+	@echo " Making $@ "
+	@echo ""
+	@echo "********************************************"
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/src/$@/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$@ -I${PWD} -I${PWD}/arch
@@ -156,6 +158,11 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 # built first
 
 Programs/% src/Programs/% : ${MODULES}
+	@echo "********************************************"
+	@echo "" 
+	@echo " Making Programs "
+	@echo ""
+	@echo "********************************************"
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/src/Programs/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/Programs -I${PWD} -I${PWD}/arch $(lastword $(subst /, ,$@))
@@ -167,9 +174,17 @@ ifeq (${HAVE_GAP},1)
 GAP: libAtoms ${FOX}
 endif
 
-ifeq (${HAVE_GAP_FILLER},1)
-GAP-filler: libAtoms GAP Potentials Utils
-endif
+gap_programs: ${MODULES}
+	@echo "********************************************"
+	@echo "" 
+	@echo " Making GAP programs "
+	@echo ""
+	@echo "********************************************"
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/src/GAP/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/GAP -I${PWD} -I${PWD}/arch Programs
+	rm ${BUILDDIR}/Makefile
+
 
 ThirdParty: libAtoms
 Potentials: libAtoms  ${GAP}
@@ -182,7 +197,7 @@ libatoms: libAtoms
 libquip: libquip.a
 
 libquip.a: ${MODULES}
-	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBS}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
+	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}:
@@ -243,7 +258,7 @@ endif
 test: quippy
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
-GIT_SUBDIRS=src/GAP src/GAP-filler src/ThirdParty
+GIT_SUBDIRS=src/GAP src/ThirdParty
 
 git_pull_all:
 	git pull --recurse-submodules

@@ -119,7 +119,7 @@ ${TARGETS}: % :  libquip_core.a %.o
 clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc libquip_core.a quip.dtd  Potentials.depend
 
-LIBS = -L. -lquip_core ${GP_LIB} -latoms
+LIBS = -L. -lquip_core ${GAP_LIB} -latoms
 ifeq (${HAVE_THIRDPARTY},1)
   LIBS += -lthirdparty
 endif
