@@ -47,12 +47,12 @@ script: # Quippy should have built successfully -> start tests
   - make test
 
 stages:
-  - documentaion
+  - documentation
   - test
 
 jobs:
   include:
-    - stage: documetation
+    - stage: documentation
       python:
         - "2.7"
       env:  # only serial version of QUIP
