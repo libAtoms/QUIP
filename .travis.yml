@@ -3,15 +3,17 @@ language: python
 python:
   - "2.7"
 
+env:
+  matrix: # only serial version of QUIP
+    - QUIP_ARCH=linux_x86_64_gfortran
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp
+
 branches:
   only:
     - public
 
 git:
   depth: 1
-
-env:  # only serial version of QUIP
-  - QUIP_ARCH=linux_x86_64_gfortran
 
 addons:
   apt:
@@ -27,54 +29,51 @@ addons:
     - libhdf5-serial-dev
     - python-numpy
 
-install:
-  - echo "HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO"
+before_install:
+  # Make the build directory manually for rules
+  - mkdir -p build/${QUIP_ARCH}
 
-stages:
-  - test
-  - documetation
+  # Copy the rules file (rather than make config)
+  - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+
+install: # Compile QUIP, libquip and quippy, if a non-skipped build.
+  # stdout is redirected as it generates too much output.
+  - pip install ase
+  - make > /dev/null
+  - make libquip > /dev/null
+  - make quippy > /dev/null
+
+script: # Quippy should have built successfully -> start tests
+  - make test
 
 jobs:
   include:
-    - stage: test
-      before_install:
-        - echo ${QUIP_ARCH}
-        - python --version
-        - gfortran --version
-        - gcc --version
-        - g++ --version
-
-        # Make the build directory manually for rules
-        - mkdir -p build/${QUIP_ARCH}
-
-        # Copy the rules file (rather than make config)
-        - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
-
-        - pip install ase
-
-      install: # Compile QUIP, libquip and quippy, if a non-skipped build.
-        # stdout is redirected as it generates too much output.
-        - make > /dev/null
-        - make libquip > /dev/null
-        - make quippy > /dev/null
-
-      script: # Quippy should have built successfully -> start tests
-        - make test
-
     - stage: documetation
       python:
         - "2.7"
       env:  # only serial version of QUIP
         - QUIP_ARCH=linux_x86_64_gfortran
 
-      before_install: # pandoc is required for nbconvert; gsl and xpm are for atomeye.
-        - sudo apt-get install -y
-            libgsl0-dev
-            libxpm-dev
-            pandoc
+      addons:
+        apt:
+          update: true
+          packages: # pandoc is required for nbconvert; gsl and xpm are for atomeye.
+          - gfortran
+          - libblas-dev
+          - liblapack-dev
+          - openmpi-bin
+          - libopenmpi-dev
+          - netcdf-bin
+          - libnetcdf-dev
+          - libhdf5-serial-dev
+          - python-numpy
+          - libgsl0-dev
+          - libxpm-dev
+          - pandoc
 
-        # packages for building docs
+      install: # packages for building docs
         - pip install
+            ase
             sphinx
             sphinx-rtd-theme
             nbsphinx
@@ -83,15 +82,16 @@ jobs:
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
 
-      install: # quippy is working, install it
-        - make install-quippy
+        # quippy is working, install it
+        - make > /dev/null
+        - make install-quippy > /dev/null
 
         # Install atomeye from src
         - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
         - cd src/AtomEye/Python && python setup.py install
 
       script:
-        - cd doc; make html
+        - cd doc && make html
 #
 #      deploy:
 #        provider: pages
