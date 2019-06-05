@@ -29,16 +29,16 @@ addons:
     - libhdf5-serial-dev
     - python-numpy
 
-before_install:
+install: # Compile QUIP, libquip and quippy, if a non-skipped build.
+  # stdout is redirected as it generates too much output.
+  - pip install ase
+
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
 
   # Copy the rules file (rather than make config)
   - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
 
-install: # Compile QUIP, libquip and quippy, if a non-skipped build.
-  # stdout is redirected as it generates too much output.
-  - pip install ase
   - make > /dev/null
   - make libquip > /dev/null
   - make quippy > /dev/null
@@ -46,13 +46,17 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
 script: # Quippy should have built successfully -> start tests
   - make test
 
+stages:
+  - documentaion
+  - test
+
 jobs:
   include:
     - stage: documetation
       python:
         - "2.7"
       env:  # only serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_ROOT=/home/travis/build/libAtoms/QUIP
 
       addons:
         apt:
@@ -82,16 +86,26 @@ jobs:
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
 
+        # Make the build directory manually for rules
+        - mkdir -p build/${QUIP_ARCH}
+
+        # Copy the rules file (rather than make config)
+        - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+
         # quippy is working, install it
         - make > /dev/null
         - make install-quippy > /dev/null
 
         # Install atomeye from src
+        # - export QUIP_ROOT=`pwd`  # $HOME/build/$TRAVIS_REPO_SLUG
         - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
-        - cd src/AtomEye/Python && python setup.py install
+        - cd src/AtomEye/Python
+        - python setup.py install
+        - cd ../../..
 
       script:
-        - cd doc && make html
+        - cd doc
+        - make html
 #
 #      deploy:
 #        provider: pages
