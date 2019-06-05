@@ -4,9 +4,15 @@ python:
   - "2.7"
 
 env:
-  matrix: # only serial version of QUIP
-    - QUIP_ARCH=linux_x86_64_gfortran
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp
+  matrix:
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc
+#    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc
+
+matrix:
+  allow_failures:
+    - env: QUIP_INC=Makefile.inc
 
 git:
   depth: 1
@@ -18,10 +24,11 @@ before_install:
   - mkdir -p build/${QUIP_ARCH}
 
   # Copy the rules file (rather than make config)
-  - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+  - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
 after_failure:
   - tail -n 100 build.log
+  - echo Please ignore the last 100 lines if the compiler succeeded!
 
 addons:
   apt:
@@ -59,7 +66,7 @@ jobs:
         - "2.7"
 
       env:  # only serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran QUIP_ROOT=/home/travis/build/libAtoms/QUIP
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc QUIP_ROOT=/home/travis/build/libAtoms/QUIP
 
       addons:
         apt:
@@ -113,7 +120,7 @@ jobs:
         on:
           branch: public
 
-notifications:
-  email:
-    - quip-developers@eng.cam.ac.uk
+#notifications:
+#  email:
+#    - quip-developers@eng.cam.ac.uk
 
