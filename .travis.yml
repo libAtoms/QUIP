@@ -46,8 +46,8 @@ script: # Quippy should have built successfully -> start tests
   - make test
 
 stages:
-  - documentation
   - test
+  - documentation
 
 jobs:
   include:
