@@ -54,7 +54,7 @@ jobs:
     - stage: documentation
       python:
         - "2.7"
-        -
+
       env:  # only serial version of QUIP
         - QUIP_ARCH=linux_x86_64_gfortran QUIP_ROOT=/home/travis/build/libAtoms/QUIP
 
