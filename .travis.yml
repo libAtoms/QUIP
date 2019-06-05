@@ -8,12 +8,17 @@ env:
     - QUIP_ARCH=linux_x86_64_gfortran
     - QUIP_ARCH=linux_x86_64_gfortran_openmp
 
-branches:
-  only:
-    - public
-
 git:
   depth: 1
+
+before_install:
+  - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
+
+  # Make the build directory manually for rules
+  - mkdir -p build/${QUIP_ARCH}
+
+  # Copy the rules file (rather than make config)
+  - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
 
 addons:
   apt:
@@ -33,12 +38,6 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   - pip install ase
 
-  # Make the build directory manually for rules
-  - mkdir -p build/${QUIP_ARCH}
-
-  # Copy the rules file (rather than make config)
-  - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
-
   - make > /dev/null
   - make libquip > /dev/null
   - make quippy > /dev/null
@@ -55,6 +54,7 @@ jobs:
     - stage: documentation
       python:
         - "2.7"
+        -
       env:  # only serial version of QUIP
         - QUIP_ARCH=linux_x86_64_gfortran QUIP_ROOT=/home/travis/build/libAtoms/QUIP
 
@@ -85,12 +85,6 @@ jobs:
 
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
-
-        # Make the build directory manually for rules
-        - mkdir -p build/${QUIP_ARCH}
-
-        # Copy the rules file (rather than make config)
-        - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
 
         # quippy is working, install it
         - make > /dev/null
