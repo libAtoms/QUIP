@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Low-level system routines &mdash; quippy 7de894f+ documentation</title>
+  <title>Low-level system routines &mdash; quippy 1b9bf9c+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                7de894f+
+                1b9bf9c+
               </div>
             
           
@@ -385,7 +385,7 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_omp_set_num_threads" title="quippy.system.system_omp_set_num_threads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_omp_set_num_threads</span></code></a>(threads)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.link_run_directory" title="quippy.system.link_run_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">link_run_directory</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -396,27 +396,16 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.link_run_directory" title="quippy.system.link_run_directory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">link_run_directory</span></code></a>(…)</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.ran_uniform" title="quippy.system.ran_uniform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ran_uniform</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.ran_uniform" title="quippy.system.ran_uniform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ran_uniform</span></code></a>()</td>
 <td>Return a random real number uniformly distributed in the range [0,1]</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.mpi_id" title="quippy.system.mpi_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_id</span></code></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.mpi_id" title="quippy.system.mpi_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mpi_id</span></code></a>()</td>
 <td>Return this processes’ MPI ID</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.progress" title="quippy.system.progress"><code class="xref py py-obj docutils literal notranslate"><span class="pre">progress</span></code></a>(total,current,name)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.progress" title="quippy.system.progress"><code class="xref py py-obj docutils literal notranslate"><span class="pre">progress</span></code></a>(total,current,name)</td>
 <td>Print a progress bar</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.linebreak_string" title="quippy.system.linebreak_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linebreak_string</span></code></a>(str,line_len)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.linebreak_string" title="quippy.system.linebreak_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linebreak_string</span></code></a>(str,line_len)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -427,29 +416,18 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </table>
 </td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.system_finalise" title="quippy.system.system_finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_finalise</span></code></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.system_finalise" title="quippy.system.system_finalise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_finalise</span></code></a>()</td>
 <td>Shut down gracefully, finalising system objects.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.print_title" title="quippy.system.print_title"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_title</span></code></a>(title,[verbosity])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.print_title" title="quippy.system.print_title"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_title</span></code></a>(title,[verbosity])</td>
 <td>Print a centred title, like this:</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#quippy.system.wait_for_file_to_exist" title="quippy.system.wait_for_file_to_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_file_to_exist</span></code></a>(…)</td>
+<tr class="row-even"><td><a class="reference internal" href="#quippy.system.wait_for_file_to_exist" title="quippy.system.wait_for_file_to_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_file_to_exist</span></code></a>(…)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#quippy.system.system_omp_get_num_threads" title="quippy.system.system_omp_get_num_threads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">system_omp_get_num_threads</span></code></a>()</td>
-<td><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -1764,25 +1742,6 @@ Return a string which is the real number <code class="docutils literal notransla
 </dd></dl>
 
 <dl class="function">
-<dt id="quippy.system.system_omp_set_num_threads">
-<code class="descclassname">quippy.system.</code><code class="descname">system_omp_set_num_threads</code><span class="sig-paren">(</span><em>threads</em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.system_omp_set_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>threads</strong> <span class="classifier-delimiter">:</span> <span class="classifier">input int</span></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">system_omp_set_num_threads</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="quippy.system.link_run_directory">
 <code class="descclassname">quippy.system.</code><code class="descname">link_run_directory</code><span class="sig-paren">(</span><em>sourcename</em><span class="optional">[</span>, <em>basename</em>, <em>run_dir_i</em>, <em>error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.link_run_directory" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
@@ -1958,25 +1917,6 @@ Return a string which is the real number <code class="docutils literal notransla
 </table>
 <p class="rubric">References</p>
 <p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">wait_for_file_to_exist</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="quippy.system.system_omp_get_num_threads">
-<code class="descclassname">quippy.system.</code><code class="descname">system_omp_get_num_threads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system.system_omp_get_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
-<dt><strong>ret_system_omp_get_num_threads</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd></dd>
-</dl>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">References</p>
-<p>Routine is wrapper around Fortran routine <code class="docutils literal notranslate"><span class="pre">system_omp_get_num_threads</span></code> defined in file <a class="reference external" href="https://github.com/libAtoms/QUIP/blob/public/src/libAtoms/System.f95">src/libAtoms/System.f95</a>.</p>
 </dd></dl>
 
 <dl class="function">
