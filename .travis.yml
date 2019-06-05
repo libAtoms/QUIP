@@ -106,17 +106,17 @@ jobs:
       script:
         - cd doc
         - make html
-#
-#      deploy:
-#        provider: pages
-#        local_dir: doc/_build/html
-#        skip-cleanup: true
-#        github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-#        keep-history: true
-#        on:
-#          branch: master
-#
-#notifications:
-#  email:
-#    - quip-developers@eng.cam.ac.uk
+
+      deploy:
+        provider: pages
+        local_dir: doc/_build/html
+        skip-cleanup: true
+        github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+        keep-history: true
+        on:
+          branch: public
+
+notifications:
+  email:
+    - quip-developers@eng.cam.ac.uk
 
