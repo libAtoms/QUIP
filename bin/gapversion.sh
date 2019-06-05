@@ -43,7 +43,7 @@ function git_date
 if [ -s "${QUIP_ROOT}/src/GAP/GAP_VERSION" ]; then
   echo -ne "$(cat "${QUIP_ROOT}/src/GAP/GAP_VERSION")"
   exit 0
-elif [ -d "${QUIP_ROOT}/.git" ]; then
+elif [ -d "${QUIP_ROOT}/.git" ] || [ -s "${QUIP_ROOT}/.git" ]; then
   # Sort everything as "DATE filename" list and take the last one
   GAP_VERSION=$(
     for I in $GAP_FILES
