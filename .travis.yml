@@ -20,6 +20,9 @@ before_install:
   # Copy the rules file (rather than make config)
   - cp travis/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
 
+after_failure:
+  - tail -n 100 build.log
+
 addons:
   apt:
     update: true
@@ -38,9 +41,9 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   - pip install ase
 
-  - make > /dev/null
-  - make libquip > /dev/null
-  - make quippy > /dev/null
+  - make &> build.log
+  - make libquip &> build.log
+  - make quippy &> build.log
 
 script: # Quippy should have built successfully -> start tests
   - make test
@@ -87,8 +90,8 @@ jobs:
         - pip install 'nbconvert[execute]' 'ipython<6'
 
         # quippy is working, install it
-        - make > /dev/null
-        - make install-quippy > /dev/null
+        - make &> build.log
+        - make install-quippy &> build.log
 
         # Install atomeye from src
         # - export QUIP_ROOT=`pwd`  # $HOME/build/$TRAVIS_REPO_SLUG
