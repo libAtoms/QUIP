@@ -47,6 +47,9 @@ script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   - make libquip &> build.log
   - make quippy &> build.log
 
+  # Sometimes file limit is 64000 and read_loop reads and writes this many
+  # files causing the build to time out
+  - ulimit -n 256
   - make test
 
 after_failure:

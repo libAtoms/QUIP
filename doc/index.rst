@@ -108,7 +108,7 @@ Contents
    quippy.rst
    visualisation.rst
    fortran_wrapper.rst
-   teach_sparse.rst
+   gap_fit.rst
 
 
 Indices and tables
