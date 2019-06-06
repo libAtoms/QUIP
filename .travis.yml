@@ -66,7 +66,7 @@ jobs:
         - "2.7"
 
       env:  # only serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc QUIP_ROOT=/home/travis/build/libAtoms/QUIP
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc QUIP_ROOT=/home/travis/build/libAtoms/QUIP
 
       addons:
         apt:
@@ -120,7 +120,7 @@ jobs:
         on:
           branch: public
 
-#notifications:
-#  email:
-#    - quip-developers@eng.cam.ac.uk
+notifications:
+ email:
+   - quip-developers@eng.cam.ac.uk
 
