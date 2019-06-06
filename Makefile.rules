@@ -92,6 +92,8 @@ ifeq (${HAVE_GAP},1)
   DEFINES += -DHAVE_GAP
   GAP_LIB += -lgap
   GAP_LIBFILE += libgap.a
+  GAPFIT_LIB += -lgapfit
+  GAPFIT_LIBFILE += libgapfit.a
 endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB
