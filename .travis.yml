@@ -12,7 +12,7 @@ env:
 
 matrix:
   allow_failures:
-    - env: QUIP_INC=Makefile.inc
+    - env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
 
 git:
   depth: 1
