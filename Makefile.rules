@@ -34,7 +34,7 @@ FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 FX_LIB = -lfx
 MDCORE_LIBS = -lmdcore
 GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/bin/gitversion)"'
-GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion.sh)'
+GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion)'
 
 ifndef AR
 	AR = ar

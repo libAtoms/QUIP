@@ -266,7 +266,7 @@ git_pull_all:
 
 distribution:
 	./bin/gitversion > GIT_VERSION
-	./bin/gapversion.sh > GAP_VERSION
+	./bin/gapversion > GAP_VERSION
 	git archive HEAD > ../QUIP.distribution.`date +%Y-%m-%d`.tar
 	tar rvf ../QUIP.distribution.`date +%Y-%m-%d`.tar GIT_VERSION GAP_VERSION
 	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar

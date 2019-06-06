@@ -2,27 +2,24 @@
 language: python
 python:
   - "2.7"
-
 env:
   matrix:
     - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc
     - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc
-#    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc
 
-matrix:
-  allow_failures:
-    - env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+stages:
+  - test
+  - documentation
 
 git:
   depth: 1
 
 before_install:
   - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
-
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
-
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
@@ -43,7 +40,6 @@ addons:
     - libnetcdf-dev
     - libhdf5-serial-dev
     - python-numpy
-
 install: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   - pip install ase
@@ -55,19 +51,13 @@ install: # Compile QUIP, libquip and quippy, if a non-skipped build.
 script: # Quippy should have built successfully -> start tests
   - make test
 
-stages:
-  - test
-  - documentation
-
 jobs:
   include:
     - stage: documentation
       python:
         - "2.7"
-
-      env:  # only serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc QUIP_ROOT=/home/travis/build/libAtoms/QUIP
-
+      env:  # serial version of QUIP
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
       addons:
         apt:
           update: true
@@ -84,7 +74,6 @@ jobs:
           - libgsl0-dev
           - libxpm-dev
           - pandoc
-
       install: # packages for building docs
         - pip install
             ase
@@ -101,7 +90,7 @@ jobs:
         - make install-quippy &> build.log
 
         # Install atomeye from src
-        # - export QUIP_ROOT=`pwd`  # $HOME/build/$TRAVIS_REPO_SLUG
+        - export QUIP_ROOT=`pwd`
         - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
         - cd src/AtomEye/Python
         - python setup.py install
