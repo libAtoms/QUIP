@@ -196,14 +196,14 @@ libatoms: libAtoms
 
 libquip: libquip.a
 
-libquip.a: ${MODULES}
+libquip.a: ${MODULES} 
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy: libquip.a
+quippy: libquip.a ${GAP_PROGRAMS}
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
 
 install-quippy: quippy
