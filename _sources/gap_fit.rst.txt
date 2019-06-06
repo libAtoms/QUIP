@@ -16,16 +16,16 @@
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-Command line options of the teach_sparse main program
+Command line options of the gap_fit main program
 =====================================================
 
 Main options
 ------------
-.. autofunction:: quippy.teach_sparse_parse_command_line
+.. autofunction:: quippy.gap_fit_parse_command_line
 
 GAP options
 -----------
-.. autofunction:: quippy.teach_sparse_parse_gap_str
+.. autofunction:: quippy.gap_fit_parse_gap_str
 
 `sparse_method` options are:
  - RANDOM: default, chooses n_sparse random datapoints
