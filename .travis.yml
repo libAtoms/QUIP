@@ -23,10 +23,6 @@ before_install:
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
-after_failure:
-  - tail -n 100 build.log
-  - echo Please ignore the last 100 lines if the compiler succeeded!
-
 addons:
   apt:
     update: true
@@ -40,16 +36,22 @@ addons:
     - libnetcdf-dev
     - libhdf5-serial-dev
     - python-numpy
-install: # Compile QUIP, libquip and quippy, if a non-skipped build.
-  # stdout is redirected as it generates too much output.
+
+install:
   - pip install ase
 
+script: # Compile QUIP, libquip and quippy, if a non-skipped build.
+  # stdout is redirected as it generates too much output.
+  # Quippy should have built successfully -> start tests
   - make &> build.log
   - make libquip &> build.log
   - make quippy &> build.log
 
-script: # Quippy should have built successfully -> start tests
   - make test
+
+after_failure:
+  - tail -n 100 build.log
+  - echo Please ignore the last 100 lines if the compiler succeeded!
 
 jobs:
   include:
