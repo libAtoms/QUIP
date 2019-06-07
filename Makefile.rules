@@ -34,7 +34,7 @@ FOX_LIBS = -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys
 FX_LIB = -lfx
 MDCORE_LIBS = -lmdcore
 GIT_VERSION := -D'GIT_VERSION="$(shell ${QUIP_ROOT}/bin/gitversion)"'
-GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion.sh)'
+GAP_VERSION := -D'GAP_VERSION=$(shell ${QUIP_ROOT}/bin/gapversion)'
 
 ifndef AR
 	AR = ar
@@ -88,14 +88,12 @@ ifeq (${HAVE_FX},1)
   DEFINES += -DHAVE_FX
   SYSLIBS += ${FX_LIB}
 endif
-ifeq (${HAVE_GAP_FILLER},1)
-  DEFINES += -DHAVE_GAP_FILLER
-  HAVE_GAP = 1
-endif
 ifeq (${HAVE_GAP},1)
   DEFINES += -DHAVE_GAP
-  GP_LIB += -lgap_predict
-  GP_LIBFILE += libgap_predict.a
+  GAP_LIB += -lgap
+  GAP_LIBFILE += libgap.a
+  GAPFIT_LIB += -lgapfit
+  GAPFIT_LIBFILE += libgapfit.a
 endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB

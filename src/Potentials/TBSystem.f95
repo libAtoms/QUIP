@@ -1831,23 +1831,23 @@ subroutine SC_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, 'Z', value, status)
     if (status /= 0) call system_abort('Self_Consistency_read_params_xml cannot find Z attribute in U')
-    read (value, *), atnum
+    read (value, *) atnum
 
     if (atnum <= 0 .or. atnum > size(parse_self_consistency%U)) &
       call system_abort ("SC parse xml atnum " // atnum // " out of range " // 1 // " " // size(parse_self_consistency%U))
     call QUIP_FoX_get_value(attributes, 'U', value, status)
     if (status /= 0) call system_abort('Self_Consistency_read_params_xml cannot find U attribute')
-    read (value, *), parse_self_consistency%U(atnum)
+    read (value, *) parse_self_consistency%U(atnum)
 
   else if (parse_in_self_consistency .and. name == "stoner_params") then
 
     call QUIP_FoX_get_value(attributes, 'Z', value, status)
     if (status /= 0) call system_abort('Self_Consistency_read_params_xml cannot find Z attribute in stoner_params')
-    read (value, *), atnum
+    read (value, *) atnum
 
     call QUIP_FoX_get_value(attributes, 'n_stoner_params', value, status)
     if (status == 0) then
-      read (value, *), n_stoner_params
+      read (value, *) n_stoner_params
       if (n_stoner_params > 0) then
 	call QUIP_FoX_get_value(attributes, 'stoner_params', value, status)
 	if (status /= 0) &
@@ -1920,7 +1920,7 @@ subroutine DM_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, 'Z', value, status)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find Z attribute in type ' // status)
-    read (value, *), atnum
+    read (value, *) atnum
     if (atnum <= 0 .or. atnum > size(parse_dipole_model%type_of_atomic_num)) &
       call system_abort ("DM parse xml atnum " // atnum // " out of range " // 1 // " " // size(parse_dipole_model%type_of_atomic_num))
 
@@ -1999,7 +1999,7 @@ subroutine SO_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, 'Z', value, status)
     if (status /= 0) call system_abort('TB_Dipole_Model_read_params_xml cannot find Z attribute in type ' // status)
-    read (value, *), atnum
+    read (value, *) atnum
     if (atnum <= 0 .or. atnum > size(parse_spin_orbit_coupling%type_of_atomic_num)) &
       call system_abort ("SO parse xml atnum " // atnum // " out of range " // 1 // " " // size(parse_spin_orbit_coupling%type_of_atomic_num))
 

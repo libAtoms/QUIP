@@ -63,17 +63,35 @@ complex(dp), parameter :: pauli_sigma(2,2,3) = reshape( (/ &
 contains
 
 !% Get the type from the atomic number, with error checking.
-function get_type(type_of_atomic_num, Z)
+function get_type(type_of_atomic_num, Z, unknown_type)
   integer, intent(in) :: type_of_atomic_num(:)
   integer, intent(in) :: Z
+  logical, intent(out), optional :: unknown_type
+
   integer get_type
 
-  if (Z < 1 .or. Z > size(type_of_atomic_num)) &
-    call system_abort ('get_type: Atomic number '//Z //' out of range')
-  if (type_of_atomic_num(Z) == 0) &
-    call system_abort ('get_type: Atomic number '//Z//' does not correspond to a defined type')
+  if (Z < 1 .or. Z > size(type_of_atomic_num)) then
+     if(present(unknown_type)) then
+        unknown_type = .true.
+        get_type = -1
+        return
+     else
+        call system_abort ('get_type: Atomic number '//Z //' out of range')
+     endif
+  endif
+
+  if (type_of_atomic_num(Z) == 0) then
+     if(present(unknown_type)) then
+        unknown_type = .true.
+        get_type = -1
+        return
+     else
+        call system_abort ('get_type: Atomic number '//Z//' does not correspond to a defined type')
+     endif
+  endif
 
   get_type = type_of_atomic_num(Z)
+  if(present(unknown_type)) unknown_type = .false.
 
 end function get_type
 

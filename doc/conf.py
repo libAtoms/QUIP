@@ -100,7 +100,7 @@ autosummary_generate = [
     'structures.rst',
     'system.rst',
     'table.rst',
-    'teach_sparse.rst',
+    'gap_fit.rst',
     'topology.rst',
     'tutorial.rst',
     'units.rst',

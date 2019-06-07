@@ -52,11 +52,11 @@ default: all
 
 all: ${PROGRAMS}
 
-LIBS =  -L. -lquiputils -lquip_core ${GP_LIB} -latoms 
+LIBS =  -L. -lquiputils -lquip_core ${GAP_LIB} -latoms 
 ifeq (${HAVE_THIRDPARTY},1)
   LIBS += -lthirdparty
 endif
-LIBFILES = libatoms.a ${GP_LIBFILE} libquip_core.a libquiputils.a
+LIBFILES = libatoms.a ${GAP_LIBFILE} libquip_core.a libquiputils.a
 
 .PHONY: clean allclean test
 

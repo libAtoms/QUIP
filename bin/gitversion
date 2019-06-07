@@ -6,7 +6,8 @@ QUIP_ROOT=$(dirname $0)/..
 if [ -s "${QUIP_ROOT}/GIT_VERSION" ]; then
    echo -ne $(cat ${QUIP_ROOT}/GIT_VERSION)
    exit 0
-elif [ -d ${QUIP_ROOT}/.git ]; then
+elif [ -d ${QUIP_ROOT}/.git ] || [ -s ${QUIP_ROOT}/.git ]; then
+   cd ${QUIP_ROOT}
    echo "$(git config --get remote.origin.url),$(git describe --always --tags --dirty)"
 else
    echo "NOT_A_GIT_REPOSITORY"
