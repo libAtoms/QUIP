@@ -12,7 +12,8 @@ env:
 stages:
   - test
   - documentation
-  - release
+  - name: release
+    if: branch = public
 
 git:
   depth: 1
