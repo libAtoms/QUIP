@@ -33,8 +33,9 @@ PYTHON := python3
 
 QUIPPY_SRC_DIR := ../../quippy
 
-FPP = gfortran -E -cpp
-CFLAGS = -fPIC
+FPP = gfortran -E -cpp ${QUIPPY_F90FLAGS}
+CFLAGS = -fPIC ${QUIPPY_CFLAGS}
+
 
 # The following files will be wrapped
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95
@@ -90,5 +91,8 @@ build: ${WRAP_FPP_FILES}
 			 cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		 -L. -lquip --link-lapack
+		 -L. -lquip --link-lapack --f90flags="-E -cpp ${QUIPPY_F90FLAGS}"
+
+
+
 
