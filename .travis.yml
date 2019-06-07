@@ -17,26 +17,28 @@ stages:
 git:
   depth: 1
 
+addons:
+  apt:
+    update: true
+
 before_install:
+  - sudo apt-get install -y
+      gfortran
+      libblas-dev
+      liblapack-dev
+      openmpi-bin
+      libopenmpi-dev
+      netcdf-bin
+      libnetcdf-dev
+      libhdf5-serial-dev
+      python-numpy
+
   - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
-addons:
-  apt:
-    update: true
-    packages:
-    - gfortran
-    - libblas-dev
-    - liblapack-dev
-    - openmpi-bin
-    - libopenmpi-dev
-    - netcdf-bin
-    - libnetcdf-dev
-    - libhdf5-serial-dev
-    - python-numpy
 
 install:
   - pip install ase
@@ -64,22 +66,28 @@ jobs:
         - "2.7"
       env:  # serial version of QUIP
         - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
-      addons:
-        apt:
-          update: true
-          packages: # pandoc is required for nbconvert; gsl and xpm are for atomeye.
-          - gfortran
-          - libblas-dev
-          - liblapack-dev
-          - openmpi-bin
-          - libopenmpi-dev
-          - netcdf-bin
-          - libnetcdf-dev
-          - libhdf5-serial-dev
-          - python-numpy
-          - libgsl0-dev
-          - libxpm-dev
-          - pandoc
+
+      before_install:
+        - sudo apt-get install -y
+            gfortran
+            libblas-dev
+            liblapack-dev
+            openmpi-bin
+            libopenmpi-dev
+            netcdf-bin
+            libnetcdf-dev
+            libhdf5-serial-dev
+            python-numpy
+            libgsl0-dev
+            libxpm-dev
+            pandoc
+
+        - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
+        # Make the build directory manually for rules
+        - mkdir -p build/${QUIP_ARCH}
+        # Copy the rules file (rather than make config)
+        - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
+
       install: # packages for building docs
         - pip install
             ase
@@ -116,6 +124,9 @@ jobs:
           branch: public
 
     - stage: release
+      addons:
+        apt:
+          update: false
       before_install: skip
       install: skip
       script:
