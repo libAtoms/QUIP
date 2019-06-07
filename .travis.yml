@@ -125,6 +125,8 @@ jobs:
           branch: public
 
     - stage: release
+      env:  # serial version of QUIP
+        - QUIP_ARCH="" QUIP_INC=""
       addons:
         apt:
           update: false
