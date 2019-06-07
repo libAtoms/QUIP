@@ -202,7 +202,12 @@ libquip.a: ${MODULES}
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy: libquip.a
+quippy: libquip.a ${GAP_PROGRAMS}
+	@echo "********************************************"
+	@echo ""
+	@echo " Making quippy "
+	@echo ""
+	@echo "********************************************"
 	# fixme: restore the old functionality with commands like:
 	# ${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 	rm -f ${BUILDDIR}/Makefile
