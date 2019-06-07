@@ -12,6 +12,7 @@ env:
 stages:
   - test
   - documentation
+  - release
 
 git:
   depth: 1
@@ -113,6 +114,12 @@ jobs:
         keep-history: true
         on:
           branch: public
+
+    - stage: release
+      before_install: skip
+      install: skip
+      script:
+        - curl -i http://www.libatoms.org/gap/cgi-bin/update.cgi
 
 notifications:
  email:
