@@ -105,7 +105,7 @@ build: f90wrap ${WRAP_FPP_FILES}
 			 cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		 -L. -lquip --link-lapack --f90flags="-E -cpp ${QUIPPY_F90FLAGS}"
+		 -L. -lquip --link-lapack  #--f90flags="-E -cpp ${QUIPPY_F90FLAGS}"
 
 
 
