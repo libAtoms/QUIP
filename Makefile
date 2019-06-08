@@ -250,7 +250,7 @@ ifeq (${QUIP_INSTALLDIR},)
 	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
 	@echo "programs"
 else
-	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	if [ ! -d ${QUIP_INSTALLDIR} ]; then \
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
 	  exit 1; \
 	else	 \
@@ -264,10 +264,10 @@ else
 endif
 
 test: quippy
-	- cd tests
-	- make
-	- cd ..
-	#${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
+	#- cd tests
+	#- make
+	#- cd ..
+	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/ThirdParty
 

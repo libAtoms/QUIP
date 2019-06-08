@@ -43,9 +43,9 @@ install:
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   # Quippy should have built successfully -> start tests
-  - make 2>&1 build.log
-  - make libquip 2>&1 build.log
-  - make quippy 2>&1 build.log
+  - make 2>&1 | tee build.log
+  - make libquip 2>&1 | tee build.log
+  - make quippy 2>&1 | tee build.log
 
   # Sometimes file limit is 64000 and read_loop reads and writes this many
   # files causing the build to time out
