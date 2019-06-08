@@ -62,9 +62,23 @@ F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in s
 
 
 #################################
-.PHONY: build clean install
+.PHONY: build clean install f90wrap
 
 install: build
+
+f90wrap:
+	@echo "********************************************"
+	@echo ""
+	@echo " Making f90wrap "
+	@echo ""
+	@echo "********************************************"
+	@echo ""
+	@echo "Attempting to automatically clone f90wrap submodule"
+	git submodule update --init ${QUIP_ROOT}/src/f90wrap || \
+            { echo "f90wrap clone failed. Download it manually" ; exit 1 ; }
+
+	cd ${QUIP_ROOT}/src/f90wrap ;  ${PYTHON} setup.py install
+
 
 clean:
 	rm _quippy.so
@@ -79,7 +93,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-build: ${WRAP_FPP_FILES}
+build: f90wrap ${WRAP_FPP_FILES}
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
