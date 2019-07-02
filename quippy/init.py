@@ -122,6 +122,7 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 import quippy.potential
 import quippy.convert
 import quippy.utils
+import quippy.descriptors
 
 import atexit
 
