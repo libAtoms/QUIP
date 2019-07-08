@@ -11,31 +11,35 @@ env:
 
 stages:
   - test
-    #- documentation
+  # - documentation
+  - name: release
+    if: branch = public
 
 git:
   depth: 1
 
+addons:
+  apt:
+    update: true
+
 before_install:
+  - sudo apt-get install -y
+      gfortran
+      libblas-dev
+      liblapack-dev
+      openmpi-bin
+      libopenmpi-dev
+      netcdf-bin
+      libnetcdf-dev
+      libhdf5-serial-dev
+      python-numpy
+
   - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
-addons:
-  apt:
-    update: true
-    packages:
-    - gfortran
-    - libblas-dev
-    - liblapack-dev
-    - openmpi-bin
-    - libopenmpi-dev
-    - netcdf-bin
-    - libnetcdf-dev
-    - libhdf5-serial-dev
-    - python-numpy
 
 install:
   - pip install ase
@@ -43,79 +47,95 @@ install:
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   # Quippy should have built successfully -> start tests
-  - make 2>&1 | tee build.log
-  - make libquip 2>&1 | tee build.log
-  - make quippy 2>&1 | tee build.log
+  - make &> build.log
+  - make libquip &> build.log
+  - make quippy &> build.log
 
   # Sometimes file limit is 64000 and read_loop reads and writes this many
   # files causing the build to time out
   - ulimit -n 256
-  #- make test
-  - cd tests; make
+  - make test
 
 after_failure:
   #- tail -n 100 build.log
   - echo Please ignore the last 100 lines if the compiler succeeded!
 
-    #jobs:
-    #  include:
-    #    - stage: documentation
-    #      python:
-    #        - "2.7"
-    #      env:  # serial version of QUIP
-    #        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
-    #      addons:
-    #        apt:
-    #          update: true
-    #          packages: # pandoc is required for nbconvert; gsl and xpm are for atomeye.
-    #          - gfortran
-    #          - libblas-dev
-    #          - liblapack-dev
-    #          - openmpi-bin
-    #          - libopenmpi-dev
-    #          - netcdf-bin
-    #          - libnetcdf-dev
-    #          - libhdf5-serial-dev
-    #          - python-numpy
-    #          - libgsl0-dev
-    #          - libxpm-dev
-    #          - pandoc
-    #      install: # packages for building docs
-    #        - pip install
-    #            ase
-    #            sphinx
-    #            sphinx-rtd-theme
-    #            nbsphinx
-    #            numpydoc
-    #
-    #        # needed to nbconvert ipynb files and to process the rst files
-    #        - pip install 'nbconvert[execute]' 'ipython<6'
-    #
-    #        # quippy is working, install it
-    #        - make &> build.log
-    #        - make install-quippy &> build.log
-    #
-    #        # Install atomeye from src
-    #        - export QUIP_ROOT=`pwd`
-    #        - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
-    #        - cd src/AtomEye/Python
-    #        - python setup.py install
-    #        - cd ../../..
-    #
-    #      script:
-    #        - cd doc
-    #        - make html
-    #
-    #      deploy:
-    #        provider: pages
-    #        local_dir: doc/_build/html
-    #        skip-cleanup: true
-    #        github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-    #        keep-history: true
-    #        on:
-    #          branch: public
-
-    #notifications:
-    # email:
-    #   - quip-developers@eng.cam.ac.uk
-
+#jobs:
+#  include:
+#    - stage: documentation
+#      python:
+#        - "2.7"
+#      env:  # serial version of QUIP
+#        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+#
+#      before_install:
+#        - sudo apt-get install -y
+#            gfortran
+#            libblas-dev
+#            liblapack-dev
+#            openmpi-bin
+#            libopenmpi-dev
+#            netcdf-bin
+#            libnetcdf-dev
+#            libhdf5-serial-dev
+#            python-numpy
+#            libgsl0-dev
+#            libxpm-dev
+#            pandoc
+#
+#        - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
+#        # Make the build directory manually for rules
+#        - mkdir -p build/${QUIP_ARCH}
+#        # Copy the rules file (rather than make config)
+#        - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
+#
+#      install: # packages for building docs
+#        - pip install
+#            ase
+#            sphinx
+#            sphinx-rtd-theme
+#            nbsphinx
+#            numpydoc
+#
+#        # needed to nbconvert ipynb files and to process the rst files
+#        - pip install 'nbconvert[execute]' 'ipython<6'
+#
+#        # quippy is working, install it
+#        - make &> build.log
+#        - make install-quippy &> build.log
+#
+#        # Install atomeye from src
+#        - export QUIP_ROOT=`pwd`
+#        - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
+#        - cd src/AtomEye/Python
+#        - python setup.py install
+#        - cd ../../..
+#
+#      script:
+#        - cd doc
+#        - make html
+#
+#      deploy:
+#        provider: pages
+#        local_dir: doc/_build/html
+#        skip-cleanup: true
+#        github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+#        keep-history: true
+#        on:
+#          branch: public
+#
+#    - stage: release
+#      env:  # serial version of QUIP
+#        - QUIP_ARCH="" QUIP_INC=""
+#      addons:
+#        apt:
+#          update: false
+#      before_install: skip
+#      install: skip
+#      script:
+#        - curl -i http://www.libatoms.org/gap/cgi-bin/update.cgi
+#
+#notifications:
+# email:
+#   - quip-developers@eng.cam.ac.uk
+#
