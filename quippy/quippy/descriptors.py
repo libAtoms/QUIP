@@ -128,7 +128,7 @@ class descriptor:
 
         """
 
-        return self.calc(at, False, args_str, **calc_args).descriptor
+        return self.calc(at, False, args_str, **calc_args)['data']
 
     @convert_atoms_types_iterable_method
     def calc(self, at, grad=False, args_str=None, **calc_args):
@@ -190,14 +190,24 @@ class descriptor:
 
         # unpack to a list of dicts
         count = self.count(at)
-        descriptor_out = []
+        descriptor_out = dict()
         for i in range(count):
             # unpack to dict with the specific converter function
-            descriptor_out.append(quippy.convert.descriptor_data_mono_to_dict(descriptor_out_raw.x[i]))
+            mono_dict = quippy.convert.descriptor_data_mono_to_dict(descriptor_out_raw.x[i])
 
+            # add to the result
+            for key, val in mono_dict.items():
+                if key in descriptor_out.keys():
+                    descriptor_out[key].append(val)
+                else:
+                    descriptor_out[key] = [val]
+
+        # make numpy arrays out of them
+        for key, val in descriptor_out.items():
+            descriptor_out[key] = np.array(val)
 
         # TODO: this needs to be changed, check the old implementation
         # could make it behave exactly as it did earlier for compatibility, but not sure if we want that actually
         # ask Gabor and James about this
-        return np.array(descriptor_out)
+        return descriptor_out
 
