@@ -20,6 +20,7 @@
 import quippy
 from ase import Atoms
 import numpy as np
+from ase.io.extxyz import key_val_dict_to_str
 
 
 def convert_atoms_types_iterable_method(method):
@@ -38,6 +39,7 @@ def convert_atoms_types_iterable_method(method):
         else:
             return [wrapper(self, atelement, *args, **kw) for atelement in at]
     return wrapper
+
 
 class descriptor:
 
@@ -178,8 +180,7 @@ class descriptor:
         # return results
 
         if args_str is None:
-            raise NotImplementedError()
-        #     args_str = dict_to_args_str(calc_args)
+            args_str = key_val_dict_to_str(calc_args)
 
         # calc connectivity on the atoms object with the internal one
         self._calc_connect(at)
