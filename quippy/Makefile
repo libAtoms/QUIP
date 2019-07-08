@@ -106,7 +106,3 @@ build: f90wrap ${WRAP_FPP_FILES}
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
-
-
-
-

@@ -127,8 +127,10 @@ class descriptor:
         calc(at, grad=True, ...) for that.
 
         """
-
-        return self.calc(at, False, args_str, **calc_args)['data']
+        try:
+            return self.calc(at, False, args_str, **calc_args)['data']
+        except KeyError:
+            return []
 
     @convert_atoms_types_iterable_method
     def calc(self, at, grad=False, args_str=None, **calc_args):
