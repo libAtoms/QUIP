@@ -47,18 +47,14 @@ install:
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
   # Quippy should have built successfully -> start tests
-  - make &> build.log
-  - make libquip &> build.log
-  - make quippy &> build.log
+  - make
+  - make libquip
+  - make quippy
 
   # Sometimes file limit is 64000 and read_loop reads and writes this many
   # files causing the build to time out
   - ulimit -n 256
   - make test
-
-after_failure:
-  #- tail -n 100 build.log
-  - echo Please ignore the last 100 lines if the compiler succeeded!
 
 #jobs:
 #  include:
@@ -135,7 +131,7 @@ after_failure:
 #      script:
 #        - curl -i http://www.libatoms.org/gap/cgi-bin/update.cgi
 #
-#notifications:
-# email:
-#   - quip-developers@eng.cam.ac.uk
-#
+notifications:
+ email:
+   - quip-developers@eng.cam.ac.uk
+
