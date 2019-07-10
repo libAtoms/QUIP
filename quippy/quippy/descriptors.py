@@ -70,6 +70,9 @@ class descriptor:
         self.n_dim = self.dimensions()
         self._n_perm = self.permutations()
 
+    def __len__(self):
+        return self.dimensions()
+
     def dimensions(self):
         return self._quip_descriptor.dimensions()[0]
 
@@ -142,9 +145,6 @@ class descriptor:
         'grad_index_0based' contains indices to gradients (descriptor, atom).
         Cutoffs and gradients of cutoffs are also returned.
 
-
-        Py3: desc.calc() only works if both `do_descriptor=True, do_grad_descriptor=True`
-        So the args here only control if the result is returned or not.
         """
 
         # arg string and calc_args
