@@ -60,7 +60,7 @@ class descriptor:
         if args_str is None:
             args_str = key_val_dict_to_str(init_args)
         else:
-            args_str += key_val_dict_to_str(init_args)
+            args_str += ' ' + key_val_dict_to_str(init_args)
 
         # intialise the wrapped object and hide it from the user
         self._quip_descriptor = quippy.descriptors_module.descriptor(args_str)
@@ -152,7 +152,7 @@ class descriptor:
             args_str = key_val_dict_to_str(calc_args)
         else:
             # new, for compatibility: merged if both given
-            args_str += key_val_dict_to_str(calc_args)
+            args_str += ' ' + key_val_dict_to_str(calc_args)
 
         # calc connectivity on the atoms object with the internal one
         self._calc_connect(at)
