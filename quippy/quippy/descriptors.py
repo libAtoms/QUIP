@@ -147,44 +147,12 @@ class descriptor:
         So the args here only control if the result is returned or not.
         """
 
-        # n_index = fzeros(1, 'i')
-        # n_desc, n_cross = self.descriptor_sizes(at, n_index=n_index)
-        # n_index = n_index[1]
-        # data = fzeros((self.n_dim, n_desc))
-        # cutoff = fzeros(n_desc)
-        # data_index = fzeros((n_index, n_desc), 'i')
-        #
-        # if grad:
-        #     # n_cross is number of cross-terms, proportional to n_desc
-        #     data_grad = fzeros((self.n_dim, 3, n_cross))
-        #     data_grad_index = fzeros((2, n_cross), 'i')
-        #     cutoff_grad = fzeros((3, n_cross))
-        #
-        # if not grad:
-        #     RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
-        #                        descriptor_index=data_index, args_str=args_str)
-        # else:
-        #     RawDescriptor.calc(self, at, descriptor_out=data, covariance_cutoff=cutoff,
-        #                        descriptor_index=data_index, grad_descriptor_out=data_grad,
-        #                        grad_descriptor_index=data_grad_index, grad_covariance_cutoff=cutoff_grad,
-        #                        args_str=args_str)
-        #
-        # results = DescriptorCalcResult()
-        # convert = lambda data: np.array(data).T
-        # results.descriptor = convert(data)
-        # results.cutoff = convert(cutoff)
-        # results.descriptor_index_0based = convert(data_index - 1)
-        # if grad:
-        #     results.grad = convert(data_grad)
-        #     results.grad_index_0based = convert(data_grad_index - 1)
-        #     results.cutoff_grad = convert(cutoff_grad)
-        # return results
-
+        # arg string and calc_args
         if args_str is None:
             args_str = key_val_dict_to_str(calc_args)
         else:
+            # new, for compatibility: merged if both given
             args_str += key_val_dict_to_str(calc_args)
-
 
         # calc connectivity on the atoms object with the internal one
         self._calc_connect(at)
@@ -211,8 +179,6 @@ class descriptor:
         for key, val in descriptor_out.items():
             descriptor_out[key] = np.array(val)
 
-        # TODO: this needs to be changed, check the old implementation
-        # could make it behave exactly as it did earlier for compatibility, but not sure if we want that actually
-        # ask Gabor and James about this
+        # This is a dictionary now and hence needs to be indexed as one, unlike the old version
         return descriptor_out
 
