@@ -58,8 +58,9 @@ class descriptor:
         """
 
         if args_str is None:
-            raise NotImplementedError()
-            # args_str = dict_to_args_str(init_args)
+            args_str = key_val_dict_to_str(init_args)
+        else:
+            args_str += key_val_dict_to_str(init_args)
 
         # intialise the wrapped object and hide it from the user
         self._quip_descriptor = quippy.descriptors_module.descriptor(args_str)
@@ -68,8 +69,6 @@ class descriptor:
         # super convoluted though :D should just rethink it at some point
         self.n_dim = self.dimensions()
         self._n_perm = self.permutations()
-
-        # arg string
 
     def dimensions(self):
         return self._quip_descriptor.dimensions()[0]
@@ -183,12 +182,16 @@ class descriptor:
 
         if args_str is None:
             args_str = key_val_dict_to_str(calc_args)
+        else:
+            args_str += key_val_dict_to_str(calc_args)
+
 
         # calc connectivity on the atoms object with the internal one
         self._calc_connect(at)
 
         # descriptor calculation
-        descriptor_out_raw, err = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad)
+        descriptor_out_raw, err = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad,
+                                                             args_str=args_str)
 
         # unpack to a list of dicts
         count = self.count(at)
