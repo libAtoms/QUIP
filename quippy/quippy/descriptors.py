@@ -43,7 +43,7 @@ def convert_atoms_types_iterable_method(method):
 
 class descriptor:
 
-    def __init__(self, args_str=None, **init_args):
+    def __init__(self, args_str=None, **init_kwargs):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
@@ -58,9 +58,9 @@ class descriptor:
         """
 
         if args_str is None:
-            args_str = key_val_dict_to_str(init_args)
+            args_str = key_val_dict_to_str(init_kwargs)
         else:
-            args_str += ' ' + key_val_dict_to_str(init_args)
+            args_str += ' ' + key_val_dict_to_str(init_kwargs)
 
         # intialise the wrapped object and hide it from the user
         self._quip_descriptor = quippy.descriptors_module.descriptor(args_str)
@@ -119,7 +119,7 @@ class descriptor:
         at.calc_connect()
 
     @convert_atoms_types_iterable_method
-    def calc_descriptor(self, at, args_str=None, **calc_args):
+    def calc_descriptor(self, at, args_str=None, **calc_kwargs):
         """
         Calculates all descriptors of this type in the Atoms object, and
         returns the array of descriptor values. Does not compute gradients; use
@@ -127,12 +127,12 @@ class descriptor:
 
         """
         try:
-            return self.calc(at, False, args_str, **calc_args)['data']
+            return self.calc(at, False, args_str, **calc_kwargs)['data']
         except KeyError:
             return []
 
     @convert_atoms_types_iterable_method
-    def calc(self, at, grad=False, args_str=None, **calc_args):
+    def calc(self, at, grad=False, args_str=None, **calc_kwargs):
         """
         Calculates all descriptors of this type in the Atoms object, and
         gradients if grad=True. Results can be accessed dictionary- or
@@ -149,10 +149,10 @@ class descriptor:
 
         # arg string and calc_args
         if args_str is None:
-            args_str = key_val_dict_to_str(calc_args)
+            args_str = key_val_dict_to_str(calc_kwargs)
         else:
             # new, for compatibility: merged if both given
-            args_str += ' ' + key_val_dict_to_str(calc_args)
+            args_str += ' ' + key_val_dict_to_str(calc_kwargs)
 
         # calc connectivity on the atoms object with the internal one
         self._calc_connect(at)
