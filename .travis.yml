@@ -42,7 +42,7 @@ before_install:
 
 
 install:
-  - pip install ase
+  - pip install ase==3.17.0
 
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
@@ -87,7 +87,7 @@ jobs:
 
       install: # packages for building docs
         - pip install
-            ase
+            ase==3.17.0
             sphinx
             sphinx-rtd-theme
             nbsphinx
