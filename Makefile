@@ -264,13 +264,3 @@ git_pull_all:
 	git pull --recurse-submodules
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
-distribution:
-	./bin/gitversion > GIT_VERSION
-	git archive HEAD > ../QUIP.distribution.`date +%Y-%m-%d`.tar
-	tar rvf ../QUIP.distribution.`date +%Y-%m-%d`.tar GIT_VERSION
-	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar
-	rm GIT_VERSION
-	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git archive HEAD | bzip2 > ../../$$d.distribution.`date +%Y-%m-%d`.tar.bz2; popd; fi; done
-
-
-
