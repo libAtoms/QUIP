@@ -96,6 +96,7 @@ jobs:
       install: # packages for building docs
         - pip install
             ase==3.17.0
+            docutils==0.14
             sphinx
             sphinx-rtd-theme
             nbsphinx
