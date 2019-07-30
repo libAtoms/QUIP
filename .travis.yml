@@ -34,7 +34,12 @@ before_install:
       libhdf5-serial-dev
       python-numpy
 
-  - git clone https://${GITHUB_TOKEN}@github.com/libAtoms/GAP.git src/GAP
+  # Clone the private gap repository using deploy key
+  - echo $github_deploy_key | base64 -d > ~/.ssh/github_deploy_key
+  - chmod 0600  ~/.ssh/github_deploy_key
+  - eval $(ssh-agent -s)
+  - ssh-add ~/.ssh/github_deploy_key
+  - git clone --depth 1 git@github.com:libAtoms/GAP.git src/GAP
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
