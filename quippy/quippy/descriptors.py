@@ -30,6 +30,7 @@ def convert_atoms_types_iterable_method(method):
 
     Taken from py2 version
     """
+
     def wrapper(self, at, *args, **kw):
         if isinstance(at, quippy.atoms_types_module.Atoms):
             return method(self, at, *args, **kw)
@@ -38,6 +39,7 @@ def convert_atoms_types_iterable_method(method):
             return method(self, _quip_at, *args, **kw)
         else:
             return [wrapper(self, atelement, *args, **kw) for atelement in at]
+
     return wrapper
 
 
@@ -158,7 +160,7 @@ class descriptor:
 
         # descriptor calculation
         descriptor_out_raw = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad,
-                                                             args_str=args_str)
+                                                        args_str=args_str)
 
         # unpack to a list of dicts
         count = self.count(at)
@@ -180,4 +182,3 @@ class descriptor:
 
         # This is a dictionary now and hence needs to be indexed as one, unlike the old version
         return descriptor_out
-

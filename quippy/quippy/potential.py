@@ -43,7 +43,8 @@ class potential(ase.calculators.calculator.Calculator):
     #  'numeric_forces', 'elastic_constants',
     #  'unrelaxed_elastic_constants']
 
-    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None, **kwargs):
+    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
+                 **kwargs):
 
         # update_docstring not implemented yet, it was oo_quip.update_doc_string() in the earlier version
 
@@ -114,8 +115,6 @@ class potential(ase.calculators.calculator.Calculator):
         if atoms is not None:
             atoms.set_calculator(self)
         self.name = args_str
-
-        pass
 
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
@@ -319,7 +318,6 @@ below.
                 for prop, val in _quip_properties.items():
                     if prop not in _skip_keys:
                         at.arrays[prop] = np.copy(val, order='C')
-
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)

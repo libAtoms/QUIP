@@ -45,5 +45,6 @@ class Test_Descriptor(quippytest.QuippyTestCase):
         self.assertIsInstance(distance_2b, quippy.descriptors_module.distance_2b, 'Wrong type defined by direct '
                                                                                   'descriptor initialiser')
 
+
 if __name__ == '__main__':
     unittest.main()
