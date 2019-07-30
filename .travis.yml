@@ -106,8 +106,8 @@ jobs:
         - pip install 'nbconvert[execute]' 'ipython<6'
 
         # quippy is working, install it
-        - make 
-        - make install-quippy 
+        - make &> /dev/null
+        - make install-quippy &> /dev/null
 
         # Install atomeye from src
         - export QUIP_ROOT=`pwd`
