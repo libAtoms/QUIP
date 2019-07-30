@@ -29,10 +29,10 @@ from copy import deepcopy as cp
 
 import quippy
 
-__all__ = ['potential']
+__all__ = ['Potential']
 
 
-class potential(ase.calculators.calculator.Calculator):
+class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
     implemented_properties = ['energy', 'forces', 'virial', 'stress',

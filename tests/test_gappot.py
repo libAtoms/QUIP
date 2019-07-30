@@ -25,7 +25,7 @@ import ase.io
 
 class TestCalculator_GAP_Potential(quippytest.QuippyTestCase):
     def setUp(self):
-        self.pot_calculator = quippy.potential.potential("IP GAP", param_filename="GAP.xml")
+        self.pot_calculator = quippy.potential.Potential("IP GAP", param_filename="GAP.xml")
         self.at_orig = ase.io.read('gap_sample.xyz')
 
         self.at = ase.Atoms(numbers=self.at_orig.arrays['numbers'], positions=self.at_orig.get_positions(), pbc=True,

@@ -82,7 +82,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
       """
 
         quippy.system_module.system_reseed_rng(2065775975)
-        self.pot_calculator = quippy.potential.potential("IP SW", param_filename="SW_pot.xml")
+        self.pot_calculator = quippy.potential.Potential("IP SW", param_filename="SW_pot.xml")
 
         self.at = ase.Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
 
