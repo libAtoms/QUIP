@@ -241,14 +241,17 @@ below.
             args_str += ' force'
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
-        # the calculation itself
-        _energy, _ferror = self._quip_potential.calc(self._quip_atoms, args_str=args_str, **_dict_args)
+        # fixme: workaround to get the calculated energy, because the wrapped dictionary is not handling that float well
+        ener_dummy = np.zeros(1, dtype=float)
 
-        self.results['energy'] = cp(_energy)  # fixme: don't overwrite existing properties, check for changes in atoms
+        # the calculation itself
+        self._quip_potential.calc(self._quip_atoms, args_str=args_str, energy=ener_dummy, **_dict_args)
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
         _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
         _quip_params = quippy.utils.get_dict_arrays(self._quip_atoms.params)
+
+        self.results['energy'] = ener_dummy[0]
 
         # process potential output to ase.properties
         # not handling energy here, because that is always returned by the potential above
@@ -297,7 +300,7 @@ below.
                 _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
 
                 # default params arguments
-                at.info['energy'] = cp(_energy)
+                at.info['energy'] = self.results['energy']
 
                 if 'stress' in self.results.keys():
                     at.info['stress'] = self.results['stress'].copy()
