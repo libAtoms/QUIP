@@ -40,7 +40,7 @@ def get_dict_arrays(fdict):
 
     arrays = {}
     for i in range(1, fdict.n + 1):
-        key, error = fdict.get_key(i)
+        key = fdict.get_key(i)
         key = key.strip().decode('ascii')
         # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
         try:    # this is an unsufficient temporary fix
