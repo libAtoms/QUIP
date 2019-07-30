@@ -29,11 +29,12 @@ class Test_Descriptor(quippytest.QuippyTestCase):
     def test_set_cutoff(self):
         # todo: move this to the test of the atoms objects
         self.quip_at.set_cutoff(5)
-        self.assertEqual(self.quip_at.cutoff, 5.0, 'cutoff not set to the given value')
+        self.assertAlmostEqual(self.quip_at.cutoff, 5.0, msg='cutoff not set to the given value', delta=0.01)
 
     def test_calc_connect(self):
         # todo: expand this to check for the result of the connectivity, not just the fact that the method exists
-        self.quip_at.calc_connect()
+        with self.assertRaises(RuntimeError):
+            self.quip_at.calc_connect()
 
     def test_descriptor_type(self):
         generic_descriptor = quippy.descriptors_module.descriptor('distance_2b cutoff=4.0')
