@@ -23,6 +23,9 @@ import numpy as np
 from ase.io.extxyz import key_val_dict_to_str
 
 
+__all__ = ['Descriptor']
+
+
 def convert_atoms_types_iterable_method(method):
     """
     Decorator to transparently convert ASEAtoms objects into quippy Atoms, and
@@ -43,7 +46,7 @@ def convert_atoms_types_iterable_method(method):
     return wrapper
 
 
-class descriptor:
+class Descriptor:
 
     def __init__(self, args_str=None, **init_kwargs):
         """
