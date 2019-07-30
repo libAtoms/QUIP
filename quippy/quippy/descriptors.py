@@ -53,7 +53,7 @@ class descriptor:
         - cutoff
 
         calculateable:
-        - sizes: `n_desc, n_cross, n_index, err = desc.sizes(_quip_atoms)`
+        - sizes: `n_desc, n_cross, n_index = desc.sizes(_quip_atoms)`
 
         """
 
@@ -74,15 +74,15 @@ class descriptor:
         return self.dimensions()
 
     def dimensions(self):
-        return self._quip_descriptor.dimensions()[0]
+        return self._quip_descriptor.dimensions()
 
     def permutations(self):
-        return self._quip_descriptor.n_permutations()[0]
+        return self._quip_descriptor.n_permutations()
 
     def cutoff(self):
         # TODO: decide if adding @property is a good idea
         # could be like get_cutoff()
-        return self._quip_descriptor.cutoff()[0]
+        return self._quip_descriptor.cutoff()
 
     @convert_atoms_types_iterable_method
     def sizes(self, at):
@@ -90,10 +90,9 @@ class descriptor:
         Replicating the QUIP method, is used in the rest of the methods
         """
 
-        n_descriptors, n_cross, n_index, err = self._quip_descriptor.sizes(at)
+        n_descriptors, n_cross = self._quip_descriptor.sizes(at)
 
-        # fixme: is the err useful here at all?
-        return n_descriptors, n_cross, n_index, err
+        return n_descriptors, n_cross
 
     @convert_atoms_types_iterable_method
     def count(self, at):
@@ -158,7 +157,7 @@ class descriptor:
         self._calc_connect(at)
 
         # descriptor calculation
-        descriptor_out_raw, err = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad,
+        descriptor_out_raw = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad,
                                                              args_str=args_str)
 
         # unpack to a list of dicts
