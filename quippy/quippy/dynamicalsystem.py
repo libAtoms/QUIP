@@ -126,15 +126,15 @@ class Dynamics(optimize.Dynamics):
             atoms = ase.Atoms(atoms)
 
         # construct the quip atoms object which we will use to calculate on
-        self.atoms = atoms
+        self.ase_atoms = atoms
 
         if not atoms.has('momenta'):  # so that there is a velocity initialisation on the quip object
             atoms.set_momenta(np.zeros(len(atoms), 3))
-        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms)
+        self._quip_atoms = quippy.convert.ase_to_quip(self.ase_atoms)
 
         # add the mass separately, because converter is not doing it
         _quippy.f90wrap_atoms_add_property_real_a(this=self._quip_atoms._handle, name='mass',
-                                                  value=self.atoms.get_masses() * MASSCONVERT)
+                                                  value=self.ase_atoms.get_masses() * MASSCONVERT)
 
         # initialise accelerations as zero, so that we have the objects in QUIP
         _quippy.f90wrap_atoms_add_property_real_2da(this=self._quip_atoms._handle, name='acc',
@@ -150,8 +150,8 @@ class Dynamics(optimize.Dynamics):
             self._ds.rescale_velo(initialtemperature)
 
         # setting the time
-        if 'time' in self.atoms.info:
-            self.set_time(self.atoms.info['time'])  # from ASE units to fs
+        if 'time' in self.ase_atoms.info:
+            self.set_time(self.ase_atoms.info['time'])  # from ASE units to fs
 
         self.observers = []
         self.set_timestep(timestep)
@@ -327,13 +327,8 @@ class Dynamics(optimize.Dynamics):
             f = self.step(f)
             self.call_observers()
 
-
     def print_status(self, file=None):
         self._ds.print_status(self.loglabel, file=file)
-
-
-    def get_time(self):
-        return float(self._ds.t*fs)
 
     def set_time(self, time):
         self._ds.t = time / fs
@@ -372,7 +367,8 @@ class Dynamics(optimize.Dynamics):
         Randomise velocities to a target temperature (given in K)
         """
         self._ds.rescale_velo(temperature)
-        self.atoms.set_momenta((self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T)
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
 
     temperature = property(get_temperature, set_temperature,
                            doc="Get or set the current temperature")
@@ -404,7 +400,7 @@ class Dynamics(optimize.Dynamics):
             self._ds.enable_damping(damp_time)
 
     damping = property(get_damping, set_damping, doc=
-    """Get or set the damping time constant in fs. Set to
+                    """Get or set the damping time constant in fs. Set to
                        None to disable damping.  By default damping applies
                        to all atoms, but can be selectively enabled with the
                        'damp_mask' property.""")
@@ -557,7 +553,7 @@ class Dynamics(optimize.Dynamics):
         self._ds.update_barostat(self, p, T)
 
     def get_state(self):
-        saved_ds = DynamicalSystem(self.atoms)
+        saved_ds = DynamicalSystem(self._quip_atoms)
         saved_ds.save_state(self._ds)
         return saved_ds
 
