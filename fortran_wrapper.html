@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Appendix: wrapping Fortran 90 Code &mdash; quippy adbc9e9+ documentation</title>
+  <title>Appendix: wrapping Fortran 90 Code &mdash; quippy 4213a86+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                adbc9e9+
+                4213a86+
               </div>
             
           
@@ -221,7 +221,7 @@ integer arrays containing a representation of a pointer to the
 derived type, in the manner described in <a class="reference internal" href="intro.html#pletzer2008" id="id1">[Pletzer2008]</a> This allows
 us to pass opaque references to the true Fortran derived type data
 structures back and forth between Python and Fortran. The
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">patch_f2py</span></code> module is used to patch the <a class="reference external" href="https://docs.scipy.org/doc/numpy/f2py/usage.html#module-numpy.f2py" title="(in NumPy v1.16)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy.f2py</span></code></a>
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">patch_f2py</span></code> module is used to patch the <a class="reference external" href="https://docs.scipy.org/doc/numpy/f2py/usage.html#module-numpy.f2py" title="(in NumPy v1.17)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy.f2py</span></code></a>
 system at runtime, to slightly modify the way it generates C code.</li>
 <li><a class="reference internal" href="oo_fortran.html#module-quippy.oo_fortran" title="quippy.oo_fortran: Fortran 90 derived-type support"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.oo_fortran</span></code></a> acts as a thin object-oriented layer on
 top of the f2py generated wrapper functions which handles
