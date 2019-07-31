@@ -86,38 +86,6 @@ _barostat_types = {
 
 __all__ = ['Dynamics']
 
-class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
-
-    __doc__ = _dynamicalsystem.DynamicalSystem.__doc__
-
-    def run(self, pot, dt, n_steps, summary_interval=None, hook_interval=None, write_interval=None,
-            trajectory=None, args_str=None, hook=None,
-            save_interval=None):
-
-        if hook is None and hook_interval is not None:
-            raise ValueError('hook_interval not permitted when hook is not present')
-
-        if hook is None:
-            traj = []
-            save_hook = lambda: traj.append(self.atoms.copy())
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps,
-                                                 save_hook, hook_interval=save_interval,
-						 summary_interval=summary_interval,
-                                                 write_interval=write_interval,
-                                                 trajectory=trajectory,
-                                                 args_str=args_str)
-            return traj
-        else:
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval,
-						 summary_interval=summary_interval, write_interval=write_interval,
-                                                 trajectory=trajectory, args_str=args_str)
-
-    run.__doc__ = _dynamicalsystem.DynamicalSystem.run.__doc__
-
-
-from quippy import FortranDerivedTypes
-FortranDerivedTypes['type(dynamicalsystem)'] = DynamicalSystem
-
 
 class Dynamics(object):
     """
