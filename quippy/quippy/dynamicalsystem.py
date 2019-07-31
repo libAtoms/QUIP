@@ -87,7 +87,7 @@ _barostat_types = {
 __all__ = ['Dynamics']
 
 
-class Dynamics(object):
+class Dynamics(optimize.Dynamics):
     """
     Wrapper around :class:`DynamicalSystem` integrator compatible with
     ASE :class:`ase.md.MolecularDynamics` interface.
