@@ -121,41 +121,26 @@ class Dynamics(object):
                  trajectoryinterval=10, initialtemperature=None,
                  logfile='-', loginterval=1, loglabel='D'):
 
-        # we will do the calculation in place, to minimise number of copies,
-        # unless atoms is not a quippy Atoms
-        if not isinstance(atoms, Atoms):
-            warnings.warn('Dynamics atoms is not quippy.Atoms instance, copy forced!')
-            atoms = Atoms(atoms)
+        # check for type first
+        if not isinstance(atoms, ase.Atoms):
+            atoms = ase.Atoms(atoms)
+
+        # construct the quip atoms object which we will use to calculate on
         self.atoms = atoms
 
-        if self.atoms.has('masses'):
-            if self.atoms.has_property('mass'):
-                if np.max(np.abs(self.atoms.mass/MASSCONVERT - self.atoms.get_masses())) > 1e-3:
-                    raise RuntimeError('Dynamics confused as atoms has inconsistent "mass" and "masses" arrays')
-            else:
-                self.atoms.add_property('mass', self.atoms.get_masses()*MASSCONVERT)
-        else:
-            if self.atoms.has_property('mass'):
-                self.atoms.set_masses(self.atoms.mass/MASSCONVERT)
-            else:
-                self.atoms.set_masses('defaults')
+        if not atoms.has('momenta'):  # so that there is a velocity initialisation on the quip object
+            atoms.set_momenta(np.zeros(len(atoms), 3))
+        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms)
 
-        if self.atoms.has('momenta'):
-            if self.atoms.has_property('velo'):
-                if np.max(np.abs(self.atoms.velo*sqrt(MASSCONVERT) - self.atoms.get_velocities().T)) > 1e-3:
-                    raise RuntimeError('Dynamics confused as atoms has inconsistent "velo" and "momenta" arrays')
-            else:
-                self.atoms.add_property('velo', (self.atoms.get_velocities()/sqrt(MASSCONVERT)).T)
-        else:
-            if self.atoms.has_property('velo'):
-                self.atoms.set_velocities(self.atoms.velo.T*sqrt(MASSCONVERT))
-            else:
-                # start with zero momenta
-                self.atoms.set_momenta(np.zeros_like(self.atoms.positions))
-                self.atoms.add_property('velo', 0., n_cols=3)
+        # add the mass separately, because converter is not doing it
+        _quippy.f90wrap_atoms_add_property_real_a(this=self._quip_atoms._handle, name='mass',
+                                                  value=self.atoms.get_masses() * MASSCONVERT)
 
         self._ds = DynamicalSystem(self.atoms)
 
+        self._ds = dynamicalsystem_module.DynamicalSystem(self._quip_atoms)
+
+        # checking initial temperature and velocities
         if initialtemperature is not None:
             if np.max(np.abs(self._ds.atoms.velo)) > 1e-3:
                 msg = ('initialtemperature given but Atoms already '+
