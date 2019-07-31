@@ -143,8 +143,7 @@ class Dynamics(optimize.Dynamics):
         # checking initial temperature and velocities
         if initialtemperature is not None:
             if np.max(np.abs(self._ds.atoms.velo)) > 1e-3:
-                msg = ('initialtemperature given but Atoms already '+
-                       'has non-zero velocities!')
+                msg = 'initialtemperature given but Atoms already has non-zero velocities!'
                 raise RuntimeError(msg)
             self._ds.rescale_velo(initialtemperature)
 
@@ -173,20 +172,17 @@ class Dynamics(optimize.Dynamics):
 
 
     def get_timestep(self):
-        return self._dt*fs
+        return self._dt * fs
 
     def set_timestep(self, timestep):
-        self._dt = timestep/fs
+        self._dt = timestep / fs
 
-    timestep = property(get_timestep, set_timestep,
-                        doc="Set timestep, in ASE time units")
-
+    timestep = property(get_timestep, set_timestep, doc="Set timestep, in ASE time units")
 
     def get_number_of_steps(self):
         return int(self._ds.nsteps)
 
     nsteps = property(get_number_of_steps)
-
 
     def insert_observer(self, function, position=0, interval=1,
                         *args, **kwargs):
@@ -194,7 +190,6 @@ class Dynamics(optimize.Dynamics):
         if not callable(function):
             function = function.write
         self.observers.insert(position, (function, interval, args, kwargs))
-
 
     def attach(self, function, interval=1, *args, **kwargs):
         """Attach callback function.
@@ -206,12 +201,10 @@ class Dynamics(optimize.Dynamics):
             function = function.write
         self.observers.append((function, interval, args, kwargs))
 
-
     def call_observers(self):
         for function, interval, args, kwargs in self.observers:
             if self._ds.nsteps % interval == 0:
                 function(*args, **kwargs)
-
 
     def step(self, forces):
         """
@@ -232,7 +225,7 @@ class Dynamics(optimize.Dynamics):
         # want to overwrite)
 
         if self._ds.nsteps == 0:
-            self.atoms.acc[...] = (forces.T)/self.atoms.mass
+            self._quip_atoms.acc[:] = forces.T / self._quip_atoms.mass
 
         # first half of the Velocity Verlet step for ds.atoms:
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2
@@ -337,10 +330,9 @@ class Dynamics(optimize.Dynamics):
         return float(self._ds.t*fs)
 
     def set_time(self, time):
-        self._ds.t = time/fs
+        self._ds.t = time / fs
 
     time = property(get_time, set_time, doc="Time in ASE units (Note: NOT the same as femtoseconds)")
-
 
     def get_number_of_degrees_of_freedom(self):
         return self._ds.ndof
@@ -354,25 +346,20 @@ class Dynamics(optimize.Dynamics):
     number_of_constraints = property(get_number_of_constraints,
                                      doc="Get number of constraints")
 
-
     def get_number_of_restraints(self):
         return self._ds.nrestraints
 
     number_of_restraints = property(get_number_of_restraints,
-                                     doc="Get number of restraints")
-
+                                    doc="Get number of restraints")
 
     def get_number_of_rigid_bodies(self):
         return self._ds.nrigid
 
     number_of_rigid_bodies = property(get_number_of_rigid_bodies,
-                                     doc="Get number of rigid_bodies")
-
-
+                                      doc="Get number of rigid_bodies")
 
     def get_temperature(self):
         return self._ds.cur_temp
-
 
     def set_temperature(self, temperature):
         """
@@ -384,13 +371,11 @@ class Dynamics(optimize.Dynamics):
     temperature = property(get_temperature, set_temperature,
                            doc="Get or set the current temperature")
 
-
     def get_average_temperature(self):
         return self._ds.avg_temp
 
     average_temperature = property(get_average_temperature,
                                    doc="Average temperature")
-
 
     def get_averaging_time(self):
         return self._ds.avg_time
@@ -400,7 +385,6 @@ class Dynamics(optimize.Dynamics):
 
     averaging_time = property(get_averaging_time, set_averaging_time,
                               doc="Averaging time used for average temperature and kinetic energy")
-
 
     def get_damping(self):
         if not self._ds.is_damping_enabled():
@@ -414,11 +398,10 @@ class Dynamics(optimize.Dynamics):
             self._ds.enable_damping(damp_time)
 
     damping = property(get_damping, set_damping, doc=
-                       """Get or set the damping time constant in fs. Set to
+    """Get or set the damping time constant in fs. Set to
                        None to disable damping.  By default damping applies
                        to all atoms, but can be selectively enabled with the
                        'damp_mask' property.""")
-
 
     def get_number_of_thermostats(self):
         """
@@ -427,8 +410,7 @@ class Dynamics(optimize.Dynamics):
         Excludes thermostat with index zero, which is used for damping.
         """
         n = self._ds.n_thermostat()
-        return int(n-1)
-
+        return int(n - 1)
 
     def add_thermostat(self, type, T, gamma=None,
                        Q=None, tau=None, tau_cell=None,
@@ -477,16 +459,14 @@ class Dynamics(optimize.Dynamics):
                                 p, NHL_tau,
                                 NHL_mu, massive,
                                 region_i=region_i)
-        assert(new_index == int(region_i))
+        assert (new_index == int(region_i))
         return new_index
-
 
     def update_thermostat(self, T=None, p=None, index=1):
         """
         Change the target temperature `T` or presure `p` for thermostat `index`.
         """
         self._ds.update_thermostat(T, p, index)
-
 
     def remove_thermostat(self, index):
         """
@@ -499,24 +479,21 @@ class Dynamics(optimize.Dynamics):
             raise ValueError('index outside range 1 <= index <= (n_thermostat=%d)' % n)
         self._ds.remove_thermostat(index)
 
-
     def print_thermostats(self):
         """
         Print a table of the current thermostats in this system
         """
         self._ds.print_thermostats()
 
-
     def get_thermostat_temperatures(self):
         """
         Return the current temperatures of all thermostated regions
         """
-        temperatures = fzeros(self.get_number_of_thermostats()+1)
+        temperatures = fzeros(self.get_number_of_thermostats() + 1)
         if self.damping:
             return np.array(temperatures)
         else:
             return np.array(temperatures)[1:]
-
 
     def set_barostat(self, type, p_ext, hydrostatic_strain, diagonal_strain,
                      finite_strain_formulation, tau_epsilon, W_epsilon=None,
@@ -567,13 +544,11 @@ class Dynamics(optimize.Dynamics):
                               finite_strain_formulation, tau_epsilon, W_epsilon,
                               T, W_epsilon_factor)
 
-
     def update_barostat(self, p, T):
         """
         Update target pressure `p` or temperature `T` for NPT barostat
         """
         self._ds.update_barostat(self, p, T)
-
 
     def get_state(self):
         saved_ds = DynamicalSystem(self.atoms)
@@ -585,5 +560,3 @@ class Dynamics(optimize.Dynamics):
 
     state = property(get_state, set_state,
                      doc="""Save or restore current state of this dynamical system""")
-
-
