@@ -21,22 +21,31 @@ from math import sqrt
 
 import numpy as np
 
-from quippy import _dynamicalsystem
-from quippy._dynamicalsystem import *
-from quippy.units import MASSCONVERT
-from quippy.atoms import Atoms
-from quippy.farray import farray
-from quippy.io import AtomsWriter
-from quippy.system import InOutput, OUTPUT
+from quippy import dynamicalsystem_module
+import quippy.convert
+import quippy.atoms_types_module
+
+import _quippy
+
+import f90wrap.runtime
+
+# from quippy._dynamicalsystem import *
+# from quippy.units import MASSCONVERT
+# taking it explicitly now:
+# Units.f95:68 MASSCONVERT from old quippy
+MASSCONVERT = 103.6426957074462
+# from quippy.atoms import Atoms
+# from quippy.farray import farray
+# from quippy.io import AtomsWriter
+# from quippy.system import InOutput, OUTPUT
+
+import ase.io
+import ase.md
+from ase.io.trajectory import Trajectory
+from ase.optimize import optimize
 
 # time conversion units from ase.units
-try:
-    from ase.units import fs
-except ImportError:
-    _e = 1.60217733e-19          # elementary charge
-    _amu = 1.6605402e-27         # atomic mass unit, kg
-    second = 1e10 * sqrt(_e / _amu)
-    fs = 1e-15 * second
+from ase.units import fs
 
 # thermostat and barostat type constants are defined in Thermostats.f95,
 # which is not directly wrapped by quippy, so we reproduce them here
@@ -71,14 +80,11 @@ BAROSTAT_NONE = 0
 BAROSTAT_HOOVER_LANGEVIN = 1
 
 _barostat_types = {
-    'BAROSTAT_NONE' : 0,
+    'BAROSTAT_NONE': 0,
     'BAROSTAT_HOOVER_LANGEVIN': 1,
-    }
+}
 
-__doc__ = _dynamicalsystem.__doc__
-__all__ = ( _dynamicalsystem.__all__+ ['Dynamics', 'fs'] +
-            _thermostat_types.keys() + _barostat_types.keys())
-
+__all__ = ['Dynamics']
 
 class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
 
