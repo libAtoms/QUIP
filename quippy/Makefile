@@ -38,7 +38,7 @@ CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 
 
 # The following files will be wrapped
-LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95
+LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95
 POT_SOURCES =  Potential.f95
 GAP_SOURCES =  descriptors.f95
 
