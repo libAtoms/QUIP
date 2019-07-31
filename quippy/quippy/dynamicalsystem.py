@@ -136,7 +136,9 @@ class Dynamics(optimize.Dynamics):
         _quippy.f90wrap_atoms_add_property_real_a(this=self._quip_atoms._handle, name='mass',
                                                   value=self.atoms.get_masses() * MASSCONVERT)
 
-        self._ds = DynamicalSystem(self.atoms)
+        # initialise accelerations as zero, so that we have the objects in QUIP
+        _quippy.f90wrap_atoms_add_property_real_2da(this=self._quip_atoms._handle, name='acc',
+                                                    value=np.zeros(len(atoms), 3))
 
         self._ds = dynamicalsystem_module.DynamicalSystem(self._quip_atoms)
 
@@ -147,11 +149,9 @@ class Dynamics(optimize.Dynamics):
                 raise RuntimeError(msg)
             self._ds.rescale_velo(initialtemperature)
 
-        # now self._ds.atoms is either a Fortran shallowcopy of atoms,
-        # or a copy if input atoms was not an instance of quippy.Atoms
-
-        if 'time' in atoms.info:
-            self.set_time(atoms.info['time']) # from ASE units to fs
+        # setting the time
+        if 'time' in self.atoms.info:
+            self.set_time(self.atoms.info['time'])  # from ASE units to fs
 
         self.observers = []
         self.set_timestep(timestep)
@@ -170,6 +170,12 @@ class Dynamics(optimize.Dynamics):
         self._calc_virial = False
         self._virial = np.zeros((3,3))
 
+    def get_time(self):
+        return float(self._ds.t * fs)
+
+    def converged(self):
+        """ MD is 'converged' when number of maximum steps is reached. """
+        return self.nsteps >= self.max_steps
 
     def get_timestep(self):
         return self._dt * fs
