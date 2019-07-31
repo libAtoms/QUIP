@@ -27,7 +27,7 @@ import _quippy
 import quippy
 
 
-__all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict']
+__all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict', 'velocities_ase_to_quip', 'velocities_quip_to_ase']
 
 
 # conversion between ase and quip mass, taken from Fortran source
@@ -68,10 +68,32 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
         # if ase atoms has momenta then add velocities to the quip object
         # workaround for the interfaces not behaving properly in the wrapped code, see f90wrap issue #86
         _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
-                                                    value=(ase_atoms.get_velocities() / np.sqrt(MASSCONVERT)).T)
+                                                    value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
     # go through all properties
     return quip_atoms
+
+
+def velocities_ase_to_quip(velocities):
+    """
+    Convert the ASE velocities to QUIP velocities
+
+    :param velocities: velocities obtained from ase, with Atoms.get_velocities()
+    :return:
+    """
+
+    return (velocities / np.sqrt(MASSCONVERT)).T
+
+
+def velocities_quip_to_ase(velocities):
+    """
+    Convert the QUIP velocities to ASE velocities
+
+    :param velocities: velocities obtained from quip, with quip_atom.velo[:]
+    :return:
+    """
+
+    return (velocities * np.sqrt(MASSCONVERT)).T
 
 
 def descriptor_data_mono_to_dict(desc_data_mono):
