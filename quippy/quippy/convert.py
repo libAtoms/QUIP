@@ -21,15 +21,17 @@
 Conversions between ase and fortran atoms objects
 """
 
-
 import ase
 import numpy as np
-
 import _quippy
 import quippy
 
 
 __all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict']
+
+
+# conversion between ase and quip mass, taken from Fortran source
+MASSCONVERT = 103.6426957074462
 
 
 def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
@@ -51,8 +53,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
                 # need to regenerate the quip atoms object
                 quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), ase_atoms.get_cell().T.copy())
         else:
-            # TODO: decide if we want an error here or just move on and not care, as if it was None. \
-            # error is better te make awareness, but makes useage harder; decide with James!!!
+            # raise an error for the wrong object given
             raise TypeError('quip_atoms argument is not of valid type, cannot work with it')
 
     else:
@@ -62,6 +63,12 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
     quip_atoms.pos[:] = ase_atoms.get_positions().T.copy()
     quip_atoms.is_periodic[:] = ase_atoms.get_pbc()   # fixme this is not making sure it is a quip compatible arr.
     quip_atoms.z[:] = ase_atoms.numbers
+
+    if ase_atoms.has('momenta'):
+        # if ase atoms has momenta then add velocities to the quip object
+        # workaround for the interfaces not behaving properly in the wrapped code, see f90wrap issue #86
+        _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
+                                                    value=(ase_atoms.get_velocities() / np.sqrt(MASSCONVERT)).T)
 
     # go through all properties
     return quip_atoms
@@ -107,62 +114,62 @@ def descriptor_data_mono_to_dict(desc_data_mono):
         # out_data_dict['grad_data'] = None
         # pass
         pass
-        #print('failed has_grad_data')
+        # print('failed has_grad_data')
 
     try:
         out_data_dict['grad_data'] = desc_data_mono.grad_data
     except:
         pass
-        #print('failed grad_data')
+        # print('failed grad_data')
 
     try:
         out_data_dict['ii'] = desc_data_mono.ii
         # 'ii': desc_data_mono.ii,
     except:
         pass
-        #print('failed ii')
+        # print('failed ii')
 
     try:
         out_data_dict['pos'] = desc_data_mono.pos
         # 'pos': desc_data_mono.pos,
     except:
         pass
-        #print('failed pos')
+        # print('failed pos')
 
     try:
         out_data_dict['grad_covariance_cutoff'] = desc_data_mono.grad_covariance_cutoff
         # 'grad_covariance_cutoff': desc_data_mono.grad_covariance_cutoff,
     except:
         pass
-        #print('failed grad_covariance_cutoff')
+        # print('failed grad_covariance_cutoff')
 
     try:
         out_data_dict['covariance_cutoff'] = desc_data_mono.covariance_cutoff
         # 'covariance_cutoff': desc_data_mono.covariance_cutoff,
     except:
         pass
-        #print('failed covariance_cutoff')
+        # print('failed covariance_cutoff')
 
     try:
         out_data_dict['data'] = desc_data_mono.data
     except:
         # 'data': desc_data_mono.data,
         pass
-        #print('failed data')
+        # print('failed data')
 
     try:
         out_data_dict['has_data'] = desc_data_mono.has_data
     except:
         # 'data': desc_data_mono.has_data,
         pass
-        #print('failed has_data')
+        # print('failed has_data')
 
     try:
         out_data_dict['ci'] = desc_data_mono.ci
         # 'ii': desc_data_mono.ci,
     except:
         pass
-        #print('failed ci')
+        # print('failed ci')
 
     return out_data_dict
 
