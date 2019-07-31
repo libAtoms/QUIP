@@ -162,16 +162,18 @@ class Dynamics(optimize.Dynamics):
             # traj = Trajectory('moldyn3.traj', 'w', atoms)
             # dyn.attach(traj.write, interval=50)
 
-            if isinstance(trajectory, str):
-                trajectory = AtomsWriter(trajectory)
-            self.attach(trajectory, trajectoryinterval, self._ds.atoms)
+            # if isinstance(trajectory, str):
+            #     trajectory = AtomsWriter(trajectory)
+            # self.attach(trajectory, trajectoryinterval, self._ds.atoms)
+            raise NotImplementedError
 
         # fixme: this is not been worked on yet
         self.loglabel = loglabel
         if logfile is not None:
-            if isinstance(logfile, str):
-                logfile = InOutput(logfile, OUTPUT)
-            self.attach(self.print_status, loginterval, logfile)
+            # if isinstance(logfile, str):
+            #     logfile = InOutput(logfile, OUTPUT)
+            # self.attach(self.print_status, loginterval, logfile)
+            raise NotImplementedError
 
         # fixme: this is not been worked on yet
         self._calc_virial = False
@@ -225,12 +227,12 @@ class Dynamics(optimize.Dynamics):
 
         Returns forces at the end of the time-step, suitable for passing to next step()
         """
-        assert(self._ds.atoms.is_same_fortran_object(self.atoms))
+        # assert (self._ds.atoms.is_same_fortran_object(self._quip_atoms))
 
         # on entry we have r(t), v(t), p(t), f(t) in atoms and ds.atoms
 
         # keep a copy of r(t)
-        r_of_t = self.atoms.get_positions()
+        r_of_t = self.ase_atoms.get_positions()
 
         # set current accelerations a(t) using incoming f(t)
         # only necessary for first step since advance_verlet2() does it
@@ -240,21 +242,27 @@ class Dynamics(optimize.Dynamics):
         if self._ds.nsteps == 0:
             self._quip_atoms.acc[:] = forces.T / self._quip_atoms.mass
 
-        # first half of the Velocity Verlet step for ds.atoms:
+        # first half of the Velocity Verlet step for ds.atoms (which is self._quip_atoms):
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2
         #    r(t+dt)   = r(t) + p(t+dt/2)/m dt   ->   r(t+dt)    = r(t) + v(t+dt/2) dt
+        # tks32: this is done with QUIP, so ase_atoms needs an update of pos and momenta
+        # momenta updated directly, to avoid call on adjust forces
         self._ds.advance_verlet1(self._dt, virial=self._virial)
-        self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
+        self.ase_atoms.arrays['positions'] = self._quip_atoms.pos.T
 
         # now we have r(t+dt), v(t+1/2dt), p(t+1/2dt), a(t) in ds.atoms
 
-        if self.atoms.constraints:
+        if self.ase_atoms.constraints:
+            # fixme: there are only ASE constraints, right? I assume so here
             # keep a copy of new positions r(t+dt) so we don't lose them
-            r_of_t_plus_dt = self.atoms.get_positions()
+            r_of_t_plus_dt = self._quip_atoms.get_positions()
 
             # manually revert positions of atoms to r(t)
             # NB: do not call set_positions() as this applies constraints
-            self.atoms.arrays['positions'][...] = r_of_t
+            # tks32: set ase_atoms only, for
+            self.ase_atoms.arrays['positions'] = r_of_t
 
             # If there are any ASE constraints, we need to call
             # set_positions(r(t+dt)) and set_momenta(p(t+dt/2)) to invoke
@@ -262,14 +270,15 @@ class Dynamics(optimize.Dynamics):
 
             # set_positions() calls adjust_positions(), which
             # will recieve correct old and new positions
-            self.atoms.set_positions(r_of_t_plus_dt)
-            self.atoms.calc_dists()
+            self.ase_atoms.set_positions(r_of_t_plus_dt)
+            self._quip_atoms.pos[:] = r_of_t_plus_dt.T.copy()
+            self._quip_atoms.calc_dists() # uodates dstance tables in quip, call it on mevement of atoms
 
             # set_momenta() calls adjust_forces() with only the new momenta
-            self.atoms.set_momenta(self.atoms.get_momenta())
+            self.ase_atoms.set_momenta(self.ase_atoms.get_momenta())
 
             # Update velocities v(t+dt/2) for changes in momenta made by the constraints
-            self.atoms.velo[...] = (self.atoms.arrays['momenta'].T/self.atoms.mass*MASSCONVERT)/sqrt(MASSCONVERT)
+            self._quip_atoms.velo[:] = quippy.convert.velocities_ase_to_quip(self.ase_atoms.get_velocities())
 
         # Now we have r(t+dt), v(t+dt/2), p(t+dt/2)
 
@@ -277,60 +286,60 @@ class Dynamics(optimize.Dynamics):
         # This is invoked on the original atoms object, so that any
         # constraints' adjust_forces() routines will be called to
         # modify the forces
-        forces = self.atoms.get_forces()
+        forces = self.ase_atoms.get_forces()
 
         # compute the virial if necessary, i.e. if we have a barostat or are doing NPT
         if self._calc_virial:
-            stress = self.atoms.get_stress()
-            virial = -stress*self.atoms.get_volume()
-            self._virial = np.zeros((3,3))
-            if stress.shape == (3,3):
-                self._virial[:,:] = virial
+            stress = self.ase_atoms.get_stress()
+            virial = -stress * self.ase_atoms.get_volume()
+            self._virial = np.zeros((3, 3))
+            if stress.shape == (3, 3):
+                self._virial[:, :] = virial
             else:
-                self._virial[0,0] = virial[0]
-                self._virial[1,1] = virial[1]
-                self._virial[2,2] = virial[2]
-                self._virial[1,2] = self._virial[2,1] = virial[3]
-                self._virial[0,2] = self._virial[2,0] = virial[4]
-                self._virial[0,1] = self._virial[1,0] = virial[5]
-            #print 'Computed virial:', self._virial
+                self._virial[0, 0] = virial[0]
+                self._virial[1, 1] = virial[1]
+                self._virial[2, 2] = virial[2]
+                self._virial[1, 2] = self._virial[2, 1] = virial[3]
+                self._virial[0, 2] = self._virial[2, 0] = virial[4]
+                self._virial[0, 1] = self._virial[1, 0] = virial[5]
+            # print 'Computed virial:', self._virial
 
         # Second half of the Velocity Verlet step
         #   p(t+dt) = p(t+dt/2) + F(t+dt)/2    ->    v(t+dt) = v(t+dt/2) + a(t+dt)/2
         self._ds.advance_verlet2(self._dt, forces.T, virial=self._virial)
-        self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
 
-
-        if self.atoms.constraints:
+        if self.ase_atoms.constraints:
             # Update momenta, honouring constraints
-            self.atoms.set_momenta(self.atoms.get_momenta())
-            self.atoms.velo[...] = (self.atoms.arrays['momenta'].T/self.atoms.mass*MASSCONVERT)/sqrt(MASSCONVERT)
+            self.ase_atoms.set_momenta(self.ase_atoms.get_momenta())
+            self._quip_atoms.velo[:] = quippy.convert.velocities_ase_to_quip(self.ase_atoms.get_velocities())
 
         # Now we have r(t+dt), v(t+dt), p(t+dt), a(t+dt) in atoms
 
         # Copy status into atoms.params
-        self.atoms.params['time'] = self._ds.t*fs # from fs to ASE time units
-        self.atoms.params['nsteps'] = self._ds.nsteps
-        self.atoms.params['cur_temp'] = self._ds.cur_temp
-        self.atoms.params['avg_temp'] = self._ds.avg_temp
-        self.atoms.params['dW'] = self._ds.dw
-        self.atoms.params['work'] = self._ds.work
-        self.atoms.params['Epot'] = self._ds.epot
-        self.atoms.params['Ekin'] = self._ds.ekin
-        self.atoms.params['Wkin'] = self._ds.wkin
-        self.atoms.params['thermostat_dW'] = self._ds.thermostat_dw
-        self.atoms.params['thermostat_work'] = self._ds.thermostat_work
+        # TODO: this would nee to go to the new observer, rigth?
+        self._quip_atoms.params['time'] = self._ds.t * fs  # from fs to ASE time units
+        self._quip_atoms.params['nsteps'] = self._ds.nsteps
+        self._quip_atoms.params['cur_temp'] = self._ds.cur_temp
+        self._quip_atoms.params['avg_temp'] = self._ds.avg_temp
+        self._quip_atoms.params['dW'] = self._ds.dw
+        self._quip_atoms.params['work'] = self._ds.work
+        self._quip_atoms.params['Epot'] = self._ds.epot
+        self._quip_atoms.params['Ekin'] = self._ds.ekin
+        self._quip_atoms.params['Wkin'] = self._ds.wkin
+        self._quip_atoms.params['thermostat_dW'] = self._ds.thermostat_dw
+        self._quip_atoms.params['thermostat_work'] = self._ds.thermostat_work
 
         # return f(t+dt)
         return forces
-
 
     def run(self, steps=50):
         """
         Run dynamics forwards for `steps` steps.
         """
-        f = self.atoms.get_forces()
-        for step in xrange(steps):
+        f = self._quip_atoms.get_forces()
+        for step in range(steps):
             f = self.step(f)
             self.call_observers()
 
@@ -461,7 +470,7 @@ class Dynamics(optimize.Dynamics):
         if type in (THERMOSTAT_LANGEVIN_NPT, THERMOSTAT_LANGEVIN_NPT_NB):
             self._calc_virial = True
         new_index = self._ds.n_thermostat()
-        region_i = farray(0, dtype=np.int32)
+        region_i = np.zeros(0, dtype=np.int32)   # fixme: will this work instead of farray?
 
         self._ds.add_thermostat(type, T, gamma,
                                 Q, tau, tau_cell,
