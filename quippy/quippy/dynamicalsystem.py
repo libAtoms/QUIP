@@ -157,18 +157,25 @@ class Dynamics(optimize.Dynamics):
         self.set_timestep(timestep)
 
         if trajectory is not None:
-            if isinstance(trajectory, basestring):
+            # fixme: this is not been worked on yet
+            # # We also want to save the positions of all atoms after every 100th time step. --- ASE DOCS
+            # traj = Trajectory('moldyn3.traj', 'w', atoms)
+            # dyn.attach(traj.write, interval=50)
+
+            if isinstance(trajectory, str):
                 trajectory = AtomsWriter(trajectory)
             self.attach(trajectory, trajectoryinterval, self._ds.atoms)
 
+        # fixme: this is not been worked on yet
         self.loglabel = loglabel
         if logfile is not None:
-            if isinstance(logfile, basestring):
+            if isinstance(logfile, str):
                 logfile = InOutput(logfile, OUTPUT)
             self.attach(self.print_status, loginterval, logfile)
 
+        # fixme: this is not been worked on yet
         self._calc_virial = False
-        self._virial = np.zeros((3,3))
+        self._virial = np.zeros((3, 3))
 
     def get_time(self):
         return float(self._ds.t * fs)
