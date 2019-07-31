@@ -84,7 +84,46 @@ _barostat_types = {
     'BAROSTAT_HOOVER_LANGEVIN': 1,
 }
 
-__all__ = ['Dynamics']
+__all__ = ['Dynamics', 'DynamicalSystem']
+
+
+class DynamicalSystem(dynamicalsystem_module.DynamicalSystem):
+    __doc__ = dynamicalsystem_module.DynamicalSystem.__doc__
+
+    # def __init__(self, atoms_in, velocity=None, acceleration=None, constraints=None,
+    #     restraints=None, rigidbodies=None, error=None, handle=None):
+    #
+    #
+    #     quip_atoms_in = quippy.convert.ase_to_quip(atoms_in)
+    #
+    #     dynamicalsystem_module.DynamicalSystem.__init__(self, atoms_in=quip_atoms_in, velocity=velocity,
+    #                                                     acceleration=acceleration, constraints=constraints,
+    #                                                     restraints=restraints, rigidbodies=rigidbodies, error=error,
+    #                                                     handle=handle)
+
+    def run(self, pot, dt, n_steps, summary_interval=None, hook_interval=None, write_interval=None,
+            trajectory=None, args_str=None, hook=None,
+            save_interval=None):
+
+        if hook is None and hook_interval is not None:
+            raise ValueError('hook_interval not permitted when hook is not present')
+
+        if hook is None:
+            traj = []
+            save_hook = lambda: traj.append(self.atoms.copy())
+            dynamicalsystem_module.DynamicalSystem.run(self, pot, dt, n_steps,
+                                                       save_hook, hook_interval=save_interval,
+                                                       summary_interval=summary_interval,
+                                                       write_interval=write_interval,
+                                                       trajectory=trajectory,
+                                                       args_str=args_str)
+            return traj
+        else:
+            dynamicalsystem_module.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval,
+                                                       summary_interval=summary_interval, write_interval=write_interval,
+                                                       trajectory=trajectory, args_str=args_str)
+
+    #run.__doc__ = dynamicalsystem_module.DynamicalSystem.run.__doc__
 
 
 class Dynamics(optimize.Dynamics):
@@ -140,7 +179,7 @@ class Dynamics(optimize.Dynamics):
         _quippy.f90wrap_atoms_add_property_real_2da(this=self._quip_atoms._handle, name='acc',
                                                     value=np.zeros(len(atoms), 3))
 
-        self._ds = dynamicalsystem_module.DynamicalSystem(self._quip_atoms)
+        self._ds = DynamicalSystem(self._quip_atoms)
 
         # checking initial temperature and velocities
         if initialtemperature is not None:
@@ -272,7 +311,7 @@ class Dynamics(optimize.Dynamics):
             # will recieve correct old and new positions
             self.ase_atoms.set_positions(r_of_t_plus_dt)
             self._quip_atoms.pos[:] = r_of_t_plus_dt.T.copy()
-            self._quip_atoms.calc_dists() # uodates dstance tables in quip, call it on mevement of atoms
+            self._quip_atoms.calc_dists()  # uodates dstance tables in quip, call it on mevement of atoms
 
             # set_momenta() calls adjust_forces() with only the new momenta
             self.ase_atoms.set_momenta(self.ase_atoms.get_momenta())
@@ -416,7 +455,7 @@ class Dynamics(optimize.Dynamics):
             self._ds.enable_damping(damp_time)
 
     damping = property(get_damping, set_damping, doc=
-                    """Get or set the damping time constant in fs. Set to
+    """Get or set the damping time constant in fs. Set to
                        None to disable damping.  By default damping applies
                        to all atoms, but can be selectively enabled with the
                        'damp_mask' property.""")
@@ -470,7 +509,7 @@ class Dynamics(optimize.Dynamics):
         if type in (THERMOSTAT_LANGEVIN_NPT, THERMOSTAT_LANGEVIN_NPT_NB):
             self._calc_virial = True
         new_index = self._ds.n_thermostat()
-        region_i = np.zeros(0, dtype=np.int32)   # fixme: will this work instead of farray?
+        region_i = np.zeros(0, dtype=np.int32)  # fixme: will this work instead of farray?
 
         self._ds.add_thermostat(type, T, gamma,
                                 Q, tau, tau_cell,
