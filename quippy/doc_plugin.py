@@ -94,7 +94,7 @@ def magic_table(spec):
 
     args_str_lines.extend(['', ''])
 
-    return '\n'.join(args_str_lines)
+    return [line + '\n' for line in args_str_lines]
 
 
 def infer_type(value, variable=None):

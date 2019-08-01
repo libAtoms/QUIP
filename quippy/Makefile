@@ -102,7 +102,8 @@ build: f90wrap ${WRAP_FPP_FILES}
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
 		potential_initialise_inoutput \
-		cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff
+		cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff \
+		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
