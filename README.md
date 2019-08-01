@@ -201,7 +201,7 @@ to get up and running quickly.
 7.  To compile the Python wrappers (``quippy``), the minimum requirements
     are:
 
-    - Python 2.7. (Python 3 support is in progress).
+    - Python 3.x
 
     - [NumPy](http://www.numpy.org)
 
