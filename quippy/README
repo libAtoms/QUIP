@@ -2,7 +2,10 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2019
+# HQ X   Portions of this code were written by
+# HQ X     Tamas K. Stenczel, James Kermode
+# HQ X
+# HQ X   Copyright 2019
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -12,7 +15,7 @@
 # HQ X
 # HQ X   When using this software, please cite the following reference:
 # HQ X
-# HQ X   http://www.jrkermode.co.uk/quippy
+# HQ X   https://warwick.ac.uk/fac/sci/eng/staff/jrk
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

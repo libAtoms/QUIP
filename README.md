@@ -25,9 +25,9 @@ Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, ST John,
 Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif Mones,
 Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
-Winfield.
+Winfield, Tamas K Stenczel.
 
-Copyright 2006-2018.
+Copyright 2006-2019.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
