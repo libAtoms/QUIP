@@ -183,5 +183,9 @@ class Descriptor:
         for key, val in descriptor_out.items():
             descriptor_out[key] = np.array(val)
 
+        if 'grad_data' in descriptor_out.keys():
+            grad = descriptor_out['grad_data']
+            descriptor_out['grad_data'] = grad.transpose(0, 3, 2, 1).reshape(-1, grad.shape[2], grad.shape[1])
+
         # This is a dictionary now and hence needs to be indexed as one, unlike the old version
         return descriptor_out

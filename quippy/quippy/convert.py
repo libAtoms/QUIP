@@ -108,116 +108,28 @@ def descriptor_data_mono_to_dict(desc_data_mono):
     :return:
     """
 
-    # if not isinstance(desc_data_mono, quippy.descriptors_module.descriptor_data_mono):
-    #     raise TypeError('Not descriptor_data_mono given')
-    #
-    # # TODO: only take the ones actually needed, this is good for debuggin now though
-    # out_data_dict = {'data': desc_data_mono.data,
-    #                  'grad_data': desc_data_mono.grad_data,
-    #                  'ci': desc_data_mono.ci,
-    #                  'ii': desc_data_mono.ii,
-    #                  'pos': desc_data_mono.pos,
-    #                  'has_data': desc_data_mono.has_data,
-    #                  'has_grad_data': desc_data_mono.has_grad_data,
-    #                  'covariance_cutoff': desc_data_mono.covariance_cutoff,
-    #                  'grad_covariance_cutoff': desc_data_mono.grad_covariance_cutoff}
-    #
-    # return out_data_dict
-
     if not isinstance(desc_data_mono, quippy.descriptors_module.descriptor_data_mono):
         raise TypeError('Not descriptor_data_mono given')
 
-    # TODO: only take the ones actually needed, this is good for debuggin now though
     out_data_dict = dict()
-    # 'has_grad_data':
-    # 'grad_data': desc_data_mono.grad_data,
 
-    try:
-        out_data_dict['has_grad_data'] = desc_data_mono.has_grad_data
-        #
-    except:
-        # could be None too
-        # out_data_dict['has_grad_data'] = None
-        # out_data_dict['grad_data'] = None
-        # pass
-        pass
-        # print('failed has_grad_data')
+    def take_value(key):
+        """
+        Take the arg if it exists
+        """
 
-    try:
-        out_data_dict['grad_data'] = desc_data_mono.grad_data
-    except:
-        pass
-        # print('failed grad_data')
+        try:
+            out_data_dict[key] = getattr(desc_data_mono, key)
+        except AttributeError:
+            pass
+        except ValueError:
+            pass
 
-    try:
-        out_data_dict['ii'] = desc_data_mono.ii
-        # 'ii': desc_data_mono.ii,
-    except:
-        pass
-        # print('failed ii')
-
-    try:
-        out_data_dict['pos'] = desc_data_mono.pos
-        # 'pos': desc_data_mono.pos,
-    except:
-        pass
-        # print('failed pos')
-
-    try:
-        out_data_dict['grad_covariance_cutoff'] = desc_data_mono.grad_covariance_cutoff
-        # 'grad_covariance_cutoff': desc_data_mono.grad_covariance_cutoff,
-    except:
-        pass
-        # print('failed grad_covariance_cutoff')
-
-    try:
-        out_data_dict['covariance_cutoff'] = desc_data_mono.covariance_cutoff
-        # 'covariance_cutoff': desc_data_mono.covariance_cutoff,
-    except:
-        pass
-        # print('failed covariance_cutoff')
-
-    try:
-        out_data_dict['data'] = desc_data_mono.data
-    except:
-        # 'data': desc_data_mono.data,
-        pass
-        # print('failed data')
-
-    try:
-        out_data_dict['has_data'] = desc_data_mono.has_data
-    except:
-        # 'data': desc_data_mono.has_data,
-        pass
-        # print('failed has_data')
-
-    try:
-        out_data_dict['ci'] = desc_data_mono.ci
-        # 'ii': desc_data_mono.ci,
-    except:
-        pass
-        # print('failed ci')
+    # fixme: only take the ones actually needed, this is good for debuggin now though
+    for key in ['has_grad_data', 'ii', 'pos', 'grad_covariance_cutoff', 'covariance_cutoff', 'data', 'has_data', 'grad_data']:
+        take_value(key)
 
     return out_data_dict
-
-# for a try at a nicer implementation:
-# def exception(function):
-#     """
-#     A decorator that wraps the passed in function and logs
-#     exceptions should one occur
-#     """
-#
-#     @wraps(function)
-#     def wrapper(*args, **kwargs):
-#         try:
-#             return function(*args, **kwargs)
-#         except:
-#            pass
-#
-#     return wrapper
-#
-#
-
 
 
 def get_dict_arrays(fdict):
