@@ -120,7 +120,8 @@ def infer_type(value, variable=None):
 
     return 'None'
 
-def QUIP_doc_plugin(subroutine_lines, doc, name):
+
+def doc_plugin(subroutine_lines, name, run_type=None):
     """
     F90wrap Plugin for QUIP documentation generation
 
@@ -136,12 +137,12 @@ def QUIP_doc_plugin(subroutine_lines, doc, name):
 
     spec = find_params(subroutine_lines)
     if spec is None:
-        print('QUIP_doc plugin: No args found in ', name)
+        print('QUIP_doc_plugin: No args found in ', name)
+        table_string = []
     else:
-        table_sring = magic_table(spec)
-        doc.append(table_sring)
-        print('QUIP_doc plugin: args found in {}s. Table added to doc as follows'.format(name))
-        print(table_sring)
+        table_string = magic_table(spec)
+        # doc.append(table_string)
+        print('QUIP_doc_plugin: args found in {}s. Table added to doc as follows'.format(name))
+        print(table_string)
 
-
-QUIP_doc_plugin(subroutine_lines, doc, name)
+    return table_string
