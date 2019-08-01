@@ -33,6 +33,7 @@ def find_params(lines):
                             var=m.group(5).lower(),
                             doc=m.group(7))
 
+            arg_data['type'] = infer_type(arg_data['value'], arg_data['var'])
             spec.append(arg_data)
 
     if spec:
@@ -49,26 +50,30 @@ def magic_table(spec):
         return None
 
     name_list = ['Name']
+    type_list = ['Type']
     value_list = ['Value']
-    var_list = ['Var']
+    # var_list = ['Var']
     doc_list = ['Doc']
 
     for arg in spec:
         name_list.append(arg['name'])
+        type_list.append(arg['type'])
         value_list.append(arg['value'])
-        var_list.append(arg['var'])
+        # var_list.append(arg['var'])
         doc_list.append(arg['doc'])
 
     max_name_len = max(len(name) for name in name_list)
+    max_type_len = max(len(typ) for typ in type_list)
     max_value_len = max(len(value) for value in value_list)
-    max_var_len = max(len(var) for var in var_list)
+    # max_var_len = max(len(var) for var in var_list)
 
-    cols = (max_name_len, max_value_len, max_var_len, 40)
+    # cols = (max_name_len, max_value_len, max_var_len, 40)
+    cols = (max_name_len, max_type_len, max_value_len, 40)
 
     args_str_lines = ['.. rubric:: args_str options', '']
     fmt = "%-{:d}s %-{:d}s %-{:d}s %-{:d}s".format(*cols)
 
-    for i, (name, type_, default, doc) in enumerate(zip(name_list, value_list, var_list, doc_list)):
+    for i, (name, type_, default, doc) in enumerate(zip(name_list, type_list, value_list, doc_list)):
         if i == 0:
             args_str_lines.append(fmt % ('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
         doc_words = doc.split()
@@ -92,7 +97,30 @@ def magic_table(spec):
     return '\n'.join(args_str_lines)
 
 
-def QUIP_doc_plugin(subroutine_lines, doc):
+def infer_type(value, variable=None):
+    """
+    Tries to infer the type of a variable, based on the default value if given.
+
+    """
+
+    if value in ['T', 'F']:
+        return 'bool'
+
+    try:
+        throwaway = int(value)
+        return 'int'
+    except ValueError:
+        pass
+
+    try:
+        throwaway = float(value)
+        return 'float'
+    except ValueError:
+        pass
+
+    return 'None'
+
+def QUIP_doc_plugin(subroutine_lines, doc, name):
     """
     F90wrap Plugin for QUIP documentation generation
 
@@ -116,4 +144,4 @@ def QUIP_doc_plugin(subroutine_lines, doc):
         print(table_sring)
 
 
-QUIP_doc_plugin(subroutine_lines, doc)
+QUIP_doc_plugin(subroutine_lines, doc, name)
