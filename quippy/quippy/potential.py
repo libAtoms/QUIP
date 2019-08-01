@@ -38,54 +38,10 @@ class Potential(ase.calculators.calculator.Calculator):
     implemented_properties = ['energy', 'forces', 'virial', 'stress',
                               'local_virial', 'local_energy', 'local_stress']
 
-    # earlier in quippy
-    # ['energy', 'energies', 'forces', 'stress', 'stresses',
-    #  'numeric_forces', 'elastic_constants',
-    #  'unrelaxed_elastic_constants']
-
-    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
-                 **kwargs):
-
-        # update_docstring not implemented yet, it was oo_quip.update_doc_string() in the earlier version
-
-        """
-
-        from quip_docstring:
-
-        args_str : str
-            Valid arguments are 'Sum', 'ForceMixing', 'EVB', 'Local_E_Mix' and 'ONIOM', and any type of simple_potential
-        param_str : str
-            contents of xml parameter file for potential initializers, if needed
-
-        -----------------------------------------------------------------------
-
-        ase calculator has the following arguments for initialisation:
-
-        let's not care about files for now, so just take them as None
-
-        nay     restart: str
-                    Prefix for restart file.  May contain a directory.  Default
-                    is None: don't restart.
-        nay     ignore_bad_restart_file: bool
-                    Ignore broken or missing restart file.  By default, it is an
-                    error if the restart file is missing or broken.
-        nay     label: str
-                    Name used for all files.  May contain a directory.
-                atoms: Atoms object
-                    Optional Atoms object to which the calculator will be
-                    attached.  When restarting, atoms will get its positions and
-                    unit-cell updated from file.
+    @quippy.convert.set_doc("""
 
         ------------------------------------------------------------------------
         from old quippy arguments:
-
-        used:
-            init_args=None, param_str=None, atoms=None
-
-        not used:
-            calculator=None
-            fpointer=None
-            error=None
 
         not implemented yet:
             pot1=None, pot2=None
@@ -95,7 +51,11 @@ class Potential(ase.calculators.calculator.Calculator):
             callback=None
             calculation_always_required=False
             finalise=True
-                """
+                """, quippy.potential_module.Potential.__init__.__doc__)
+    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
+                 **kwargs):
+        quippy.potential_module.Potential.__init__.__doc__
+
 
         self._default_properties = ['energy', 'forces']
         self.calculation_always_required = calculation_always_required
@@ -247,8 +207,8 @@ below.
         self._quip_potential.calc(self._quip_atoms, args_str=args_str, energy=ener_dummy, **_dict_args)
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
-        _quip_properties = quippy.utils.get_dict_arrays(self._quip_atoms.properties)
-        _quip_params = quippy.utils.get_dict_arrays(self._quip_atoms.params)
+        _quip_properties = quippy.convert.get_dict_arrays(self._quip_atoms.properties)
+        _quip_params = quippy.convert.get_dict_arrays(self._quip_atoms.params)
 
         self.results['energy'] = ener_dummy[0]
 

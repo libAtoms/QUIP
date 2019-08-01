@@ -20,14 +20,19 @@
 """
 Conversions between ase and fortran atoms objects
 """
+import inspect
+from copy import deepcopy as cp
 
-import ase
 import numpy as np
+import ase
+
+import f90wrap.runtime
+
 import _quippy
 import quippy
 
 
-__all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict', 'velocities_ase_to_quip', 'velocities_quip_to_ase']
+__all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict', 'velocities_ase_to_quip', 'velocities_quip_to_ase', 'set_doc']
 
 
 # conversion between ase and quip mass, taken from Fortran source
@@ -212,3 +217,77 @@ def descriptor_data_mono_to_dict(desc_data_mono):
 #     return wrapper
 #
 #
+
+
+
+def get_dict_arrays(fdict):
+    """Takes the arrays from a quippy dictionary. Copies.
+
+    Probably fails if there are non-array elements in the dictionary"""
+
+    if not isinstance(fdict, quippy.dictionary_module.Dictionary):
+        raise TypeError('fdict argument is not a quippy.dictionary_module.Dictionary')
+
+    arrays = {}
+    for i in range(1, fdict.n + 1):
+        key = fdict.get_key(i)
+        key = key.strip().decode('ascii')
+        # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
+        try:    # this is an unsufficient temporary fix
+            value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,
+                                              fdict._handle, _quippy.f90wrap_dictionary__array__, key)
+            arrays[key] = value.copy()
+        except ValueError:
+            value = fdict.get_value(key)
+            try:
+                # normally it is an tuple, because the error arf from fortran is converted to output
+                arrays[key] = cp(value[0])
+            except TypeError:
+                arrays[key] = cp(value)
+
+    return arrays
+
+
+def set_doc(doc, extra):
+    def wrap(method):
+        method.__doc__ = update_doc_string(doc, extra)
+        return method
+    return wrap
+
+def update_doc_string(doc, extra, sections=None, signature=None):
+    """
+    Insert `extra` in the docstring `doc`, before the first matching section
+
+    Searches for each section heading in the list `sections` in turn.
+    If sections is not given, the default is `['Parameters', 'See also']`.
+    If not sections are found, extra text is appended to end of docstring.
+    """
+
+    if sections is None:
+       sections = ['Parameters', 'See also']
+
+    try:
+       doc = inspect.cleandoc(doc)
+       extra = inspect.cleandoc(extra)
+    except AttributeError:
+       pass
+
+    extra = '\n' + extra + '\n'
+
+    lines = doc.split('\n')
+
+    if signature is not None:
+        lines[0] = signature
+
+    for section in sections:
+       indices = [i for i, line in enumerate(lines) if line == section ]
+       if len(indices) == 1:
+          break
+    else:
+        indices = [len(lines)-1] # insert at end
+
+    index, = indices
+    doc = '\n'.join([line.rstrip() for line in lines[:index] + extra.split('\n') + lines[index:]])
+    doc = doc.replace('\n\n\n', '\n\n')
+
+    return doc
