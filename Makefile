@@ -28,7 +28,6 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-
 .PHONY: config doc clean deepclean distclean install test quippy doc install-structures install-dtds install-Tools install-build.QUIP_ARCH install-quippy libquip
 
 ifndef QUIP_ARCH
@@ -96,7 +95,7 @@ GAP += GAP
 GAP_PROGRAMS = gap_programs
 else
 GAP =
-GAP_PROGRAMS = 
+GAP_PROGRAMS =
 endif
 
 # now add the rest of the modules
@@ -144,7 +143,7 @@ FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i;
 
 ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	@echo "********************************************"
-	@echo "" 
+	@echo ""
 	@echo " Making $@ "
 	@echo ""
 	@echo "********************************************"
@@ -159,7 +158,7 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 
 Programs/% src/Programs/% : ${MODULES}
 	@echo "********************************************"
-	@echo "" 
+	@echo ""
 	@echo " Making Programs "
 	@echo ""
 	@echo "********************************************"
@@ -176,7 +175,7 @@ endif
 
 gap_programs: ${MODULES}
 	@echo "********************************************"
-	@echo "" 
+	@echo ""
 	@echo " Making GAP programs "
 	@echo ""
 	@echo "********************************************"
@@ -196,7 +195,7 @@ libatoms: libAtoms
 
 libquip: libquip.a
 
-libquip.a: ${MODULES} 
+libquip.a: ${MODULES}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
@@ -204,10 +203,19 @@ ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
 quippy: libquip.a ${GAP_PROGRAMS}
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch build
+	@echo "********************************************"
+	@echo ""
+	@echo " Making quippy "
+	@echo ""
+	@echo "********************************************"
+	# fixme: restore the old functionality with commands like:
+	# ${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
+	rm ${BUILDDIR}/Makefile
 
 install-quippy: quippy
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch install
 
 clean-quippy:
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
@@ -242,7 +250,7 @@ ifeq (${QUIP_INSTALLDIR},)
 	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
 	@echo "programs"
 else
-	@if [ ! -d ${QUIP_INSTALLDIR} ]; then \
+	if [ ! -d ${QUIP_INSTALLDIR} ]; then \
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
 	  exit 1; \
 	else	 \
@@ -256,6 +264,9 @@ else
 endif
 
 test: quippy
+	#- cd tests
+	#- make
+	#- cd ..
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/ThirdParty
@@ -264,3 +275,10 @@ git_pull_all:
 	git pull --recurse-submodules
 	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git pull; popd; fi; done
 
+distribution:
+	./bin/gitversion > GIT_VERSION
+	git archive HEAD > ../QUIP.distribution.`date +%Y-%m-%d`.tar
+	tar rvf ../QUIP.distribution.`date +%Y-%m-%d`.tar GIT_VERSION
+	bzip2 ../QUIP.distribution.`date +%Y-%m-%d`.tar
+	rm GIT_VERSION
+	@for d in ${GIT_SUBDIRS}; do if [ -d $$d ]; then pushd $$d; git archive HEAD | bzip2 > ../../$$d.distribution.`date +%Y-%m-%d`.tar.bz2; popd; fi; done

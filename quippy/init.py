@@ -1,4 +1,3 @@
-#!/bin/sh
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -19,5 +18,32 @@
 # HQ X   https://warwick.ac.uk/fac/sci/eng/staff/jrk
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+"""quippy package
 
-../../fix_headers $(find . -type f -not -wholename '*.svn*' -not -wholename '*.pyc' -not -wholename './build*' -not -wholename './doc/_build*' -not -wholename '*.png')
+Maintained by James Kermode <j.r.kermode@warwick.ac.uk>
+
+Contains python bindings to the libAtoms/QUIP Fortran 95 codes
+<http://libatoms.github.org/QUIP>. """
+
+import quippy.convert
+import quippy.potential
+import quippy.descriptors
+
+import atexit
+
+# Reference values of .true. and .false. from Fortran
+QUIPPY_TRUE = quippy.system_module.reference_true()
+QUIPPY_FALSE = quippy.system_module.reference_false()
+
+
+def quippy_cleanup():
+    try:
+        quippy.system_module.verbosity_pop()
+        quippy.system_module.system_finalise()
+    except AttributeError:
+        pass
+
+
+quippy.system_module.system_initialise(-1, quippy_running=QUIPPY_TRUE)
+quippy.system_module.verbosity_push(0)
+atexit.register(quippy_cleanup)

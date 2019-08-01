@@ -1,7 +1,7 @@
 ---
 language: python
 python:
-  - "2.7"
+  - "3.6"
 env:
   matrix:
     - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc
@@ -11,7 +11,9 @@ env:
 
 stages:
   - test
-  - documentation
+  - name: documentation
+    # freezing the python2.7 version fot this at first
+    if: branch = archived_py2
   - name: release
     if: branch = public
 
@@ -33,6 +35,7 @@ before_install:
       libnetcdf-dev
       libhdf5-serial-dev
       python-numpy
+
   # Clone the private gap repository using deploy key
   - echo $github_deploy_key | base64 -d > ~/.ssh/github_deploy_key
   - chmod 0600  ~/.ssh/github_deploy_key
@@ -46,7 +49,7 @@ before_install:
 
 
 install:
-  - pip install ase==3.17.0
+  - pip install ase
 
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
@@ -63,6 +66,7 @@ script: # Compile QUIP, libquip and quippy, if a non-skipped build.
 jobs:
   include:
     - stage: documentation
+      # freezing the python2.7 version fot this at first
       python:
         - "2.7"
       env:  # serial version of QUIP

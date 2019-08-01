@@ -2,7 +2,10 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2010
+# HQ X   Portions of this code were written by
+# HQ X     Tamas K. Stenczel, James Kermode
+# HQ X
+# HQ X   Copyright 2019
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -12,7 +15,7 @@
 # HQ X
 # HQ X   When using this software, please cite the following reference:
 # HQ X
-# HQ X   http://www.jrkermode.co.uk/quippy
+# HQ X   https://warwick.ac.uk/fac/sci/eng/staff/jrk
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -21,22 +24,31 @@ from math import sqrt
 
 import numpy as np
 
-from quippy import _dynamicalsystem
-from quippy._dynamicalsystem import *
-from quippy.units import MASSCONVERT
-from quippy.atoms import Atoms
-from quippy.farray import farray
-from quippy.io import AtomsWriter
-from quippy.system import InOutput, OUTPUT
+from quippy import dynamicalsystem_module
+import quippy.convert
+import quippy.atoms_types_module
+
+import _quippy
+
+import f90wrap.runtime
+
+# from quippy._dynamicalsystem import *
+# from quippy.units import MASSCONVERT
+# taking it explicitly now:
+# Units.f95:68 MASSCONVERT from old quippy
+MASSCONVERT = 103.6426957074462
+# from quippy.atoms import Atoms
+# from quippy.farray import farray
+# from quippy.io import AtomsWriter
+# from quippy.system import InOutput, OUTPUT
+
+import ase.io
+import ase.md
+from ase.io.trajectory import Trajectory
+from ase.optimize import optimize
 
 # time conversion units from ase.units
-try:
-    from ase.units import fs
-except ImportError:
-    _e = 1.60217733e-19          # elementary charge
-    _amu = 1.6605402e-27         # atomic mass unit, kg
-    second = 1e10 * sqrt(_e / _amu)
-    fs = 1e-15 * second
+from ase.units import fs
 
 # thermostat and barostat type constants are defined in Thermostats.f95,
 # which is not directly wrapped by quippy, so we reproduce them here
@@ -71,18 +83,26 @@ BAROSTAT_NONE = 0
 BAROSTAT_HOOVER_LANGEVIN = 1
 
 _barostat_types = {
-    'BAROSTAT_NONE' : 0,
+    'BAROSTAT_NONE': 0,
     'BAROSTAT_HOOVER_LANGEVIN': 1,
-    }
+}
 
-__doc__ = _dynamicalsystem.__doc__
-__all__ = ( _dynamicalsystem.__all__+ ['Dynamics', 'fs'] +
-            _thermostat_types.keys() + _barostat_types.keys())
+__all__ = ['Dynamics', 'DynamicalSystem']
 
 
-class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
+class DynamicalSystem(dynamicalsystem_module.DynamicalSystem):
+    __doc__ = dynamicalsystem_module.DynamicalSystem.__doc__
 
-    __doc__ = _dynamicalsystem.DynamicalSystem.__doc__
+    # def __init__(self, atoms_in, velocity=None, acceleration=None, constraints=None,
+    #     restraints=None, rigidbodies=None, error=None, handle=None):
+    #
+    #
+    #     quip_atoms_in = quippy.convert.ase_to_quip(atoms_in)
+    #
+    #     dynamicalsystem_module.DynamicalSystem.__init__(self, atoms_in=quip_atoms_in, velocity=velocity,
+    #                                                     acceleration=acceleration, constraints=constraints,
+    #                                                     restraints=restraints, rigidbodies=rigidbodies, error=error,
+    #                                                     handle=handle)
 
     def run(self, pot, dt, n_steps, summary_interval=None, hook_interval=None, write_interval=None,
             trajectory=None, args_str=None, hook=None,
@@ -94,26 +114,22 @@ class DynamicalSystem(_dynamicalsystem.DynamicalSystem):
         if hook is None:
             traj = []
             save_hook = lambda: traj.append(self.atoms.copy())
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps,
-                                                 save_hook, hook_interval=save_interval,
-						 summary_interval=summary_interval,
-                                                 write_interval=write_interval,
-                                                 trajectory=trajectory,
-                                                 args_str=args_str)
+            dynamicalsystem_module.DynamicalSystem.run(self, pot, dt, n_steps,
+                                                       save_hook, hook_interval=save_interval,
+                                                       summary_interval=summary_interval,
+                                                       write_interval=write_interval,
+                                                       trajectory=trajectory,
+                                                       args_str=args_str)
             return traj
         else:
-            _dynamicalsystem.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval,
-						 summary_interval=summary_interval, write_interval=write_interval,
-                                                 trajectory=trajectory, args_str=args_str)
+            dynamicalsystem_module.DynamicalSystem.run(self, pot, dt, n_steps, hook, hook_interval=hook_interval,
+                                                       summary_interval=summary_interval, write_interval=write_interval,
+                                                       trajectory=trajectory, args_str=args_str)
 
-    run.__doc__ = _dynamicalsystem.DynamicalSystem.run.__doc__
-
-
-from quippy import FortranDerivedTypes
-FortranDerivedTypes['type(dynamicalsystem)'] = DynamicalSystem
+    #run.__doc__ = dynamicalsystem_module.DynamicalSystem.run.__doc__
 
 
-class Dynamics(object):
+class Dynamics(optimize.Dynamics):
     """
     Wrapper around :class:`DynamicalSystem` integrator compatible with
     ASE :class:`ase.md.MolecularDynamics` interface.
@@ -147,87 +163,83 @@ class Dynamics(object):
                  trajectoryinterval=10, initialtemperature=None,
                  logfile='-', loginterval=1, loglabel='D'):
 
-        # we will do the calculation in place, to minimise number of copies,
-        # unless atoms is not a quippy Atoms
-        if not isinstance(atoms, Atoms):
-            warnings.warn('Dynamics atoms is not quippy.Atoms instance, copy forced!')
-            atoms = Atoms(atoms)
-        self.atoms = atoms
+        # check for type first
+        if not isinstance(atoms, ase.Atoms):
+            atoms = ase.Atoms(atoms)
 
-        if self.atoms.has('masses'):
-            if self.atoms.has_property('mass'):
-                if np.max(np.abs(self.atoms.mass/MASSCONVERT - self.atoms.get_masses())) > 1e-3:
-                    raise RuntimeError('Dynamics confused as atoms has inconsistent "mass" and "masses" arrays')
-            else:
-                self.atoms.add_property('mass', self.atoms.get_masses()*MASSCONVERT)
-        else:
-            if self.atoms.has_property('mass'):
-                self.atoms.set_masses(self.atoms.mass/MASSCONVERT)
-            else:
-                self.atoms.set_masses('defaults')
+        # construct the quip atoms object which we will use to calculate on
+        self.ase_atoms = atoms
 
-        if self.atoms.has('momenta'):
-            if self.atoms.has_property('velo'):
-                if np.max(np.abs(self.atoms.velo*sqrt(MASSCONVERT) - self.atoms.get_velocities().T)) > 1e-3:
-                    raise RuntimeError('Dynamics confused as atoms has inconsistent "velo" and "momenta" arrays')
-            else:
-                self.atoms.add_property('velo', (self.atoms.get_velocities()/sqrt(MASSCONVERT)).T)
-        else:
-            if self.atoms.has_property('velo'):
-                self.atoms.set_velocities(self.atoms.velo.T*sqrt(MASSCONVERT))
-            else:
-                # start with zero momenta
-                self.atoms.set_momenta(np.zeros_like(self.atoms.positions))
-                self.atoms.add_property('velo', 0., n_cols=3)
+        if not atoms.has('momenta'):  # so that there is a velocity initialisation on the quip object
+            atoms.set_momenta(np.zeros(len(atoms), 3))
+        self._quip_atoms = quippy.convert.ase_to_quip(self.ase_atoms)
 
-        self._ds = DynamicalSystem(self.atoms)
+        # add the mass separately, because converter is not doing it
+        _quippy.f90wrap_atoms_add_property_real_a(this=self._quip_atoms._handle, name='mass',
+                                                  value=self.ase_atoms.get_masses() * MASSCONVERT)
 
+        # initialise accelerations as zero, so that we have the objects in QUIP
+        _quippy.f90wrap_atoms_add_property_real_2da(this=self._quip_atoms._handle, name='acc',
+                                                    value=np.zeros(len(atoms), 3))
+
+        self._ds = DynamicalSystem(self._quip_atoms)
+
+        # checking initial temperature and velocities
         if initialtemperature is not None:
             if np.max(np.abs(self._ds.atoms.velo)) > 1e-3:
-                msg = ('initialtemperature given but Atoms already '+
-                       'has non-zero velocities!')
+                msg = 'initialtemperature given but Atoms already has non-zero velocities!'
                 raise RuntimeError(msg)
             self._ds.rescale_velo(initialtemperature)
 
-        # now self._ds.atoms is either a Fortran shallowcopy of atoms,
-        # or a copy if input atoms was not an instance of quippy.Atoms
-
-        if 'time' in atoms.info:
-            self.set_time(atoms.info['time']) # from ASE units to fs
+        # setting the time
+        if 'time' in self.ase_atoms.info:
+            self.set_time(self.ase_atoms.info['time'])  # from ASE units to fs
 
         self.observers = []
         self.set_timestep(timestep)
 
         if trajectory is not None:
-            if isinstance(trajectory, basestring):
-                trajectory = AtomsWriter(trajectory)
-            self.attach(trajectory, trajectoryinterval, self._ds.atoms)
+            # fixme: this is not been worked on yet
+            # # We also want to save the positions of all atoms after every 100th time step. --- ASE DOCS
+            # traj = Trajectory('moldyn3.traj', 'w', atoms)
+            # dyn.attach(traj.write, interval=50)
 
+            # if isinstance(trajectory, str):
+            #     trajectory = AtomsWriter(trajectory)
+            # self.attach(trajectory, trajectoryinterval, self._ds.atoms)
+            raise NotImplementedError
+
+        # fixme: this is not been worked on yet
         self.loglabel = loglabel
         if logfile is not None:
-            if isinstance(logfile, basestring):
-                logfile = InOutput(logfile, OUTPUT)
-            self.attach(self.print_status, loginterval, logfile)
+            # if isinstance(logfile, str):
+            #     logfile = InOutput(logfile, OUTPUT)
+            # self.attach(self.print_status, loginterval, logfile)
+            raise NotImplementedError
 
+        # fixme: this is not been worked on yet
         self._calc_virial = False
-        self._virial = np.zeros((3,3))
+        self._virial = np.zeros((3, 3))
 
+    def get_time(self):
+        return float(self._ds.t * fs)
+
+    def converged(self):
+        """ MD is 'converged' when number of maximum steps is reached. """
+        return self.nsteps >= self.max_steps
 
     def get_timestep(self):
-        return self._dt*fs
+        return self._dt * fs
 
     def set_timestep(self, timestep):
-        self._dt = timestep/fs
+        self._dt = timestep / fs
 
-    timestep = property(get_timestep, set_timestep,
-                        doc="Set timestep, in ASE time units")
-
+    timestep = property(get_timestep, set_timestep, doc="Set timestep, in ASE time units")
 
     def get_number_of_steps(self):
         return int(self._ds.nsteps)
 
     nsteps = property(get_number_of_steps)
-
 
     def insert_observer(self, function, position=0, interval=1,
                         *args, **kwargs):
@@ -235,7 +247,6 @@ class Dynamics(object):
         if not callable(function):
             function = function.write
         self.observers.insert(position, (function, interval, args, kwargs))
-
 
     def attach(self, function, interval=1, *args, **kwargs):
         """Attach callback function.
@@ -247,12 +258,10 @@ class Dynamics(object):
             function = function.write
         self.observers.append((function, interval, args, kwargs))
 
-
     def call_observers(self):
         for function, interval, args, kwargs in self.observers:
             if self._ds.nsteps % interval == 0:
                 function(*args, **kwargs)
-
 
     def step(self, forces):
         """
@@ -260,12 +269,12 @@ class Dynamics(object):
 
         Returns forces at the end of the time-step, suitable for passing to next step()
         """
-        assert(self._ds.atoms.is_same_fortran_object(self.atoms))
+        # assert (self._ds.atoms.is_same_fortran_object(self._quip_atoms))
 
         # on entry we have r(t), v(t), p(t), f(t) in atoms and ds.atoms
 
         # keep a copy of r(t)
-        r_of_t = self.atoms.get_positions()
+        r_of_t = self.ase_atoms.get_positions()
 
         # set current accelerations a(t) using incoming f(t)
         # only necessary for first step since advance_verlet2() does it
@@ -273,23 +282,29 @@ class Dynamics(object):
         # want to overwrite)
 
         if self._ds.nsteps == 0:
-            self.atoms.acc[...] = (forces.T)/self.atoms.mass
+            self._quip_atoms.acc[:] = forces.T / self._quip_atoms.mass
 
-        # first half of the Velocity Verlet step for ds.atoms:
+        # first half of the Velocity Verlet step for ds.atoms (which is self._quip_atoms):
         #    p(t+dt/2) = p(t) + F(t) dt/2        ->   v(t+dt/2)  = v(t) + a(t) dt/2
         #    r(t+dt)   = r(t) + p(t+dt/2)/m dt   ->   r(t+dt)    = r(t) + v(t+dt/2) dt
+        # tks32: this is done with QUIP, so ase_atoms needs an update of pos and momenta
+        # momenta updated directly, to avoid call on adjust forces
         self._ds.advance_verlet1(self._dt, virial=self._virial)
-        self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
+        self.ase_atoms.arrays['positions'] = self._quip_atoms.pos.T
 
         # now we have r(t+dt), v(t+1/2dt), p(t+1/2dt), a(t) in ds.atoms
 
-        if self.atoms.constraints:
+        if self.ase_atoms.constraints:
+            # fixme: there are only ASE constraints, right? I assume so here
             # keep a copy of new positions r(t+dt) so we don't lose them
-            r_of_t_plus_dt = self.atoms.get_positions()
+            r_of_t_plus_dt = self._quip_atoms.get_positions()
 
             # manually revert positions of atoms to r(t)
             # NB: do not call set_positions() as this applies constraints
-            self.atoms.arrays['positions'][...] = r_of_t
+            # tks32: set ase_atoms only, for
+            self.ase_atoms.arrays['positions'] = r_of_t
 
             # If there are any ASE constraints, we need to call
             # set_positions(r(t+dt)) and set_momenta(p(t+dt/2)) to invoke
@@ -297,14 +312,15 @@ class Dynamics(object):
 
             # set_positions() calls adjust_positions(), which
             # will recieve correct old and new positions
-            self.atoms.set_positions(r_of_t_plus_dt)
-            self.atoms.calc_dists()
+            self.ase_atoms.set_positions(r_of_t_plus_dt)
+            self._quip_atoms.pos[:] = r_of_t_plus_dt.T.copy()
+            self._quip_atoms.calc_dists()  # uodates dstance tables in quip, call it on mevement of atoms
 
             # set_momenta() calls adjust_forces() with only the new momenta
-            self.atoms.set_momenta(self.atoms.get_momenta())
+            self.ase_atoms.set_momenta(self.ase_atoms.get_momenta())
 
             # Update velocities v(t+dt/2) for changes in momenta made by the constraints
-            self.atoms.velo[...] = (self.atoms.arrays['momenta'].T/self.atoms.mass*MASSCONVERT)/sqrt(MASSCONVERT)
+            self._quip_atoms.velo[:] = quippy.convert.velocities_ase_to_quip(self.ase_atoms.get_velocities())
 
         # Now we have r(t+dt), v(t+dt/2), p(t+dt/2)
 
@@ -312,76 +328,70 @@ class Dynamics(object):
         # This is invoked on the original atoms object, so that any
         # constraints' adjust_forces() routines will be called to
         # modify the forces
-        forces = self.atoms.get_forces()
+        forces = self.ase_atoms.get_forces()
 
         # compute the virial if necessary, i.e. if we have a barostat or are doing NPT
         if self._calc_virial:
-            stress = self.atoms.get_stress()
-            virial = -stress*self.atoms.get_volume()
-            self._virial = np.zeros((3,3))
-            if stress.shape == (3,3):
-                self._virial[:,:] = virial
+            stress = self.ase_atoms.get_stress()
+            virial = -stress * self.ase_atoms.get_volume()
+            self._virial = np.zeros((3, 3))
+            if stress.shape == (3, 3):
+                self._virial[:, :] = virial
             else:
-                self._virial[0,0] = virial[0]
-                self._virial[1,1] = virial[1]
-                self._virial[2,2] = virial[2]
-                self._virial[1,2] = self._virial[2,1] = virial[3]
-                self._virial[0,2] = self._virial[2,0] = virial[4]
-                self._virial[0,1] = self._virial[1,0] = virial[5]
-            #print 'Computed virial:', self._virial
+                self._virial[0, 0] = virial[0]
+                self._virial[1, 1] = virial[1]
+                self._virial[2, 2] = virial[2]
+                self._virial[1, 2] = self._virial[2, 1] = virial[3]
+                self._virial[0, 2] = self._virial[2, 0] = virial[4]
+                self._virial[0, 1] = self._virial[1, 0] = virial[5]
+            # print 'Computed virial:', self._virial
 
         # Second half of the Velocity Verlet step
         #   p(t+dt) = p(t+dt/2) + F(t+dt)/2    ->    v(t+dt) = v(t+dt/2) + a(t+dt)/2
         self._ds.advance_verlet2(self._dt, forces.T, virial=self._virial)
-        self.atoms.arrays['momenta'][...] = (self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
 
-
-        if self.atoms.constraints:
+        if self.ase_atoms.constraints:
             # Update momenta, honouring constraints
-            self.atoms.set_momenta(self.atoms.get_momenta())
-            self.atoms.velo[...] = (self.atoms.arrays['momenta'].T/self.atoms.mass*MASSCONVERT)/sqrt(MASSCONVERT)
+            self.ase_atoms.set_momenta(self.ase_atoms.get_momenta())
+            self._quip_atoms.velo[:] = quippy.convert.velocities_ase_to_quip(self.ase_atoms.get_velocities())
 
         # Now we have r(t+dt), v(t+dt), p(t+dt), a(t+dt) in atoms
 
         # Copy status into atoms.params
-        self.atoms.params['time'] = self._ds.t*fs # from fs to ASE time units
-        self.atoms.params['nsteps'] = self._ds.nsteps
-        self.atoms.params['cur_temp'] = self._ds.cur_temp
-        self.atoms.params['avg_temp'] = self._ds.avg_temp
-        self.atoms.params['dW'] = self._ds.dw
-        self.atoms.params['work'] = self._ds.work
-        self.atoms.params['Epot'] = self._ds.epot
-        self.atoms.params['Ekin'] = self._ds.ekin
-        self.atoms.params['Wkin'] = self._ds.wkin
-        self.atoms.params['thermostat_dW'] = self._ds.thermostat_dw
-        self.atoms.params['thermostat_work'] = self._ds.thermostat_work
+        # TODO: this would nee to go to the new observer, rigth?
+        self._quip_atoms.params['time'] = self._ds.t * fs  # from fs to ASE time units
+        self._quip_atoms.params['nsteps'] = self._ds.nsteps
+        self._quip_atoms.params['cur_temp'] = self._ds.cur_temp
+        self._quip_atoms.params['avg_temp'] = self._ds.avg_temp
+        self._quip_atoms.params['dW'] = self._ds.dw
+        self._quip_atoms.params['work'] = self._ds.work
+        self._quip_atoms.params['Epot'] = self._ds.epot
+        self._quip_atoms.params['Ekin'] = self._ds.ekin
+        self._quip_atoms.params['Wkin'] = self._ds.wkin
+        self._quip_atoms.params['thermostat_dW'] = self._ds.thermostat_dw
+        self._quip_atoms.params['thermostat_work'] = self._ds.thermostat_work
 
         # return f(t+dt)
         return forces
-
 
     def run(self, steps=50):
         """
         Run dynamics forwards for `steps` steps.
         """
-        f = self.atoms.get_forces()
-        for step in xrange(steps):
+        f = self._quip_atoms.get_forces()
+        for step in range(steps):
             f = self.step(f)
             self.call_observers()
-
 
     def print_status(self, file=None):
         self._ds.print_status(self.loglabel, file=file)
 
-
-    def get_time(self):
-        return float(self._ds.t*fs)
-
     def set_time(self, time):
-        self._ds.t = time/fs
+        self._ds.t = time / fs
 
     time = property(get_time, set_time, doc="Time in ASE units (Note: NOT the same as femtoseconds)")
-
 
     def get_number_of_degrees_of_freedom(self):
         return self._ds.ndof
@@ -395,43 +405,37 @@ class Dynamics(object):
     number_of_constraints = property(get_number_of_constraints,
                                      doc="Get number of constraints")
 
-
     def get_number_of_restraints(self):
         return self._ds.nrestraints
 
     number_of_restraints = property(get_number_of_restraints,
-                                     doc="Get number of restraints")
-
+                                    doc="Get number of restraints")
 
     def get_number_of_rigid_bodies(self):
         return self._ds.nrigid
 
     number_of_rigid_bodies = property(get_number_of_rigid_bodies,
-                                     doc="Get number of rigid_bodies")
-
-
+                                      doc="Get number of rigid_bodies")
 
     def get_temperature(self):
         return self._ds.cur_temp
-
 
     def set_temperature(self, temperature):
         """
         Randomise velocities to a target temperature (given in K)
         """
         self._ds.rescale_velo(temperature)
-        self.atoms.set_momenta((self.atoms.velo*sqrt(MASSCONVERT)*self.atoms.mass/MASSCONVERT).T)
+        self.ase_atoms.arrays['momenta'] = self.ase_atoms.get_masses()[:, np.newaxis] * \
+                                           quippy.convert.velocities_quip_to_ase(self._quip_atoms.velo)
 
     temperature = property(get_temperature, set_temperature,
                            doc="Get or set the current temperature")
-
 
     def get_average_temperature(self):
         return self._ds.avg_temp
 
     average_temperature = property(get_average_temperature,
                                    doc="Average temperature")
-
 
     def get_averaging_time(self):
         return self._ds.avg_time
@@ -441,7 +445,6 @@ class Dynamics(object):
 
     averaging_time = property(get_averaging_time, set_averaging_time,
                               doc="Averaging time used for average temperature and kinetic energy")
-
 
     def get_damping(self):
         if not self._ds.is_damping_enabled():
@@ -455,11 +458,10 @@ class Dynamics(object):
             self._ds.enable_damping(damp_time)
 
     damping = property(get_damping, set_damping, doc=
-                       """Get or set the damping time constant in fs. Set to
+    """Get or set the damping time constant in fs. Set to
                        None to disable damping.  By default damping applies
                        to all atoms, but can be selectively enabled with the
                        'damp_mask' property.""")
-
 
     def get_number_of_thermostats(self):
         """
@@ -468,8 +470,7 @@ class Dynamics(object):
         Excludes thermostat with index zero, which is used for damping.
         """
         n = self._ds.n_thermostat()
-        return int(n-1)
-
+        return int(n - 1)
 
     def add_thermostat(self, type, T, gamma=None,
                        Q=None, tau=None, tau_cell=None,
@@ -511,23 +512,21 @@ class Dynamics(object):
         if type in (THERMOSTAT_LANGEVIN_NPT, THERMOSTAT_LANGEVIN_NPT_NB):
             self._calc_virial = True
         new_index = self._ds.n_thermostat()
-        region_i = farray(0, dtype=np.int32)
+        region_i = np.zeros(0, dtype=np.int32)  # fixme: will this work instead of farray?
 
         self._ds.add_thermostat(type, T, gamma,
                                 Q, tau, tau_cell,
                                 p, NHL_tau,
                                 NHL_mu, massive,
                                 region_i=region_i)
-        assert(new_index == int(region_i))
+        assert (new_index == int(region_i))
         return new_index
-
 
     def update_thermostat(self, T=None, p=None, index=1):
         """
         Change the target temperature `T` or presure `p` for thermostat `index`.
         """
         self._ds.update_thermostat(T, p, index)
-
 
     def remove_thermostat(self, index):
         """
@@ -540,24 +539,21 @@ class Dynamics(object):
             raise ValueError('index outside range 1 <= index <= (n_thermostat=%d)' % n)
         self._ds.remove_thermostat(index)
 
-
     def print_thermostats(self):
         """
         Print a table of the current thermostats in this system
         """
         self._ds.print_thermostats()
 
-
     def get_thermostat_temperatures(self):
         """
         Return the current temperatures of all thermostated regions
         """
-        temperatures = fzeros(self.get_number_of_thermostats()+1)
+        temperatures = fzeros(self.get_number_of_thermostats() + 1)
         if self.damping:
             return np.array(temperatures)
         else:
             return np.array(temperatures)[1:]
-
 
     def set_barostat(self, type, p_ext, hydrostatic_strain, diagonal_strain,
                      finite_strain_formulation, tau_epsilon, W_epsilon=None,
@@ -608,16 +604,14 @@ class Dynamics(object):
                               finite_strain_formulation, tau_epsilon, W_epsilon,
                               T, W_epsilon_factor)
 
-
     def update_barostat(self, p, T):
         """
         Update target pressure `p` or temperature `T` for NPT barostat
         """
         self._ds.update_barostat(self, p, T)
 
-
     def get_state(self):
-        saved_ds = DynamicalSystem(self.atoms)
+        saved_ds = DynamicalSystem(self._quip_atoms)
         saved_ds.save_state(self._ds)
         return saved_ds
 
@@ -626,5 +620,3 @@ class Dynamics(object):
 
     state = property(get_state, set_state,
                      doc="""Save or restore current state of this dynamical system""")
-
-
