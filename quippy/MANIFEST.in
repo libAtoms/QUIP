@@ -1,5 +1,0 @@
-include *.py
-include .f2py_f2cmap
-recursive-include examples *.py
-recursive-include tests *.py
-recursive-include doc *.rst
