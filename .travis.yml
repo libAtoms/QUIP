@@ -136,8 +136,15 @@ jobs:
       before_install: skip
       install: skip
       script:
-        - wget --quiet --header="Content-Type: application/json" --header="Accept: application/json" --header="Travis-API-Version: 3" --header="Authorization: token $TRAVIS_TOKEN" --post-data '{"request": {"branch": "public"}}' 'https://api.travis-ci.org/repo/libatoms%2Fquip-docker/requests'
-
+        - |
+          curl -s --output /dev/null -X POST 
+          -H "Content-Type: application/json" 
+          -H "Accept: application/json" 
+          -H "Travis-API-Version: 3" 
+          -H "Authorization: token ${TRAVIS_TOKEN}" 
+          -d "{\"request\": {\"branch\": \"master\"}}" 
+          https://api.travis-ci.org/repo/libatoms%2Fquip-docker/requests 
+        
 notifications:
  email:
    - quip-developers@eng.cam.ac.uk
