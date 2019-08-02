@@ -116,34 +116,22 @@ jobs:
           branch: public
 
     - stage: release
-      env:  # serial version of QUIP
-        - QUIP_ARCH="" QUIP_INC=""
+      name: "Trigger for a new release of GAP"
       addons:
         apt:
           update: false
       before_install: skip
       install: skip
-      script:
-        - curl -i http://www.libatoms.org/gap/cgi-bin/update.cgi
+      script: bash travis/trigger_gap_release.sh
 
     - stage: docker
       name: "Trigger for building docker images"
-      env:  # serial version of QUIP
-        - QUIP_ARCH="" QUIP_INC=""
       addons:
         apt:
           update: false
       before_install: skip
       install: skip
-      script:
-        - |
-          curl -s --output /dev/null -X POST 
-          -H "Content-Type: application/json" 
-          -H "Accept: application/json" 
-          -H "Travis-API-Version: 3" 
-          -H "Authorization: token ${TRAVIS_TOKEN}" 
-          -d "{\"request\": {\"branch\": \"master\"}}" 
-          https://api.travis-ci.org/repo/libatoms%2Fquip-docker/requests 
+      script: bash travis/trigger_quip_docker.sh
         
 notifications:
  email:
