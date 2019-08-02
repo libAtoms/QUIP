@@ -208,14 +208,21 @@ quippy: libquip.a ${GAP_PROGRAMS}
 	@echo " Making quippy "
 	@echo ""
 	@echo "********************************************"
-	# fixme: restore the old functionality with commands like:
-	# ${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
 	rm ${BUILDDIR}/Makefile
 
 install-quippy: quippy
+	@echo "********************************************"
+	@echo ""
+	@echo " Installing quippy "
+	@echo ""
+	@echo "********************************************"
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch install
+	rm ${BUILDDIR}/Makefile
 
 clean-quippy:
 	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean

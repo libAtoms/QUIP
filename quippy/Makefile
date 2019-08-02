@@ -30,9 +30,6 @@ include Makefile.${QUIP_ARCH}
 include ${BUILDDIR}/Makefile.inc
 include Makefile.rules
 
-# working on python3 only
-PYTHON := python3
-
 QUIPPY_SRC_DIR := ../../quippy
 
 FPP = gfortran -E -cpp ${QUIPPY_F90FLAGS}
@@ -64,28 +61,12 @@ F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in s
 
 
 #################################
-.PHONY: build clean install f90wrap
+.PHONY: build install clean
 
-install: build
-
-f90wrap:
-	@echo "********************************************"
-	@echo ""
-	@echo " Making f90wrap "
-	@echo ""
-	@echo "********************************************"
-	@echo ""
-	@echo "Attempting to automatically clone f90wrap submodule"
-	git submodule update --init ${QUIP_ROOT}/src/f90wrap || \
-            { echo "f90wrap clone failed. Download it manually" ; exit 1 ; }
-
-	cd ${QUIP_ROOT}/src/f90wrap ;  ${PYTHON} setup.py install
-
+build: _quippy.so
 
 clean:
-	rm _quippy.so
-	rm _castep.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
-	rm -r castep
+	rm _quippy.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -r f90wrap_*.o
 	rm -rf src.*
 
@@ -95,8 +76,10 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-build: f90wrap ${WRAP_FPP_FILES}
+_quippy.so: ${WRAP_FPP_FILES}
+	pip install f90wrap==0.2.1 ${QUIPPY_INSTALL_OPTS}
 	if [ -d "quippy" ] ; then rm -r quippy; fi
+	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
 	f90wrap -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
@@ -109,3 +92,7 @@ build: f90wrap ${WRAP_FPP_FILES}
 
 	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
+	ln -s _quippy.*.so _quippy.so
+
+install: build
+	python ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
