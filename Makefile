@@ -225,7 +225,10 @@ install-quippy: quippy
 	rm ${BUILDDIR}/Makefile
 
 clean-quippy:
-	${MAKE} -C quippy -I${PWD} -I${PWD}/arch clean
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch clean
+	rm ${BUILDDIR}/Makefile
 
 clean: ${BUILDDIR}
 	-${MAKE} clean-quippy

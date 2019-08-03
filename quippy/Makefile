@@ -66,8 +66,8 @@ F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in s
 build: _quippy.so
 
 clean:
-	rm _quippy.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
-	rm -r f90wrap_*.o
+	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
+	rm -f f90wrap_*.o
 	rm -rf src.*
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
