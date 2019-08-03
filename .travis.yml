@@ -14,10 +14,8 @@ stages:
   - name: documentation
     # freezing the python2.7 version fot this at first
     if: branch = archived_py2
-  - name: release
-    if: branch = public
-  - name: docker
-    if: branch = public
+  - release
+  - docker
 
 git:
   depth: 1
@@ -113,25 +111,30 @@ jobs:
         github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
         keep-history: true
         on:
-          branch: public
+          branch: archived_py2
 
     - stage: release
       name: "Trigger for a new release of GAP"
-      addons:
-        apt:
-          update: false
       before_install: skip
       install: skip
-      script: bash travis/trigger_gap_release.sh
-
+      script: skip
+      deploy:
+        provider: script
+        script: bash travis/trigger_gap_release.sh
+        on:
+          branch: public
+          
     - stage: docker
       name: "Trigger for building docker images"
-      addons:
-        apt:
-          update: false
       before_install: skip
       install: skip
-      script: bash travis/trigger_quip_docker.sh
+      script: skip
+      deploy:
+        provider: script
+        script: bash travis/trigger_quip_docker.sh
+        on:
+          branch: public
+      
         
 notifications:
  email:
