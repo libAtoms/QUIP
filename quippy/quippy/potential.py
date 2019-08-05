@@ -26,14 +26,15 @@ ASE-compatible Calculator from a quip-potential object
 
 import ase
 import ase.calculators.calculator
+from ase.io.extxyz import key_val_str_to_dict, key_val_dict_to_str
+
 import numpy as np
 from copy import deepcopy as cp
 
 import quippy
 
 __all__ = ['Potential']
-
-
+ 
 class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
@@ -55,7 +56,7 @@ class Potential(ase.calculators.calculator.Calculator):
             finalise=True
                 """, quippy.potential_module.Potential.__init__.__doc__)
     def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
-                 **kwargs):
+                 calc_args=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
 
 
@@ -77,11 +78,16 @@ class Potential(ase.calculators.calculator.Calculator):
         if atoms is not None:
             atoms.set_calculator(self)
         self.name = args_str
+        if isinstance(calc_args, dict):
+            calc_args = key_val_dict_to_str(calc_args)
+        elif calc_args is None:
+            calc_args = ""
+        self.calc_args = calc_args
 
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_all_properties=True):
+                  copy_all_properties=True, calc_args=None, **kwargs):
         """Do the calculation.
 
         properties: list of str
@@ -148,10 +154,8 @@ below.
             if prop not in self.implemented_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % prop)
 
-        # passing arguments which will be changed by the calculator
+        # initialise dictionary to arguments to be passed to calculator
         _dict_args = {}
-        # TODO implement this for energy too
-
         val = _check_arg(forces)
         if val == 'y':
             properties += ['force']
@@ -190,7 +194,16 @@ below.
         self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
 
         # constructing args_string with automatically aliasing the calculateable non-quippy properties
-        args_str = 'energy'
+        # calc_args string to be passed to Fortran code
+        args_str = self.calc_args
+        if calc_args is not None:
+            if isinstance(calc_args, dict):
+                calc_args = key_val_dict_to_str(calc_args)
+            args_str += ' ' + calc_args
+        if kwargs is not None:
+            args_str += ' ' + key_val_dict_to_str(kwargs)
+
+        args_str += ' energy'
         # no need to add logic to energy, it is calculated anyways (returned when potential called)
         if 'virial' in properties or 'stress' in properties:
             args_str += ' virial'
@@ -206,6 +219,7 @@ below.
         ener_dummy = np.zeros(1, dtype=float)
 
         # the calculation itself
+        print('Calling QUIP Potential.calc() with args_str "{}"'.format(args_str))
         self._quip_potential.calc(self._quip_atoms, args_str=args_str, energy=ener_dummy, **_dict_args)
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params

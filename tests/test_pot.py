@@ -16,6 +16,9 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+from quippy.system_module import verbosity_push
+verbosity_push(1)
+
 """ Si structure to be studied was generated with the old vesion:
 $bash: python2
 > import quippy
@@ -52,7 +55,7 @@ diamond_pos = np.array([[-0.04999922, 0.01792964, 0.01711494],
 
 class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
     def setUp(self):
-        xml = """
+        self.xml = """
       <SW_params n_types="2" label="PRB_31_plus_H">
       <comment> Stillinger and Weber, Phys. Rev. B  31 p 5262 (1984), extended for other elements </comment>
       <per_type_data type="1" atomic_num="1" />
@@ -82,7 +85,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
       """
 
         quippy.system_module.system_reseed_rng(2065775975)
-        self.pot_calculator = quippy.potential.Potential('IP SW', param_str=xml)
+        self.pot_calculator = quippy.potential.Potential('IP SW', param_str=self.xml)
 
         self.at = ase.Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
 
@@ -122,6 +125,27 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
 
     def test_virial(self):
         self.assertArrayAlmostEqual(self.pot_calculator.get_virial(self.at), self.virial_ref, tol=1E-06)
+
+    def test_calc_args_1(self):
+        self.pot_calculator.calculate(self.at, propertes=["forces"], calc_args="do_rescale_E E_scale=1.01")
+        f = self.pot_calculator.results['forces']
+        self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
+
+    def test_calc_args_2(self):
+        self.pot_calculator.calculate(self.at, properties=["forces"], do_rescale_E=True, E_scale=1.01)
+        f = self.pot_calculator.results['forces']
+        self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
+
+    def test_calc_args_3(self):
+        pot2 = quippy.potential.Potential('IP SW', param_str=self.xml, calc_args="do_rescale_E E_scale=1.01")
+        f = pot2.get_forces(self.at)
+        self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
+
+    def test_calc_args_4(self):
+        pot2 = quippy.potential.Potential('IP SW', param_str=self.xml, 
+                                          calc_args={'do_rescale_E': True, 'E_scale': 1.01})
+        f = pot2.get_forces(self.at)
+        self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
 
     # def test_numeric_forces(self):
     #    self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.at), self.f_ref.T, tol=1e-4)
