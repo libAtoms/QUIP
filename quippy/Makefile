@@ -69,6 +69,7 @@ clean:
 	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
 	rm -rf src.*
+	rm -rf build dist quippy quippy.egg-info
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	for f in ${WRAP_FILES}; do \
