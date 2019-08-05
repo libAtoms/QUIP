@@ -1,6 +1,8 @@
 # QUIP - QUantum mechanics and Interatomic Potentials
-
+[![Build Status](https://img.shields.io/badge/docs-public-brightgreen)](https://libatoms.github.io/QUIP/)
 [![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
+[![Docker Pulls](https://img.shields.io/docker/pulls/libatomsquip/quip)](https://hub.docker.com/r/libatomsquip/quip)
+[![Docker size](https://img.shields.io/microbadger/image-size/libatomsquip/quip)](https://microbadger.com/images/libatomsquip/quip)
 
 The `QUIP` package is a collection of software tools to carry out
 molecular dynamics simulations. It implements a variety of interatomic
