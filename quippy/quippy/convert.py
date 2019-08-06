@@ -69,8 +69,8 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
         quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), ase_atoms.get_cell().transpose())
 
     quip_atoms.pos[:] = ase_atoms.get_positions().T.copy()
-    quip_atoms.is_periodic[:] = ase_atoms.get_pbc()   # fixme this is not making sure it is a quip compatible arr.
-    quip_atoms.z[:] = ase_atoms.numbers
+    quip_atoms.is_periodic[:] = ase_atoms.get_pbc()
+    quip_atoms.set_atoms(ase_atoms.numbers) # sets Z, species and mass
 
     if ase_atoms.has('momenta'):
         # if ase atoms has momenta then add velocities to the quip object

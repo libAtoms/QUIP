@@ -16,8 +16,8 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from quippy.system_module import verbosity_push
-verbosity_push(1)
+#from quippy.system_module import verbosity_push
+#verbosity_push(1)
 
 """ Si structure to be studied was generated with the old vesion:
 $bash: python2
