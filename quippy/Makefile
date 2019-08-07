@@ -78,7 +78,6 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
-	pip install f90wrap==0.2.1 ${QUIPPY_INSTALL_OPTS}
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	mkdir quippy
