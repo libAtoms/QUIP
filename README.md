@@ -208,10 +208,14 @@ to get up and running quickly.
     - [NumPy](http://www.numpy.org)
 
     - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (``ase``)
+    
+    - [f90wrap](https://github.com/jameskermode/f90wrap)
 
     - (optional) [SciPy](http://www.scipy.org)
 
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
+    
+    The required versions can be installed with `pip install -r quippy/requirements.txt`.
 
 8.  If you are using a Python virtual environment (virtualenv) and would like
     to install ``quippy`` into it, ensure the environment is activated

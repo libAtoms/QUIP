@@ -79,7 +79,7 @@ jobs:
             pandoc
         
         - pip install
-	    f90wrap==0.2.1
+            f90wrap==0.2.1
             ase==3.17.0
             docutils==0.14
             sphinx
