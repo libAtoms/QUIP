@@ -32,7 +32,7 @@ include Makefile.rules
 
 QUIPPY_SRC_DIR := ../../quippy
 
-FPP = gfortran -E -cpp ${QUIPPY_F90FLAGS}
+FPP = ${F90} -E -cpp ${QUIPPY_F90FLAGS}
 CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 
 
@@ -59,6 +59,9 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 
 F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
+F90WRAP_PATH = $(shell pip show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+F90WRAP = ${F90WRAP_PATH}/f90wrap
+F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
 #################################
 .PHONY: build install clean
@@ -82,7 +85,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	mkdir quippy
 	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
-	f90wrap -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
@@ -90,7 +93,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 		cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py
 
-	f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
+	${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
 	ln -s _quippy.*.so _quippy.so
 
