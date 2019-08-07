@@ -219,7 +219,7 @@ below.
         ener_dummy = np.zeros(1, dtype=float)
 
         # the calculation itself
-        print('Calling QUIP Potential.calc() with args_str "{}"'.format(args_str))
+        # print('Calling QUIP Potential.calc() with args_str "{}"'.format(args_str))
         self._quip_potential.calc(self._quip_atoms, args_str=args_str, energy=ener_dummy, **_dict_args)
 
         # retrieve data from _quip_atoms.properties and _quip_atoms.params
