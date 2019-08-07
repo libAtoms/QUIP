@@ -49,7 +49,7 @@ before_install:
 
 
 install:
-  - pip install ase
+  - pip install -r quippy/requirements.txt
 
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
@@ -79,6 +79,7 @@ jobs:
             pandoc
         
         - pip install
+	    f90wrap==0.2.1
             ase==3.17.0
             docutils==0.14
             sphinx
