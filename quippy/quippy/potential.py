@@ -32,29 +32,34 @@ import numpy as np
 from copy import deepcopy as cp
 
 import quippy
+from quippy.convert import set_doc
 
 __all__ = ['Potential']
- 
+
+@set_doc(quippy.potential_module.__doc__,
+"""
+Pythonic interface to auto-generated quippy.potential_module.Potential class
+""")
 class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
     implemented_properties = ['energy', 'forces', 'virial', 'stress',
                               'local_virial', 'local_energy', 'local_stress']
 
-    @quippy.convert.set_doc("""
+    @set_doc(quippy.potential_module.Potential.__init__.__doc__,
+    """
+    ------------------------------------------------------------------------
+    from old quippy arguments:
 
-        ------------------------------------------------------------------------
-        from old quippy arguments:
-
-        not implemented yet:
-            pot1=None, pot2=None
-            param_filename=None
-            bulk_scale=None
-            mpi_obj=None
-            callback=None
-            calculation_always_required=False
-            finalise=True
-                """, quippy.potential_module.Potential.__init__.__doc__)
+    not implemented yet:
+        pot1=None, pot2=None
+        param_filename=None
+        bulk_scale=None
+        mpi_obj=None
+        callback=None
+        calculation_always_required=False
+        finalise=True
+    """)
     def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
                  calc_args=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
