@@ -89,62 +89,39 @@ class Potential(ase.calculators.calculator.Calculator):
             calc_args = ""
         self.calc_args = calc_args
 
+    @set_doc(quippy.potential_module.Potential.calc.__doc__,
+    """
+    Pythonic wrapper to `quippy.potential_module.Potential.calc()`
+
+    atoms: ase.atoms.Atoms object
+        Atoms object with which to calculate. This is converted to
+        a `quippy.atoms_module.Atoms` object to pass to Fortran.
+    properties: list of str
+        List of what needs to be calculated.  Can be any combination
+        of 'energy', 'forces', 'stress', 'dipole', 'charges', 'magmom'
+        and 'magmoms'.
+    system_changes: list of str
+        List of what has changed since last calculation.  Can be
+        any combination of these six: 'positions', 'numbers', 'cell',
+        'pbc', 'initial_charges' and 'initial_magmoms'.
+    calc_args: argument string to pass to Fortran calc() routine.
+        This is appended to `self.calc_args`, if this is set.
+
+    Arrays can also be passed directly to the Fortran routine using
+    the `forces`, `virial`, `local_energy`, `local_virial`
+    arguments. These should be pre-allocated as Fortran-contigous arrays,
+    e.g. `forces = np.zeros((len(atoms), 3), order='F')`.
+
+    If present, `vol_per_atom` is used to convert from local_virial to per-atom
+    stresses; this can either be a scalar or the name of an array in
+    `atoms.arrays`. If not present the average volume per atom is used.
+
+    Additional keyword arguments are appended to `calc_args`.
+    """)
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
                   copy_all_properties=True, calc_args=None, **kwargs):
-        """Do the calculation.
-
-        properties: list of str
-            List of what needs to be calculated.  Can be any combination
-            of 'energy', 'forces', 'stress', 'dipole', 'charges', 'magmom'
-            and 'magmoms'.
-        system_changes: list of str
-            List of what has changed since last calculation.  Can be
-            any combination of these six: 'positions', 'numbers', 'cell',
-            'pbc', 'initial_charges' and 'initial_magmoms'.
-
-        Subclasses need to implement this, but can ignore properties
-        and system_changes if they want.  Calculated properties should
-        be inserted into results dictionary like shown in this dummy
-        example::
-
-            self.results = {'energy': 0.0,
-                            'forces': np.zeros((len(atoms), 3)),
-                            'stress': np.zeros(6),
-                            'dipole': np.zeros(3),
-                            'charges': np.zeros(len(atoms)),
-                            'magmom': 0.0,
-                            'magmoms': np.zeros(len(atoms))}
-
-        The subclass implementation should first call this
-        implementation to set the atoms attribute.
-
-
-
-        from docstring of quippy.potential_module.Potential.calc
-
-        Each physical quantity has a
-corresponding optional argument, which can either be an 'True'
-to store the result inside the Atoms object (i.e. in
-Atoms%params' or in 'Atoms%properties' with the
-default name, a string to specify a different property or
-parameter name, or an array of the the correct shape to
-receive the quantity in question, as set out in the table
-below.
-
-        ================ ============= ================ =========================
-        Array argument   Quantity       Shape           Default storage location
-        ================ ============= ================ =========================
-        ``energy``        Energy        ``()``           ``energy`` param
-        ``local_energy``  Local energy  ``(at.n,)``      ``local_energy`` property
-        ``force``         Force         ``(3,at.n)``     ``force`` property
-        ``virial``        Virial tensor ``(3,3)``        ``virial`` param
-        ``local_virial``  Local virial  ``(3,3,at.n)``   ``local_virial`` property
-        ================ ============= ================ =========================
-
-
-        """
 
         # handling the property inputs
         if properties is None:

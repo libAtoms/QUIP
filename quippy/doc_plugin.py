@@ -87,11 +87,9 @@ def magic_table(spec):
     max_type_len = max(len(typ) for typ in type_list)
     max_value_len = max(len(value) for value in value_list)
     # max_var_len = max(len(var) for var in var_list)
-
-    # cols = (max_name_len, max_value_len, max_var_len, 40)
     cols = (max_name_len, max_type_len, max_value_len, 40)
 
-    args_str_lines = ['.. rubric:: args_str options', '']
+    args_str_lines = ['', '.. rubric:: args_str options', '']
     fmt = "%-{:d}s %-{:d}s %-{:d}s %-{:d}s".format(*cols)
 
     for i, (name, type_, default, doc) in enumerate(zip(name_list, type_list, value_list, doc_list)):
@@ -114,8 +112,7 @@ def magic_table(spec):
             args_str_lines.append(fmt % ('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
 
     args_str_lines.extend(['', ''])
-
-    return [line.strip() + '\n' for line in args_str_lines]
+    return args_str_lines
 
 
 def infer_type(value, variable=None):
@@ -164,6 +161,6 @@ def doc_plugin(subroutine_lines, name, run_type=None):
         table_string = magic_table(spec)
         # doc.append(table_string)
         print('QUIP_doc_plugin: args found in {}s. Table added to doc as follows'.format(name))
-        print(table_string)
+        print('\n'.join(table_string))
 
     return table_string
