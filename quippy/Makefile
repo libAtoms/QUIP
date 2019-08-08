@@ -55,7 +55,7 @@ endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
-F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}))) #f90wrap_toplevel.f90
+F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
 F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
@@ -64,9 +64,10 @@ F90WRAP = ${F90WRAP_PATH}/f90wrap
 F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
 #################################
-.PHONY: build install clean
+.PHONY: all build install clean
 
-build: _quippy.so
+
+all: build
 
 clean:
 	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -82,20 +83,22 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 
 _quippy.so: ${WRAP_FPP_FILES}
 	if [ -d "quippy" ] ; then rm -r quippy; fi
-	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	mkdir quippy
-	cp -r ${QUIPPY_SRC_DIR}/quippy/* quippy
 	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
-		potential_initialise_inoutput \
-		cplx_2d  cplx_2d_array1_finalise --skip-types spherical_harmonics_type   --force-public set_cutoff \
+		potential_initialise_inoutput cplx_2d  cplx_2d_array1_finalise \
+		--skip-types spherical_harmonics_type --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py
 
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
+	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	ln -s _quippy.*.so _quippy.so
+
+build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
+	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
 	python ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
