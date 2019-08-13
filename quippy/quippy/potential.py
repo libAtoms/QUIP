@@ -24,14 +24,13 @@ ASE-compatible Calculator from a quip-potential object
 
 """
 
-import ase
-import ase.calculators.calculator
-from ase.io.extxyz import key_val_str_to_dict, key_val_dict_to_str
-
-import numpy as np
 from copy import deepcopy as cp
 
+import ase
+import ase.calculators.calculator
+import numpy as np
 import quippy
+from ase.io.extxyz import key_val_dict_to_str
 from quippy.convert import set_doc
 
 __all__ = ['Potential']
@@ -63,7 +62,6 @@ class Potential(ase.calculators.calculator.Calculator):
     def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
                  calc_args=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
-
 
         self._default_properties = ['energy', 'forces']
         self.calculation_always_required = calculation_always_required
@@ -173,7 +171,7 @@ class Potential(ase.calculators.calculator.Calculator):
             return
 
         # construct the quip atoms object which we will use to calculate on
-        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, self._quip_atoms)
+        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms)
 
         # constructing args_string with automatically aliasing the calculateable non-quippy properties
         # calc_args string to be passed to Fortran code

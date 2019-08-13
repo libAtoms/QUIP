@@ -26,17 +26,13 @@ Conversions between ase and fortran atoms objects
 import inspect
 from copy import deepcopy as cp
 
-import numpy as np
-import ase
-
-import f90wrap.runtime
-
 import _quippy
+import ase
+import f90wrap.runtime
+import numpy as np
 import quippy
 
-
 __all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict', 'velocities_ase_to_quip', 'velocities_quip_to_ase', 'set_doc']
-
 
 # conversion between ase and quip mass, taken from Fortran source
 MASSCONVERT = 103.6426957074462
@@ -54,19 +50,23 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None):
     :return:
     """
 
+    lattice = ase_atoms.get_cell().T.copy()
     if quip_atoms is not None:
         if isinstance(quip_atoms, quippy.atoms_types_module.Atoms):
             # check if the length matches, otherwise make a new one in place of that
             if len(ase_atoms) != quip_atoms.n:
                 # need to regenerate the quip atoms object
-                quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), ase_atoms.get_cell().T.copy())
+                quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), lattice)
+            else:
+                # but the cell needs to be set anyways
+                quip_atoms.set_lattice(lattice, scale_positions=False)
         else:
             # raise an error for the wrong object given
             raise TypeError('quip_atoms argument is not of valid type, cannot work with it')
 
     else:
         # need to regenerate the quip atoms object
-        quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), ase_atoms.get_cell().transpose())
+        quip_atoms = quippy.atoms_types_module.Atoms(len(ase_atoms), lattice)
 
     quip_atoms.pos[:] = ase_atoms.get_positions().T.copy()
     quip_atoms.is_periodic[:] = ase_atoms.get_pbc()
@@ -130,7 +130,8 @@ def descriptor_data_mono_to_dict(desc_data_mono):
             pass
 
     # fixme: only take the ones actually needed, this is good for debuggin now though
-    for key in ['has_grad_data', 'ii', 'pos', 'grad_covariance_cutoff', 'covariance_cutoff', 'data', 'has_data', 'grad_data']:
+    for key in ['has_grad_data', 'ii', 'pos', 'grad_covariance_cutoff', 'covariance_cutoff', 'data', 'has_data',
+                'grad_data']:
         take_value(key)
 
     return out_data_dict
@@ -149,7 +150,7 @@ def get_dict_arrays(fdict):
         key = fdict.get_key(i)
         key = key.strip().decode('ascii')
         # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
-        try:    # this is an unsufficient temporary fix
+        try:  # this is an unsufficient temporary fix
             value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,
                                               fdict._handle, _quippy.f90wrap_dictionary__array__, key)
             arrays[key] = value.copy()
@@ -168,7 +169,9 @@ def set_doc(doc, extra):
     def wrap(method):
         method.__doc__ = update_doc_string(doc, extra)
         return method
+
     return wrap
+
 
 def update_doc_string(doc, extra, sections=None, signature=None):
     """
@@ -180,13 +183,13 @@ def update_doc_string(doc, extra, sections=None, signature=None):
     """
 
     if sections is None:
-       sections = ['Parameters', 'See also']
+        sections = ['Parameters', 'See also']
 
     try:
-       doc = inspect.cleandoc(doc)
-       extra = inspect.cleandoc(extra)
+        doc = inspect.cleandoc(doc)
+        extra = inspect.cleandoc(extra)
     except AttributeError:
-       pass
+        pass
 
     extra = '\n' + extra + '\n'
 
@@ -196,11 +199,11 @@ def update_doc_string(doc, extra, sections=None, signature=None):
         lines[0] = signature
 
     for section in sections:
-       indices = [i for i, line in enumerate(lines) if line == section ]
-       if len(indices) == 1:
-          break
+        indices = [i for i, line in enumerate(lines) if line == section]
+        if len(indices) == 1:
+            break
     else:
-        indices = [len(lines)-1] # insert at end
+        indices = [len(lines) - 1]  # insert at end
 
     index, = indices
     doc = '\n'.join([line.rstrip() for line in lines[:index] + extra.split('\n') + lines[index:]])
