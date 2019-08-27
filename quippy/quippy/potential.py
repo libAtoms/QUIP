@@ -42,7 +42,7 @@ Pythonic interface to auto-generated quippy.potential_module.Potential class
 class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
-    implemented_properties = ['energy', 'forces', 'virial', 'stress',
+    implemented_properties = ['energy', 'free_energy', 'forces', 'virial', 'stress',
                               'local_virial', 'local_energy', 'local_stress']
 
     @set_doc(quippy.potential_module.Potential.__init__.__doc__,
@@ -207,6 +207,7 @@ class Potential(ase.calculators.calculator.Calculator):
         _quip_params = quippy.convert.get_dict_arrays(self._quip_atoms.params)
 
         self.results['energy'] = ener_dummy[0]
+        self.results['free_energy'] = self.results['energy']
 
         # process potential output to ase.properties
         # not handling energy here, because that is always returned by the potential above
