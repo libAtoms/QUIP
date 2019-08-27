@@ -253,7 +253,10 @@ class Potential(ase.calculators.calculator.Calculator):
                 _at_list = list(self.atoms)
 
             for at in _at_list:
-                _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species', 'map_shift', 'n_neighb'])
+                _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species',
+                                                              'map_shift', 'n_neighb',
+                                                              'force', 'local_energy',
+                                                              'local_virial'])
 
                 # default params arguments
                 at.info['energy'] = self.results['energy']
