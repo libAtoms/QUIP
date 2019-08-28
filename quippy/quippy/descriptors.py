@@ -51,7 +51,7 @@ def convert_atoms_types_iterable_method(method):
 
 class Descriptor:
 
-    def __init__(self, args_str=None, **init_kwargs):
+    def __init__(self, args_str=None, cutoff=None, **init_kwargs):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
@@ -69,6 +69,8 @@ class Descriptor:
             args_str = key_val_dict_to_str(init_kwargs)
         else:
             args_str += ' ' + key_val_dict_to_str(init_kwargs)
+
+        self._cutoff = cutoff
 
         # intialise the wrapped object and hide it from the user
         self._quip_descriptor = quippy.descriptors_module.descriptor(args_str)
@@ -90,13 +92,19 @@ class Descriptor:
     def cutoff(self):
         # TODO: decide if adding @property is a good idea
         # could be like get_cutoff()
-        return self._quip_descriptor.cutoff()
+        cutoff = self._quip_descriptor.cutoff()
+        if self._cutoff is not None:
+            cutoff = self._cutoff
+        return cutoff
 
     @convert_atoms_types_iterable_method
     def sizes(self, at):
         """
         Replicating the QUIP method, is used in the rest of the methods
         """
+
+        # calc connectivity on the atoms object with the internal one
+        self._calc_connect(at)
 
         n_descriptors, n_cross = self._quip_descriptor.sizes(at)
 
@@ -121,9 +129,12 @@ class Descriptor:
         :return:
         """
 
-        # setting to +1 is arbitrary here, the point is to set to something a bit higher than the descriptor's
-        if at.cutoff < self.cutoff() + 1:
-            at.set_cutoff(self.cutoff() + 1)
+        if self._cutoff is not None:
+            at.set_cutoff(self._cutoff)
+        else:
+            # setting to +1 is arbitrary here, the point is to set to something a bit higher than the descriptor's
+            if at.cutoff < self.cutoff() + 1:
+                at.set_cutoff(self.cutoff() + 1)
 
         # TODO: add logic to skip this if it has been calculated already for speedup
         at.calc_connect()
