@@ -51,7 +51,7 @@ def convert_atoms_types_iterable_method(method):
 
 class Descriptor:
 
-    def __init__(self, args_str=None, cutoff=None, **init_kwargs):
+    def __init__(self, args_str=None, **init_kwargs):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
@@ -69,8 +69,6 @@ class Descriptor:
             args_str = key_val_dict_to_str(init_kwargs)
         else:
             args_str += ' ' + key_val_dict_to_str(init_kwargs)
-
-        self._cutoff = cutoff
 
         # intialise the wrapped object and hide it from the user
         self._quip_descriptor = quippy.descriptors_module.descriptor(args_str)
@@ -92,19 +90,16 @@ class Descriptor:
     def cutoff(self):
         # TODO: decide if adding @property is a good idea
         # could be like get_cutoff()
-        cutoff = self._quip_descriptor.cutoff()
-        if self._cutoff is not None:
-            cutoff = self._cutoff
-        return cutoff
+        return self._quip_descriptor.cutoff()
 
     @convert_atoms_types_iterable_method
-    def sizes(self, at):
+    def sizes(self, at, cutoff=None):
         """
         Replicating the QUIP method, is used in the rest of the methods
         """
 
         # calc connectivity on the atoms object with the internal one
-        self._calc_connect(at)
+        self._calc_connect(at, cutoff)
 
         n_descriptors, n_cross = self._quip_descriptor.sizes(at)
 
@@ -120,7 +115,7 @@ class Descriptor:
         return self.sizes(at)[0]
 
     @convert_atoms_types_iterable_method
-    def _calc_connect(self, at):
+    def _calc_connect(self, at, cutoff=None):
         """
         Internal method for calculating connectivity on a quip_atoms object
 
@@ -129,8 +124,8 @@ class Descriptor:
         :return:
         """
 
-        if self._cutoff is not None:
-            at.set_cutoff(self._cutoff)
+        if cutoff is not None:
+            at.set_cutoff(cutoff)
         else:
             # setting to +1 is arbitrary here, the point is to set to something a bit higher than the descriptor's
             if at.cutoff < self.cutoff() + 1:
@@ -140,7 +135,7 @@ class Descriptor:
         at.calc_connect()
 
     @convert_atoms_types_iterable_method
-    def calc_descriptor(self, at, args_str=None, **calc_kwargs):
+    def calc_descriptor(self, at, args_str=None, cutoff=None, **calc_kwargs):
         """
         Calculates all descriptors of this type in the Atoms object, and
         returns the array of descriptor values. Does not compute gradients; use
@@ -148,12 +143,12 @@ class Descriptor:
 
         """
         try:
-            return self.calc(at, False, args_str, **calc_kwargs)['data']
+            return self.calc(at, False, args_str, cutoff, **calc_kwargs)['data']
         except KeyError:
             return []
 
     @convert_atoms_types_iterable_method
-    def calc(self, at, grad=False, args_str=None, **calc_kwargs):
+    def calc(self, at, grad=False, args_str=None, cutoff=None, **calc_kwargs):
         """
         Calculates all descriptors of this type in the Atoms object, and
         gradients if grad=True. Results can be accessed dictionary- or
@@ -173,7 +168,7 @@ class Descriptor:
             args_str += ' ' + key_val_dict_to_str(calc_kwargs)
 
         # calc connectivity on the atoms object with the internal one
-        self._calc_connect(at)
+        self._calc_connect(at, cutoff)
 
         # descriptor calculation
         descriptor_out_raw = self._quip_descriptor.calc(at, do_descriptor=True, do_grad_descriptor=grad,
