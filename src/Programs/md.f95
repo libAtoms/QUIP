@@ -134,7 +134,7 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
   call param_register(md_params_dict, 'langevin_OU', 'F', params%langevin_OU, help_string="If true, do Ornstein-Uhlenbeck Langevin dynamics")
   call param_register(md_params_dict, 'calc_virial', 'F', params%calc_virial, help_string="if true, calculate virial each step")
   call param_register(md_params_dict, 'calc_energy', 'T', params%calc_energy, help_string="if true, calculate energy each step")
-  call param_register(md_params_dict, 'pot_init_args', PARAM_MANDATORY, params%pot_init_args, help_string="args string to initialise potential")
+  call param_register(md_params_dict, 'pot_init_args', "", params%pot_init_args, help_string="args string to initialise potential")
   call param_register(md_params_dict, 'cutoff_skin', '0.5', params%cutoff_skin, help_string="extra distance to calculate neighbors (added to potential cutoff) so that list doesn't have to be recalculated every step")
   call param_register(md_params_dict, 'summary_interval', '1', params%summary_interval, help_string="how often to print summary line")
   call param_register(md_params_dict, 'params_print_interval', '-1', params%params_print_interval, help_string="how often to print atoms%params")
@@ -184,10 +184,6 @@ call param_register(md_params_dict, 'NPT_NB', 'F', params%NPT_NB, help_string="u
      endif
   end if
 
-  if (len(trim(params%pot_init_args)) == 0) then
-     call param_print_help(md_params_dict)
-     call system_abort("get_params got empty pot_init_args")
-  end if
   call finalise(md_params_dict)
 
   params%const_P = .false.
@@ -314,7 +310,7 @@ end subroutine print_params
 subroutine print_usage()
   call Print('Usage: md <command line arguments>', PRINT_ALWAYS)
   call Print('available parameters (in md_params file or on command line):', PRINT_ALWAYS)
-  call Print('  pot_init_args="args" [pot_calc_args="args"] [first_pot_calc_args="args"]', PRINT_ALWAYS)
+  call Print('  [pot_init_args="args"] [pot_calc_args="args"] [first_pot_calc_args="args"]', PRINT_ALWAYS)
   call Print('  [atoms_filename=file(stdin)] [param_filename=file(quip_params.xml)]', PRINT_ALWAYS)
   call Print('  [trajectory_filename=file(traj.xyz)] [cutoff_skin=(0.5)] [rng_seed=n(none)]', PRINT_ALWAYS)
   call Print('  [N_steps=n(1)] [max_time=t(-1.0)] [dt=dt(1.0)] [const_T=logical(F)] [T=T(0.0)] [langevin_tau=tau(100.0)]', PRINT_ALWAYS)
