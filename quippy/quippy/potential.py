@@ -59,7 +59,7 @@ class Potential(ase.calculators.calculator.Calculator):
         calculation_always_required=False
         finalise=True
     """)
-    def __init__(self, args_str, param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
+    def __init__(self, args_str="", param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
                  calc_args=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
 
