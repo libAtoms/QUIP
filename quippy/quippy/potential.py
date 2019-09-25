@@ -277,7 +277,8 @@ class Potential(ase.calculators.calculator.Calculator):
                 # any other arrays
                 for prop, val in _quip_properties.items():
                     if prop not in _skip_keys:
-                        at.arrays[prop] = np.copy(val, order='C')
+                        # transpose before copying because of setting `order=C` here; issue#151
+                        at.arrays[prop] = np.copy(val.T, order='C')
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)
