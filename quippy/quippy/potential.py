@@ -35,6 +35,7 @@ from quippy.convert import set_doc
 
 __all__ = ['Potential']
 
+
 @set_doc(quippy.potential_module.__doc__,
 """
 Pythonic interface to auto-generated quippy.potential_module.Potential class
@@ -256,7 +257,7 @@ class Potential(ase.calculators.calculator.Calculator):
                 _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species',
                                                               'map_shift', 'n_neighb',
                                                               'force', 'local_energy',
-                                                              'local_virial'])
+                                                              'local_virial', 'velo'])
 
                 # default params arguments
                 at.info['energy'] = self.results['energy']
