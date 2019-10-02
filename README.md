@@ -93,9 +93,9 @@ is much more widely used, but QUIP has a number of unique features:
 
 ## Precompiled Containers
 
-If you have access to [Docker](http://singularity.lbl.gov) or
+If you have access to [Docker](https://hub.docker.com) or
 [Singularity](http://singularity.lbl.gov), you can try one of the
-[precompiled images](https://github.com/libAtoms/QUIP/blob/public/docker/README.md)
+[precompiled images](https://github.com/libAtoms/quip-docker)
 to get up and running quickly.
 
 ## Compilation Instructions
