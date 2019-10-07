@@ -256,7 +256,7 @@ module CrackParams_module
 
      ! I/O parameters
      integer :: io_verbosity              !% Output verbosity. In XML file, this should be specified as one of
-                                          !% 'ERROR', 'SILENT', 'NORMAL', 'VERBOSE', 'NERD' or 'ANAL'
+                                          !% 'ERROR', 'SILENT', 'NORMAL', 'VERBOSE', 'NERD' or 'INVESTIGATE'
      logical :: io_netcdf                 !% If true, output in NetCDF format instead of XYZ
      real(dp) :: io_print_interval        !% Interval between movie XYZ frames, in fs.
      logical  :: io_print_all_properties  !% If true, print all atom properties to movie file. This will generate large

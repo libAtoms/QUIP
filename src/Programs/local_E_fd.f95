@@ -92,8 +92,8 @@ implicit none
       call verbosity_push(PRINT_VERBOSE)
     case ("NERD")
       call verbosity_push(PRINT_NERD)
-    case ("ANAL")
-      call verbosity_push(PRINT_ANAL)
+    case ("INVESTIGATE")
+      call verbosity_push(PRINT_INVESTIGATE)
     case default
       call system_abort("confused by verbosity " // trim(verbosity))
   end select

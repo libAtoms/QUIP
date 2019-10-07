@@ -43,7 +43,7 @@
 module IPModel_SW_module
 
 use error_module
-use system_module, only : dp, inoutput, print, PRINT_NERD, PRINT_VERBOSE, PRINT_ANAL, current_verbosity, verbosity_push_decrement, verbosity_pop, operator(//)
+use system_module, only : dp, inoutput, print, PRINT_NERD, PRINT_VERBOSE, PRINT_INVESTIGATE, current_verbosity, verbosity_push_decrement, verbosity_pop, operator(//)
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -182,7 +182,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
   INIT_ERROR(error)
 
-  call print("IPModel_SW_Calc starting ", PRINT_ANAL)
+  call print("IPModel_SW_Calc starting ", PRINT_INVESTIGATE)
   if (present(e)) e = 0.0_dp
 
   if (present(local_e)) then
@@ -261,7 +261,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     endif
 
     ti = get_type(this%type_of_atomic_num, at%Z(i))
-    if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANAL)
+    if (current_verbosity() >= PRINT_INVESTIGATE) call print ("IPModel_SW_Calc i " // i // " " // n_neighbours(at,i), PRINT_INVESTIGATE)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
     n_neigh_i = n_neighbours(at, i)
     do ji=1, n_neigh_i
@@ -280,7 +280,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
       if (drij_mag/this%sigma(ti,tj) > this%a(ti,tj)) cycle
 
-      if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_SW_Calc i j " // i // " " // j, PRINT_ANAL)
+      if (current_verbosity() >= PRINT_INVESTIGATE) call print ("IPModel_SW_Calc i j " // i // " " // j, PRINT_INVESTIGATE)
 
       if (associated(w_e)) then
 	w_f = 0.5_dp*(w_e(i)+w_e(j))

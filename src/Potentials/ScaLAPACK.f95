@@ -604,7 +604,7 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_INVESTIGATE)
           end do
       else if (mod(info/4,2) .ne. 0) then
 	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
@@ -709,7 +709,7 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_INVESTIGATE)
           end do
       else if (mod(info/4,2) .ne. 0) then
 	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
@@ -823,7 +823,7 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
 	      endif
 	  end do
 	  do i=1, this%N_R
-	      call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
+	      call print(" eigenvalue " // i // " " // evals(i), PRINT_INVESTIGATE)
 	  end do
       else if (mod(info/4,2) .ne. 0) then
 	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
@@ -938,7 +938,7 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
 	      endif
 	  end do
           do i=1, this%N_R
-            call print(" eigenvalue " // i // " " // evals(i), PRINT_ANAL)
+            call print(" eigenvalue " // i // " " // evals(i), PRINT_INVESTIGATE)
           end do
       else if (mod(info/4,2) .ne. 0) then
 	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
