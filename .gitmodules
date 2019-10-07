@@ -5,5 +5,5 @@
 [submodule "src/f90wrap"]
 	path = src/f90wrap
 	url = https://github.com/jameskermode/f90wrap
-	branch = py3
+	branch = master
 	fetchRecursiveSubmodules = on-demand
