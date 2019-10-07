@@ -33,7 +33,6 @@ doc: the docstring to append to (out.doc in parser.py)
 
 """
 
-
 import re
 
 args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_%]*\s*,\s*(['"])([a-zA-Z][a-zA-Z0-9_]*)\1\s*,\s*(['"]?)(.*?)\3\s*,\s*([a-zA-Z_][a-zA-Z0-9_%]*)\s*,.+?help_string=(['"])(.+?)\6\)""")
@@ -65,7 +64,6 @@ def find_params(lines):
 
 
 def magic_table(spec):
-
     if len(spec) == 0:
         print('oh shit, zero len')
         return None
@@ -87,14 +85,17 @@ def magic_table(spec):
     max_type_len = max(len(typ) for typ in type_list)
     max_value_len = max(len(value) for value in value_list)
     # max_var_len = max(len(var) for var in var_list)
-    cols = (max_name_len, max_type_len, max_value_len, 40)
+
+    # setting the length of the rightmost column accoring to the rest, while being within the maximum line length 120
+    length_left_for_doc = 100 - sum([max_name_len, max_type_len, max_value_len])
+    cols = (max_name_len, max_type_len, max_value_len, length_left_for_doc)
 
     args_str_lines = ['', '.. rubric:: args_str options', '']
-    fmt = "%-{:d}s %-{:d}s %-{:d}s %-{:d}s".format(*cols)
+    fmt = '{{:{}s}} {{:{}s}} {{:{}s}} {{:{}s}}'.format(*cols)
 
     for i, (name, type_, default, doc) in enumerate(zip(name_list, type_list, value_list, doc_list)):
         if i == 0:
-            args_str_lines.append(fmt % ('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
+            args_str_lines.append(fmt.format('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
         doc_words = doc.split()
         while doc_words:
             doc_line = ''
@@ -106,10 +107,10 @@ def magic_table(spec):
                 else:
                     doc_line = doc_line + ' ' + word
 
-            args_str_lines.append(fmt % (name, type_, default, doc_line.strip()))
+            args_str_lines.append(fmt.format(name, type_, default, doc_line.strip()))
             name = type_ = default = ''
         if i == 0 or i == len(name_list) - 1:
-            args_str_lines.append(fmt % ('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
+            args_str_lines.append(fmt.format('=' * cols[0], '=' * cols[1], '=' * cols[2], '=' * cols[3]))
 
     args_str_lines.extend(['', ''])
     return args_str_lines

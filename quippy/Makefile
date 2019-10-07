@@ -90,7 +90,8 @@ _quippy.so: ${WRAP_FPP_FILES}
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
 		potential_initialise_inoutput cplx_2d  cplx_2d_array1_finalise \
 		--skip-types spherical_harmonics_type --force-public set_cutoff \
-		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py
+		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
+		--py-max-line-length 120 --f90-max-line-length 120
 
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
