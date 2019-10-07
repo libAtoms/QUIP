@@ -79,7 +79,7 @@ jobs:
             pandoc
         
         - pip install
-            f90wrap==0.2.1
+#            f90wrap==0.2.1
             ase==3.17.0
             docutils==0.14
             sphinx
@@ -100,6 +100,11 @@ jobs:
         - cd src/AtomEye/Python
         - python setup.py install
         - cd ../../..
+
+        # TEMPORARY: for the quick testing of f90wrap updates
+        - git submodule update --init ${QUIP_ROOT}/src/f90wrap
+        - cd ${QUIP_ROOT}/src/f90wrap ;  python setup.py install
+        - cd ${QUIP_ROOT}
 
       script:
         - cd doc
