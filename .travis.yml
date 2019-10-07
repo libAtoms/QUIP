@@ -51,8 +51,9 @@ before_install:
 install:
   - pip install -r quippy/requirements.txt
   # TEMPORARY: for the quick testing of f90wrap updates
-  - git submodule update --init ${QUIP_ROOT}/src/f90wrap
+  # - git submodule update --init ${QUIP_ROOT}/src/f90wrap
   - export QUIP_ROOT=`pwd`
+  - echo ${QUIP_ROOT}
   - cd ${QUIP_ROOT}/src/f90wrap ;  python setup.py install
   - cd ${QUIP_ROOT}
 
