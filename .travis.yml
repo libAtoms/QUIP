@@ -50,6 +50,11 @@ before_install:
 
 install:
   - pip install -r quippy/requirements.txt
+  # TEMPORARY: for the quick testing of f90wrap updates
+  - git submodule update --init ${QUIP_ROOT}/src/f90wrap
+  - export QUIP_ROOT=`pwd`
+  - cd ${QUIP_ROOT}/src/f90wrap ;  python setup.py install
+  - cd ${QUIP_ROOT}
 
 script: # Compile QUIP, libquip and quippy, if a non-skipped build.
   # stdout is redirected as it generates too much output.
@@ -79,14 +84,13 @@ jobs:
             pandoc
         
         - pip install
+            f90wrap==0.2.1
             ase==3.17.0
             docutils==0.14
             sphinx
             sphinx-rtd-theme
             nbsphinx
             numpydoc
-
-#            f90wrap==0.2.1
 
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
@@ -101,11 +105,6 @@ jobs:
         - cd src/AtomEye/Python
         - python setup.py install
         - cd ../../..
-
-        # TEMPORARY: for the quick testing of f90wrap updates
-        - git submodule update --init ${QUIP_ROOT}/src/f90wrap
-        - cd ${QUIP_ROOT}/src/f90wrap ;  python setup.py install
-        - cd ${QUIP_ROOT}
 
       script:
         - cd doc
