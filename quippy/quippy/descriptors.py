@@ -76,7 +76,7 @@ class Descriptor:
         # kept for compatibility with older version
         # super convoluted though :D should just rethink it at some point
         self.n_dim = self.dimensions()
-        self._n_perm = self.permutations()
+        self.n_perm = self.get_n_perm()
 
     def __len__(self):
         return self.dimensions()
@@ -84,8 +84,14 @@ class Descriptor:
     def dimensions(self):
         return self._quip_descriptor.dimensions()
 
-    def permutations(self):
+    def get_n_perm(self):
         return self._quip_descriptor.n_permutations()
+
+    def permutations(self):
+        # this is equivalent to the py2 behaviour, giving an array of the permutations
+        permutation_arr = np.zeros((self.n_dim, self.n_perm), dtype='int32', order='F')
+        self._quip_descriptor.permutations(permutation_arr)
+        return np.copy(permutation_arr.T, order='C')
 
     def cutoff(self):
         # TODO: decide if adding @property is a good idea
