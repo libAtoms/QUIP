@@ -41,7 +41,7 @@ module TB_module
 
 use error_module
 use system_module, only : dp, inoutput, initialise, finalise, INPUT, current_verbosity, print, &
-   DEALLOC_TRACE, PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, PRINT_ANAL, optional_default, mpi_id, REAL_SIZE, ALLOC_TRACE, &
+   DEALLOC_TRACE, PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, PRINT_INVESTIGATE, optional_default, mpi_id, REAL_SIZE, ALLOC_TRACE, &
    verbosity_push_decrement, verbosity_push, verbosity_pop, system_timer, operator(//)
 use mpi_context_module, only : mpi_context, finalise
 use linearalgebra_module, only : operator(.feq.), operator(.fne.), operator(.mult.)
@@ -2059,7 +2059,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
   real(dp) :: EPS
   real(dp) :: degeneracy
 
-  call print("called find_fermi_E fermi_T " // this%fermi_T // " " // (this%fermi_T < 1e-8_dp), PRINT_ANAL)
+  call print("called find_fermi_E fermi_T " // this%fermi_T // " " // (this%fermi_T < 1e-8_dp), PRINT_INVESTIGATE)
 
   have_w_n = .false.
   if (present(w_n)) then
@@ -2080,7 +2080,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
     e_min = min(this%tbsys%kpoints, this%evals%data_d(1,:)) - 10.0_dp
     e_max = max(this%tbsys%kpoints, this%evals%data_d(this%evals%N,:)) + 10.0_dp
 
-    call Print("find_Fermi_E N_e " // N_e // " e_min " // e_min // " e_max " // e_max, PRINT_ANAL)
+    call Print("find_Fermi_E N_e " // N_e // " e_min " // e_min // " e_max " // e_max, PRINT_INVESTIGATE)
 
     if (have_w_n) allocate(local_N(this%tbsys%N_atoms))
 
@@ -2109,7 +2109,7 @@ subroutine TB_find_fermi_E(this, AF, w_n)
       else
 	N_try = ksum_dup(this%tbsys%kpoints, sum(this%E_fillings%data_d,dim=1))
       endif
-      call Print("find_Fermi_E e_try n_try " // (iter+1) // " " // e_try // " " // n_try, PRINT_ANAL)
+      call Print("find_Fermi_E e_try n_try " // (iter+1) // " " // e_try // " " // n_try, PRINT_INVESTIGATE)
       if (N_try < N_e) then
 	e_min = e_try
       else

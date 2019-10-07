@@ -32,7 +32,7 @@
 module IPEwald_module
 
 use error_module
-use system_module, only : dp, optional_default, PRINT_ANAL, operator(//)
+use system_module, only : dp, optional_default, PRINT_INVESTIGATE, operator(//)
 use units_module
 use Atoms_module
 use linearalgebra_module
@@ -111,7 +111,7 @@ contains
     ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
     & minval(sqrt( sum(at_in%lattice(:,:)**2,dim=1) )) / at_in%N**(1.0_dp/6.0_dp)
 
-    call print('Ewald cutoff = '//ewald_cutoff,PRINT_ANAL)
+    call print('Ewald cutoff = '//ewald_cutoff,PRINT_INVESTIGATE)
 
     if( my_use_ewald_cutoff .and. (ewald_cutoff > at_in%cutoff) ) then
         my_at = at_in
@@ -133,14 +133,14 @@ contains
     endif
          
     alpha = sqrt(ewald_precision) / my_cutoff 
-    call print('Ewald alpha = '//alpha,PRINT_ANAL)
+    call print('Ewald alpha = '//alpha,PRINT_INVESTIGATE)
 
     kmax = 2.0_dp * ewald_precision / my_cutoff
     kmax2 = kmax**2
-    call print('Ewald kmax = '//kmax,PRINT_ANAL)
+    call print('Ewald kmax = '//kmax,PRINT_INVESTIGATE)
 
     nmax = nint( kmax * h / 2.0_dp / PI )
-    call print('Ewald nmax = '//nmax,PRINT_ANAL)
+    call print('Ewald nmax = '//nmax,PRINT_INVESTIGATE)
 
     two_alpha_over_sqrt_pi = 2.0_dp * alpha / sqrt(PI)
 

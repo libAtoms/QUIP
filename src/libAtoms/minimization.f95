@@ -1618,7 +1618,7 @@ CONTAINS
     do while((main_counter .LT. max_steps) .AND. (.NOT.(exit_flag.gt.0)))
        call system_timer("minim/main_loop/"//main_counter)
        
-       if ((current_verbosity() >= PRINT_ANAL .or. do_test_gradient) & 
+       if ((current_verbosity() >= PRINT_INVESTIGATE .or. do_test_gradient) & 
             .and. .not. do_linmin_deriv) then
 	  dumbool=test_gradient(x, func, dfunc,data=data)
           if (.not. dumbool) call print("Gradient test failed")
@@ -2190,8 +2190,8 @@ CONTAINS
 
           if(.NOT.monitor_ratio) then
              if(abs((f-f0)/f0) .LT. NUMERICAL_ZERO) then ! we ran out of precision, gradient is really bad
-		call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, PRINT_ANAL)
-		call print("ran out of precision, quitting loop", PRINT_ANAL)
+		call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, PRINT_INVESTIGATE)
+		call print("ran out of precision, quitting loop", PRINT_INVESTIGATE)
                 exit
              end if
           end if

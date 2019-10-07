@@ -955,7 +955,7 @@ contains
 
     at%N = at%Ndomain
     if (at%Ndomain /= last_N) then
-       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
+       call print("DomainDecomposition : Repointing atoms object", PRINT_INVESTIGATE)
        call atoms_repoint(at)
     endif
 
@@ -1077,11 +1077,11 @@ contains
 
     at%N = at%Ndomain
     if (at%Ndomain /= last_N) then
-       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
+       call print("DomainDecomposition : Repointing atoms object", PRINT_INVESTIGATE)
        call atoms_repoint(at)
     endif
 
-    call print("DomainDecomposition : Sorting atoms object", PRINT_ANAL)
+    call print("DomainDecomposition : Sorting atoms object", PRINT_INVESTIGATE)
 
     ! Sort atoms by global index
     call atoms_sort(at, "local_to_global", error=error)
@@ -1266,7 +1266,7 @@ contains
     enddo
 
     if (at%N /= last_N) then
-       call print("DomainDecomposition : Repointing atoms object", PRINT_ANAL)
+       call print("DomainDecomposition : Repointing atoms object", PRINT_INVESTIGATE)
        call atoms_repoint(at)
     endif
 
@@ -1437,7 +1437,7 @@ contains
        entry_i = lookup_entry_i(this, string(keys%keys(i)))
        if (entry_i == -1) then
 !          RAISE_ERROR("Could not find key '" // keys%keys(i) // "'.", error)
-          call print("DomainDecomposition : WARNING - Could not find key '" // keys%keys(i) // "', this property will not be communicated.", PRINT_ANAL)
+          call print("DomainDecomposition : WARNING - Could not find key '" // keys%keys(i) // "', this property will not be communicated.", PRINT_INVESTIGATE)
        else
 
           select case(this%entries(entry_i)%type)
