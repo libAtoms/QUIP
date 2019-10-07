@@ -74,7 +74,7 @@ The following external packages can be called:
  - CP2K
  - ASAP
  - Molpro
- - ASE (required if using ``quippy`` Python interface; latest version 
+ - ASE (required if using ``quippy`` Python interface; latest version
    recommended)
 
 ## Code philosophy and goals
@@ -82,7 +82,7 @@ The following external packages can be called:
 QUIP was born because of the need to efficiently tie together a wide
 variety of different models, both empirical and quantum mechanical. It
 will not be competitive in terms of performance with codes such as LAMMPS
-and Gromacs. The Atomic Simulation Environment also does does this, and 
+and Gromacs. The Atomic Simulation Environment also does does this, and
 is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
@@ -141,7 +141,7 @@ to get up and running quickly.
     If you later make significant changes to the configuration such as
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
-
+    
 5.  Compile all programs, modules and libraries::
 
         make
@@ -182,7 +182,7 @@ to get up and running quickly.
 
     The Lennard-Jones parameters in the above example are defined in the
     ``ip.parms.LJ.xml`` file under ``share/Parameters`` (ensure the path
-    to this file is correct). The format of the atomic configuration is 
+    to this file is correct). The format of the atomic configuration is
     given in
     [Extended XYZ](http://libatoms.github.io/QUIP/io.html#extendedxyz)
     format, in which the first line is the number of atoms, the second line
@@ -208,13 +208,13 @@ to get up and running quickly.
     - [NumPy](http://www.numpy.org)
 
     - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (``ase``)
-    
+
     - [f90wrap](https://github.com/jameskermode/f90wrap)
 
     - (optional) [SciPy](http://www.scipy.org)
 
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
-    
+
     The required versions can be installed with `pip install -r quippy/requirements.txt`.
 
 8.  If you are using a Python virtual environment (virtualenv) and would like
@@ -242,7 +242,7 @@ to get up and running quickly.
     ``build/${QUIP_ARCH}/Makefile.inc``.
 
 10.  More details on the quippy installation process and troubleshooting for
-    common build problems are available in the 
+    common build problems are available in the
     [online documentation](http://libatoms.github.io/QUIP/).
 
 11.  To run the unit and regression tests, which depend on ``quippy``::
@@ -268,11 +268,11 @@ to get up and running quickly.
 
 14. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
     into library form, and then follow the instructions in the
-    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later. 
+    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
 
 ### Mac OS
 
 We do not recommend Apple-shipped compilers and python, and we do not test
 compatibility with them. Either use MacPorts or Homebrew to obtain GNU compilers,
-and also use the python from there or Anaconda. As of this edit, gcc-8.1 produces as 
-internal compiler error, but gcc-4.6 through to gcc-7 is fine. 
+and also use the python from there or Anaconda. As of this edit, gcc-8.1 produces as
+internal compiler error, but gcc-4.6 through to gcc-7 is fine.
