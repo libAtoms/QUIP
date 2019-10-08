@@ -41,7 +41,7 @@
 module IPModel_Multipoles_module
 
 use error_module
-!use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int,PRINT_INVESTIGATE,reallocate
+!use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int,PRINT_ANALYSIS,reallocate
 use system_module
 use dictionary_module
 use paramreader_module

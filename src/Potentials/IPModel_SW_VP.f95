@@ -47,7 +47,7 @@
 module IPModel_SW_VP_module
 
 use error_module
-use system_module, only : dp, inoutput, print, PRINT_NERD, PRINT_INVESTIGATE, current_verbosity, verbosity_push_decrement, verbosity_pop, operator(//)
+use system_module, only : dp, inoutput, print, PRINT_NERD, PRINT_ANALYSIS, current_verbosity, verbosity_push_decrement, verbosity_pop, operator(//)
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -196,7 +196,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
   INIT_ERROR(error)
 
-  call print("IPModel_SW_VP_Calc starting ", PRINT_INVESTIGATE)
+  call print("IPModel_SW_VP_Calc starting ", PRINT_ANALYSIS)
   if (present(e)) e = 0.0_dp
 
   if (present(local_e)) then
@@ -269,7 +269,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
     ti = get_type(this%type_of_atomic_num, at%Z(i)) 
 
-    if (current_verbosity() >= PRINT_INVESTIGATE) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_INVESTIGATE)
+    if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANALYSIS)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))   
     n_neigh_i = n_neighbours(at, i)
 
@@ -289,7 +289,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
       if (drij_mag/this%sigma(ti,tj)  > this%a(ti,tj)) cycle 
       
 
-      if (current_verbosity() >= PRINT_INVESTIGATE) call print ("IPModel_SW_VP_Calc i j " // i // " " // j, PRINT_INVESTIGATE)
+      if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i j " // i // " " // j, PRINT_ANALYSIS)
 
       if (associated(w_e)) then
 	w_f = 0.5_dp*(w_e(i)+w_e(j))  ! 
@@ -415,7 +415,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
     ti = get_type(this%type_of_atomic_num, at%Z(i)) ! 
 
 
-   ! if (current_verbosity() >= PRINT_INVESTIGATE) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_INVESTIGATE)
+   ! if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANALYSIS)
     cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:)) 
     n_neigh_i = n_neighbours(at, i)
 

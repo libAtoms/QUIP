@@ -6527,8 +6527,8 @@ CONTAINS
     S = V .mult. diag(sqrt(D)) .mult. transpose(V)
     R = V .mult. diag(D ** (-0.5_dp)) .mult. transpose(V) .mult. m
 
-    call print('S:', PRINT_INVESTIGATE); call print(S, PRINT_INVESTIGATE)
-    call print('R:', PRINT_INVESTIGATE); call print(R, PRINT_INVESTIGATE)
+    call print('S:', PRINT_ANALYSIS); call print(S, PRINT_ANALYSIS)
+    call print('R:', PRINT_ANALYSIS); call print(R, PRINT_ANALYSIS)
 
   end subroutine polar_decomposition
 

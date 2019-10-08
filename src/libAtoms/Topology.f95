@@ -452,7 +452,7 @@ integer :: j,atom_i, ji
           atom_charge = 1.2_dp
           do i=1,at%n
              if(at%Z(i).eq.8) atom_charge(i) = -0.6_dp 
-             call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_INVESTIGATE)
+             call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANALYSIS)
           enddo
           call print("overall titania charge: "//sum(atom_charge(TiOH_list%int(1,1:TiOH_list%N))))
 
@@ -601,10 +601,10 @@ integer :: j,atom_i, ji
              atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = 0._dp
              atom_charge(SiOH_list%int(1,1:SiOH_list%N)) = charge(SiOH_list%int(1,1:SiOH_list%N))
              call print("overall silica charge: "//sum(atom_charge(SiOH_list%int(1,1:SiOH_list%N))))
-             call print('Atomic charges: ',PRINT_INVESTIGATE)
-             call print('   ATOM     CHARGE',PRINT_INVESTIGATE)
+             call print('Atomic charges: ',PRINT_ANALYSIS)
+             call print('   ATOM     CHARGE',PRINT_ANALYSIS)
              do i=1,at%N
-                call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_INVESTIGATE)
+                call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANALYSIS)
              enddo
           else
              where (at%z == 1) atom_charge = do_silica_charge_transfer/4.0_dp
@@ -651,7 +651,7 @@ integer :: j,atom_i, ji
        pdb_res_name(n) = pres_name
 
        ! Search the atom structure for this residue
-       call print('|-Looking for '//cres_name//'...',verbosity=PRINT_INVESTIGATE)
+       call print('|-Looking for '//cres_name//'...',verbosity=PRINT_ANALYSIS)
        call find_motif(at,motif,list,mask=unidentified,nneighb_only=heuristics_nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
@@ -697,7 +697,7 @@ integer :: j,atom_i, ji
 
        end if
 
-       call print('|',verbosity=PRINT_INVESTIGATE)
+       call print('|',verbosity=PRINT_ANALYSIS)
 
     end do
 
@@ -2047,9 +2047,9 @@ call print('PSF| '//impropers%n//' impropers')
 
     allocate (count_array(angles%N))
 
-call print("create_improper_list", PRINT_INVESTIGATE)
+call print("create_improper_list", PRINT_ANALYSIS)
     do i = 1,at%N
-call print("i " // i // " " // trim(a2s(at%species(:,i))), PRINT_INVESTIGATE)
+call print("i " // i // " " // trim(a2s(at%species(:,i))), PRINT_ANALYSIS)
       if (.not.any(trim(a2s(at%species(:,i))).eq.(/'C','N'/))) cycle
       count_array = 0
       where (angles%int(2,1:angles%N).eq.i) count_array = 1
@@ -2080,7 +2080,7 @@ call print("i " // i // " " // trim(a2s(at%species(:,i))), PRINT_INVESTIGATE)
          !no need to check X2-N-X3
          if (.not.cont) cycle
       endif
-call print("i is N with 3 neighbours, continuing", PRINT_INVESTIGATE)
+call print("i is N with 3 neighbours, continuing", PRINT_ANALYSIS)
 
      ! add to impropers i and its neighbours
       imp_atoms = 0
@@ -2099,7 +2099,7 @@ call print("i is N with 3 neighbours, continuing", PRINT_INVESTIGATE)
            imp_atoms(4) = angles%int(3,j)
         endif
 
-call print("original imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_INVESTIGATE)
+call print("original imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_ANALYSIS)
 !VVV ORDER is done according to the topology file! - and is read in when finding motifs
 !if you don't do this, you won't have only the backbone impropers!
       if (.not. assign_pointer(at, 'atom_res_number', atom_res_number)) &
@@ -2118,7 +2118,7 @@ call print("original imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRIN
       ! if there is H
       last = find_in_array(at%Z(imp_atoms(2:4)),1)
       if (last.gt.0) then ! found a H
-call print("reorder H to end", PRINT_INVESTIGATE)
+call print("reorder H to end", PRINT_ANALYSIS)
         last = last + 1
         tmp = imp_atoms(4)
         imp_atoms(4) = imp_atoms(last)
@@ -2131,7 +2131,7 @@ call print("reorder H to end", PRINT_INVESTIGATE)
       else
         last = find_in_array(at%Z(imp_atoms(2:4)),8) ! at the C-terminal there should be one "CC X X OC", with the double bonding the last one
         if (last.gt.0) then ! found an O
-call print("reorder O to end", PRINT_INVESTIGATE)
+call print("reorder O to end", PRINT_ANALYSIS)
           last = last + 1
           tmp = imp_atoms(4)
           imp_atoms(4) = imp_atoms(last)
@@ -2144,7 +2144,7 @@ call print("reorder O to end", PRINT_INVESTIGATE)
         else
           last = find_in_array(at%Z(imp_atoms(2:4)),7)
           if (last.gt.0) then ! found an N
-call print("reorder P to end", PRINT_INVESTIGATE)
+call print("reorder P to end", PRINT_ANALYSIS)
             last = last + 1
             tmp = imp_atoms(4)
             imp_atoms(4) = imp_atoms(last)
@@ -2164,8 +2164,8 @@ call print("reorder P to end", PRINT_INVESTIGATE)
           endif
         endif
       endif
-call print("reordered " // reordered, PRINT_INVESTIGATE)
-call print("final imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_INVESTIGATE)
+call print("reordered " // reordered, PRINT_ANALYSIS)
+call print("final imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_ANALYSIS)
 
       !checking and adding only backbone (i.e. not intraresidual impropers) where the order of the 2nd and 3rd atoms doesn't matter
       if (atom_res_number(imp_atoms(1)) == atom_res_number(imp_atoms(2)) .and. &
@@ -2181,10 +2181,10 @@ call print("final imp order " // imp_atoms // " Zs " // at%Z(imp_atoms), PRINT_I
 !         call print('|PRO Found Pro backbone')
          if (.not. assign_pointer(at, 'atom_type', atom_type)) &
               call system_abort('Cannot assign pointer to "atom_type" property.')
-call print("atom type " // trim(a2s(atom_type(:,imp_atoms(1)))), PRINT_INVESTIGATE)
-call print("atom type " // trim(a2s(atom_type(:,imp_atoms(2)))), PRINT_INVESTIGATE)
-call print("atom type " // trim(a2s(atom_type(:,imp_atoms(3)))), PRINT_INVESTIGATE)
-call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_INVESTIGATE)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(1)))), PRINT_ANALYSIS)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(2)))), PRINT_ANALYSIS)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(3)))), PRINT_ANALYSIS)
+call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
          if (trim(a2s(atom_type(:,imp_atoms(1)))).ne.'N') call system_abort('something has gone wrong. what is this if not proline? '// &
                      trim(a2s(atom_type(:,imp_atoms(1))))//imp_atoms(1)//'--'// &
                      trim(a2s(atom_type(:,imp_atoms(2))))//imp_atoms(2)//'--'// &
@@ -2338,9 +2338,9 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_INVESTIGA
 
     deallocate(silica_mask)
 
-    call print('Calculated charge on atoms:',verbosity=PRINT_INVESTIGATE)
+    call print('Calculated charge on atoms:',verbosity=PRINT_ANALYSIS)
     do jj = 1, at%N
-       call print ('   atom '//jj//': '//charge(jj),verbosity=PRINT_INVESTIGATE)
+       call print ('   atom '//jj//': '//charge(jj),verbosity=PRINT_ANALYSIS)
     enddo
 
     call system_timer('create_pos_dep_charges')

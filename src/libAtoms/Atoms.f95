@@ -453,7 +453,7 @@ contains
     this%ref_count = 1
 
     call print("atoms_initialise: Initialised, " // &
-         "ref_count = " // this%ref_count, PRINT_INVESTIGATE)
+         "ref_count = " // this%ref_count, PRINT_ANALYSIS)
 
   end subroutine atoms_initialise
 
@@ -514,7 +514,7 @@ contains
     this%ref_count = this%ref_count + 1
 
     call print("atoms_shallowcopy: Created shallow copy, " // &
-         "ref_count = " // this%ref_count, PRINT_INVESTIGATE)
+         "ref_count = " // this%ref_count, PRINT_ANALYSIS)
 
   end subroutine atoms_shallowcopy
 
@@ -527,7 +527,7 @@ contains
     ! finalise is called more than once
     if (this%ref_count == 0) then
 
-       call print("atoms_finalise: ref_count = 0, finalising", PRINT_INVESTIGATE)
+       call print("atoms_finalise: ref_count = 0, finalising", PRINT_ANALYSIS)
 
        call finalise(this%domain)
 
@@ -549,11 +549,11 @@ contains
     else
        if (this%ref_count > 0) then
           call print("atoms_finalise: Not yet finalising, " // &
-               "ref_count = " // this%ref_count, PRINT_INVESTIGATE)
+               "ref_count = " // this%ref_count, PRINT_ANALYSIS)
        endif
     endif
 
-    call print("atoms_finalise: ref_count = " // this%ref_count, PRINT_INVESTIGATE)
+    call print("atoms_finalise: ref_count = " // this%ref_count, PRINT_ANALYSIS)
 
   end subroutine atoms_finalise
 
@@ -881,7 +881,7 @@ contains
       
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-         call verbosity_push(PRINT_INVESTIGATE)
+         call verbosity_push(PRINT_ANALYSIS)
          call print(this)
 	 RAISE_ERROR("atoms_get_param_value failed to get real value for key='"//trim(key)//"' from this%params", error)
       endif

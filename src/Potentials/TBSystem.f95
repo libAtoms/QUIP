@@ -43,7 +43,7 @@
 module TBSystem_module
 
 use error_module
-use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop, verbosity_push, PRINT_INVESTIGATE
+use system_module, only : dp, print, inoutput, PRINT_NORMAL, PRINT_ALWAYS, PRINT_NERD, current_verbosity, optional_default, operator(//), verbosity_push_decrement, verbosity_pop, verbosity_push, PRINT_ANALYSIS
 use units_module, only : Hartree, Bohr, PI
 use periodictable_module, only : ElementName
 use linearalgebra_module, only : operator(.mult.), operator(.feq.), norm, print
