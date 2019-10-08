@@ -39,7 +39,7 @@ CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 # The following files will be wrapped
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95
 POT_SOURCES =  Potential.f95
-GAP_SOURCES =  descriptors.f95
+GAP_SOURCES =  descriptors.f95 gap_fit_module.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
@@ -89,6 +89,10 @@ _quippy.so: ${WRAP_FPP_FILES}
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
 		potential_initialise_inoutput cplx_2d  cplx_2d_array1_finalise \
+		parse_config_type_n_sparseX read_fit_xyz add_multispecies_gaps  set_baselines \
+		read_descriptors fit_n_from_xyz fit_data_from_xyz e0_from_xyz w_z_from_xyz \
+		print_xml parse_config_type_sigma get_species_xyz add_template_string \
+		gap_fit_print_xml file_print_xml \
 		--skip-types spherical_harmonics_type --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
