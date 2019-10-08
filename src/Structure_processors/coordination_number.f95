@@ -72,7 +72,7 @@ integer :: iatom, center_atom
 logical :: no_smoothing
 
 
-!    call system_initialise(verbosity=INVESTIGATE,enable_timing=.true.)
+!    call system_initialise(verbosity=ANALYSIS,enable_timing=.true.)
 !    call system_initialise(verbosity=VERBOSE,enable_timing=.true.)
     call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
     call system_timer('program')

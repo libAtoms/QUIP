@@ -2112,7 +2112,7 @@ contains
     if (entry_i > 0) then
        call remove_entry(this, entry_i)
     else
-       call print("WARNING: dictionary_remove_value() could not find entry `"//key//"' in dictionary", PRINT_INVESTIGATE)
+       call print("WARNING: dictionary_remove_value() could not find entry `"//key//"' in dictionary", PRINT_ANALYSIS)
     end if
 
   end subroutine dictionary_remove_value

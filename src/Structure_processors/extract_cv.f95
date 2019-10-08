@@ -70,7 +70,7 @@ program extract_cv
   logical                       :: skip_extra_firsts
 
 
-!    call system_initialise(verbosity=PRINT_INVESTIGATE,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_ANALYSIS,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_VERBOSE,enable_timing=.true.)
     call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
     call system_timer('program')
