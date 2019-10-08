@@ -41,7 +41,7 @@ before_install:
   - chmod 0600  ~/.ssh/github_deploy_key
   - eval $(ssh-agent -s)
   - ssh-add ~/.ssh/github_deploy_key
-  - git clone --depth 1 git@github.com:libAtoms/GAP.git src/GAP
+  - git clone --depth 1 git@github.com:libAtoms/GAP.git --branch print_level_patch src/GAP
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
