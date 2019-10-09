@@ -92,25 +92,22 @@ endif
 ifeq (${HAVE_GAP},1)
 MODULES += GAP
 GAP += GAP
+GAPFIT += GAPFIT
 GAP_PROGRAMS = gap_programs
 else
 GAP =
+GAPFIT = 
 GAP_PROGRAMS =
 endif
 
 # now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
 
-# add the gap fit library to the end
-ifeq (${HAVE_GAP},1)
-MODULES += GAPFIT
-endif
-
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
 # the first target
-all: ${MODULES} ${GAP_PROGRAMS}
+all: ${MODULES} ${GAPFIT} ${GAP_PROGRAMS}
 
 FOX = fox
 export FOX_LIBDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/lib
@@ -210,7 +207,7 @@ libatoms: libAtoms
 
 libquip: libquip.a
 
-libquip.a: ${MODULES}
+libquip.a: ${MODULES} ${GAPFIT}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAPFIT_LIBFILE}) $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
