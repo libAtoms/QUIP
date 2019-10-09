@@ -35,7 +35,7 @@ doc: the docstring to append to (out.doc in parser.py)
 
 import re
 
-args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_%]*\s*,\s*(['"])([a-zA-Z][a-zA-Z0-9_]*)\1\s*,\s*(['"]?)(.*?)\3\s*,\s*([a-zA-Z_][a-zA-Z0-9_%]*)\s*,.+?help_string=(['"])(.+?)\6\)""")
+args_str_re = re.compile(r"""^\s*call param_register\([a-zA-Z][a-zA-Z0-9_%]*\s*,\s*(['"])([a-zA-Z][a-zA-Z0-9_]*)\1\s*,\s*(['"]?)(.*?)\3\s*,\s*([a-zA-Z_][a-zA-Z0-9_%]*)\s*,.*?help_string=(['"])(.+?)\6,*.*\)""")
 
 
 def find_params(lines):
