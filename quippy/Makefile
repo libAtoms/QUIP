@@ -39,7 +39,7 @@ CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 # The following files will be wrapped
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95
 POT_SOURCES =  Potential.f95
-GAP_SOURCES =  descriptors.f95
+GAP_SOURCES =  descriptors.f95 gap_fit_module.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
 POT_FILES = $(addprefix ../../src/Potentials/,${POT_SOURCES})
