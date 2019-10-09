@@ -237,7 +237,7 @@ contains
 	delta_p_rot(3) = delta_p .dot. l_hat
 	theta = atan2(delta_p_rot(2), delta_p_rot(1))
       endif
-      call print("atom " // i_at // " pos " // at%pos(:,i_at) // " delta_p " // delta_p // " theta " // theta, PRINT_ANAL)
+      call print("atom " // i_at // " pos " // at%pos(:,i_at) // " delta_p " // delta_p // " theta " // theta, PRINT_ANALYSIS)
       delta_p = b*theta/(2.0_dp*PI)
       at%pos(:,i_at) = at%pos(:,i_at) + delta_p
     end do
@@ -2213,11 +2213,11 @@ subroutine anatase(at, a, c, u)
 !    real(dp) :: cutoff
 
 
-    call print("find_motif", verbosity=PRINT_ANAL)
-    call print(motif, verbosity=PRINT_ANAL)
+    call print("find_motif", verbosity=PRINT_ANALYSIS)
+    call print(motif, verbosity=PRINT_ANALYSIS)
     if (present(mask)) then
-      call print("mask", verbosity=PRINT_ANAL)
-      call print(mask, verbosity=PRINT_ANAL)
+      call print("mask", verbosity=PRINT_ANALYSIS)
+      call print(mask, verbosity=PRINT_ANALYSIS)
     endif
 
     my_nneighb_only = optional_default(.true., nneighb_only)
@@ -2288,7 +2288,7 @@ subroutine anatase(at, a, c, u)
     allocate(neighbour_Z(count(A(opt_atom,:)==1)))
     neighbour_Z = pack(Z,(A(opt_atom,:)==1))
 
-    call print("opt_atom " // opt_atom // " Z " // Z(opt_atom), verbosity=PRINT_ANAL)
+    call print("opt_atom " // opt_atom // " Z " // Z(opt_atom), verbosity=PRINT_ANALYSIS)
 
     my_start = 1
     if (present(start)) then
@@ -2305,11 +2305,11 @@ subroutine anatase(at, a, c, u)
 
     do i = my_start, my_end
 
-       call print("check atom " // i // " Z " // at%Z(i), verbosity=PRINT_ANAL)
+       call print("check atom " // i // " Z " // at%Z(i), verbosity=PRINT_ANALYSIS)
 
        if (present(mask)) then
           if (.not.mask(i)) then
-	    call print("   i not in mask, skipping", verbosity=PRINT_ANAL)
+	    call print("   i not in mask, skipping", verbosity=PRINT_ANALYSIS)
 	    cycle
 	   endif
        end if
@@ -2321,7 +2321,7 @@ subroutine anatase(at, a, c, u)
        ! Discard atoms which don't match the atomic number of the optimum atom
 
        if (at%Z(i) /= Z(opt_atom)) then
-	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=PRINT_ANAL)
+	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=PRINT_ANALYSIS)
           discards(1) = discards(1) + 1
           cycle
        end if
@@ -2336,7 +2336,7 @@ subroutine anatase(at, a, c, u)
 
        if (.not.atoms_compatible(at,i,A,Z,opt_atom,nneighb_only=nneighb_only,alt_connect=alt_connect)) then
           discards(2) = discards(2) + 1
-	  call print("   i has incompatible neighbour list, skipping", verbosity=PRINT_ANAL)
+	  call print("   i has incompatible neighbour list, skipping", verbosity=PRINT_ANALYSIS)
           cycle
        end if
 
@@ -2360,7 +2360,7 @@ subroutine anatase(at, a, c, u)
 
        ! If the number of atoms in the cluster is less than those in the motif we can't have a match
        if (core%N < N) then
-	  call print("   i's cluster is too small, skipping", verbosity=PRINT_ANAL)
+	  call print("   i's cluster is too small, skipping", verbosity=PRINT_ANALYSIS)
           discards(3) = discards(3) + 1
           cycle
        end if
@@ -2406,7 +2406,7 @@ subroutine anatase(at, a, c, u)
        call finalise(num_species_motif)
        call finalise(num_species_at)
        if (.not.match) then
-	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=PRINT_ANAL)
+	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=PRINT_ANALYSIS)
           discards(4) = discards(4) + 1
           cycle
        end if
@@ -2431,10 +2431,10 @@ subroutine anatase(at, a, c, u)
 	 end do ! ji
        end do !p
 
-       call print("core", verbosity=PRINT_ANAL)
-       call print(core, verbosity=PRINT_ANAL)
-       call print("adjacency mat", verbosity=PRINT_ANAL)
-       call print(B, verbosity=PRINT_ANAL)
+       call print("core", verbosity=PRINT_ANALYSIS)
+       call print(core, verbosity=PRINT_ANALYSIS)
+       call print("adjacency mat", verbosity=PRINT_ANALYSIS)
+       call print(B, verbosity=PRINT_ANALYSIS)
 
        ! Find depth of connectivity for real atoms
        allocate(depth_real(core%N))
@@ -2447,7 +2447,7 @@ subroutine anatase(at, a, c, u)
 
        ! If there are atoms which aren't deep enough in the real structure then a match is impossible
        if (max_depth > max_depth_real) then
-	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=PRINT_ANAL)
+	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=PRINT_ANALYSIS)
           deallocate(B,depth_real)
           discards(5) = discards(5) + 1
           cycle
@@ -2483,7 +2483,7 @@ subroutine anatase(at, a, c, u)
 
        ! Check to see if any atoms have no possibilities
        if (any(sum(M0,dim=2)==0)) then
-	  call print("   i has some neighbor that doesn't match, skipping", verbosity=PRINT_ANAL)
+	  call print("   i has some neighbor that doesn't match, skipping", verbosity=PRINT_ANALYSIS)
           deallocate(M0,B)
           discards(6) = discards(6) + 1
           cycle
@@ -2497,7 +2497,7 @@ subroutine anatase(at, a, c, u)
        match = .false.
        do 
 
-	  call print("  check permutation loop start", verbosity=PRINT_ANAL)
+	  call print("  check permutation loop start", verbosity=PRINT_ANALYSIS)
           ! For each trial matrix create the permuted adjacency matrix
           C = matmul(M,transpose(matmul(M,B))) ! ***** THIS LINE IS ANOTHER CANDIDATE FOR OPTIMISATION *****
                                                ! Use sparse matrices maybe?
@@ -2530,12 +2530,12 @@ subroutine anatase(at, a, c, u)
 	     if (do_append) then
 		call append(matches,match_indices)
 		assigned_to_motif(match_indices) = .true.
-		call print("  found match, indices " // match_indices, verbosity=PRINT_ANAL)
+		call print("  found match, indices " // match_indices, verbosity=PRINT_ANALYSIS)
 	     endif
 	     deallocate(match_indices)
 
 	     if (.not. do_find_all_possible_matches) then
-	       call print("  not looking for _all_ matches, finished", verbosity=PRINT_ANAL)
+	       call print("  not looking for _all_ matches, finished", verbosity=PRINT_ANALYSIS)
 	       exit
 	     endif
           end if ! match
@@ -2549,7 +2549,7 @@ subroutine anatase(at, a, c, u)
           ! If next_trial_matrix deletes the only atom we know to be fitted then all
           ! permutations have been exhausted
           if (M(opt_atom,1)==0) then
-	     call print("   i has no more premutations, leaving loop", verbosity=PRINT_ANAL)
+	     call print("   i has no more premutations, leaving loop", verbosity=PRINT_ANALYSIS)
              discards(7) = discards(7) + 1
              exit
           end if

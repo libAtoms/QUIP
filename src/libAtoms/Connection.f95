@@ -457,10 +457,10 @@ contains
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL) then
-       call print('Entering test_form_bond, i = '//i//' j = '//j, PRINT_ANAL)
-       call print('use_uniform_cutoff = '//use_uniform_cutoff, PRINT_ANAL)
-       call print('cutoff = '//cutoff, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS) then
+       call print('Entering test_form_bond, i = '//i//' j = '//j, PRINT_ANALYSIS)
+       call print('use_uniform_cutoff = '//use_uniform_cutoff, PRINT_ANALYSIS)
+       call print('cutoff = '//cutoff, PRINT_ANALYSIS)
     end if
 #endif
 
@@ -490,7 +490,7 @@ contains
       index = find(this%neighbour1(i)%t, (/ j, shift /)) 
       if (index /= 0) then ! bond is already in table
 #ifdef DEBUG
-	if (current_verbosity() >= PRINT_ANAL) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANAL)
+	if (current_verbosity() >= PRINT_ANALYSIS) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANALYSIS)
 #endif
 	this%neighbour1(i)%t%real(1,index) = d
 	if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
@@ -501,7 +501,7 @@ contains
     endif
 
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS)  call print('d = '//d, PRINT_ANALYSIS)
 #endif
 
     if (d < use_cutoff) then
@@ -510,7 +510,7 @@ contains
     end if
 
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL) call print('Leaving test_form_bond', PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS) call print('Leaving test_form_bond', PRINT_ANALYSIS)
 #endif
 
   end subroutine test_form_bond
@@ -539,10 +539,10 @@ contains
     if (.not. associated(this%neighbour1(i)%t) .or. .not. associated(this%neighbour1(j)%t)) return
 
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL) then
-       call print('Entering test_break_bond, i = '//i//' j = '//j, PRINT_ANAL)
-       call print(" cutoff_break = "// cutoff_break, PRINT_ANAL)
-       call print(" use_uniform_cutoff ="//use_uniform_cutoff, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS) then
+       call print('Entering test_break_bond, i = '//i//' j = '//j, PRINT_ANALYSIS)
+       call print(" cutoff_break = "// cutoff_break, PRINT_ANALYSIS)
+       call print(" use_uniform_cutoff ="//use_uniform_cutoff, PRINT_ANALYSIS)
     end if
 #endif
 
@@ -555,11 +555,11 @@ contains
 
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL)  call print('d = '//d//' cutof = '//cutoff//' i = '//i//' j = '//j, PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS)  call print('d = '//d//' cutof = '//cutoff//' i = '//i//' j = '//j, PRINT_ANALYSIS)
 #endif
     if (d > cutoff) then
 #ifdef DEBUG
-       if(current_verbosity() >= PRINT_ANAL) call print('removing bond from tables', PRINT_ANAL)
+       if(current_verbosity() >= PRINT_ANALYSIS) call print('removing bond from tables', PRINT_ANALYSIS)
 #endif
        call remove_bond(this, i, j, shift, error)
        PASS_ERROR(error)
@@ -567,7 +567,7 @@ contains
     end if
 
 #ifdef DEBUG
-    if(current_verbosity() >= PRINT_ANAL) call print('Leaving test_break_bond', PRINT_ANAL)
+    if(current_verbosity() >= PRINT_ANALYSIS) call print('Leaving test_break_bond', PRINT_ANALYSIS)
 #endif
 
   end function test_break_bond
@@ -1461,10 +1461,10 @@ contains
 	 endif
       endif
       
-      if (current_verbosity() >= PRINT_ANAL) then
-         call print('get_min_max_images cell_image_Na min='//min_cell_image_Na//' max='//max_cell_image_Na, PRINT_ANAL)
-         call print('get_min_max_images cell_image_Nb min='//min_cell_image_Nb//' max='//max_cell_image_Nb, PRINT_ANAL)
-         call print('get_min_max_images cell_image_Nc min='//min_cell_image_Nc//' max='//max_cell_image_Nc, PRINT_ANAL)
+      if (current_verbosity() >= PRINT_ANALYSIS) then
+         call print('get_min_max_images cell_image_Na min='//min_cell_image_Na//' max='//max_cell_image_Na, PRINT_ANALYSIS)
+         call print('get_min_max_images cell_image_Nb min='//min_cell_image_Nb//' max='//max_cell_image_Nb, PRINT_ANALYSIS)
+         call print('get_min_max_images cell_image_Nc min='//min_cell_image_Nc//' max='//max_cell_image_Nc, PRINT_ANALYSIS)
       end if
 
    end subroutine get_min_max_images

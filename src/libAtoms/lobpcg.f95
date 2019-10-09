@@ -403,8 +403,8 @@
 !
 !      ! copy block of eigenvectors
 !      evecs_block = evecs(:,(i_block-1)*my_block_size+1:i_block*my_block_size)
-!      call print("raw evecs_block", PRINT_ANAL)
-!      call print(evecs_block, PRINT_ANAL)
+!      call print("raw evecs_block", PRINT_ANALYSIS)
+!      call print(evecs_block, PRINT_ANALYSIS)
 !
 !      ! A orthogonalize evecs_block w.r.t. previous blocks
 !      do ii_block=1, i_block-1
@@ -412,8 +412,8 @@
 !	    evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
 !      end do
 !
-!      call print("orthogonalized evecs_block", PRINT_ANAL)
-!      call print(evecs_block, PRINT_ANAL)
+!      call print("orthogonalized evecs_block", PRINT_ANALYSIS)
+!      call print(evecs_block, PRINT_ANALYSIS)
 !
 !      P = 0.0_dp
 !      iter = 1
@@ -430,16 +430,16 @@
 !
 !	call print("evals_block", PRINT_NERD)
 !	call print(evals_block, PRINT_NERD)
-!	call print("evecs_block", PRINT_ANAL)
-!	call print(evecs_block, PRINT_ANAL)
+!	call print("evecs_block", PRINT_ANALYSIS)
+!	call print(evecs_block, PRINT_ANALYSIS)
 !
 !	! evaluate residual
 !	do i=1, block_size
 !	  R(:,i) = B_evecs_block(:,i) - evals_block(i)*A_evecs_block(:,i)
 !	end do
 !
-!	call print("R", PRINT_ANAL)
-!	call print(R, PRINT_ANAL)
+!	call print("R", PRINT_ANALYSIS)
+!	call print(R, PRINT_ANALYSIS)
 !
 !	mainlog%default_real_precision=16
 !	call print("residual max " // maxval(abs(R)), PRINT_VERBOSE)
@@ -455,8 +455,8 @@
 !	    W = R
 !	  endif
 !
-!          call print("W", PRINT_ANAL)
-!          call print(W, PRINT_ANAL)
+!          call print("W", PRINT_ANALYSIS)
+!          call print(W, PRINT_ANALYSIS)
 !
 !	  ! A orthogonalize W w.r.t. previous blocks
 !	  do ii_block=1, i_block-1
@@ -464,11 +464,11 @@
 !		evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
 !	  end do
 !
-!	  call print("orthogonalized W", PRINT_ANAL)
-!	  call print(W, PRINT_ANAL)
+!	  call print("orthogonalized W", PRINT_ANALYSIS)
+!	  call print(W, PRINT_ANALYSIS)
 !
-!	  call print("P", PRINT_ANAL)
-!	  call print(P, PRINT_ANAL)
+!	  call print("P", PRINT_ANALYSIS)
+!	  call print(P, PRINT_ANALYSIS)
 !
 !	  ! evaluate Rayleigh-Ritz basis
 !	  RR_basis(:,1:my_block_size) = evecs_block
@@ -476,21 +476,21 @@
 !	  RR_basis(:,2*my_block_size+1:3*my_block_size) = P
 !
 !
-!	  call print("RR_basis", PRINT_ANAL)
-!	  call print(RR_basis, PRINT_ANAL)
+!	  call print("RR_basis", PRINT_ANALYSIS)
+!	  call print(RR_basis, PRINT_ANALYSIS)
 !
 !	  ! evaluate Rayleigh-Ritz matrices
 !	  call matrix_product_sub(RR_basis_AorB, A, RR_basis)
 !
 !	  call matrix_product_sub(RR_mat_A, RR_basis_AorB, RR_basis, &
 !	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_A", PRINT_ANAL)
-!	  call print(RR_mat_A, PRINT_ANAL)
+!	  call print("RR_mat_A", PRINT_ANALYSIS)
+!	  call print(RR_mat_A, PRINT_ANALYSIS)
 !	  call matrix_product_sub(RR_basis_AorB, B, RR_basis)
 !	  call matrix_product_sub(RR_mat_B, RR_basis_AorB, RR_basis, &
 !	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_B", PRINT_ANAL)
-!	  call print(RR_mat_B, PRINT_ANAL)
+!	  call print("RR_mat_B", PRINT_ANALYSIS)
+!	  call print(RR_mat_B, PRINT_ANALYSIS)
 !
 !	  ! diagonalise Rayleigh-Ritz matrix
 !	  if (iter == 1) then
@@ -499,14 +499,14 @@
 !	      RR_evals(1:2*block_size), RR_evecs(1:2*block_size,1:2*block_size))
 !	      call print("RR_evals", PRINT_NERD)
 !	      call print(RR_evals(1:2*block_size), PRINT_NERD)
-!	      call print("RR_evecs", PRINT_ANAL)
-!	      call print(RR_evecs(1:2*block_size,1:2*block_size), PRINT_ANAL)
+!	      call print("RR_evecs", PRINT_ANALYSIS)
+!	      call print(RR_evecs(1:2*block_size,1:2*block_size), PRINT_ANALYSIS)
 !	  else
 !	    call diagonalise(RR_mat_B, RR_mat_A, RR_evals, RR_evecs)
 !	    call print("RR_evals", PRINT_NERD)
 !	    call print(RR_evals, PRINT_NERD)
-!	    call print("RR_evecs", PRINT_ANAL)
-!	    call print(RR_evecs, PRINT_ANAL)
+!	    call print("RR_evecs", PRINT_ANALYSIS)
+!	    call print(RR_evecs, PRINT_ANALYSIS)
 !	  endif
 !
 !	  if (iter == 1) then

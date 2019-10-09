@@ -269,7 +269,7 @@ subroutine ewald_setup(dummy_atoms,multipoles,ewald,my_ewald_error)
   ewald_precision = -log(my_ewald_error)
   ewald_cutoff = sqrt(ewald_precision/PI) * reciprocal_time_by_real_time**(1.0_dp/6.0_dp) * &
   & minval(sqrt( sum(dummy_atoms%lattice(:,:)**2,dim=1) )) / dummy_atoms%N**(1.0_dp/6.0_dp)
-  call print('Ewald cutoff = '//ewald_cutoff,PRINT_ANAL)
+  call print('Ewald cutoff = '//ewald_cutoff,PRINT_ANALYSIS)
   multipoles%cutoff = ewald_cutoff
 
   write(*,*) "more to do to fill these arrays"

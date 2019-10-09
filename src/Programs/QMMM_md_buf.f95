@@ -166,7 +166,7 @@ program qmmm_md
   real(dp) :: r
   integer :: tmp_run_dir_i, copy_latest_every, copy
 
-!    call system_initialise(verbosity=PRINT_ANAL,enable_timing=.true.)
+!    call system_initialise(verbosity=PRINT_ANALYSIS,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NERD,enable_timing=.true.)
     call system_initialise(verbosity=PRINT_VERBOSE,enable_timing=.true.)
 !    call system_initialise(verbosity=PRINT_NORMAL,enable_timing=.true.)
@@ -1931,9 +1931,9 @@ contains
 	 if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
 	 if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
 
-          !call print("MARKSX0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
-          !call print("MARKSX0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
-          !call print("MARKSX0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+          !call print("MARKSX0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
+          !call print("MARKSX0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
+          !call print("MARKSX0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANALYSIS)
 
          !(re)initialise the hysteretic qm region with (re)initialising hybrid_*, hybrid_mark_* and cluster_mark_*
          hybrid_p(1:ds_atoms%N) = HYBRID_NO_MARK
@@ -1943,18 +1943,18 @@ contains
 	 cluster_mark_p(1:ds_atoms%N) = hybrid_mark_p(1:ds_atoms%N)
 	 call print('cluster_mark '//count(cluster_mark_p.eq.1))
 
-          !call print("MARKSX1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
-          !call print("MARKSX1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
-          !call print("MARKSX1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+          !call print("MARKSX1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
+          !call print("MARKSX1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
+          !call print("MARKSX1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANALYSIS)
 
        endif
 
         !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
         !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
         !if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
-        !call print("MARKS0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
-        !call print("MARKS0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
-        !call print("MARKS0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+        !call print("MARKS0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
+        !call print("MARKS0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
+        !call print("MARKS0 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANALYSIS)
 
        !extend QM region around seed atoms
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
@@ -1968,9 +1968,9 @@ contains
         !if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
         !if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
         !if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
-        !call print("MARKS1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANAL)
-        !call print("MARKS1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANAL)
-        !call print("MARKS1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANAL)
+        !call print("MARKS1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
+        !call print("MARKS1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
+        !call print("MARKS1 "//count(cluster_mark_p(1:ds_atoms%N)==1)//" + "//count(cluster_mark_p(1:ds_atoms%N)==2)//" cluster_mark atoms",PRINT_ANALYSIS)
 
     endif ! qm_region_pt_ctr
   end subroutine update_QM_region

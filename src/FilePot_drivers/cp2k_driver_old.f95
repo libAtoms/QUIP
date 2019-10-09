@@ -125,7 +125,7 @@ module cp2k_driver_module
                                      string_to_int, string_to_real, round, &
                                      parse_string, read_line, &
                                      operator(//), &
-                                     ERROR, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANAL, &
+                                     ERROR, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANALYSIS, &
 				     verbosity_push_decrement, verbosity_pop, current_verbosity, &
 				     mainlog
   use table_module,            only: table, initialise, finalise, &

@@ -132,7 +132,7 @@ module system_module
   integer,parameter::PRINT_NORMAL  =   0
   integer,parameter::PRINT_VERBOSE =   1
   integer,parameter::PRINT_NERD    =   1000  ! aleph0
-  integer,parameter::PRINT_ANAL    =   10000 ! aleph1
+  integer,parameter::PRINT_ANALYSIS    =   10000 ! aleph1
 
   integer,parameter::INPUT=0
   integer,parameter::OUTPUT=1
@@ -190,7 +190,7 @@ module system_module
   !% 'verbosity' parameter controls whether the object is actually printed;
   !% if the verbosity is greater than that currently at the top of the
   !% verbosity stack then output is suppressed. Possible verbosity levels
-  !% range from 'ERROR' through 'NORMAL', 'VERBOSE', 'NERD' and 'ANAL'.
+  !% range from 'ERROR' through 'NORMAL', 'VERBOSE', 'NERD' and 'ANALYSIS'.
   !% Other user-defined types define the Print interface in the same way.
   interface print
      module procedure inoutput_print_string
@@ -2728,8 +2728,8 @@ contains
           str = 'VERBOSE'
        case(PRINT_NERD)
           str = 'NERD'
-       case(PRINT_ANAL)
-          str = 'ANAL'
+       case(PRINT_ANALYSIS)
+          str = 'ANALYSIS'
     end select
   end function verbosity_to_str
 
@@ -2748,8 +2748,8 @@ contains
        val = PRINT_VERBOSE
     else if (trim(str) == 'NERD') then
        val = PRINT_NERD
-    else if (trim(str) == 'ANAL') then
-       val = PRINT_ANAL
+    else if (trim(str) == 'ANALYSIS') then
+       val = PRINT_ANALYSIS
     else
        call system_abort("verbosity_of_str failed to understand '"//trim(str)//"'")
     end if

@@ -39,7 +39,7 @@
 
 module quip_unified_wrapper_module
 
-use system_module, only : dp, print, system_initialise, system_abort, PRINT_ANAL, PRINT_VERBOSE, PRINT_NORMAL, PRINT_SILENT, verbosity_push, &
+use system_module, only : dp, print, system_initialise, system_abort, PRINT_ANALYSIS, PRINT_VERBOSE, PRINT_NORMAL, PRINT_SILENT, verbosity_push, &
    verbosity_pop, optional_default
 use dictionary_module, only : dictionary, STRING_LENGTH
 use periodictable_module, only : atomic_number_from_symbol

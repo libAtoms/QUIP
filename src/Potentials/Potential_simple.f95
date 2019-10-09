@@ -54,7 +54,7 @@
 module Potential_simple_module
 
   use error_module
-  use system_module, only : dp, inoutput, PRINT_VERBOSE, PRINT_NERD, PRINT_ALWAYS, PRINT_ANAL, current_verbosity, INPUT, optional_default, parse_string, verbosity_push, verbosity_pop
+  use system_module, only : dp, inoutput, PRINT_VERBOSE, PRINT_NERD, PRINT_ALWAYS, PRINT_ANALYSIS, current_verbosity, INPUT, optional_default, parse_string, verbosity_push, verbosity_pop
   use extendable_str_module
   use dictionary_module
   use paramreader_module
@@ -831,7 +831,7 @@ contains
 	   endif
 	 end do
 	 call finalise(cut_bonds)
-	 if (current_verbosity() >= PRINT_ANAL) then
+	 if (current_verbosity() >= PRINT_ANALYSIS) then
 	   ! prefix should be "UNCARVED_CLUSTER"
 	   call write(at, 'stdout')
 	 endif
@@ -1302,8 +1302,8 @@ contains
 	  call set_value(params, "energy", "fd_energy")
           new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
-          call print("calc_force="//trim(calc_force), PRINT_ANAL)
-          call print("New_args_str: "//new_args_str, PRINT_ANAL)
+          call print("calc_force="//trim(calc_force), PRINT_ANALYSIS)
+          call print("New_args_str: "//new_args_str, PRINT_ANALYSIS)
 
 
           if(use_ridders) then
@@ -1418,11 +1418,11 @@ contains
                 if(i /= j) deform(j,i) = deform(j,i) + virial_fd_delta
                 call set_lattice(at, matmul(deform,lat_save), scale_positions=.true.)
                 if(at%cutoff > 0) call calc_dists(at)
-!                call verbosity_push(PRINT_ANAL)
+!                call verbosity_push(PRINT_ANALYSIS)
 !                call print(at)
 !                call verbosity_pop()
                  call calc(this, at, args_str=new_args_str, error=error)
-!                call verbosity_push(PRINT_ANAL)
+!                call verbosity_push(PRINT_ANALYSIS)
 !                call print(at)
 !                call verbosity_pop()
                 call get_param_value(at, "fd_energy", e_plus, error=error)

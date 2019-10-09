@@ -42,7 +42,7 @@
 module IPModel_BornMayer_module
 
   use error_module
-  use system_module, only : dp, inoutput, print, PRINT_VERBOSE, PRINT_ANAL, current_verbosity, operator(//)
+  use system_module, only : dp, inoutput, print, PRINT_VERBOSE, PRINT_ANALYSIS, current_verbosity, operator(//)
   use dictionary_module
   use paramreader_module
   use linearalgebra_module
@@ -236,7 +236,7 @@ contains
        endif
 
        ti = get_type(this%type_of_atomic_num, at%Z(i))
-       if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_BornMayer_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANAL)
+       if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_BornMayer_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANALYSIS)
        n_neigh_i = n_neighbours(at, i)
        do ji=1, n_neigh_i
           j = neighbour(at, i, ji, drij_mag, cosines=drij, max_dist=this%cutoff)
@@ -247,7 +247,7 @@ contains
 
           tj = get_type(this%type_of_atomic_num, at%Z(j))
 
-          if (current_verbosity() >= PRINT_ANAL) call print ("IPModel_BornMayer_Calc i j " // i // " " // j, PRINT_ANAL)
+          if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_BornMayer_Calc i j " // i // " " // j, PRINT_ANALYSIS)
 
           if (present(e) .or. present(local_e)) then
 

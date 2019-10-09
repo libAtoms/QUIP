@@ -54,7 +54,7 @@ program domdecomp_example
 
   integer :: error = ERROR_NONE
 
-  call system_initialise(verbosity=PRINT_ANAL)
+  call system_initialise(verbosity=PRINT_ANALYSIS)
 !  call system_initialise
 
   lj_str = '<LJ_params n_types="1">' // &

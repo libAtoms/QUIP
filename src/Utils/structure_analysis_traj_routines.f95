@@ -1553,7 +1553,7 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
   do H1=1, at%N
      if(at%Z(H1)/=1) cycle !find H: H1
      !Count the atoms
-     call print('Found H'//H1//ElementName(at%Z(H1)),PRINT_ANAL)
+     call print('Found H'//H1//ElementName(at%Z(H1)),PRINT_ANALYSIS)
      num_atoms = num_atoms + 1
 
      !find closest O: O1
@@ -1583,23 +1583,23 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
         !check H1-O1-O2 angle for definition
         HOO_angle = angle(diff_min_image(at,O1,H1), &
                           diff_min_image(at,O1,O2)) *180._dp/PI
-        call print('HOO_ANGLE '//ElementName(at%Z(H1))//H1//' '//ElementName(at%Z(O1))//O1//' '//ElementName(at%Z(O2))//O2//' '//HOO_angle,PRINT_ANAL)
+        call print('HOO_ANGLE '//ElementName(at%Z(H1))//H1//' '//ElementName(at%Z(O1))//O1//' '//ElementName(at%Z(O2))//O2//' '//HOO_angle,PRINT_ANALYSIS)
         if (HOO_angle.gt.angle_H1_O1_O2) cycle
 
         !We've found a H-bond.
 
         !Find out the type (what-to-what)
         if (O1>silica_center_i .and. O2>silica_center_i) then  ! water - water
-           call print('Found water-water H-bond.',PRINT_ANAL)
+           call print('Found water-water H-bond.',PRINT_ANALYSIS)
            hbond_type = 1
         elseif (O1>silica_center_i .and. O2<=silica_center_i) then  ! water - silica
-           call print('Found water-silica H-bond.',PRINT_ANAL)
+           call print('Found water-silica H-bond.',PRINT_ANALYSIS)
            hbond_type = 2
         elseif (O1<=silica_center_i .and. O2>silica_center_i) then  ! silica - water
-           call print('Found silica-water H-bond.',PRINT_ANAL)
+           call print('Found silica-water H-bond.',PRINT_ANALYSIS)
            hbond_type = 3
         elseif (O1<=silica_center_i .and. O2<=silica_center_i) then  ! silica - silica
-           call print('Found silica-silica H-bond.',PRINT_ANAL)
+           call print('Found silica-silica H-bond.',PRINT_ANALYSIS)
            hbond_type = 4
         endif
 
@@ -1728,7 +1728,7 @@ real(dp) :: dist, exp_arg
   do O=silica_center_i+1, at%N !only check water molecules
      if(at%Z(O)==1) cycle !find O
      !Count the atoms
-     call print('Found O'//O//ElementName(at%Z(O)),PRINT_ANAL)
+     call print('Found O'//O//ElementName(at%Z(O)),PRINT_ANALYSIS)
      num_atoms = num_atoms + 1
 
      !find H neighbours
@@ -1806,8 +1806,8 @@ real(dp) :: dist, exp_arg
      endif
 !call print ('angle '//(orientation_angle*180._dp/pi))
 
-     call print('Storing angle for water '//O//'--'//H1//'--'//H2//' with reference = '//round(orientation_angle,5)//'degrees',PRINT_ANAL)
-     call print('   with distance -1/2 b -- '//O//' = '//round(r,5)//'A',PRINT_ANAL)
+     call print('Storing angle for water '//O//'--'//H1//'--'//H2//' with reference = '//round(orientation_angle,5)//'degrees',PRINT_ANALYSIS)
+     call print('   with distance -1/2 b -- '//O//' = '//round(r,5)//'A',PRINT_ANALYSIS)
 
      if (gaussian_smoothing) then !smear the position along axis
         !call system_abort('not implemented.')

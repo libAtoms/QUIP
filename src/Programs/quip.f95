@@ -190,7 +190,7 @@ implicit none
   ! call param_register(cli_params, 'relax_constant_volume', 'F', relax_constant_volume, help_string="if virial and relax are set, constrain to constant volume")
   call param_register(cli_params, 'relax_hydrostatic_strain', 'F', relax_hydrostatic_strain, help_string="if virial and relax are set, constrain to hydrostatic strain")
   call param_register(cli_params, 'relax_lattice_fix', '0.0 0.0 0.0   0.0 0.0 0.0   0.0 0.0 0.0', relax_lattice_fix, help_string="if virial and relax are set, constrain lattice parameter matrix where this is /= 0.  Doesn't work as expected in general, although definitely OK for orthogonal lattice vectors aligned with coordinate axes")
-  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANAL")
+  call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANALYSIS")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
   call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
   call param_register(cli_params, 'cg_n_precond', 'F', do_cg_n_precond, help_string="activate preconditioner for cg_n minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
