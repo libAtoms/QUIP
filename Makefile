@@ -101,6 +101,11 @@ endif
 # now add the rest of the modules
 MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
 
+# add the gap fit library to the end
+ifeq (${HAVE_GAP},1)
+MODULES += GAPFIT
+endif
+
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
@@ -171,6 +176,16 @@ Programs/% src/Programs/% : ${MODULES}
 
 ifeq (${HAVE_GAP},1)
 GAP: libAtoms ${FOX}
+GAPFIT: ${GAP} Potentials Utils
+	@echo "********************************************"
+	@echo ""
+	@echo " Making GAPFIT library "
+	@echo ""
+	@echo "********************************************"
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/src/GAP/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/GAP -I${PWD} -I${PWD}/arch ${GAPFIT_LIBFILE}
+	rm ${BUILDDIR}/Makefile
 endif
 
 gap_programs: ${MODULES}
@@ -196,7 +211,7 @@ libatoms: libAtoms
 libquip: libquip.a
 
 libquip.a: ${MODULES}
-	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
+	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAPFIT_LIBFILE}) $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
 ${BUILDDIR}:
