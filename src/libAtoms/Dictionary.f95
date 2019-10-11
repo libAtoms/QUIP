@@ -117,7 +117,7 @@ module dictionary_module
      !% - 2D real array
      !% - Arbitrary data, via Fortran ``transform()`` intrinsic
 
-     integer :: N !% number of entries in use
+     integer :: N = 0 !% number of entries in use
      type(extendable_str), allocatable :: keys(:) !% array of keys
      type(DictEntry), allocatable :: entries(:)    !% array of entries
      integer :: cache_invalid !% non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations changed
