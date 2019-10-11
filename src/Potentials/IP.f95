@@ -947,9 +947,10 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
 end subroutine IP_Calc
 
 
-subroutine IP_Print(this, file, error)
+subroutine IP_Print(this, file, dict, error)
   type(IP_type), intent(inout) :: this
   type(Inoutput), intent(inout),optional :: file
+  type(Dictionary), intent(inout), optional :: dict
   integer, intent(out), optional :: error
 
   INIT_ERROR(error)
@@ -958,7 +959,7 @@ subroutine IP_Print(this, file, error)
 
   select case (this%functional_form)
     case (FF_GAP)
-      call Print(this%ip_gap, file=file)
+      call Print(this%ip_gap, file=file, dict=dict)
     case (FF_LJ)
       call Print(this%ip_lj, file=file)
     case (FF_Morse)

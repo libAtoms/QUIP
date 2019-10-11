@@ -1471,15 +1471,16 @@ contains
 !  end function Potential_Simple_Brief_Description
 
 
-  subroutine Potential_Simple_Print(this, file, error)
+  subroutine Potential_Simple_Print(this, file, dict, error)
     type(Potential_Simple), intent(inout) :: this
     type(Inoutput), intent(inout),optional:: file
+    type(Dictionary), intent(inout), optional :: dict
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
 
     if(associated(this%ip)) then
-       call Print(this%ip, file=file)
+       call Print(this%ip, file=file, dict=dict)
 #ifdef HAVE_TB
     else if(associated(this%tb)) then
        call Print(this%tb, file=file)

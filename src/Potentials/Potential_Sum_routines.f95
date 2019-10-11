@@ -31,15 +31,16 @@
 
   end subroutine Potential_Sum_Finalise
 
-  recursive subroutine Potential_Sum_Print(this, file)
+  recursive subroutine Potential_Sum_Print(this, file, dict)
     type(Potential_Sum), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
+    type(Dictionary), intent(inout), optional :: dict
 
     call print('Potential_Sum:', file=file)
     call print('', file=file)
     if (associated(this%pot1)) then
        call print('Potential 1:', file=file)
-       call print(this%pot1, file=file)
+       call print(this%pot1, file=file, dict=dict)
        call print('', file=file)
     else
        call print('Potential 1 not initialised', file=file)
@@ -47,7 +48,7 @@
     end if
     if (associated(this%pot2)) then
        call print('Potential 2:', file=file)
-       call Print(this%pot2, file=file)
+       call Print(this%pot2, file=file, dict=dict)
        call print('', file=file)
     else
        call print('Potential 2 not initialised', file=file)

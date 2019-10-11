@@ -152,6 +152,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
   type(Dictionary) :: params
 
   integer :: i_coordinate
+  real(dp) :: gap_variance_regularisation
+  logical :: has_gap_variance_regularisation
 
   call Finalise(this)
 
@@ -165,6 +167,8 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'E_scale', '1.0', this%E_scale, help_string="rescaling factor for the potential")
+  call param_register(params, 'gap_variance_regularisation', '0.001', gap_variance_regularisation, &
+     has_value_target=has_gap_variance_regularisation, help_string="Regularisation value for variance calculation.")
 
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_SW_Initialise_str args_str')) &
   call system_abort("IPModel_GAP_Initialise_str failed to parse label from args_str="//trim(args_str))
@@ -179,6 +183,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
      call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%xml_version)
      call initialise(this%my_descriptor(i_coordinate),string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      this%cutoff = max(this%cutoff,cutoff(this%my_descriptor(i_coordinate)))
+     call gpCoordinates_initialise_variance_estimate(this%my_gp%coordinate(i_coordinate), gap_variance_regularisation)
   enddo
 
 #endif  
@@ -941,18 +946,38 @@ end subroutine IPModel_GAP_read_params_xml
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-subroutine IPModel_GAP_Print (this, file)
-  type(IPModel_GAP), intent(in) :: this
+subroutine IPModel_GAP_Print (this, file, dict)
+  type(IPModel_GAP), intent(inout) :: this
   type(Inoutput), intent(inout),optional :: file
+  type(Dictionary), intent(inout), optional :: dict
   integer :: i
+
+  real(dp), dimension(:), allocatable :: log_likelihood
 
 #ifdef HAVE_GAP
   call Print("IPModel_GAP : Gaussian Approximation Potential", file=file)
   call Print("IPModel_GAP : label = "//this%label, file=file)
   call Print("IPModel_GAP : cutoff = "//this%cutoff, file=file)
   call Print("IPModel_GAP : E_scale = "//this%E_scale, file=file)
-  call Print("IPModel_GAP : command_line = "//string(this%command_line))
+  call Print("IPModel_GAP : command_line = "//string(this%command_line),file=file)
+
+  allocate(log_likelihood(this%my_gp%n_coordinate))
+  do i = 1, this%my_gp%n_coordinate
+     log_likelihood(i) = gp_log_likelihood(this%my_gp%coordinate(i))
+  enddo
+
+  call Print("IPModel_GAP : log likelihood = "//log_likelihood,file=file)
+#else
+  allocate(log_likelihood(1))
+  log_likelihood = 0.0_dp
 #endif
+
+  if( present(dict) ) then
+     if( dict%N == 0 ) call initialise(dict)
+     call set_value(dict,"log_likelihood_"//trim(this%label),log_likelihood)
+  endif
+
+  if(allocated(log_likelihood)) deallocate(log_likelihood)
 
 end subroutine IPModel_GAP_Print
 

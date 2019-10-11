@@ -1004,18 +1004,19 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
   end subroutine Potential_setup_parallel
 
-  recursive subroutine potential_print(this, file, error)
+  recursive subroutine potential_print(this, file, dict, error)
     type(Potential), intent(inout) :: this
     type(Inoutput), intent(inout), optional :: file
+    type(Dictionary), intent(inout), optional :: dict
     integer, intent(out), optional :: error
 
     INIT_ERROR(error)
 
     if (this%is_simple) then
        call Print('Potential containing potential')
-       call Print(this%simple, file=file)
+       call Print(this%simple, file=file, dict=dict)
     else if (this%is_sum) then
-       call Print(this%sum, file=file)
+       call Print(this%sum, file=file,dict=dict)
     else if (this%is_forcemixing) then
        call Print(this%forcemixing, file=file)
     else if (this%is_evb) then
