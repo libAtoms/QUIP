@@ -82,7 +82,7 @@ module paramreader_module
      logical, pointer :: has_value
 
      character(len=STRING_LENGTH) :: help_string
-
+     character(len=STRING_LENGTH) :: altkey 
   end type ParamEntry
 
   !% Overloaded interface to register a parameter in a Dictionary object.
@@ -120,11 +120,11 @@ module paramreader_module
       character(len=*), intent(in), optional :: altkey
       call param_register_main(dict, key, value, 1, PARAM_LOGICAL, &
            help_string=help_string, logical_target=logical_target, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, 1, PARAM_LOGICAL, &
               help_string=help_string, logical_target=logical_target, &
-              has_value_target=has_value_target)
+              has_value_target=has_value_target, altkey=key)
       end if
       
 
@@ -142,11 +142,11 @@ module paramreader_module
       
       call param_register_main(dict, key, value, 1, PARAM_INTEGER, &
            help_string=help_string, int_target=int_target, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, 1, PARAM_INTEGER, &
               help_string=help_string, int_target=int_target, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=key)
       end if
     end subroutine param_register_single_integer
 
@@ -163,11 +163,11 @@ module paramreader_module
       
       call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER,&
            help_string=help_string, int_target_array=int_target_array, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, size(int_target_array), PARAM_INTEGER,&
            help_string=help_string, int_target_array=int_target_array, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=key)
       end if
          
     end subroutine param_register_multiple_integer
@@ -185,11 +185,11 @@ module paramreader_module
 
       call param_register_main(dict, key, value, 1, PARAM_REAL, &
            help_string=help_string, real_target=real_target, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, 1, PARAM_REAL, &
               help_string=help_string, real_target=real_target, &
-              has_value_target=has_value_target)
+              has_value_target=has_value_target, altkey=key)
       end if
 
     end subroutine param_register_single_real
@@ -207,11 +207,11 @@ module paramreader_module
       
       call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, &
            help_string=help_string, real_target_array=real_target_array, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, size(real_target_array), PARAM_REAL,&
               help_string=help_string, real_target_array=real_target_array, &
-              has_value_target=has_value_target)
+              has_value_target=has_value_target, altkey=key)
       end if
 
     end subroutine param_register_multiple_real
@@ -234,11 +234,11 @@ module paramreader_module
 
       call param_register_main(dict, key, value, 1, PARAM_STRING, &
            help_string=help_string, char_target=char_target, &
-           has_value_target=has_value_target)
+           has_value_target=has_value_target, altkey=altkey)
       if (present(altkey)) then
          call param_register_main(dict, altkey, value, 1, PARAM_STRING, &
               help_string=help_string, char_target=char_target, &
-              has_value_target=has_value_target)
+              has_value_target=has_value_target, altkey=key)
       end if
     end subroutine param_register_single_string
 
@@ -248,9 +248,9 @@ module paramreader_module
       character(len=*), intent(in) :: key
       character(len=*), intent(in), optional :: altkey
       
-      call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
+      call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED", altkey=altkey)
       if (present(altkey)) then 
-         call param_register_main(dict, altkey, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED")
+         call param_register_main(dict, altkey, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED", altkey=key)
       end if
     end subroutine param_register_dontread
 
@@ -259,7 +259,7 @@ module paramreader_module
     !%OMIT
     subroutine param_register_main(dict, key, value, N, param_type,  &
          help_string, int_target, real_target, char_target,  &
-         logical_target, int_target_array, real_target_array, has_value_target)
+         logical_target, int_target_array, real_target_array, has_value_target, altkey)
       type(Dictionary), intent(inout) :: dict
 
       character(len=*), intent(in) :: key
@@ -274,6 +274,7 @@ module paramreader_module
       character(len=*), intent(inout), optional, target :: char_target
       logical, intent(inout), optional, target :: logical_target
       logical, intent(inout), optional, target :: has_value_target
+      character(len=*), intent(in), optional :: altkey
 
       type(ParamEntry) :: entry
       type(DictData) :: data
@@ -287,6 +288,12 @@ module paramreader_module
 
       entry%help_string=trim(help_string)
 
+      if(present(altkey)) then
+         entry%altkey = trim(altkey)
+      else
+         entry%altkey = ''
+      endif
+      
 ! call print("parser register entry " // trim(key) // " value " // trim(value), PRINT_ALWAYS)
 
       if (present(has_value_target)) then
@@ -981,8 +988,9 @@ module paramreader_module
                                                               !% separated by spaces.
       logical :: status
       integer :: i
-      type(ParamEntry) :: entry
-      type(DictData) :: data
+      type(ParamEntry) :: entry, altentry
+      type(DictData) :: data, altdata
+      logical :: valuemissing, altpresent, altvaluemissing
       allocate(data%d(size(transfer(entry,data%d))))
 
       if (present(missing_keys)) missing_keys = ''
@@ -992,7 +1000,33 @@ module paramreader_module
          if (.not. get_value(dict, string(dict%keys(i)), data)) &
               call system_abort('Param_Check: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
+
          if (trim(entry%value) == PARAM_MANDATORY) then
+            valuemissing = .true.
+         else
+            valuemissing = .false.
+         endif
+         
+         ! see if we have an altkey for this key
+         if (entry%altkey /= '') then
+            altpresent = .true.
+            if (.not. get_value(dict, entry%altkey, altdata)) &
+                  call system_abort('Param_Check: Key '//entry%altkey//' missing')
+            
+            altentry = transfer(altdata%d, altentry)
+
+            if (trim(altentry%value) == PARAM_MANDATORY) then
+               altvaluemissing = .true.
+            else
+               altvaluemissing = .false.
+            endif
+         else
+            altpresent = .false.
+            altvaluemissing = .false.
+         endif
+
+         ! now check for missing values, taking into account check of altentry
+         if (valuemissing .and. (.not. altpresent .or. (altpresent .and. altvaluemissing ))) then
             status = .false.
             if (present(missing_keys)) then
                missing_keys = trim(missing_keys)//' '//string(dict%keys(i))
