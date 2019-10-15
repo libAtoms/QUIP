@@ -201,10 +201,9 @@ to get up and running quickly.
 
 7.  To compile the Python wrappers (`quippy`), the minimum requirements
     are:
-
-    - Python 3.x
-    - [NumPy](http://www.numpy.org)
-    - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (`ase`)
+    - Python 3
+    - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
+    - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
     - [f90wrap](https://github.com/jameskermode/f90wrap)
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
