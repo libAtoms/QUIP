@@ -2,7 +2,6 @@
 [![Build Status](https://img.shields.io/badge/docs-public-brightgreen)](https://libatoms.github.io/QUIP/)
 [![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
 [![Docker Pulls](https://img.shields.io/docker/pulls/libatomsquip/quip)](https://hub.docker.com/r/libatomsquip/quip)
-[![Docker size](https://img.shields.io/microbadger/image-size/libatomsquip/quip)](https://microbadger.com/images/libatomsquip/quip)
 
 The `QUIP` package is a collection of software tools to carry out
 molecular dynamics simulations. It implements a variety of interatomic
@@ -74,7 +73,7 @@ The following external packages can be called:
  - CP2K
  - ASAP
  - Molpro
- - ASE (required if using ``quippy`` Python interface; latest version
+ - ASE (required if using `quippy` Python interface; latest version
    recommended)
 
 ## Code philosophy and goals
@@ -86,7 +85,7 @@ and Gromacs. The Atomic Simulation Environment also does does this, and
 is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
-  ``quippy`` package
+  `quippy` package
 - Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
@@ -102,39 +101,39 @@ to get up and running quickly.
 
 1.  To compile QUIP the minimum requirements are:
 
-    - A working Fortran compiler. QUIP is tested with ``gfortran`` 4.4 and
-      later, and ``ifort`` 11.1.
+    - A working Fortran compiler. QUIP is tested with `gfortran` 4.4 and
+      later, and `ifort` 11.1.
 
     - Linear algebra libraries BLAS and LAPACK. QUIP is tested with
-      reference versions ``libblas-dev`` and ``liblapack-dev`` on Ubuntu
-      12.04, and ``mkl`` 11.1 with ``ifort``.
+      reference versions `libblas-dev` and `liblapack-dev` on Ubuntu
+      12.04, and `mkl` 11.1 with `ifort`.
 
-2.  Clone the QUIP repository from GitHub. The ``--recursive`` option
+2.  Clone the QUIP repository from GitHub. The `--recursive` option
     brings in submodules automatically (If you don't do this, then
-    you will need to run ``git submodule update --init``
+    you will need to run `git submodule update --init`
     from the top-level QUIP directory after cloning) ::
-
-        git clone --recursive https://github.com/libAtoms/QUIP.git
-
-3.  Decide your architecture by looking in the ``arch/`` directory, and
-    define an environmental variable ``QUIP_ARCH``, e.g.::
-
-        export QUIP_ARCH=linux_x86_64_gfortran
-
+    ```bash
+    git clone --recursive https://github.com/libAtoms/QUIP.git
+    ```
+3.  Decide your architecture by looking in the `arch/` directory, and
+    define an environmental variable `QUIP_ARCH`, e.g.::
+    ```bash
+    export QUIP_ARCH=linux_x86_64_gfortran
+    ```
     for standard gfortran on Linux. Here is where you can adjust which
     compiler is being used, if you do not like the defaults. You may need to
-    create your own ``arch/Makefile.${QUIP_ARCH}`` file based on an existing file for
+    create your own `arch/Makefile.${QUIP_ARCH}` file based on an existing file for
     more exotic systems.
 
 4.  Customise QUIP, set the maths libraries and provide linking options::
-
-        make config
-
-    Makefile.config will create a build directory, ``build/${QUIP_ARCH}``,
+    ```bash
+    make config
+    ```
+    Makefile.config will create a build directory, `build/${QUIP_ARCH}`,
     and all the building happen there. First it will ask you some
     questions about where you keep libraries and other stuff, if you
     don't use something it is asking for, just leave it blank. The
-    answers will be stored in ``Makefile.inc`` in the ``build/${QUIP_ARCH}``
+    answers will be stored in `Makefile.inc` in the `build/${QUIP_ARCH}`
     directory, and you can edit them later (e.g. to change compiler, optimisation
     or debug options).
 
@@ -143,45 +142,45 @@ to get up and running quickly.
     full rebuild by doing a `make deepclean; make`.
     
 5.  Compile all programs, modules and libraries::
-
-        make
-
-    From the top-level ``QUIP`` directory. All programs are built in
-    ``build/${QUIP_ARCH}/``. You can also find compiled object files
-    and libraries (``libquip.a``) in that directory. Programs can be
+    ```bash
+    make
+    ```
+    From the top-level `QUIP` directory. All programs are built in
+    `build/${QUIP_ARCH}/`. You can also find compiled object files
+    and libraries (`libquip.a`) in that directory. Programs can be
     called directly from that directory.
 
     Other useful make targets include:
 
-    - ``make install`` : copies all compiled programs it can find to
-      ``QUIP_INSTALLDIR``, if it's defined and is a directory (full path
-      required), and copies bundled structures to ``QUIP_STRUCTS_DIR``
+    - `make install` : copies all compiled programs it can find to
+      `QUIP_INSTALLDIR`, if it's defined and is a directory (full path
+      required), and copies bundled structures to `QUIP_STRUCTS_DIR`
       if it is defined.
 
-    - ``make libquip``:   Compile QUIP as a library and link to it.
+    - `make libquip`:   Compile QUIP as a library and link to it.
       This will make all the various libraries and combine them into one:
-      ``build/${QUIP_ARCH}/libquip.a``, which is what you need to link with
+      `build/${QUIP_ARCH}/libquip.a`, which is what you need to link with
       (as well as LAPACK).
 
-6.  A good starting point is to use the ``quip`` program, which can
+6.  A good starting point is to use the `quip` program, which can
     calculate the properties of an atomic configuration using a
     variety of models. For example::
-
-        quip at_file=test.xyz init_args='IP LJ' \
-            param_file=share/Parameters/ip.parms.LJ.xml E
-
-    assuming that you have a file called ``test.xyz`` with the following
+    ```bash
+    quip at_file=test.xyz init_args='IP LJ' \
+        param_file=share/Parameters/ip.parms.LJ.xml E
+    ```
+    assuming that you have a file called `test.xyz` with the following
     data in it representing Cu atoms in a cubic fcc lattice::
-
-        4
-        Lattice="3.61 0 0 0 3.61 0 0 0 3.61" Properties=species:S:1:pos:R:3
-        Cu     0.000 0.000 0.000
-        Cu     0.000 1.805 1.805
-        Cu     1.805 0.000 1.805
-        Cu     1.805 1.805 0.000
-
+    ```
+    4
+    Lattice="3.61 0 0 0 3.61 0 0 0 3.61" Properties=species:S:1:pos:R:3
+    Cu     0.000 0.000 0.000
+    Cu     0.000 1.805 1.805
+    Cu     1.805 0.000 1.805
+    Cu     1.805 1.805 0.000
+    ```
     The Lennard-Jones parameters in the above example are defined in the
-    ``ip.parms.LJ.xml`` file under ``share/Parameters`` (ensure the path
+    `ip.parms.LJ.xml` file under `share/Parameters` (ensure the path
     to this file is correct). The format of the atomic configuration is
     given in
     [Extended XYZ](http://libatoms.github.io/QUIP/io.html#extendedxyz)
@@ -193,68 +192,68 @@ to get up and running quickly.
     of columns, with the type given by I for integers, R for reals, S for
     strings.
 
-    Most string arguments can be replaced by ``--help`` and QUIP programs
+    Most string arguments can be replaced by `--help` and QUIP programs
     will  then print  a  list  of allowable  keywords  with brief  help
-    messages as to their usage,  so e.g. ``init_args=--help`` will give a
+    messages as to their usage,  so e.g. `init_args=--help` will give a
     list of potential model  types (and some combinations). The parsing
-    is recursive,  so ``init_args="IP --help"``  will then proceed  to list
+    is recursive,  so `init_args="IP --help"`  will then proceed  to list
     the types of interatomic potentials (IP) that are available.
 
-7.  To compile the Python wrappers (``quippy``), the minimum requirements
+7.  To compile the Python wrappers (`quippy`), the minimum requirements
     are:
 
     - Python 3.x
     - [NumPy](http://www.numpy.org)
-    - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (``ase``)
+    - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (`ase`)
     - [f90wrap](https://github.com/jameskermode/f90wrap)
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
-    If you are using a Python virtual environment (virtualenv) and would like
-    to install ``quippy`` into it, ensure the environment is activated
-    (``source <env_dir>/bin/activate``, where ``<env_dir>`` is the root of
-    your virtual environment) _before_ building ``quippy`` (otherwise library
+    Note: If you are using a Python virtual environment (virtualenv) and would like
+    to install `quippy` into it, ensure the environment is activated
+    (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of
+    your virtual environment) _before_ building `quippy` (otherwise library
     versions may cause unexpected conflicts).
 
-    The required versions can be installed with:
+    The required version of `f90wrap` can be installed with:
+    ```bash
+    pip install src/f90wrap
+    ```
     
-        pip install src/f90wrap
-    
-    
-9.  To compile the Python wrappers (``quippy``), run::
-
-        make quippy
-
-    Quippy can be used by adding the ``lib`` directory in
-    ``quippy/build/${QUIP_ARCH}`` to your ``$PYTHONPATH``, however it can be
+9.  To compile the Python wrappers (`quippy`), run::
+    ```bash
+    make quippy
+    ```
+    Quippy can be used by adding the `lib` directory in
+    `quippy/build/${QUIP_ARCH}` to your `$PYTHONPATH`, however it can be
     more convenient to install into a specific Python distribution::
-
-        make install-quippy
-
+    ```bash
+    make install-quippy
+    ```
     will either install into the current virtualenv or attempt to install
-    systemwide (usually fails without ``sudo``). To install only for the
-    current user (into ``~/.local``), execute the command
-    ``QUIPPY_INSTALL_OPTS=--user make install-quippy``,
-    or use ``QUIPPY_INSTALL_OPTS=--prefix=<directory>`` to install into a
-    specific directory. ``QUIPPY_INSTALL_OPTS`` can also be set in the file
-    ``build/${QUIP_ARCH}/Makefile.inc``.
+    systemwide (usually fails without `sudo`). To install only for the
+    current user (into `~/.local`), execute the command
+    `QUIPPY_INSTALL_OPTS=--user make install-quippy`,
+    or use `QUIPPY_INSTALL_OPTS=--prefix=<directory>` to install into a
+    specific directory. `QUIPPY_INSTALL_OPTS` can also be set in the file
+    `build/${QUIP_ARCH}/Makefile.inc`.
 
 10.  More details on the quippy installation process and troubleshooting for
     common build problems are available in the
     [online documentation](http://libatoms.github.io/QUIP/).
 
-11.  To run the unit and regression tests, which depend on ``quippy``::
-
-        make test
-
+11.  To run the unit and regression tests, which depend on `quippy`::
+    ```bash
+    make test
+    ```
 12.  To get back to a state near to a fresh clone, use
-
-        make distclean
-
+    ```bash
+    make distclean
+    ```
 13. Some functionality is only available if you check out other
-    modules within the ``QUIP/src/`` directories, e.g. the ``ThirdParty``
-    (DFTB parameters, TTM3f water model), ``GAP`` (Gaussian
-    Approximation Potential models) and ``GAP-filler`` (Gaussian
+    modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
+    (DFTB parameters, TTM3f water model), `GAP` (Gaussian
+    Approximation Potential models) and `GAP-filler` (Gaussian
     Approximation Potential model training). These packages are
     not distributed with QUIP because they come with different licensing
     restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
@@ -264,7 +263,7 @@ to get up and running quickly.
     potentials that have been published as well as training data in
     our [data repository](http://www.libatoms.org/Home/DataRepository).
 
-14. In order to run QUIP potentials via LAMMPS, ``make libquip`` to get QUIP
+14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
 
