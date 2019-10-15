@@ -204,25 +204,23 @@ to get up and running quickly.
     are:
 
     - Python 3.x
-
     - [NumPy](http://www.numpy.org)
-
     - [Atomic Simulation Environment](https://wiki.fysik.dtu.dk/ase/) (``ase``)
-
     - [f90wrap](https://github.com/jameskermode/f90wrap)
-
     - (optional) [SciPy](http://www.scipy.org)
-
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
-    The required versions can be installed with `pip install -r quippy/requirements.txt`.
-
-8.  If you are using a Python virtual environment (virtualenv) and would like
+    If you are using a Python virtual environment (virtualenv) and would like
     to install ``quippy`` into it, ensure the environment is activated
     (``source <env_dir>/bin/activate``, where ``<env_dir>`` is the root of
     your virtual environment) _before_ building ``quippy`` (otherwise library
     versions may cause unexpected conflicts).
 
+    The required versions can be installed with:
+    
+        pip install src/f90wrap
+    
+    
 9.  To compile the Python wrappers (``quippy``), run::
 
         make quippy
