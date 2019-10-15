@@ -41,7 +41,7 @@ before_install:
   - chmod 0600  ~/.ssh/github_deploy_key
   - eval $(ssh-agent -s)
   - ssh-add ~/.ssh/github_deploy_key
-  - git clone --depth 1 git@github.com:libAtoms/GAP.git src/GAP
+  - git clone --depth 10 git@github.com:libAtoms/GAP.git src/GAP
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
@@ -49,16 +49,10 @@ before_install:
 
 
 install:
-  - pip install -r quippy/requirements.txt
-  # TEMPORARY: for the quick testing of f90wrap updates
-  # - git submodule update --init ${QUIP_ROOT}/src/f90wrap
-  - export QUIP_ROOT=`pwd`
-  - echo ${QUIP_ROOT}
-  - cd ${QUIP_ROOT}/src/f90wrap ;  python setup.py install
-  - cd ${QUIP_ROOT}
+  - pip install ase
+  - pip install src/f90wrap
 
-script: # Compile QUIP, libquip and quippy, if a non-skipped build.
-  # stdout is redirected as it generates too much output.
+script: # Compile QUIP, libquip and quippy.
   # Quippy should have built successfully -> start tests
   - make
   - make libquip
