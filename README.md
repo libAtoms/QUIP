@@ -110,7 +110,7 @@ to get up and running quickly.
 
 2.  Clone the QUIP repository from GitHub. The `--recursive` option
     brings in submodules automatically (If you don't do this, then
-    you will need to run `git submodule update --init`
+    you will need to run `git submodule update --init --recursive`
     from the top-level QUIP directory after cloning) ::
     ```bash
     git clone --recursive https://github.com/libAtoms/QUIP.git
@@ -216,7 +216,7 @@ to get up and running quickly.
 
     The required version of `f90wrap` can be installed with:
     ```bash
-    git submodule update --init
+    git submodule update --init --recursive
     pip install src/f90wrap
     ```
     
@@ -265,6 +265,29 @@ to get up and running quickly.
 14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
+
+# Developer notes:
+
+## Fixing/updating the version f90wrap:
+
+  ```bahs
+  cd src/f90wrap
+  ```
+  ```bash 
+  git checkout <commit> 
+  ```
+  OR 
+  ```bash 
+  git checkout master
+
+  ```
+  Updating the version in the `QUIP` repository:
+  ```
+  cd ../..
+  git add src/f90wrap
+  git commit -m "updating the version of f90wrap"
+  ```
+
 
 ### Mac OS
 
