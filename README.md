@@ -26,7 +26,7 @@ Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, ST John,
 Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif Mones,
 Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
-Winfield, Tamas K Stenczel.
+Winfield, Tamas K Stenczel, Adam Fekete.
 
 Copyright 2006-2019.
 
@@ -216,6 +216,7 @@ to get up and running quickly.
 
     The required version of `f90wrap` can be installed with:
     ```bash
+    git submodule update --init
     pip install src/f90wrap
     ```
     
@@ -252,8 +253,7 @@ to get up and running quickly.
 13. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
     (DFTB parameters, TTM3f water model), `GAP` (Gaussian
-    Approximation Potential models) and `GAP-filler` (Gaussian
-    Approximation Potential model training). These packages are
+    Approximation Potential models and training). These packages are
     not distributed with QUIP because they come with different licensing
     restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
 
