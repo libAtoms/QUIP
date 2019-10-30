@@ -25,7 +25,6 @@ from ase import Atoms
 import numpy as np
 from ase.io.extxyz import key_val_dict_to_str
 
-
 __all__ = ['Descriptor']
 
 
@@ -196,11 +195,35 @@ class Descriptor:
 
         # make numpy arrays out of them
         for key, val in descriptor_out.items():
-            descriptor_out[key] = np.array(val)
+            # merge the arrays according to shape
+            if key in ['has_grad_data', 'ii', 'data']:
+                axis = 0
+            elif key in ['pos', 'grad_covariance_cutoff']:
+                axis = 1
+            elif key in ['covariance_cutoff', 'has_data']:
+                descriptor_out[key] = np.array(val)
+                continue
+            elif key in ['grad_data']:
+                axis = 2
+            else:
+                # this is in case any yet unresolved output shows up
+                # fixme: should this raise an exception instead
+                axis = 0
+
+            descriptor_out[key] = np.concatenate(val, axis=axis)
+
+        descriptor_out['data'] = descriptor_out['data'].reshape((count, -1))
+
+        # yield C-contiguous shaped arrays
+        if 'grad_covariance_cutoff' in descriptor_out.keys():
+            descriptor_out['grad_covariance_cutoff'] = descriptor_out['grad_covariance_cutoff'].transpose()
+
+        if 'pos' in descriptor_out.keys():
+            descriptor_out['pos'] = descriptor_out['pos'].transpose()
 
         if 'grad_data' in descriptor_out.keys():
             grad = descriptor_out['grad_data']
-            descriptor_out['grad_data'] = grad.transpose(0, 3, 2, 1).reshape(-1, grad.shape[2], grad.shape[1])
+            descriptor_out['grad_data'] = grad.transpose(2, 1, 0)
 
         # This is a dictionary now and hence needs to be indexed as one, unlike the old version
         return descriptor_out
