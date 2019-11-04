@@ -196,7 +196,7 @@ class Descriptor:
         # make numpy arrays out of them
         for key, val in descriptor_out.items():
             # merge the arrays according to shape
-            if key in ['has_grad_data', 'ii', 'data']:
+            if key in ['has_grad_data', 'ii', 'data', 'ci']:
                 axis = 0
             elif key in ['pos', 'grad_covariance_cutoff']:
                 axis = 1
