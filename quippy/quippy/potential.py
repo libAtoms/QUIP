@@ -120,7 +120,8 @@ class Potential(ase.calculators.calculator.Calculator):
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_all_properties=True, calc_args=None, add_properties=None, **kwargs):
+                  copy_all_properties=True, calc_args=None, add_arrays=None,
+                  add_info=None **kwargs):
 
         # handling the property inputs
         if properties is None:
@@ -172,7 +173,7 @@ class Potential(ase.calculators.calculator.Calculator):
             return
 
         # construct the quip atoms object which we will use to calculate on
-        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, add_properties=add_properties)
+        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms, add_arrays=add_arrays, add_info=add_info)
 
         # constructing args_string with automatically aliasing the calculateable non-quippy properties
         # calc_args string to be passed to Fortran code

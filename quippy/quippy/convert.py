@@ -38,22 +38,25 @@ __all__ = ['ase_to_quip', 'descriptor_data_mono_to_dict', 'velocities_ase_to_qui
 MASSCONVERT = 103.6426957074462
 
 
-def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_properties=None):
+def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info=None):
     """
     Converter to put the info from an ase atoms object into a quip atoms object.
     Copies everything to make sure there is not linking back.
 
-    Notes on add_properties:
+    Notes on add_arrays and add_info:
         - overwriting a parameter is not possible yet
         - only float arrays can be added, integers are converted to floats by fortran, fails for strings
         - keys can only be strings, as the fortran dictionary will not accept anything else,\
         integer keys are converted to strings
+        - possible types:
+            None - only the basic ones
+            list - all the list elements are added
+            True - all of the arrays
 
     :param ase_atoms:
     :param quip_atoms:
-    :param add_properties:  None - only the basic ones
-                            list - all the list elements are added
-                            True - all of the arrays
+    :param add_arrays: keys to take from ase.Atoms.arrays
+    :param add_info:  keys to take from ase.Atoms.info
     :return:
     """
 
@@ -87,22 +90,22 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_properties=None):
                                                     value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
     # go through all properties for issue#170
-    if add_properties is not None:
-        if add_properties is True:
+    if add_arrays is not None:
+        if add_arrays is True:
             # taking all the array keys that are not handled elsewhere
-            add_properties = set(ase_atoms.arrays.keys())
-            [add_properties.discard(used_key) for used_key in ['numbers', 'positions', 'momenta']]
-            add_properties = list(add_properties)
-        elif isinstance(add_properties, str):
+            add_arrays = set(ase_atoms.arrays.keys())
+            [add_arrays.discard(used_key) for used_key in ['numbers', 'positions', 'momenta']]
+            add_arrays = list(add_arrays)
+        elif isinstance(add_arrays, str):
             # if only one is given as a string
-            add_properties = [add_properties]
-        elif isinstance(add_properties, list) or isinstance(add_properties, np.ndarray):
-            add_properties = list(add_properties)
+            add_arrays = [add_arrays]
+        elif isinstance(add_arrays, list) or isinstance(add_arrays, np.ndarray):
+            add_arrays = list(add_arrays)
         else:
             # fixme: decide what to do here, now it is just not adding anything
-            add_properties = []
+            add_arrays = []
 
-        for property_name in add_properties:
+        for property_name in add_arrays:
             try:
                 value = np.array(ase_atoms.arrays[property_name])
             except KeyError:
