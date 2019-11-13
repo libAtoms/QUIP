@@ -86,7 +86,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_properties=None):
         _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
                                                     value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
-    # go through all properties
+    # go through all properties for issue#170
     if add_properties is not None:
         if add_properties is True:
             # taking all the array keys that are not handled elsewhere
@@ -110,10 +110,37 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_properties=None):
                 continue
 
             # add the value, as 1d or 2d array
-            if len(value.shape) == 1:
-                _quippy.f90wrap_atoms_add_property_real_a(this=quip_atoms._handle, name=property_name, value=value)
-            elif len(value.shape) == 2:
-                _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name=property_name, value=value.T)
+            dim = len(value.shape)
+            arr_dtype_kind = value.dtype.kind
+
+            # decide the fortran type
+            if arr_dtype_kind == 'b':
+                fortran_type_name = 'logical'
+            elif arr_dtype_kind in ['u', 'i']:
+                fortran_type_name = 'int'
+            elif arr_dtype_kind == 'f':
+                fortran_type_name = 'real'
+            elif arr_dtype_kind in ['S', 'U']:
+                fortran_type_name = 'str'
+            else:
+                # so it is one of:
+                # c complex floating - point
+                # m timedelta
+                # M datetime
+                # O object
+                # V void
+                raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
+
+            # decide dim
+            if dim == 1:
+                add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_a'.format(fortran_type_name))
+                add_property_method(this=quip_atoms._handle, name=property_name, value=value)
+            elif dim == 2:
+                add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
+                add_property_method(this=quip_atoms._handle, name=property_name, value=value.T)
+            else:
+                raise ValueError(
+                    'unsupported dimension ({}) of attribute in conversion from ase to quip atoms objects'.format(dim))
 
     return quip_atoms
 
