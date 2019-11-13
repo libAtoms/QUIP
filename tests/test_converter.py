@@ -46,12 +46,12 @@ class Test_Converter(quippytest.QuippyTestCase):
         self.assertNotIn('dummy_real_1d', raw_arrays.keys())
 
         # 2d only
-        at_quip = quippy.convert.ase_to_quip(self.at_base, add_properties='dummy_real_2d')
+        at_quip = quippy.convert.ase_to_quip(self.at_base, add_arrays='dummy_real_2d')
         raw_arrays = quippy.convert.get_dict_arrays(at_quip.properties)
         self.assertArrayAlmostEqual(raw_arrays['dummy_real_2d'], self.ref_real_2d.T, tol=1E-06)
 
         # 1d only
-        at_quip = quippy.convert.ase_to_quip(self.at_base, add_properties=['dummy_real_1d'])
+        at_quip = quippy.convert.ase_to_quip(self.at_base, add_arrays=['dummy_real_1d'])
         raw_arrays = quippy.convert.get_dict_arrays(at_quip.properties)
         self.assertArrayAlmostEqual(raw_arrays['dummy_real_1d'], self.ref_real_1d, tol=1E-06)
 

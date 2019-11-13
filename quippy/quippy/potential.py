@@ -121,7 +121,7 @@ class Potential(ase.calculators.calculator.Calculator):
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
                   copy_all_properties=True, calc_args=None, add_arrays=None,
-                  add_info=None **kwargs):
+                  add_info=None, **kwargs):
 
         # handling the property inputs
         if properties is None:

@@ -89,63 +89,88 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
         _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
                                                     value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
-    # go through all properties for issue#170
-    if add_arrays is not None:
-        if add_arrays is True:
+    def key_spec_to_list(keyspec, exclude=[]):
+        if keyspec is True:
             # taking all the array keys that are not handled elsewhere
-            add_arrays = set(ase_atoms.arrays.keys())
-            [add_arrays.discard(used_key) for used_key in ['numbers', 'positions', 'momenta']]
-            add_arrays = list(add_arrays)
-        elif isinstance(add_arrays, str):
+            keyspec = set(ase_atoms.arrays.keys())
+            [keyspec.discard(used_key) for used_key in exclude]
+            keyspec = list(keyspec)
+        elif isinstance(keyspec, str):
             # if only one is given as a string
-            add_arrays = [add_arrays]
-        elif isinstance(add_arrays, list) or isinstance(add_arrays, np.ndarray):
-            add_arrays = list(add_arrays)
+            keyspec = [keyspec]
+        elif isinstance(keyspec, list) or isinstance(keyspec, np.ndarray):
+            keyspec = list(keyspec)
         else:
             # fixme: decide what to do here, now it is just not adding anything
-            add_arrays = []
+            keyspec = []
 
-        for property_name in add_arrays:
+        return keyspec
+
+    # go through all properties for issue#170
+    if add_arrays is not None:
+        add_arrays = key_spec_to_list(add_arrays, exclude=['numbers', 'positions', 'momenta'])
+        for info_name in add_arrays:
             try:
-                value = np.array(ase_atoms.arrays[property_name])
+                value = np.array(ase_atoms.arrays[info_name])
             except KeyError:
                 # fixme: give some warning here if needed
                 continue
+            add_value(quip_atoms, info_name, value)
 
-            # add the value, as 1d or 2d array
-            dim = len(value.shape)
-            arr_dtype_kind = value.dtype.kind
-
-            # decide the fortran type
-            if arr_dtype_kind == 'b':
-                fortran_type_name = 'logical'
-            elif arr_dtype_kind in ['u', 'i']:
-                fortran_type_name = 'int'
-            elif arr_dtype_kind == 'f':
-                fortran_type_name = 'real'
-            elif arr_dtype_kind in ['S', 'U']:
-                fortran_type_name = 'str'
-            else:
-                # so it is one of:
-                # c complex floating - point
-                # m timedelta
-                # M datetime
-                # O object
-                # V void
-                raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
-
-            # decide dim
-            if dim == 1:
-                add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_a'.format(fortran_type_name))
-                add_property_method(this=quip_atoms._handle, name=property_name, value=value)
-            elif dim == 2:
-                add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
-                add_property_method(this=quip_atoms._handle, name=property_name, value=value.T)
-            else:
-                raise ValueError(
-                    'unsupported dimension ({}) of attribute in conversion from ase to quip atoms objects'.format(dim))
+    if add_info is not None:
+        add_info = key_spec_to_list(add_info, exclude=[])
+        for info_name in add_info:
+            try:
+                value = np.array(ase_atoms.info[info_name])
+            except KeyError:
+                # fixme: give some warning here if needed
+                continue
+            add_value(quip_atoms, info_name, value)
 
     return quip_atoms
+
+
+def add_value(quip_atoms, key, value):
+    # to make sure it is a numpy array, so we can use the dtype of it
+    if not isinstance(value, np.ndarray):
+        value = np.array(value)
+
+    # add the value, as 0d or 1d/2d array
+    dim = len(value.shape)
+    arr_dtype_kind = value.dtype.kind
+
+    # decide the fortran type
+    if arr_dtype_kind == 'b':
+        fortran_type_name = 'logical'
+    elif arr_dtype_kind in ['u', 'i']:
+        fortran_type_name = 'int'
+    elif arr_dtype_kind == 'f':
+        fortran_type_name = 'real'
+    # elif arr_dtype_kind in ['S', 'U']:
+    #     fortran_type_name = 'str'
+    else:
+        # strings also not supported yet, f90wrap_atoms_add_property_str needs
+        # so it is one of:
+        # c complex floating - point
+        # m timedelta
+        # M datetime
+        # O object
+        # V void
+        raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
+
+    # decide dim
+    if dim == 0:
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}'.format(fortran_type_name))
+        add_property_method(this=quip_atoms._handle, name=key, value=np.atleast_1d(value)[0])
+    elif dim == 1:
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_a'.format(fortran_type_name))
+        add_property_method(this=quip_atoms._handle, name=key, value=value)
+    elif dim == 2:
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
+        add_property_method(this=quip_atoms._handle, name=key, value=value.T)
+    else:
+        raise ValueError(
+            'unsupported dimension ({}) of attribute in conversion from ase to quip atoms objects'.format(dim))
 
 
 def velocities_ase_to_quip(velocities):
