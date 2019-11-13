@@ -89,10 +89,10 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
         _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
                                                     value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
-    def key_spec_to_list(keyspec, exclude=[]):
+    def key_spec_to_list(keyspec, default, exclude=[]):
         if keyspec is True:
             # taking all the array keys that are not handled elsewhere
-            keyspec = set(ase_atoms.arrays.keys())
+            keyspec = set(default.keys())
             [keyspec.discard(used_key) for used_key in exclude]
             keyspec = list(keyspec)
         elif isinstance(keyspec, str):
@@ -108,7 +108,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
 
     # go through all properties for issue#170
     if add_arrays is not None:
-        add_arrays = key_spec_to_list(add_arrays, exclude=['numbers', 'positions', 'momenta'])
+        add_arrays = key_spec_to_list(add_arrays, ase_atoms.arrays, exclude=['numbers', 'positions', 'momenta'])
         for info_name in add_arrays:
             try:
                 value = np.array(ase_atoms.arrays[info_name])
@@ -118,7 +118,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
             add_value(quip_atoms, info_name, value)
 
     if add_info is not None:
-        add_info = key_spec_to_list(add_info, exclude=[])
+        add_info = key_spec_to_list(add_info, ase_atoms.info, exclude=[])
         for info_name in add_info:
             try:
                 value = np.array(ase_atoms.info[info_name])
