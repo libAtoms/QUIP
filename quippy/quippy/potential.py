@@ -108,6 +108,23 @@ class Potential(ase.calculators.calculator.Calculator):
         'pbc', 'initial_charges' and 'initial_magmoms'.
     calc_args: argument string to pass to Fortran calc() routine.
         This is appended to `self.calc_args`, if this is set.
+    add_arrays: list, str or True
+        Arrays to carry over from `atoms.arrays` to the Fortran atoms object when calling calculate()
+        If the same argument is filled in calculate, then it will overwrite this.
+        String arrays not supported.
+        possible types:
+            None - only defaults: `pos`, `Z`, `cell`, `pbc`, `momenta` (as velo, if exists)
+            str  - single key
+            list - all list elements as keys
+            True - all of the arrays from `atoms.arrays`
+    add_info: list, str or True
+        Info to carry over from `atoms.info` to the Fortran atoms object when calling calculate()
+        If the same argument is filled in calculate, then it will overwrite this.
+        possible types:
+            None - only defaults: `pos`, `Z`, `cell`, `pbc`, `momenta` (as velo, if exists)
+            str  - single key
+            list - all list elements as keys
+            True - all of the values from `atoms.info`
 
     Arrays can also be passed directly to the Fortran routine using
     the `forces`, `virial`, `local_energy`, `local_virial`

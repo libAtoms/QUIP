@@ -49,7 +49,8 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
         - keys can only be strings, as the fortran dictionary will not accept anything else,\
         integer keys are converted to strings
         - possible types:
-            None - only the basic ones
+            None - only defaults: pos, Z, cell, pbc, momenta (if exists)
+            str  - single key
             list - all the list elements are added
             True - all of the arrays
 
@@ -89,7 +90,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
         _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
                                                     value=velocities_ase_to_quip(ase_atoms.get_velocities()))
 
-    def key_spec_to_list(keyspec, default, exclude=[]):
+    def key_spec_to_list(keyspec, default, exclude=()):
         if keyspec is True:
             # taking all the array keys that are not handled elsewhere
             keyspec = set(default.keys())
@@ -141,7 +142,10 @@ def add_value(quip_atoms, key, value):
 
     # decide the fortran type
     if arr_dtype_kind == 'b':
-        fortran_type_name = 'logical'
+        if dim < 2:
+            fortran_type_name = 'logical'
+        else:
+            raise TypeError('2d logical array is not supported')
     elif arr_dtype_kind in ['u', 'i']:
         fortran_type_name = 'int'
     elif arr_dtype_kind == 'f':
@@ -149,13 +153,13 @@ def add_value(quip_atoms, key, value):
     # elif arr_dtype_kind in ['S', 'U']:
     #     fortran_type_name = 'str'
     else:
-        # strings also not supported yet, f90wrap_atoms_add_property_str needs
         # so it is one of:
         # c complex floating - point
         # m timedelta
         # M datetime
         # O object
         # V void
+        # strings not supported yet, f90wrap_atoms_add_property_str needs some
         raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
 
     # decide dim
