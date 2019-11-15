@@ -63,83 +63,83 @@ class Test_Converter(quippytest.QuippyTestCase):
 
         # fixme this is a hack to get the first element of the array
         # real
-        raw_info = self._convert_at_add_arrays(at, add_info='real')
-        self.assertAlmostEqual(raw_info['real'][0], self.ref_info['real'], delta=1E-06)
+        raw_dict_output = self._convert_at_add_arrays_and_info(at, add_info='real')
+        self.assertAlmostEqual(raw_dict_output['real'], self.ref_info['real'], delta=1E-06)
 
         # logical
-        raw_info = self._convert_at_add_arrays(at, add_info=['logical_T', 'logical_F'])
-        self.assertEqual(raw_info['logical_T'][0], self.ref_info['logical_T'])
-        self.assertEqual(raw_info['logical_F'][0], self.ref_info['logical_F'])
+        raw_dict_output = self._convert_at_add_arrays_and_info(at, add_info=['logical_T', 'logical_F'])
+        self.assertEqual(raw_dict_output['logical_T'], self.ref_info['logical_T'])
+        self.assertEqual(raw_dict_output['logical_F'], self.ref_info['logical_F'])
 
         # integer
-        raw_info = self._convert_at_add_arrays(at, add_info=['integer'])
-        self.assertEqual(raw_info['integer'][0], self.ref_info['integer'])
+        raw_dict_output = self._convert_at_add_arrays_and_info(at, add_info=['integer'])
+        self.assertEqual(raw_dict_output['integer'], self.ref_info['integer'])
 
     def test_convert_add_arguent_types(self):
         # testing the different ways of specifying arguments
 
         # None
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info=None)
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info=None)
         for key in self.at_base.arrays.keys():
-            self.assertNotIn(key, raw_none.keys())
+            self.assertNotIn(key, raw_dict_output.keys())
         for key in self.at_base.info.keys():
-            self.assertNotIn(key, raw_none.keys())
+            self.assertNotIn(key, raw_dict_output.keys())
 
         # string
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info='real')
-        self.assertIn('real', raw_none.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info='real')
+        self.assertIn('real', raw_dict_output.keys())
 
         # list
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info=['real'])
-        self.assertIn('real', raw_none.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info=['real'])
+        self.assertIn('real', raw_dict_output.keys())
 
         # tuple
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info=('real'))
-        self.assertIn('real', raw_none.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info=('real'))
+        self.assertIn('real', raw_dict_output.keys())
 
         # np.array
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info=np.array(['real']))
-        self.assertIn('real', raw_none.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info=np.array(['real']))
+        self.assertIn('real', raw_dict_output.keys())
 
         # True
-        raw_none = self._convert_at_add_arrays(self.at_base, add_info=True, add_arrays=True)
-        self.assertIn('real', raw_none.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_info=True, add_arrays=True)
+        self.assertIn('real', raw_dict_output.keys())
         for key in self.at_base.arrays.keys():
             if key in ['numbers', 'positions', 'momenta']:
                 continue
-            self.assertIn(key, raw_none.keys())
+            self.assertIn(key, raw_dict_output.keys())
         for key in self.at_base.info.keys():
-            self.assertIn(key, raw_none.keys())
+            self.assertIn(key, raw_dict_output.keys())
 
     def test_convert_add_wrong_shape(self):
         """ Passing an array of the wrong shape"""
         # setup of a separate atoms for this test
         at = self.at_base.copy()
         at.arrays['wrong_shape'] = np.zeros((1, 6), dtype=float)
-        self.assertRaises(RuntimeError, self._convert_at_add_arrays, at, add_arrays='wrong_shape')
+        self.assertRaises(RuntimeError, self._convert_at_add_arrays_and_info, at, add_arrays='wrong_shape')
 
     def test_convert_add_real(self):
         # default
-        raw_arrays = self._convert_at_add_arrays(self.at_base)
-        self.assertNotIn('dummy_real_2d', raw_arrays.keys())
-        self.assertNotIn('dummy_real_1d', raw_arrays.keys())
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base)
+        self.assertNotIn('dummy_real_2d', raw_dict_output.keys())
+        self.assertNotIn('dummy_real_1d', raw_dict_output.keys())
 
         # 2d only
-        raw_arrays = self._convert_at_add_arrays(self.at_base, add_arrays='dummy_real_2d')
-        self.assertArrayAlmostEqual(raw_arrays['dummy_real_2d'], self.ref_real_2d.T, tol=1E-06)
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_arrays='dummy_real_2d')
+        self.assertArrayAlmostEqual(raw_dict_output['dummy_real_2d'], self.ref_real_2d.T, tol=1E-06)
 
         # 1d only
-        raw_arrays = self._convert_at_add_arrays(self.at_base, add_arrays=['dummy_real_1d'])
-        self.assertArrayAlmostEqual(raw_arrays['dummy_real_1d'], self.ref_real_1d, tol=1E-06)
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_arrays=['dummy_real_1d'])
+        self.assertArrayAlmostEqual(raw_dict_output['dummy_real_1d'], self.ref_real_1d, tol=1E-06)
 
     def test_convert_add_int(self):
         # 2d only
-        raw_arrays = self._convert_at_add_arrays(self.at_base, add_arrays='dummy_int_2d')
-        self.assertArrayIntEqual(raw_arrays['dummy_int_2d'], self.ref_int_2d.T)
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_arrays='dummy_int_2d')
+        self.assertArrayIntEqual(raw_dict_output['dummy_int_2d'], self.ref_int_2d.T)
 
         # 1d only
-        raw_arrays = self._convert_at_add_arrays(self.at_base, add_arrays=['dummy_int_1d'])
-        self.assertArrayIntEqual(raw_arrays['dummy_int_1d'], self.ref_int_1d)
+        raw_dict_output = self._convert_at_add_arrays_and_info(self.at_base, add_arrays=['dummy_int_1d'])
+        self.assertArrayIntEqual(raw_dict_output['dummy_int_1d'], self.ref_int_1d)
 
     def test_convert_add_arrays_bool(self):
         # setup of a separate atoms for this test
@@ -148,11 +148,11 @@ class Test_Converter(quippytest.QuippyTestCase):
         at.arrays['dummy_bool_2d'] = self.ref_bool_2d
 
         # 1d bool array
-        raw_arrays = self._convert_at_add_arrays(at, add_arrays='dummy_bool_1d')
-        self.assertArrayIntEqual(raw_arrays['dummy_bool_1d'], self.ref_bool_1d)
+        raw_dict_output = self._convert_at_add_arrays_and_info(at, add_arrays='dummy_bool_1d')
+        self.assertArrayIntEqual(raw_dict_output['dummy_bool_1d'], self.ref_bool_1d)
 
         # 2d bool array
-        self.assertRaises(TypeError, self._convert_at_add_arrays, at, add_arrays='dummy_bool_2d')
+        self.assertRaises(TypeError, self._convert_at_add_arrays_and_info, at, add_arrays='dummy_bool_2d')
 
     def test_convert_add_arrays_unsupported_types(self):
         # setup of a separate atoms for this test
@@ -162,14 +162,20 @@ class Test_Converter(quippytest.QuippyTestCase):
                          dummy_void_2d=np.zeros((3, 4), dtype=np.void))
 
         # all should raise an error, the
-        self.assertRaises(TypeError, self._convert_at_add_arrays, at, add_arrays='dummy_obj_2d')
-        self.assertRaises(TypeError, self._convert_at_add_arrays, at, add_arrays='dummy_void_2d')
-        self.assertRaises(TypeError, self._convert_at_add_arrays, at, add_arrays='dummy_cplx_2d')
+        self.assertRaises(TypeError, self._convert_at_add_arrays_and_info, at, add_arrays='dummy_obj_2d')
+        self.assertRaises(TypeError, self._convert_at_add_arrays_and_info, at, add_arrays='dummy_void_2d')
+        self.assertRaises(TypeError, self._convert_at_add_arrays_and_info, at, add_arrays='dummy_cplx_2d')
 
     @staticmethod
-    def _convert_at_add_arrays(at, add_info=None, add_arrays=None):
+    def _convert_at_add_arrays_and_info(at, add_info=None, add_arrays=None):
+        """
+        Method for calling the converter and returning both the arrays and info in one dict.
+        Yes, clashes are possible between keys but the tests don't need that right now.
+        """
         at_quip = quippy.convert.ase_to_quip(at, add_arrays=add_arrays, add_info=add_info)
         raw_arrays = quippy.convert.get_dict_arrays(at_quip.properties)
+        raw_info = quippy.convert.get_dict_arrays(at_quip.params)
+        raw_arrays.update(raw_info)
         return raw_arrays
 
 

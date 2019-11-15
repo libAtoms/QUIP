@@ -54,6 +54,26 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
             list - all the list elements are added
             True - all of the arrays
 
+    Copying from ase.Atoms.info supports:
+    =============== ===== ===== ==== =======================================================================
+    type            0D    1D    2D   Note
+    =============== ===== ===== ==== =======================================================================
+    real            no*   yes   yes  scalars kept as arrays of one dimension with one element
+    int             yes   yes   yes
+    bool            no*   yes   NO   zero dim. kept as array of one dimension with one element
+    =============== ===== ===== ==== =======================================================================
+
+    Copying from ase.Atoms.arrays supports:
+    =============== ===== ==== =======================================================================
+    type            1D    2D   Note
+    =============== ===== ==== =======================================================================
+    real            yes   yes  scalars kept as arrays of one dimension with one element
+    int             yes   yes
+    bool            yes   NO   zero dim. kept as array of one dimension with one element
+    =============== ===== ==== =======================================================================
+
+    Logical arrays are kept as ones and zeros, and normally retrieved as int32.
+
     :param ase_atoms:
     :param quip_atoms:
     :param add_arrays: keys to take from ase.Atoms.arrays
@@ -116,7 +136,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
             except KeyError:
                 # fixme: give some warning here if needed
                 continue
-            add_value(quip_atoms, info_name, value)
+            add_property_array(quip_atoms, info_name, value)
 
     if add_info is not None:
         add_info = key_spec_to_list(add_info, ase_atoms.info, exclude=[])
@@ -126,17 +146,106 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
             except KeyError:
                 # fixme: give some warning here if needed
                 continue
-            add_value(quip_atoms, info_name, value)
+            add_param_value(quip_atoms, info_name, value)
 
     return quip_atoms
 
 
-def add_value(quip_atoms, key, value):
-    # to make sure it is a numpy array, so we can use the dtype of it
+def add_param_value(quip_atoms, name, value):
+    """
+    Adds property to a quip atoms object in params dictionary, from ase.Atoms.info
+
+    Supports:
+    =============== ===== ===== ==== =======================================================================
+    type            0D    1D    2D   Note
+    =============== ===== ===== ==== =======================================================================
+    real            no*   yes   yes  scalars kept as arrays of one dimension with one element
+    int             yes   yes   yes
+    bool            no*   yes   NO   zero dim. kept as array of one dimension with one element
+    =============== ===== ===== ==== =======================================================================
+
+    Note: logical arrays are kept as ones and zeros, and normally retrieved as int32.
+
+    :param quip_atoms:
+    :param name:
+    :param value:
+    :return:
+    """
+    # to make sure it is a numpy array, so we can use the dtype and shape of it
     if not isinstance(value, np.ndarray):
         value = np.array(value)
 
-    # add the value, as 0d or 1d/2d array
+    # decide type
+    arr_dtype_kind = value.dtype.kind
+    dim = len(value.shape)
+    if arr_dtype_kind == 'b':
+        # only 1D works, 0->1
+        fortran_type_name = 'l'
+        if dim >= 2:
+            raise TypeError('2d logical array is not supported')
+        elif dim == 0:
+            # change to a one dimension instead
+            value = np.atleast_1d(value)
+            dim = len(value.shape)  # update dimension!!!
+    elif arr_dtype_kind in ['u', 'i']:
+        # 0,1,2 are all working
+        fortran_type_name = 'i'
+    elif arr_dtype_kind == 'f':
+        # only 1,2 D works, 0->1
+        fortran_type_name = 'r'
+        if dim == 0:
+            # change to a one dimension instead
+            value = np.atleast_1d(value)
+            dim = len(value.shape)  # update dimension!!!
+    else:
+        # so it is one of:
+        # c complex floating - point
+        # m timedelta
+        # M datetime
+        # O object
+        # V void
+        # strings not supported yet, f90wrap_atoms_add_property_str needs some
+        raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
+
+    # decide dim
+    if dim == 0:
+        add_property_method = getattr(_quippy, 'f90wrap_dictionary_set_value_{}'.format(fortran_type_name))
+    elif dim == 1:
+        add_property_method = getattr(_quippy, 'f90wrap_dictionary_set_value_{}_a'.format(fortran_type_name))
+    elif dim == 2:
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
+        value = value.T
+    else:
+        raise ValueError(
+            'unsupported dimension ({}) of attribute in conversion from ase to quip atoms objects'.format(dim))
+    add_property_method(this=quip_atoms.params._handle, key=name, value=value)
+
+
+def add_property_array(quip_atoms, name, value):
+    """
+    Adds property to a quip atoms object
+
+    Supports:
+    =============== ===== ==== =======================================================================
+    type            1D    2D   Note
+    =============== ===== ==== =======================================================================
+    real            yes   yes  scalars kept as arrays of one dimension with one element
+    int             yes   yes
+    bool            yes   NO   zero dim. kept as array of one dimension with one element
+    =============== ===== ==== =======================================================================
+
+    Note: logical arrays are kept as ones and zeros, and normally retrieved as int32.
+
+    :param quip_atoms:
+    :param name:
+    :param value:
+    :return:
+    """
+    # to make sure it is a numpy array, so we can use the dtype and shape of it
+    if not isinstance(value, np.ndarray):
+        value = np.array(value)
+
+    # add the value, 1d/2d array
     dim = len(value.shape)
     arr_dtype_kind = value.dtype.kind
 
@@ -163,15 +272,12 @@ def add_value(quip_atoms, key, value):
         raise TypeError('given dtype ({}) is not supported'.format(arr_dtype_kind))
 
     # decide dim
-    if dim == 0:
-        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}'.format(fortran_type_name))
-        add_property_method(this=quip_atoms._handle, name=key, value=np.atleast_1d(value)[0])
-    elif dim == 1:
+    if dim == 1:
         add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_a'.format(fortran_type_name))
-        add_property_method(this=quip_atoms._handle, name=key, value=value)
+        add_property_method(this=quip_atoms._handle, name=name, value=value)
     elif dim == 2:
         add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
-        add_property_method(this=quip_atoms._handle, name=key, value=value.T)
+        add_property_method(this=quip_atoms._handle, name=name, value=value.T)
     else:
         raise ValueError(
             'unsupported dimension ({}) of attribute in conversion from ase to quip atoms objects'.format(dim))
