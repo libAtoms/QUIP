@@ -140,7 +140,7 @@ class Potential(ase.calculators.calculator.Calculator):
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_all_properties=True, calc_args=None, add_arrays=None,
+                  copy_all_results=True, calc_args=None, add_arrays=None,
                   add_info=None, **kwargs):
 
         # handling the property inputs
@@ -271,7 +271,7 @@ class Potential(ase.calculators.calculator.Calculator):
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if isinstance(copy_all_properties, bool) and copy_all_properties:
+        if isinstance(copy_all_results, bool) and copy_all_results:
             if atoms is not None:
                 _at_list = [self.atoms, atoms]
             else:
