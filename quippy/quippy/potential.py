@@ -61,7 +61,7 @@ class Potential(ase.calculators.calculator.Calculator):
         finalise=True
     """)
     def __init__(self, args_str="", param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
-                 calc_args=None, **kwargs):
+                 calc_args=None, add_arrays=None, add_info=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
 
         self._default_properties = ['energy', 'forces']
@@ -77,6 +77,9 @@ class Potential(ase.calculators.calculator.Calculator):
             self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
         # init the quip atoms as None, to have the variable
         self._quip_atoms = None
+        # init the info and array keys that need to be added when converting atoms objects
+        self.add_arrays = add_arrays
+        self.add_info = add_info
 
         # from old
         if atoms is not None:
@@ -105,6 +108,23 @@ class Potential(ase.calculators.calculator.Calculator):
         'pbc', 'initial_charges' and 'initial_magmoms'.
     calc_args: argument string to pass to Fortran calc() routine.
         This is appended to `self.calc_args`, if this is set.
+    add_arrays: list, str or True
+        Arrays to carry over from `atoms.arrays` to the Fortran atoms object when calling calculate()
+        If the same argument is filled in calculate, then it will overwrite this.
+        String arrays not supported.
+        possible types:
+            None - only defaults: `pos`, `Z`, `cell`, `pbc`, `momenta` (as velo, if exists)
+            str  - single key
+            list - all list elements as keys
+            True - all of the arrays from `atoms.arrays`
+    add_info: list, str or True
+        Info to carry over from `atoms.info` to the Fortran atoms object when calling calculate()
+        If the same argument is filled in calculate, then it will overwrite this.
+        possible types:
+            None - only defaults: `pos`, `Z`, `cell`, `pbc`, `momenta` (as velo, if exists)
+            str  - single key
+            list - all list elements as keys
+            True - all of the values from `atoms.info`
 
     Arrays can also be passed directly to the Fortran routine using
     the `forces`, `virial`, `local_energy`, `local_virial`
@@ -120,7 +140,8 @@ class Potential(ase.calculators.calculator.Calculator):
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_all_properties=True, calc_args=None, **kwargs):
+                  copy_all_results=True, calc_args=None, add_arrays=None,
+                  add_info=None, **kwargs):
 
         # handling the property inputs
         if properties is None:
@@ -172,7 +193,10 @@ class Potential(ase.calculators.calculator.Calculator):
             return
 
         # construct the quip atoms object which we will use to calculate on
-        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms)
+        # if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__
+        self._quip_atoms = quippy.convert.ase_to_quip(self.atoms,
+                                                      add_arrays=add_arrays if add_arrays is not None else self.add_arrays,
+                                                      add_info=add_info if add_info is not None else self.add_info)
 
         # constructing args_string with automatically aliasing the calculateable non-quippy properties
         # calc_args string to be passed to Fortran code
@@ -247,7 +271,7 @@ class Potential(ase.calculators.calculator.Calculator):
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if isinstance(copy_all_properties, bool) and copy_all_properties:
+        if isinstance(copy_all_results, bool) and copy_all_results:
             if atoms is not None:
                 _at_list = [self.atoms, atoms]
             else:

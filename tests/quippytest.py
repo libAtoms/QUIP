@@ -69,11 +69,21 @@ class QuippyTestCase(unittest.TestCase):
 
         absdiff = abs(first - second)
         if np.max(absdiff) > tol:
-            print('First array: \n', first)
-            print('\n \n Second array: \n', second)
-            print('\n \n Abs Difference: \n', absdiff)
-            self.fail('Maximum abs difference between array elements is %e at location %r' % (np.max(absdiff),
-                                                                                              np.argmax(absdiff)))
+            print('First array:\n{}'.format(first))
+            print('\n \n Second array:\n{}'.format(second))
+            print('\n \n Abs Difference:\n{}'.format(absdiff))
+            self.fail('Maximum abs difference between array elements is {} at location {}'.format(np.max(absdiff),
+                                                                                                  np.argmax(absdiff)))
+
+    def assertArrayIntEqual(self, first, second):
+        first = np.array(first)
+        second = np.array(second)
+        self.assertEqual(first.shape, second.shape)
+
+        if not np.all(first == second):
+            print('First array:\n{}'.format(first))
+            print('\n \n Second array:\n{}'.format(second))
+            self.fail('Two bool arrays not matching, difference is\n {}'.format(first == second))
 
 
 def skip(f):
