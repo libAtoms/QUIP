@@ -883,6 +883,23 @@ contains
 
   end subroutine split_string_simple
 
+  function num_fields_in_string_simple(this,separators)
+    character(len=*), intent(in) :: this
+    character(len=*), intent(in) :: separators
+    integer :: num_fields_in_string_simple
+
+    integer :: i, res
+
+    res = 1
+
+    do i = 1, len_trim(this)
+       if( index(trim(separators),this(i:i)) > 0 ) res = res + 1
+    enddo
+
+
+    num_fields_in_string_simple = res
+
+  endfunction num_fields_in_string_simple
 
   !% split a string at separators, making sure not to break up bits that
   !% are in quotes (possibly matching opening and closing quotes), and
