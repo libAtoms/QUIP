@@ -476,6 +476,20 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%yukawa_alpha
       endif
 
+      call QUIP_FoX_get_value(attributes, "yukawa_smooth_length", value, status)
+      if (status == 0) then
+         read (value, *) parse_ip%yukawa_smooth_length
+      else
+         parse_ip%yukawa_smooth_length = 0.0_dp
+      endif
+
+      call QUIP_FoX_get_value(attributes, "yukawa_pseudise", value, status)
+      if (status == 0) then
+         read (value, *) parse_ip%yukawa_pseudise
+      else
+         parse_ip%yukawa_pseudise = .false.
+      endif
+
       call QUIP_FoX_get_value(attributes, "yukawa_grid_size", value, status)
       if (status == 0) then
          read (value, *) parse_ip%yukawa_grid_size
