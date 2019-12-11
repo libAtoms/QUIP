@@ -132,40 +132,55 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
 
   type(Dictionary) :: params
   character(len=STRING_LENGTH) :: method_str
+  logical :: has_method
 
   call Finalise(this)
   call initialise(params)
   this%label=''
   method_str=''
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
-  call param_register(params, 'method', '', method_str, help_string="If present, method for Coulomb calculation.  Will be overridden by xml parameters if present")
+  call param_register(params, 'method', '', method_str, help_string="If present, method for Coulomb calculation.  Will be overridden &
+      by xml parameters if present", has_value_target=has_method)
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Initialise_str args_str')) then
     call system_abort("IPModel_Coulomb_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
   call finalise(params)
 
-  if (trim(method_str) /= "") then
-      select case(lower_case(trim(method_str)))
-	 case("direct")
-	    this%method = IPCoulomb_Method_Direct
-	 case("yukawa")
-	    this%method = IPCoulomb_Method_Yukawa
-	 case("ewald")
-	    this%method = IPCoulomb_Method_Ewald
-	 case("ewald_nb")
-	    this%method = IPCoulomb_Method_Ewald_NB
-	 case("dsf")
-	    this%method = IPCoulomb_Method_DSF
-	 case default
-	    call system_abort ("IPModel_Coulomb_Initialise_str: method "//trim(method_str)//" unknown")
-      end select
-  end if
-
   call IPModel_Coulomb_read_params_xml(this, param_str)
+
+  if(this%method == 0) then
+     if(has_method) then
+        this%method = IPModel_Coulomb_get_method(method_str)
+     else
+        call system_abort("IPModel_Coulomb_Initialise_str: no method specified either in XML or arguments")
+     endif
+  endif
+
  
   !  Add initialisation code here
 
 end subroutine IPModel_Coulomb_Initialise_str
+
+function IPModel_Coulomb_get_method(this)
+   character(len=*), intent(in) :: this
+   integer :: IPModel_Coulomb_get_method
+
+   select case(lower_case(trim(this)))
+      case("direct")
+         IPModel_Coulomb_get_method = IPCoulomb_Method_Direct
+      case("yukawa")
+         IPModel_Coulomb_get_method = IPCoulomb_Method_Yukawa
+      case("ewald")
+         IPModel_Coulomb_get_method = IPCoulomb_Method_Ewald
+      case("ewald_nb")
+         IPModel_Coulomb_get_method = IPCoulomb_Method_Ewald_NB
+      case("dsf")
+         IPModel_Coulomb_get_method = IPCoulomb_Method_DSF
+      case default
+         call system_abort ("IPModel_Coulomb_get_method: method "//trim(this)//" unknown")
+   end select
+
+endfunction IPModel_Coulomb_get_method
 
 subroutine IPModel_Coulomb_Finalise(this)
   type(IPModel_Coulomb), intent(inout) :: this
@@ -376,7 +391,6 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
   parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
-
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
     startElement_handler = IPModel_startElement_handler, &
@@ -417,7 +431,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (status /= 0) value = ''
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
-      if (value == parse_ip%label) then ! exact match
+      if (trim(value) == trim(parse_ip%label)) then ! exact match
         parse_matched_label = .true.
         parse_in_ip = .true.
       else ! no match
@@ -430,6 +444,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
         call finalise(parse_ip)
+      endif
+
+      call QUIP_FoX_get_value(attributes, 'method', value, status)
+      if (status == 0) then
+        parse_ip%method = IPModel_Coulomb_get_method(value)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
