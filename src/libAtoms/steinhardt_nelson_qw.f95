@@ -18,17 +18,17 @@ public :: calc_qw, calc_qw_grad
 
 contains
 
-subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
+subroutine calc_qw(this,l,do_q,do_w,cutoff,min_cutoff,cutoff_transition_width,mask,mask_neighbour,error)
    type(atoms), intent(inout) :: this
    integer, intent(in) :: l
    logical, intent(in), optional :: do_q, do_w
-   real(dp), intent(in), optional :: cutoff, cutoff_transition_width
-   logical, dimension(:), intent(in), optional :: mask
+   real(dp), intent(in), optional :: cutoff, cutoff_transition_width, min_cutoff
+   logical, dimension(:), intent(in), optional :: mask, mask_neighbour
    integer, intent(out), optional :: error
 
    real(dp), dimension(:), pointer :: ql, wl
    real(dp), dimension(3) :: diff_ij
-   real(dp) :: ql_crystal, wl_crystal, my_cutoff, my_cutoff_transition_width, r_ij, f_cut
+   real(dp) :: ql_crystal, wl_crystal, my_cutoff, my_min_cutoff, my_cutoff_transition_width, r_ij, f_cut
    logical :: my_do_q, my_do_w, do_smooth_cutoff
 
    complex(dp), dimension(:), allocatable :: spherical_c
@@ -41,6 +41,7 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
    my_do_q = optional_default(.false.,do_q)
    my_do_w = optional_default(.false.,do_w)
    my_cutoff = optional_default(this%cutoff,cutoff)
+   my_min_cutoff = optional_default(0.0_dp,min_cutoff)
    my_cutoff_transition_width = optional_default(0.0_dp,cutoff_transition_width)
 
    do_smooth_cutoff = present(cutoff_transition_width)
@@ -55,6 +56,9 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
 
    if(present(mask)) then
       call check_size("mask",mask,this%N,"calc_qw",error)
+   endif
+   if(present(mask_neighbour)) then
+      call check_size("mask_neighbour",mask_neighbour,this%N,"calc_qw",error)
    endif
 
    allocate(spherical_c(-l:l), spherical_c_crystal(-l:l))
@@ -76,6 +80,11 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,cutoff_transition_width,mask,error)
 	 j = neighbour(this,i,n,diff=diff_ij,distance=r_ij)
 
 	 if(r_ij > my_cutoff) cycle
+	 if(r_ij < my_min_cutoff) cycle
+
+         if(present(mask_neighbour)) then
+            if( .not. mask_neighbour(j) ) cycle
+         endif
 
 	 if(do_smooth_cutoff) then
 	    f_cut = coordination_function(r_ij,my_cutoff,my_cutoff_transition_width)
