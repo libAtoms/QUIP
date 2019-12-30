@@ -42,7 +42,8 @@ PROGRAMS = quip md \
   fix_traj_latest randomise_calc \
   quip_wrapper_example descriptors_wrapper_example \
   slice_sample order_atoms_as_molecules md_gid \
-  quip_wrapper_simple_example quip_wrapper_simple_example_C
+  quip_wrapper_simple_example quip_wrapper_simple_example_C \
+  get_qw
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
