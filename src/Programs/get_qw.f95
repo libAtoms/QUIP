@@ -1,7 +1,6 @@
 program get_qw
 
   use libatoms_module
-  use descriptors_module
   use steinhardt_nelson_qw_module
 
 
