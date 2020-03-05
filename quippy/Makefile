@@ -94,7 +94,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 		--py-max-line-length 120 --f90-max-line-length 120
 
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
+		-L. -lquip ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
 	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	ln -s _quippy.*.so _quippy.so
 
