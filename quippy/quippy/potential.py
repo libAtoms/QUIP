@@ -52,16 +52,18 @@ class Potential(ase.calculators.calculator.Calculator):
     from old quippy arguments:
 
     not implemented yet:
-        pot1=None, pot2=None
-        param_filename=None
         bulk_scale=None
         mpi_obj=None
         callback=None
-        calculation_always_required=False
         finalise=True
     """)
-    def __init__(self, args_str="", param_str=None, atoms=None, calculation_always_required=False, param_filename=None,
-                 calc_args=None, add_arrays=None, add_info=None, **kwargs):
+    def __init__(self, args_str="",
+                 pot1=None, pot2=None,
+                 param_str=None,
+                 param_filename=None,
+                 atoms=None,
+                 calculation_always_required=False,  calc_args=None,
+                 add_arrays=None, add_info=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
 
         self._default_properties = ['energy', 'forces']
@@ -71,10 +73,21 @@ class Potential(ase.calculators.calculator.Calculator):
                                                        atoms=atoms, **kwargs)
         # init the quip potential
         if param_filename is not None and type(param_filename) == str:
+            # from a param filename
             self._quip_potential = quippy.potential_module.Potential.filename_initialise(args_str=args_str,
                                                                                          param_filename=param_filename)
-        else:
+        elif param_str is not None:
+            # from a param string
             self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
+        elif pot1 is not None and pot2 is not None:
+            # from sum of two potentials
+            self._quip_potential = quippy.potential_module.Potential(
+                args_str=args_str,
+                pot1=(pot1._quip_potential if isinstance(pot1, quippy.potential.Potential) else pot1),
+                pot2=(pot2._quip_potential if isinstance(pot2, quippy.potential.Potential) else pot2))
+        else:
+            raise RuntimeError("None of param_filename, param_str or pot1+pot2 was given")
+
         # init the quip atoms as None, to have the variable
         self._quip_atoms = None
         # init the info and array keys that need to be added when converting atoms objects
