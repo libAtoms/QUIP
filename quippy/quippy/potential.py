@@ -44,7 +44,7 @@ class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
     implemented_properties = ['energy', 'free_energy', 'forces', 'virial', 'stress',
-                              'local_virial', 'local_energy', 'local_stress']
+                              'local_virial', 'local_energy', 'local_stress', 'stresses', 'energies']
 
     @set_doc(quippy.potential_module.Potential.__init__.__doc__,
     """
