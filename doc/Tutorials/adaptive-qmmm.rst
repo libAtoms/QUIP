@@ -6,6 +6,9 @@
 Adaptive QM/MM MD of Fracture in Silicon
 ****************************************
 
+*This tutorial has not been updated for the Python 3 rewrite of quippy.
+It is hosted here for archival purposes*
+
 This tutorial has been prepared for use at a hands-on session at the
 `ADGLASS Winter School on Advanced Molecular Dynamics Simulations
 <http://www.adglass.eu/adglass_news.html>`_, ICTP, Trieste, February

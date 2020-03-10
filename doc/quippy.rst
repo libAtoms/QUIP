@@ -25,78 +25,27 @@ This section contains library reference material for the core quippy
 classes and modules. 
 
 
-Core functionality
-------------------
+High-level Python API
+---------------------
 
 .. toctree::
    :maxdepth: 1
 
-   atoms.rst
-   io.rst
    potential.rst
-
-Structure generation, manipulation and analysis
------------------------------------------------
-
-.. toctree::
-   structures.rst
    descriptors.rst
-   crack.rst
-   clusters.rst
-   find_surface_atoms.rst
-   real_space_covariance.rst
-   topology.rst
-
-   
-
-Molecular Dynamics
-------------------
-
-.. toctree::
    dynamicalsystem.rst
-   lotf.rst
+   convert.rst
 
-Additional tools for Potentials
--------------------------------
 
-.. toctree::
-   cp2k.rst
-   elasticity.rst
-   polarization.rst
-   electrostaticembed.rst
-   phonons.rst
-
-Mathematical and optimisation tools
------------------------------------
-
-.. toctree::
-   linearalgebra.rst
-   quaternions.rst
-   spline.rst
-   simplex.rst
-
-Units, Data and Constants
--------------------------
-
-.. toctree::
-   periodictable.rst
-   units.rst
-
-Low level routines and datatypes
+Low-level API (Fortran wrappers)
 --------------------------------
 
 .. toctree::
+   atoms.rst
    system.rst
-   connection.rst
    dictionary.rst
-   domaindecomposition.rst
-   table.rst
-   mpi_context.rst
-   paramreader.rst
-   fortranio.rst
-   farray.rst
-   util.rst
-   qpxml.rst
+
+
 
 
 

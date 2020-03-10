@@ -20,7 +20,7 @@
 Fortran Dictionary objects for storing key/value pairs
 ======================================================
 
-.. automodule:: quippy.dictionary
+.. automodule:: quippy.dictionary_module
    :synopsis: Fortran dictionary for storing key/value pairs
    :members:
    :inherited-members:

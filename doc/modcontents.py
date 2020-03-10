@@ -8,7 +8,7 @@ import pydoc
 
 def process_docstring(app, what, name, obj, options, lines):
     if what == 'module':
-        print 'Adding contents listing for module %s' % name
+        print('Adding contents listing for module %s' % name)
 
         title = 'Module contents for :mod:`%s`:' % name
         lines.append(title)

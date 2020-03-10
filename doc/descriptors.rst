@@ -17,14 +17,9 @@
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 Descriptors for atomic environments
-===========================================================
+===================================
 
 .. autoclass:: quippy.descriptors.Descriptor
    :members:
    :inherited-members:
 
-.. autoclass:: quippy.descriptors.Soap
-   :members:
-
-.. autoclass:: quippy.descriptors.General_monomer
-   :members:
