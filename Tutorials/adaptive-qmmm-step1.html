@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Step 1: Setup of the Silicon model system &mdash; quippy 4213a86+ documentation</title>
+  <title>Step 1: Setup of the Silicon model system &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -23,12 +23,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -68,7 +69,7 @@
             
             
               <div class="version">
-                4213a86+
+                4572eb2+
               </div>
             
           
@@ -94,13 +95,9 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
@@ -121,8 +118,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../gap_fit.html">Command line options of the gap_fit main program</a></li>
 </ul>
 
             
@@ -204,13 +199,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -234,17 +229,17 @@ approximately 2D model system in the <a class="reference internal" href="adaptiv
 <h3>Import the relevant modules and functions<a class="headerlink" href="#import-the-relevant-modules-and-functions" title="Permalink to this headline">¶</a></h3>
 <p>We start by importing all the functions we will need. Create a new
 script named <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code> and add the following lines:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.lattice</span> <span class="k">import</span> <span class="n">bulk</span>
-<span class="kn">from</span> <span class="nn">ase.lattice.cubic</span> <span class="k">import</span> <span class="n">Diamond</span>
-<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="k">import</span> <span class="n">FixAtoms</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.lattice</span> <span class="kn">import</span> <span class="n">bulk</span>
+<span class="kn">from</span> <span class="nn">ase.lattice.cubic</span> <span class="kn">import</span> <span class="n">Diamond</span>
+<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span>
 <span class="kn">import</span> <span class="nn">ase.units</span> <span class="k">as</span> <span class="nn">units</span>
 
-<span class="kn">from</span> <span class="nn">quippy</span> <span class="k">import</span> <span class="n">set_fortran_indexing</span>
-<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="k">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">Minim</span>
-<span class="kn">from</span> <span class="nn">quippy.elasticity</span> <span class="k">import</span> <span class="n">youngs_modulus</span><span class="p">,</span> <span class="n">poisson_ratio</span>
-<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="k">import</span> <span class="n">write</span>
+<span class="kn">from</span> <span class="nn">quippy</span> <span class="kn">import</span> <span class="n">set_fortran_indexing</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">Potential</span><span class="p">,</span> <span class="n">Minim</span>
+<span class="kn">from</span> <span class="nn">quippy.elasticity</span> <span class="kn">import</span> <span class="n">youngs_modulus</span><span class="p">,</span> <span class="n">poisson_ratio</span>
+<span class="kn">from</span> <span class="nn">quippy.io</span> <span class="kn">import</span> <span class="n">write</span>
 
-<span class="kn">from</span> <span class="nn">quippy.crack</span> <span class="k">import</span> <span class="p">(</span><span class="n">print_crack_system</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">quippy.crack</span> <span class="kn">import</span> <span class="p">(</span><span class="n">print_crack_system</span><span class="p">,</span>
                           <span class="n">G_to_strain</span><span class="p">,</span>
                           <span class="n">thin_strip_displacement_y</span><span class="p">,</span>
                           <span class="n">find_crack_tip_stress_field</span><span class="p">)</span>
@@ -254,8 +249,8 @@ script named <code class="docutils literal notranslate"><span class="pre">make_c
 will use <cite>ASE</cite> for basic atomic manipulations, and <cite>quippy</cite> to provide
 the interatomic potentials plus some special purpose functionality.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">For interactive use, it is convenient to import everything from the
+<p class="admonition-title">Note</p>
+<p>For interactive use, it is convenient to import everything from the
 entire <cite>quippy</cite> package with <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">qlab</span> <span class="pre">import</span> <span class="pre">*</span></code> as described
 in the <a class="reference internal" href="adaptive-qmmm-step0.html#practical"><span class="std std-ref">Practical considerations</span></a> section. We chose not to do that in these scripts to
 make it clear where each function we are using is defined, and to make it easier
@@ -315,7 +310,7 @@ potential:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>            <span class="c1"># File to which structure will be written</span>
 </pre></div>
 </div>
-<p>You should download the <a class="reference download internal" download="" href="../_downloads/b70efade234b5915a8b73b9e6305c89c/params.xml"><code class="xref download docutils literal notranslate"><span class="pre">params.xml</span></code></a> file, which contains
+<p>You should download the <a class="reference download internal" download="" href="../_downloads/9266e6e840076d2ba6032f338f845bd6/params.xml"><code class="xref download docutils literal notranslate"><span class="pre">params.xml</span></code></a> file, which contains
 the parameters for the SW potential (and also for DFTB, needed for
 <a class="reference internal" href="adaptive-qmmm-step3.html#step3"><span class="std std-ref">Step 3: LOTF hybrid MD simulation of fracture in Si</span></a>)</p>
 </div>
@@ -333,15 +328,15 @@ has various attributes and methods that will be introduced as necessary
 during this tutorial.</p>
 <p>Once you have created your <cite>si_bulk</cite> object, run the <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code>
 script from within <cite>ipython</cite> with the <code class="docutils literal notranslate"><span class="pre">run</span></code> command. Providing you
-have imported everything from the <a class="reference internal" href="../qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> module, will then be
+have imported everything from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code> module, will then be
 able to interactively visualise the Si unit cell with the
-<a class="reference internal" href="../qlab.html#qlab.view" title="qlab.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> function from the <a class="reference internal" href="../qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> module, which you
+<code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code> function from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code> module, which you
 should type in at the <cite>ipython</cite> prompt:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">view</span><span class="p">(</span><span class="n">si_bulk</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/si_bulk.png"><img alt="../_images/si_bulk.png" class="align-center" src="../_images/si_bulk.png" style="width: 300px;" /></a>
-<p>This will pop up an AtomEye <a class="reference internal" href="adaptive-qmmm-references.html#li2003" id="id1">[Li2003]</a> window showing the 8-atom
+<p>This will pop up an AtomEye <a class="reference internal" href="adaptive-qmmm-references.html#li2003" id="id1"><span>[Li2003]</span></a> window showing the 8-atom
 silicon cell, with the unit cell boundary drawn with a thick black
 line. You can rotate the system with the left mouse button, translate
 by holding <cite>Control</cite> and tracking, or translate within the periodic
@@ -349,7 +344,7 @@ boundaries by holding <cite>Shift</cite> and dragging. Zoom in and out by
 dragging with the right mouse button (or scroll wheel, if you have
 one). Press <cite>b</cite> to toggle the display of bonds. For more help on
 <cite>AtomEye</cite> see its <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">web page</a> or the documentation
-for the <a class="reference internal" href="../qlab.html#module-qlab" title="qlab: Interactive visualisation of atomic systems"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code></a> and <a class="reference internal" href="../atomeye.html#module-atomeye" title="atomeye: AtomEye atomistic configuration viewer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">atomeye</span></code></a> modules.</p>
+for the <code class="xref py py-mod docutils literal notranslate"><span class="pre">qlab</span></code> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">atomeye</span></code> modules.</p>
 <p>Now, we initialise the Stillinger-Weber (SW) classical interatomic
 potential using quippy’s <a class="reference internal" href="../potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> class</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mm_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">,</span> <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;params.xml&#39;</span><span class="p">)</span>
@@ -366,10 +361,10 @@ using the method <code class="xref py py-meth docutils literal notranslate"><spa
 <p>This means that subsequent requests to calculate energy or forces of
 <cite>si_bulk</cite> will be performed using our SW potential.</p>
 <p>The minimisation can now be carried out by making a
-<a class="reference internal" href="../potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal notranslate"><span class="pre">Minim</span></code></a> class from the <cite>si_bulk</cite> Atoms,
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Minim</span></code> class from the <cite>si_bulk</cite> Atoms,
 requesting that both atomic positions and cell degrees of freedom
 should be relaxed. Then run the minimisation until the maximum force
-is below <code class="docutils literal notranslate"><span class="pre">fmax=1e-2</span></code>, using the <a class="reference internal" href="../potential.html#quippy.potential.Minim.run" title="quippy.potential.Minim.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a>
+is below <code class="docutils literal notranslate"><span class="pre">fmax=1e-2</span></code>, using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code>
 method</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">minim</span> <span class="o">=</span> <span class="o">...</span>                           <span class="c1"># Initialise the minimiser from si_bulk</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Minimising bulk unit cell&#39;</span><span class="p">)</span>
@@ -397,7 +392,7 @@ off-diagonal components of the lattice are exactly zero:</p>
 </div>
 <div class="section" id="milestone-1-1">
 <h3>Milestone 1.1<a class="headerlink" href="#milestone-1-1" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" download="" href="../_downloads/f604d01fb7bb3e076ca56e32ef9ecca4/make_crack_1.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack_1.py</span></code></a>.</p>
+<p>At this point your script should look something like <a class="reference download internal" download="" href="../_downloads/b1d0ef2c16653116859eb53c4f6892a7/make_crack_1.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack_1.py</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="calculation-of-elastic-and-surface-properties-of-silicon-30-minutes">
@@ -409,7 +404,7 @@ calculate some elastic properties of our model silicon. To calculate the Young�
 modulus <cite>E</cite> along the direction perpendicular to the cleavage plane, and the
 Poisson ratio <span class="math notranslate nohighlight">\(\nu\)</span> in the <span class="math notranslate nohighlight">\(xy\)</span> plane, we need the <span class="math notranslate nohighlight">\(6 \times
 6\)</span> matrix of the elastic constants <span class="math notranslate nohighlight">\(C_{ij}\)</span>. This matrix <cite>c</cite> can be
-calculated using the <a class="reference internal" href="../potential.html#quippy.potential.Potential.get_elastic_constants" title="quippy.potential.Potential.get_elastic_constants"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_elastic_constants()</span></code></a>
+calculated using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_elastic_constants()</span></code>
 method of the <cite>mm_pot</cite> Potential object.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">mm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c1"># Get the 6x6 C_ij matrix</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Elastic constants (GPa):&#39;</span><span class="p">)</span>
@@ -422,9 +417,9 @@ convert from pressure units of eV/A<sup>3</sup> into GPa.</p>
 <p>The Young’s modulus <cite>E</cite> and the Poisson ratio <cite>nu</cite> can now be calculated,
 given <cite>c</cite>, the <cite>cleavage_plane</cite> and the <cite>crack_direction</cite> (defined in the
 <a class="reference internal" href="#parameters"><span class="std std-ref">parameters section</span></a> above), using the functions
-<a class="reference internal" href="../elasticity.html#quippy.elasticity.youngs_modulus" title="quippy.elasticity.youngs_modulus"><code class="xref py py-func docutils literal notranslate"><span class="pre">youngs_modulus()</span></code></a> and
-<a class="reference internal" href="../elasticity.html#quippy.elasticity.poisson_ratio" title="quippy.elasticity.poisson_ratio"><code class="xref py py-func docutils literal notranslate"><span class="pre">poisson_ratio()</span></code></a> from the
-<a class="reference internal" href="../elasticity.html#module-quippy.elasticity" title="quippy.elasticity: Elasticity calculations"><code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.elasticity</span></code></a> module.</p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">youngs_modulus()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">poisson_ratio()</span></code> from the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">quippy.elasticity</span></code> module.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="o">...</span>                                              <span class="c1"># Get E</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Young</span><span class="se">\&#39;</span><span class="s1">s modulus </span><span class="si">%.1f</span><span class="s1"> GPa&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">))</span>
 <span class="n">nu</span> <span class="o">=</span> <span class="o">...</span>                                             <span class="c1"># Get nu</span>
@@ -527,7 +522,7 @@ distance).</p>
 </div>
 <div class="section" id="milestone-1-2">
 <h3>Milestone 1.2<a class="headerlink" href="#milestone-1-2" title="Permalink to this headline">¶</a></h3>
-<p>At this point your script should look something like <a class="reference download internal" download="" href="../_downloads/0990e2fe34c8d14df678dd28fd2d3e14/make_crack_2.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack_2.py</span></code></a></p>
+<p>At this point your script should look something like <a class="reference download internal" download="" href="../_downloads/c0d9dd96e0704a74574fe0cf51556569/make_crack_2.py"><code class="xref download docutils literal notranslate"><span class="pre">make_crack_2.py</span></code></a></p>
 </div>
 </div>
 <div class="section" id="setup-of-the-crack-slab-supercell-30-minutes">
@@ -607,7 +602,7 @@ whose position needs to be fixed, and <cite>False</cite> otherwise:</p>
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">|</span></code> operator is shorthand for a logical ‘or’
 operation. After re-running the latest version of your script and
 executing <code class="docutils literal notranslate"><span class="pre">view(crack_slab)</span></code>, you can colour the atoms by
-<cite>fixed_mask</cite> using the <a class="reference internal" href="../qlab.html#qlab.aux_property_coloring" title="qlab.aux_property_coloring"><code class="xref py py-func docutils literal notranslate"><span class="pre">aux_property_coloring()</span></code></a> function</p>
+<cite>fixed_mask</cite> using the <code class="xref py py-func docutils literal notranslate"><span class="pre">aux_property_coloring()</span></code> function</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aux_property_coloring</span><span class="p">(</span><span class="n">fixed_mask</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -625,11 +620,11 @@ then attach the constraint to <cite>crack_slab</cite> using
 </div>
 <p>To create the crack seed, we now apply the initial strain ramp. First,
 we need to convert the chosen energy release rate <cite>initial_G</cite> into a
-strain. This can be done using the <a class="reference internal" href="../crack.html#quippy.crack.G_to_strain" title="quippy.crack.G_to_strain"><code class="xref py py-func docutils literal notranslate"><span class="pre">G_to_strain()</span></code></a>
+strain. This can be done using the <code class="xref py py-func docutils literal notranslate"><span class="pre">G_to_strain()</span></code>
 function which implements the <a class="reference internal" href="adaptive-qmmm-theory.html#thin-strip-equation"><span class="std std-ref">thin strip equation described
 above</span></a>. The <cite>strain</cite> is then used to displace
 the <cite>y</cite> coordinate of the atomic positions according to the strain
-ramp produced by the <a class="reference internal" href="../crack.html#quippy.crack.thin_strip_displacement_y" title="quippy.crack.thin_strip_displacement_y"><code class="xref py py-func docutils literal notranslate"><span class="pre">thin_strip_displacement_y()</span></code></a>
+ramp produced by the <code class="xref py py-func docutils literal notranslate"><span class="pre">thin_strip_displacement_y()</span></code>
 function. Here, the <cite>crack_seed_length</cite> and the <cite>strain_ramp_length</cite>
 parameters should be used. The objective is that atoms to the left of
 <code class="docutils literal notranslate"><span class="pre">left</span> <span class="pre">+</span> <span class="pre">crack_seed_length</span></code> should be rigidly shifted vertically, and
@@ -651,7 +646,7 @@ region in between.</p>
 approximate geometry optimisation of the slab, keeping the top and
 bottom rows of atoms fixed. Once again, our <cite>mm_pot</cite> needs to be
 attached to <cite>crack_slab</cite> and the minimiser
-<a class="reference internal" href="../potential.html#quippy.potential.Minim" title="quippy.potential.Minim"><code class="xref py py-class docutils literal notranslate"><span class="pre">Minim</span></code></a> initialised (note that here it does
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Minim</span></code> initialised (note that here it does
 not make sense to relax the cell since we have vacuum in two
 directions). We can then perform the minimisation until the maximum
 force is below the <cite>relax_fmax</cite> defined in the <a class="reference internal" href="#parameters"><span class="std std-ref">parameters
@@ -669,7 +664,7 @@ section</span></a>:</p>
 <h3>Locating the crack tip<a class="headerlink" href="#locating-the-crack-tip" title="Permalink to this headline">¶</a></h3>
 <p>Before starting the next steps, it is useful to find the initial
 position of the crack tip.  This is provided by the
-<a class="reference internal" href="../crack.html#quippy.crack.find_crack_tip_stress_field" title="quippy.crack.find_crack_tip_stress_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code></a> function:</p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crack_pos</span> <span class="o">=</span> <span class="n">find_crack_tip_stress_field</span><span class="p">(</span><span class="n">crack_slab</span><span class="p">,</span> <span class="n">calc</span><span class="o">=</span><span class="n">mm_pot</span><span class="p">)</span>
 <span class="nb">print</span> <span class="s1">&#39;Found crack tip at position </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">crack_pos</span>
 </pre></div>
@@ -704,7 +699,7 @@ position.</p>
 </pre></div>
 </div>
 <p>We can save our results, including all the extra properties and
-information, in <a class="reference internal" href="../io.html#extendedxyz"><span class="std std-ref">Extended XYZ</span></a> in the <cite>output_file</cite>, whose name is
+information, in <span class="xref std std-ref">extendedxyz</span> in the <cite>output_file</cite>, whose name is
 defined in the <a class="reference internal" href="#parameters"><span class="std std-ref">parameters section</span></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing crack slab to file </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
 <span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">crack_slab</span><span class="p">)</span>
@@ -740,7 +735,7 @@ defined in the <a class="reference internal" href="#parameters"><span class="std
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2008-2016, James Kermode
+        &copy; Copyright 2008-2020, James Kermode
 
     </p>
   </div>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Adaptive QM/MM MD of Fracture in Silicon &mdash; quippy 4213a86+ documentation</title>
+  <title>Adaptive QM/MM MD of Fracture in Silicon &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -23,12 +23,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -68,7 +69,7 @@
             
             
               <div class="version">
-                4213a86+
+                4572eb2+
               </div>
             
           
@@ -94,13 +95,9 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html">Introductory Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Adaptive QM/MM MD of Fracture in Silicon</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a></li>
@@ -116,8 +113,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../gap_fit.html">Command line options of the gap_fit main program</a></li>
 </ul>
 
             
@@ -197,13 +192,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -218,19 +213,19 @@
 </style>
 <div class="section" id="adaptive-qm-mm-md-of-fracture-in-silicon">
 <span id="qmmm-tutorial"></span><h1>Adaptive QM/MM MD of Fracture in Silicon<a class="headerlink" href="#adaptive-qm-mm-md-of-fracture-in-silicon" title="Permalink to this headline">¶</a></h1>
+<p><em>This tutorial has not been updated for the Python 3 rewrite of quippy.
+It is hosted here for archival purposes</em></p>
 <p>This tutorial has been prepared for use at a hands-on session at the
 <a class="reference external" href="http://www.adglass.eu/adglass_news.html">ADGLASS Winter School on Advanced Molecular Dynamics Simulations</a>, ICTP, Trieste, February
 2013.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">James Kermode and Gianpietro Moras</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">February 2013</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Authors</dt>
+<dd class="field-odd"><p>James Kermode and Gianpietro Moras</p>
+</dd>
+<dt class="field-even">Date</dt>
+<dd class="field-even"><p>February 2013</p>
+</dd>
+</dl>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="adaptive-qmmm-step0.html">Introduction</a><ul>
@@ -295,7 +290,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2008-2016, James Kermode
+        &copy; Copyright 2008-2020, James Kermode
 
     </p>
   </div>

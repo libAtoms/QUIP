@@ -25,5 +25,5 @@ AtomEye atomistic configuration viewer
    :synopsis: AtomEye atomistic configuration viewer
    :members:
 
-.. moduleauthor:: James Kermode <james.kermode@kcl.ac.uk>
+.. moduleauthor:: James Kermode <james.kermode@gmail.com>
 

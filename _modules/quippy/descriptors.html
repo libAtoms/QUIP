@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.descriptors &mdash; quippy 4213a86+ documentation</title>
+  <title>quippy.descriptors &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -23,12 +23,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                4213a86+
+                4572eb2+
               </div>
             
           
@@ -92,13 +93,10 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../gap_fit.html">Command line options of the gap_fit main program</a></li>
 </ul>
 
             
@@ -170,11 +168,14 @@
            <div itemprop="articleBody">
             
   <h1>Source code for quippy.descriptors</h1><div class="highlight"><pre>
-<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span></span><span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 <span class="c1"># HQ X</span>
 <span class="c1"># HQ X   quippy: Python interface to QUIP atomistic simulation library</span>
 <span class="c1"># HQ X</span>
-<span class="c1"># HQ X   Copyright ST John 2017</span>
+<span class="c1"># HQ X   Portions of this code were written by</span>
+<span class="c1"># HQ X     Tamas K. Stenczel, James Kermode</span>
+<span class="c1"># HQ X</span>
+<span class="c1"># HQ X   Copyright 2019</span>
 <span class="c1"># HQ X</span>
 <span class="c1"># HQ X   These portions of the source code are released under the GNU General</span>
 <span class="c1"># HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html</span>
@@ -184,146 +185,218 @@
 <span class="c1"># HQ X</span>
 <span class="c1"># HQ X   When using this software, please cite the following reference:</span>
 <span class="c1"># HQ X</span>
-<span class="c1"># HQ X   http://www.jrkermode.co.uk/quippy</span>
+<span class="c1"># HQ X   https://warwick.ac.uk/fac/sci/eng/staff/jrk</span>
 <span class="c1"># HQ X</span>
-<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
+<span class="c1"># HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</span>
 
-<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 
+<span class="kn">import</span> <span class="nn">quippy</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="k">import</span> <span class="n">Atoms</span> <span class="k">as</span> <span class="n">ASEAtoms</span>
-
-<span class="kn">from</span> <span class="nn">quippy._descriptors</span> <span class="k">import</span> <span class="n">Descriptor</span> <span class="k">as</span> <span class="n">RawDescriptor</span>
-<span class="kn">from</span> <span class="nn">quippy._descriptors</span> <span class="k">import</span> <span class="n">Soap</span><span class="p">,</span> <span class="n">General_monomer</span>
-<span class="kn">from</span> <span class="nn">quippy.oo_fortran</span> <span class="k">import</span> <span class="n">update_doc_string</span>
-<span class="kn">from</span> <span class="nn">quippy.farray</span> <span class="k">import</span> <span class="n">fzeros</span>
-<span class="kn">from</span> <span class="nn">quippy.atoms</span> <span class="k">import</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">quippy.util</span> <span class="k">import</span> <span class="n">dict_to_args_str</span>
+<span class="kn">from</span> <span class="nn">ase.io.extxyz</span> <span class="kn">import</span> <span class="n">key_val_dict_to_str</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Descriptor&#39;</span><span class="p">]</span>
-
-
-<span class="k">class</span> <span class="nc">DescriptorCalcResult</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Results of a descriptor calculation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
 
 
 <span class="k">def</span> <span class="nf">convert_atoms_types_iterable_method</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator to transparently convert ASEAtoms objects into quippy Atoms, and</span>
 <span class="sd">    to transparently iterate over a list of Atoms objects...</span>
+
+<span class="sd">    Taken from py2 version</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nd">@wraps</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">quippy</span><span class="o">.</span><span class="n">atoms_types_module</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ASEAtoms</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+            <span class="n">_quip_at</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">ase_to_quip</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_quip_at</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atelement</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="k">for</span> <span class="n">atelement</span> <span class="ow">in</span> <span class="n">at</span><span class="p">]</span>
+
     <span class="k">return</span> <span class="n">wrapper</span>
 
 
-<div class="viewcode-block" id="Descriptor"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor">[docs]</a><span class="k">class</span> <span class="nc">Descriptor</span><span class="p">(</span><span class="n">RawDescriptor</span><span class="p">):</span>
-    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">update_doc_string</span><span class="p">(</span>
-        <span class="n">RawDescriptor</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
-        <span class="sd">&quot;&quot;&quot;Pythonic wrapper for GAP descriptor module&quot;&quot;&quot;</span><span class="p">,</span>
-        <span class="n">signature</span><span class="o">=</span><span class="s1">&#39;Descriptor(args_str)&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="Descriptor"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor">[docs]</a><span class="k">class</span> <span class="nc">Descriptor</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">init_args</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">init_kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises Descriptor object and calculate number of dimensions and</span>
 <span class="sd">        permutations.</span>
+
+
+<span class="sd">        properties:</span>
+<span class="sd">        - cutoff</span>
+
+<span class="sd">        calculateable:</span>
+<span class="sd">        - sizes: `n_desc, n_cross, n_index = desc.sizes(_quip_atoms)`</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="n">args_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">args_str</span> <span class="o">=</span> <span class="n">dict_to_args_str</span><span class="p">(</span><span class="n">init_args</span><span class="p">)</span>
-        <span class="n">RawDescriptor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args_str</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_perm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permutations</span><span class="p">()</span>
+            <span class="n">args_str</span> <span class="o">=</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">init_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args_str</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">init_kwargs</span><span class="p">)</span>
 
-    <span class="c1">#: Number of dimensions</span>
-    <span class="n">n_dim</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span>
-    <span class="c1">#: Number of permutations</span>
-    <span class="n">n_perm</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_perm</span><span class="p">)</span>
+        <span class="c1"># intialise the wrapped object and hide it from the user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">descriptors_module</span><span class="o">.</span><span class="n">descriptor</span><span class="p">(</span><span class="n">args_str</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span>
+        <span class="c1"># kept for compatibility with older version</span>
+        <span class="c1"># super convoluted though :D should just rethink it at some point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_perm</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Descriptor.permutations"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.permutations">[docs]</a>    <span class="k">def</span> <span class="nf">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">dimensions</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_n_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">n_permutations</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this is equivalent to the py2 behaviour, giving an array of the permutations</span>
+        <span class="n">permutation_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">permutation_arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">permutation_arr</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">cutoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO: decide if adding @property is a good idea</span>
+        <span class="c1"># could be like get_cutoff()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span>
+
+    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">sizes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns array containing all valid permutations of this descriptor.</span>
+<span class="sd">        Replicating the QUIP method, is used in the rest of the methods</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">perm</span> <span class="o">=</span> <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_perm</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
 
-<div class="viewcode-block" id="Descriptor.count"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.count">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
+        <span class="c1"># calc connectivity on the atoms object with the internal one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_connect</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
+
+        <span class="n">n_descriptors</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">n_descriptors</span><span class="p">,</span> <span class="n">n_cross</span>
+
+    <span class="nd">@convert_atoms_types_iterable_method</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns how many descriptors of this type are found in the Atoms</span>
 <span class="sd">        object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="c1"># fixme: is the decorator needed now?</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span><span class="p">(</span><span class="n">at</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-<div class="viewcode-block" id="Descriptor.calc_descriptor"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc_descriptor">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
-    <span class="k">def</span> <span class="nf">calc_descriptor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">):</span>
+    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">_calc_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal method for calculating connectivity on a quip_atoms object</span>
+
+<span class="sd">        Ideally called only on quip_atoms object, but put in decorator to make sure</span>
+<span class="sd">        :param at:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">cutoff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># setting to +1 is arbitrary here, the point is to set to something a bit higher than the descriptor&#39;s</span>
+            <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">at</span><span class="o">.</span><span class="n">set_cutoff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># TODO: add logic to skip this if it has been calculated already for speedup</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">calc_connect</span><span class="p">()</span>
+
+    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">calc_descriptor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates all descriptors of this type in the Atoms object, and</span>
 <span class="sd">        returns the array of descriptor values. Does not compute gradients; use</span>
 <span class="sd">        calc(at, grad=True, ...) for that.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">)</span><span class="o">.</span><span class="n">descriptor</span></div>
 
-<div class="viewcode-block" id="Descriptor.calc"><a class="viewcode-back" href="../../descriptors.html#quippy.descriptors.Descriptor.calc">[docs]</a>    <span class="nd">@convert_atoms_types_iterable_method</span>
-    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_args</span><span class="p">):</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_kwargs</span><span class="p">)[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="nd">@convert_atoms_types_iterable_method</span>
+    <span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates all descriptors of this type in the Atoms object, and</span>
 <span class="sd">        gradients if grad=True. Results can be accessed dictionary- or</span>
-<span class="sd">        attribute-style; &#39;descriptor&#39; contains descriptor values, </span>
-<span class="sd">        &#39;descriptor_index_0based&#39; contains the 0-based indices of the central </span>
-<span class="sd">        atom(s) in each descriptor, &#39;grad&#39; contains gradients, </span>
+<span class="sd">        attribute-style; &#39;descriptor&#39; contains descriptor values,</span>
+<span class="sd">        &#39;descriptor_index_0based&#39; contains the 0-based indices of the central</span>
+<span class="sd">        atom(s) in each descriptor, &#39;grad&#39; contains gradients,</span>
 <span class="sd">        &#39;grad_index_0based&#39; contains indices to gradients (descriptor, atom).</span>
 <span class="sd">        Cutoffs and gradients of cutoffs are also returned.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># arg string and calc_args</span>
         <span class="k">if</span> <span class="n">args_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">args_str</span> <span class="o">=</span> <span class="n">dict_to_args_str</span><span class="p">(</span><span class="n">calc_args</span><span class="p">)</span>
-
-        <span class="n">n_index</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
-        <span class="n">n_desc</span><span class="p">,</span> <span class="n">n_cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor_sizes</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">n_index</span><span class="o">=</span><span class="n">n_index</span><span class="p">)</span>
-        <span class="n">n_index</span> <span class="o">=</span> <span class="n">n_index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="n">n_desc</span><span class="p">))</span>
-        <span class="n">cutoff</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">(</span><span class="n">n_desc</span><span class="p">)</span>
-        <span class="n">data_index</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="n">n_index</span><span class="p">,</span><span class="n">n_desc</span><span class="p">),</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">grad</span><span class="p">:</span>
-            <span class="c1"># n_cross is number of cross-terms, proportional to n_desc</span>
-            <span class="n">data_grad</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span> <span class="mi">3</span> <span class="p">,</span><span class="n">n_cross</span><span class="p">))</span>
-            <span class="n">data_grad_index</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_cross</span><span class="p">),</span> <span class="s1">&#39;i&#39;</span><span class="p">)</span>
-            <span class="n">cutoff_grad</span> <span class="o">=</span> <span class="n">fzeros</span><span class="p">((</span><span class="mi">3</span> <span class="p">,</span><span class="n">n_cross</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">grad</span><span class="p">:</span>
-            <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">descriptor_out</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">covariance_cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span> 
-                    <span class="n">descriptor_index</span><span class="o">=</span><span class="n">data_index</span><span class="p">,</span> <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
+            <span class="n">args_str</span> <span class="o">=</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">calc_kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">RawDescriptor</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">descriptor_out</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">covariance_cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span>
-                    <span class="n">descriptor_index</span><span class="o">=</span><span class="n">data_index</span><span class="p">,</span> <span class="n">grad_descriptor_out</span><span class="o">=</span><span class="n">data_grad</span><span class="p">,</span> 
-                    <span class="n">grad_descriptor_index</span><span class="o">=</span><span class="n">data_grad_index</span><span class="p">,</span> <span class="n">grad_covariance_cutoff</span><span class="o">=</span><span class="n">cutoff_grad</span><span class="p">,</span>
-                    <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
+            <span class="c1"># new, for compatibility: merged if both given</span>
+            <span class="n">args_str</span> <span class="o">+=</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">calc_kwargs</span><span class="p">)</span>
 
-        <span class="n">results</span> <span class="o">=</span> <span class="n">DescriptorCalcResult</span><span class="p">()</span>
-        <span class="n">convert</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">descriptor</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">cutoff</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span>
-        <span class="n">results</span><span class="o">.</span><span class="n">descriptor_index_0based</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data_index</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">grad</span><span class="p">:</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data_grad</span><span class="p">)</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">grad_index_0based</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">data_grad_index</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">cutoff_grad</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">cutoff_grad</span><span class="p">)</span>
+        <span class="c1"># calc connectivity on the atoms object with the internal one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_connect</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">results</span></div></div>
+        <span class="c1"># descriptor calculation</span>
+        <span class="n">descriptor_out_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_descriptor</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_descriptor</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_grad_descriptor</span><span class="o">=</span><span class="n">grad</span><span class="p">,</span>
+                                                        <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">)</span>
 
+        <span class="c1"># unpack to a list of dicts</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="n">descriptor_out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+            <span class="c1"># unpack to dict with the specific converter function</span>
+            <span class="n">mono_dict</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">descriptor_data_mono_to_dict</span><span class="p">(</span><span class="n">descriptor_out_raw</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="c1"># add to the result</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">mono_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="p">]</span>
+
+        <span class="c1"># make numpy arrays out of them</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># merge the arrays according to shape</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;has_grad_data&#39;</span><span class="p">,</span> <span class="s1">&#39;ii&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;ci&#39;</span><span class="p">]:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;covariance_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;has_data&#39;</span><span class="p">]:</span>
+                <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]:</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># this is in case any yet unresolved output shows up</span>
+                <span class="c1"># fixme: should this raise an exception instead</span>
+                <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+        <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">count</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># yield C-contiguous shaped arrays</span>
+        <span class="k">if</span> <span class="s1">&#39;grad_covariance_cutoff&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s1">&#39;pos&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s1">&#39;grad_data&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]</span>
+            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># This is a dictionary now and hence needs to be indexed as one, unlike the old version</span>
+        <span class="k">return</span> <span class="n">descriptor_out</span></div>
 </pre></div>
 
            </div>
@@ -336,7 +409,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2008-2016, James Kermode
+        &copy; Copyright 2008-2020, James Kermode
 
     </p>
   </div>

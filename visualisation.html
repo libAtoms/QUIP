@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Visualisation Tools &mdash; quippy 4213a86+ documentation</title>
+  <title>Visualisation Tools &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -23,12 +23,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -40,8 +41,8 @@
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Interactive visualisation of atomic systems with qlab" href="qlab.html" />
-    <link rel="prev" title="GAP XML functions" href="qpxml.html" /> 
+    <link rel="next" title="AtomEye atomistic configuration viewer" href="atomeye.html" />
+    <link rel="prev" title="Fortran Dictionary objects for storing key/value pairs" href="dictionary.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -68,7 +69,7 @@
             
             
               <div class="version">
-                4213a86+
+                4572eb2+
               </div>
             
           
@@ -94,17 +95,13 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Visualisation Tools</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html">Interactive visualisation of atomic systems with <code class="docutils literal notranslate"><span class="pre">qlab</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="atomeye.html">AtomEye atomistic configuration viewer</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gap_fit.html">Command line options of the gap_fit main program</a></li>
 </ul>
 
             
@@ -182,13 +179,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -205,19 +202,7 @@
 <h1>Visualisation Tools<a class="headerlink" href="#visualisation-tools" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="qlab.html">Interactive visualisation of atomic systems with <code class="docutils literal notranslate"><span class="pre">qlab</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html#viewing-atoms">Viewing Atoms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html#custom-atom-colouring">Custom Atom Colouring</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html#viewing-trajectories">Viewing Trajectories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html#selecting-atoms">Selecting Atoms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html#multiple-viewers">Multiple Viewers</a><ul class="simple">
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="atomeye.html">AtomEye atomistic configuration viewer</a><ul class="simple">
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="atomeye.html">AtomEye atomistic configuration viewer</a></li>
 </ul>
 </div>
 </div>
@@ -230,10 +215,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="qlab.html" class="btn btn-neutral float-right" title="Interactive visualisation of atomic systems with qlab" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="atomeye.html" class="btn btn-neutral float-right" title="AtomEye atomistic configuration viewer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="qpxml.html" class="btn btn-neutral float-left" title="GAP XML functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="dictionary.html" class="btn btn-neutral float-left" title="Fortran Dictionary objects for storing key/value pairs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -242,7 +227,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2008-2016, James Kermode
+        &copy; Copyright 2008-2020, James Kermode
 
     </p>
   </div>

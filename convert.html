@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; quippy 4572eb2+ documentation</title>
+  <title>Conversion between quippy and ASE &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -30,7 +30,6 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="_static/searchtools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -41,7 +40,9 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Low-level system routines" href="system.html" />
+    <link rel="prev" title="Molecular Dynamics" href="dynamicalsystem.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -75,7 +76,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -93,10 +94,20 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="quippy.html#high-level-python-api">High-level Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="potential.html">Potential objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="descriptors.html">Descriptors for atomic environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamicalsystem.html">Molecular Dynamics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Conversion between quippy and ASE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-api-fortran-wrappers">Low-level API (Fortran wrappers)</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 </ul>
 
@@ -106,7 +117,7 @@
     <ul>
         <li><a href="genindex.html">Index</a></li>
         <li><a href="py-modindex.html">Module Index</a></li>
-        <li><a href="#">Search Page</a></li>
+        <li><a href="search.html">Search Page</a></li>
         <li><a href="_modules/index.html">Module Source Code</a></li>
     </ul>
   
@@ -151,12 +162,16 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+          <li><a href="quippy.html">Quippy library reference</a> &raquo;</li>
+        
+      <li>Conversion between quippy and ASE</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/convert.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -168,24 +183,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
 
-  
-  <div id="search-results">
-  
-  </div>
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-quippy.convert">
+<span id="conversion-between-quippy-and-ase"></span><h1>Conversion between quippy and ASE<a class="headerlink" href="#module-quippy.convert" title="Permalink to this headline">¶</a></h1>
+<p>Conversions between ase and fortran atoms objects</p>
+</div>
+
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="system.html" class="btn btn-neutral float-right" title="Low-level system routines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="dynamicalsystem.html" class="btn btn-neutral float-left" title="Molecular Dynamics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -218,14 +258,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

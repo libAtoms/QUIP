@@ -3,6 +3,9 @@
 Molecular Dynamics Simulation of Fracture in Quartz
 ***************************************************
 
+*This tutorial has not been updated for the Python 3 rewrite of quippy.
+It is hosted here for archival purposes*
+
 This tutorial was prepared for use at a hands-on session at the
 `Advanced Oxide Interfaces Workshop
 <http://cdsagenda5.ictp.it/full_display.php?ida=a10139>`_, ICTP,

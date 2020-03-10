@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>QUIP and quippy documentation &mdash; quippy 4213a86+ documentation</title>
+  <title>QUIP and quippy documentation &mdash; quippy 4572eb2+ documentation</title>
   
 
   
@@ -23,12 +23,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "math|output_area", "processEscapes": true, "ignoreClass": "document", "inlineMath": [["$", "$"], ["\\(", "\\)"]]}})</script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -40,7 +41,7 @@
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Introduction to quippy" href="intro.html" /> 
+    <link rel="next" title="Installation of QUIP and quippy" href="install.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -67,7 +68,7 @@
             
             
               <div class="version">
-                4213a86+
+                4572eb2+
               </div>
             
           
@@ -93,13 +94,10 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gap_fit.html">Command line options of the gap_fit main program</a></li>
 </ul>
 
             
@@ -177,13 +175,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -210,12 +208,11 @@ semiconductors.</p>
 <p><code class="docutils literal notranslate"><span class="pre">quippy</span></code> is a Python interface to <code class="docutils literal notranslate"><span class="pre">QUIP</span></code> that provides deep access to
 most of the Fortran types and routines. The quippy interface is principally
 maintained by <a class="reference external" href="http://www.warwick.ac.uk/jrkermode">James Kermode</a>.</p>
-<dl class="docutils">
-<dt>Long term support of the package is ensured by:</dt>
-<dd><ul class="first last simple">
-<li>Noam Bernstein (Naval Research Laboratory)</li>
-<li>Gabor Csanyi (University of Cambridge)</li>
-<li>James Kermode (University of Warwick)</li>
+<dl class="simple">
+<dt>Long term support of the package is ensured by:</dt><dd><ul class="simple">
+<li><p>Noam Bernstein (Naval Research Laboratory)</p></li>
+<li><p>Gabor Csanyi (University of Cambridge)</p></li>
+<li><p>James Kermode (University of Warwick)</p></li>
 </ul>
 </dd>
 </dl>
@@ -226,7 +223,7 @@ Chiara Gattinoni, Gianpietro Moras, James Kermode, Letif Mones,
 Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield.</p>
-<p>Copyright 2006-2016.</p>
+<p>Copyright 2006-2020</p>
 <p>Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
 domain.</p>
@@ -235,94 +232,49 @@ domain.</p>
 <h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
 <p>The following interatomic potentials are presently coded or linked in QUIP:</p>
 <ul class="simple">
-<li>EAM (fcc metals)</li>
-<li>Fanourgakis-Xantheas (water)</li>
-<li>Finnis-Sinclair (bcc metals)</li>
-<li>Flikkema-Bromley</li>
-<li>GAP (Gaussian Approximation Potentials: general many-body)</li>
-<li>Guggenheim-!McGlashan</li>
-<li>Brenner (carbon)</li>
-<li>OpenKIM (general interface)</li>
-<li>Lennard-Jones</li>
-<li>Morse</li>
-<li>Partridge-Schwenke (water monomer)</li>
-<li>Stillinger-Weber (carbon, silicon, germanium)</li>
-<li>SiMEAM (silicon)</li>
-<li>Sutton-Chen</li>
-<li>Tangney-Scandolo (silica, titania etc)</li>
-<li>Tersoff (silicon, carbon)</li>
+<li><p>EAM (fcc metals)</p></li>
+<li><p>Fanourgakis-Xantheas (water)</p></li>
+<li><p>Finnis-Sinclair (bcc metals)</p></li>
+<li><p>Flikkema-Bromley</p></li>
+<li><p>GAP (Gaussian Approximation Potentials: general many-body)</p></li>
+<li><p>Guggenheim-McGlashan</p></li>
+<li><p>Brenner (carbon)</p></li>
+<li><p>OpenKIM (general interface)</p></li>
+<li><p>Lennard-Jones</p></li>
+<li><p>Morse</p></li>
+<li><p>Partridge-Schwenke (water monomer)</p></li>
+<li><p>Stillinger-Weber (carbon, silicon, germanium)</p></li>
+<li><p>SiMEAM (silicon)</p></li>
+<li><p>Sutton-Chen</p></li>
+<li><p>Tangney-Scandolo (silica, titania etc)</p></li>
+<li><p>Tersoff (silicon, carbon)</p></li>
 </ul>
 <p>The following tight-binding functional forms and parametrisations are implemented:</p>
 <ul class="simple">
-<li>Bowler</li>
-<li>DFTB</li>
-<li>GSP</li>
-<li>NRL-TB</li>
-</ul>
-<p>The following external packages can be called:</p>
-<ul class="simple">
-<li>CASTEP</li>
-<li>VASP</li>
-<li>CP2K</li>
-<li>ASAP</li>
-<li>ASE (recent version, 3.11+, recommended)</li>
-<li>Molpro</li>
+<li><p>Bowler</p></li>
+<li><p>DFTB</p></li>
+<li><p>GSP</p></li>
+<li><p>NRL-TB</p></li>
 </ul>
 </div>
 <div class="section" id="contents">
 <h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to <code class="docutils literal notranslate"><span class="pre">quippy</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#overview-of-libatoms-and-quip">Overview of <code class="docutils literal notranslate"><span class="pre">libAtoms</span></code> and <code class="docutils literal notranslate"><span class="pre">QUIP</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#scripting-interfaces">Scripting interfaces</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#overview-of-quippy-capabilities">Overview of <code class="docutils literal notranslate"><span class="pre">quippy</span></code> capabilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#interoperability-between-electronic-structure-codes">Interoperability between electronic structure codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#summary-and-conclusions">Summary and Conclusions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#references">References</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html#precompiled-containers">Precompiled Containers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#compilation-instructions">Compilation Instructions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#custom-settings">Custom settings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#common-problems">Common Problems</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Tutorials/Introduction.html">Getting started with <code class="docutils literal notranslate"><span class="pre">Atoms</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorials/quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tutorials/tutorial.html">Introductory Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Tutorials/quippy-descriptor-tutorial.html">Using Quippy to compute descriptors of atomic environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorials/adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Tutorials/adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#core-functionality">Core functionality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#structure-generation-manipulation-and-analysis">Structure generation, manipulation and analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#molecular-dynamics">Molecular Dynamics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#additional-tools-for-potentials">Additional tools for Potentials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#mathematical-and-optimisation-tools">Mathematical and optimisation tools</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#units-data-and-constants">Units, Data and Constants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-routines-and-datatypes">Low level routines and datatypes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#high-level-python-api">High-level Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy.html#low-level-api-fortran-wrappers">Low-level API (Fortran wrappers)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="qlab.html">Interactive visualisation of atomic systems with <code class="docutils literal notranslate"><span class="pre">qlab</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="atomeye.html">AtomEye atomistic configuration viewer</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="fortran_wrapper.html">Appendix: wrapping Fortran 90 Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="f90doc.html"><code class="docutils literal notranslate"><span class="pre">f90doc</span></code> — Fortran 90 source code scanner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="f2py_wrapper_gen.html"><code class="docutils literal notranslate"><span class="pre">f2py_wrapper_gen</span></code> — Fortran 90 source code wrapping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="patch_f2py.html"><code class="docutils literal notranslate"><span class="pre">patch_f2py</span></code> — modify <code class="docutils literal notranslate"><span class="pre">numpy.f2py</span></code> at runtime</a></li>
-<li class="toctree-l2"><a class="reference internal" href="oo_fortran.html">Fortran 90 derived-type support</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gap_fit.html">Command line options of the gap_fit main program</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gap_fit.html#main-options">Main options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gap_fit.html#gap-options">GAP options</a></li>
 </ul>
 </li>
 </ul>
@@ -331,10 +283,10 @@ domain.</p>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
-<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
-<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
-<li><a class="reference external" href="_modules/index.html">Module Source Code</a></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+<li><p><a class="reference external" href="_modules/index.html">Module Source Code</a></p></li>
 </ul>
 </div>
 
@@ -346,7 +298,7 @@ domain.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="intro.html" class="btn btn-neutral float-right" title="Introduction to quippy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation of QUIP and quippy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
@@ -356,7 +308,7 @@ domain.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2008-2016, James Kermode
+        &copy; Copyright 2008-2020, James Kermode
 
     </p>
   </div>

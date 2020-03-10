@@ -21,6 +21,5 @@ Visualisation Tools
 ===================
 
 .. toctree::
-   qlab.rst
    atomeye.rst
 
