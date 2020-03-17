@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # H0 X
 # H0 X   libAtoms+QUIP: atomistic simulation library
@@ -36,11 +36,11 @@ from pyatoms import *
 import sys, os
 
 if len(sys.argv) not in  (5,8):
-   print 'Usage: %s atoms.xyz nx ny nz [shiftx shifty shiftz]'
+   print('Usage: %s atoms.xyz nx ny nz [shiftx shifty shiftz]')
    sys.exit(1)
 
 # Command used to execute castep, with a %s where seed name should go
-if os.environ.has_key('CASTEP'):
+if 'CASTEP' in os.environ:
    CASTEP = os.environ['CASTEP']
 else:
    CASTEP = './castep %s'
@@ -49,10 +49,10 @@ else:
 if CASTEP.find('%s') == -1:
    CASTEP = CASTEP + ' %s'
 
-nx,ny,nz = map(int, sys.argv[2:5])
+nx,ny,nz = list(map(int, sys.argv[2:5]))
 
 if len(sys.argv) == 8:
-   sx,sy,sz = map(float, sys.argv[5:8])
+   sx,sy,sz = list(map(float, sys.argv[5:8]))
 else:
    sx = sy = sz = 0.0
 
@@ -90,15 +90,15 @@ while True:
 kpoints = []
 for line in kp_lines:
    p1, n, kx, ky, kz, weight, pt = line.split()
-   kpoints.append(map(float, (kx,ky,kz,weight)))
+   kpoints.append(list(map(float, (kx,ky,kz,weight))))
 
 os.remove('tmp.cell')
 os.remove('tmp.param')
 os.remove('tmp.castep')
 
-print '<KPoints N="%d">' % len(kpoints)
+print('<KPoints N="%d">' % len(kpoints))
 
 for kx, ky, kz, weight in kpoints:
-   print '  <point weight="%d"> %.5f %.5f %.5f </point>' % (int(1.0/weight), kx, ky, kz)
+   print('  <point weight="%d"> %.5f %.5f %.5f </point>' % (int(1.0/weight), kx, ky, kz))
 
-print '</KPoints>'
+print('</KPoints>')

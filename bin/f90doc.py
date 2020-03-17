@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
@@ -158,35 +158,35 @@ def print_line(str):
     global verbatim, displaymath
 
     if str == '':
-        print
+        print()
         return
 
     # Lines starting with '>' are to be printed verbatim
     if verbatim:
         if str[0] == '>':
-            print str[1:]
+            print(str[1:])
             return
         else:
             verbatim = False
             #print_line(r'\end{verbatim}')
             #print_line(r'\end{sidebar}')
-            print r'''\end{verbatim}
+            print(r'''\end{verbatim}
             \end{boxedminipage}
 
-                    '''
+                    ''')
     else:
         if str[0] == '>':
-            print r'''
+            print(r'''
             
             \begin{boxedminipage}{\textwidth}
-            \begin{verbatim}'''
+            \begin{verbatim}''')
 
 #            print_line(r'\begin{sidebar}')
 #            print_line(r'\begin{verbatim}')
 
 
             verbatim = True
-            print str[1:]
+            print(str[1:])
             return
         else:
             pass
@@ -211,10 +211,10 @@ def print_line(str):
         L = re.split(r'\$',s)
         L[::2] = [latex_.sub(r'\\\1',p) for p in L[::2]]
     
-        print '$'.join(L)
+        print('$'.join(L))
 
     else:
-        print s
+        print(s)
         
 
 def uniq(L, idfun=None):
@@ -244,8 +244,8 @@ def combine_elements(elements):
     # Combine names with the same type, attributes and doc string
     rev_dict = {}
     for type, name in zip( [ x[0].type.lower() + str([y.lower for y in x[0].attributes]) + str(x[0].doc) \
-                             for x in element_dict.values() ], element_dict.keys()):
-        if rev_dict.has_key(type):
+                             for x in list(element_dict.values()) ], list(element_dict.keys())):
+        if type in rev_dict:
             rev_dict[type].append(element_dict[name])
         else:
             rev_dict[type] = [element_dict[name]]
@@ -270,7 +270,7 @@ def combine_elements(elements):
         rev_dict[k] = (alist, min([x[1] for x in rev_dict[k]]))
 
     # Sort by original appearance order of first name
-    keys = rev_dict.keys()
+    keys = list(rev_dict.keys())
     keys.sort(key=lambda x: rev_dict[x][1])
 
     return keys, rev_dict, func_args
@@ -372,10 +372,10 @@ class C_module:
         return not self.__eq__(other)
 
     def display(self):
-        print 'module',self.name,self.doc
+        print('module',self.name,self.doc)
         for a in self.types:
             a.display()
-        print '    module variables:'
+        print('    module variables:')
         for a in self.elements:
             a.display()
         for a in self.subts:
@@ -470,11 +470,11 @@ class C_subt:
 
     
     def display(self):
-        print '    subroutine',self.name,'(',
+        print('    subroutine',self.name,'(', end=' ')
         for i in range(len(self.arguments)-1):
-            print self.arguments[i].name,',',
-        print self.arguments[len(self.arguments)-1].name,
-        print ')',self.doc
+            print(self.arguments[i].name,',', end=' ')
+        print(self.arguments[len(self.arguments)-1].name, end=' ')
+        print(')',self.doc)
         for a in self.arguments:
             a.display()
 
@@ -631,11 +631,11 @@ class C_funct:
 
     
     def display(self):
-        print '   function',self.name,'(',
+        print('   function',self.name,'(', end=' ')
         for i in range(len(self.arguments)-1):
-            print self.arguments[i].name,',',
-        print self.arguments[len(self.arguments)-1].name,
-        print ')',self.doc
+            print(self.arguments[i].name,',', end=' ')
+        print(self.arguments[len(self.arguments)-1].name, end=' ')
+        print(')',self.doc)
         for a in self.arguments:
             a.display()
 
@@ -804,11 +804,11 @@ class C_decl:
         return not self.__eq__(other)
 
     def display(self):
-        print '        ',self.name,'\t',self.type,
-        print self.attributes,
+        print('        ',self.name,'\t',self.type, end=' ')
+        print(self.attributes, end=' ')
         if self.value!='':
-            print 'value='+self.value,
-        print self.doc
+            print('value='+self.value, end=' ')
+        print(self.doc)
 
     def latex(self, short_doc=False):
 
@@ -890,7 +890,7 @@ class C_type:
         
     
     def display(self):
-        print '    type',self.name,self.doc
+        print('    type',self.name,self.doc)
         for a in self.elements:
             a.display()
 
@@ -952,7 +952,7 @@ class C_interface:
         return not self.__eq__(other)        
 
     def display(self):
-        print '     interface', self.name, self.doc
+        print('     interface', self.name, self.doc)
         for a in self.elements:
             a.display()
 
@@ -1052,7 +1052,7 @@ class C_interface:
                         func_args.append(a)
                         continue
                     i = i + 1
-                    if arg_dict.has_key(a.name):
+                    if a.name in arg_dict:
                         if a.type.lower()+str(sorted(map(string.lower,a.attributes))) in \
                            [x[0].type.lower()+str(sorted(map(string.lower, x[0].attributes))) for x in arg_dict[a.name]]:
                             pass # already got this name/type/attribute combo 
@@ -1097,8 +1097,8 @@ class C_interface:
             rev_dict = {}
             for type, name in zip( [ str([y.lower for y in x[0].type]) + \
                                      str([y.lower for y in x[0].attributes]) + str(x[0].doc) \
-                                     for x in arg_dict.values() ], arg_dict.keys()):
-                if rev_dict.has_key(type):
+                                     for x in list(arg_dict.values()) ], list(arg_dict.keys())):
+                if type in rev_dict:
                     rev_dict[type].append(arg_dict[name])
                 else:
                     rev_dict[type] = [arg_dict[name]]
@@ -1125,7 +1125,7 @@ class C_interface:
                 rev_dict[k] = (alist, min([x[1] for x in rev_dict[k]]))
 
             # Sort by original appearance order of first name
-            keys = rev_dict.keys()
+            keys = list(rev_dict.keys())
             keys.sort(key=lambda x: rev_dict[x][1])
 
             for k in keys:
@@ -1141,8 +1141,7 @@ class C_interface:
 
             ret_types = [a.ret_val.type+str(a.ret_val.attributes) for a in self.functs]
 
-            if len(filter(lambda x: x != self.functs[0].ret_val.type+str(self.functs[0].ret_val.attributes), \
-                          ret_types)) == 0:
+            if len([x for x in ret_types if x != self.functs[0].ret_val.type+str(self.functs[0].ret_val.attributes)]) == 0:
                 
                 print_line(r"\item[Return value --- ")
                 self.functs[0].ret_val.latex_rv()
@@ -1306,7 +1305,7 @@ hold_doc = None
 
 
 def usage():
-    print r"""
+    print(r"""
 f90doc: documentation generator for Fortran 90.
 Usage: f90doc [-t <title>] [-a <author>] [-i <intro>] [-n] [-s] [-l] [-f] <filenames>
 Options:
@@ -1332,7 +1331,7 @@ Modifications for Fortran 95 (c) 2006-2008 James Kermode.
 
 This is free software, and you are welcome to redistribute it under
 certain conditions. See LICENCE for details.
-"""
+""")
 
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1656,7 +1655,7 @@ def check_subt(cl,file, grab_hold_doc=True):
         else:
             argl=[]
 
-        argl = map(string.lower, argl)
+        argl = list(map(string.lower, argl))
 
         # Get next line, and check each possibility in turn
 
@@ -1817,7 +1816,7 @@ def check_funct(cl,file,grab_hold_doc=True):
         else:
             argl=[]
 
-        argl = map(string.lower, argl)
+        argl = list(map(string.lower, argl))
 
         # Get next line, and check each possibility in turn
 
@@ -2056,7 +2055,7 @@ def check_prototype(cl,file):
 
     m = prototype.match(cl)
     if m != None:
-        out = map(string.strip, map(string.lower, m.group(1).split(',')))
+        out = list(map(string.strip, list(map(string.lower, m.group(1).split(',')))))
         cl = file.next_line()
         return [out, cl]
 
@@ -2280,7 +2279,7 @@ def split_attribs(atr):
     if atr!='':
         atrl.append(atr)
 
-    return map(string.strip,atrl) # jrk33 added strip
+    return list(map(string.strip,atrl)) # jrk33 added strip
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -2296,7 +2295,7 @@ def main():
         optlist, args = getopt.getopt(all_args, 'sa:t:hni:lfp', 'help')
     except getopt.GetoptError:
         # print help information and exit:
-        print "f90doc: use -h or --help for help"
+        print("f90doc: use -h or --help for help")
         sys.exit(2)
 
     doc_title='Title'
@@ -2414,10 +2413,10 @@ def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_shor
     # Print start
     if os.path.exists('COPYRIGHT'):
         for line in open('COPYRIGHT').readlines():
-            print '%'+line.strip()
+            print('%'+line.strip())
 
     if header:
-        print r"""
+        print(r"""
 \documentclass[11pt]{article}
 \textheight 10in
 \topmargin -0.5in
@@ -2459,10 +2458,10 @@ def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_shor
 \setlength{\parindent}{0em}
 
 \newpage
-"""
+""")
 
     if intro is not None:
-        print r'\include{'+intro+'}'
+        print(r'\include{'+intro+'}')
 
 
     for a in programs:
@@ -2485,12 +2484,12 @@ def write_latex(programs, modules, functs, subts, doc_title, doc_author, do_shor
 
 
     if header:
-        print r"""
+        print(r"""
 \printindex{general}{Index}
 
 \end{document}
 
-"""
+""")
 
 
 if __name__ == "__main__":

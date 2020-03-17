@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # Check order of use statements
@@ -18,7 +18,7 @@ def parse_use_statements(fn):
     module_name = None
     use_statements = [ ]
     while l and not stop_parse:
-        s = map(string.lower, map(string.strip, l.split()))
+        s = list(map(string.lower, list(map(string.strip, l.split()))))
         if len(s) > 0:
             if s[0] == 'module' and not start_parse:
                 start_parse = True
@@ -44,7 +44,7 @@ def check_deps(deplist, name, used=None):
 
     for mod in deplist[name]:
         if mod in used:
-            print 'In module %s: Module %s should be included earlier.' % ( name, mod )
+            print('In module %s: Module %s should be included earlier.' % ( name, mod ))
         if mod in deplist:
             for depmod in deplist[mod]:
                 used.add(depmod)
@@ -58,5 +58,5 @@ for fn in sys.argv[1:]:
     if name is not None:
         deplist[name] = use
 
-for mod in deplist.keys():
+for mod in list(deplist.keys()):
     check_deps(deplist, mod)

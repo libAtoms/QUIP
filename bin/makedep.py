@@ -1,6 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-import sys, os, cPickle, f90doc
+import sys, os, pickle, f90doc
 from distutils.dep_util import newer
 
 sys.stderr.write('makedep.py using f90doc from %s\n' % f90doc.__file__)
@@ -14,7 +14,7 @@ while len(argv) > 0 and argv[0] != '--':
     args.append(argv.pop(0))
 
 if argv ==[] or argv[0] != '--':
-    print 'Usage: makedep.py [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]'
+    print('Usage: makedep.py [ -lc | -uc ] [ -suffix suffix ] -- filename [ filename2 ... ]')
     sys.exit(1)
 else:
     argv.pop(0)
@@ -43,7 +43,7 @@ for src in argv:
     f90doc_file = base + '.f90doc'
 
     if os.path.exists(f90doc_file):
-        (programs, modules, functs, subts) = cPickle.load(open(f90doc_file))
+        (programs, modules, functs, subts) = pickle.load(open(f90doc_file))
     else:
         programs = None
         modules = None
@@ -59,7 +59,7 @@ for src in argv:
             modules  = new_modules
             functs   = new_functs
             subts    = new_subts
-            cPickle.dump((programs, modules, functs, subts), open(f90doc_file, 'w'))
+            pickle.dump((programs, modules, functs, subts), open(f90doc_file, 'w'))
 
     mod_define[src] = []
     mod_uses[src] = []
@@ -84,6 +84,6 @@ for src in argv:
     f90doc_file = base + '.f90doc'
     f90doc_uses = [ os.path.splitext(filename_from_mod[mod])[0]+'.f90doc' for mod in mod_uses[src] if mod in filename_from_mod ]
 
-    print "%s: %s\n" % (f90doc_file, base+ext)
-    print "%s: \\\n  %s %s %s\n" % (fobj, ' '.join(f90doc_uses), ' '.join(mod_includes[src]), base+ext)
+    print("%s: %s\n" % (f90doc_file, base+ext))
+    print("%s: \\\n  %s %s %s\n" % (fobj, ' '.join(f90doc_uses), ' '.join(mod_includes[src]), base+ext))
 

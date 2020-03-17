@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # H0 X
 # H0 X   libAtoms+QUIP: atomistic simulation library
@@ -38,4 +38,4 @@ p = xmlval.XMLValidator()
 p.parse_resource(sys.argv[1])
 
 
-print 'No errors found.'
+print('No errors found.')

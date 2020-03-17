@@ -57,9 +57,9 @@ WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
 F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
-F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
+F2PY_LINK_ARGS = $(shell python3 -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
-F90WRAP_PATH = $(shell pip show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+F90WRAP_PATH = $(shell pip3 show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
 F90WRAP = ${F90WRAP_PATH}/f90wrap
 F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
@@ -102,4 +102,4 @@ build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	python ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
+	python3 ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
