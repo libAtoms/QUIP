@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.potential &mdash; quippy e76528b+ documentation</title>
+  <title>quippy.potential &mdash; quippy 04cadb6+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                e76528b+
+                04cadb6+
               </div>
             
           
@@ -232,7 +232,7 @@
                  <span class="n">param_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">param_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">calculation_always_required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="n">calc_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">calculation_always_required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">calc_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">add_arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span>
 
@@ -242,21 +242,20 @@
         <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_bad_restart_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                                        <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># init the quip potential</span>
-        <span class="k">if</span> <span class="n">param_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">param_filename</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">param_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param_filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># from a param filename</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">filename_initialise</span><span class="p">(</span><span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">,</span>
                                                                                          <span class="n">param_filename</span><span class="o">=</span><span class="n">param_filename</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">param_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># from a param string</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">,</span> <span class="n">param_str</span><span class="o">=</span><span class="n">param_str</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pot1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pot2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># from sum of two potentials</span>
+            <span class="c1"># noinspection PyProtectedMember</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span>
                 <span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">,</span>
                 <span class="n">pot1</span><span class="o">=</span><span class="p">(</span><span class="n">pot1</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pot1</span><span class="p">,</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">Potential</span><span class="p">)</span> <span class="k">else</span> <span class="n">pot1</span><span class="p">),</span>
                 <span class="n">pot2</span><span class="o">=</span><span class="p">(</span><span class="n">pot2</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pot2</span><span class="p">,</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">Potential</span><span class="p">)</span> <span class="k">else</span> <span class="n">pot2</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;None of param_filename, param_str or pot1+pot2 was given&quot;</span><span class="p">)</span>
+            <span class="c1"># from a param string</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_quip_potential</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">args_str</span><span class="o">=</span><span class="n">args_str</span><span class="p">,</span> <span class="n">param_str</span><span class="o">=</span><span class="n">param_str</span><span class="p">)</span>
 
         <span class="c1"># init the quip atoms as None, to have the variable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span> <span class="o">=</span> <span class="kc">None</span>
