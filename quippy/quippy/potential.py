@@ -62,7 +62,7 @@ class Potential(ase.calculators.calculator.Calculator):
                  param_str=None,
                  param_filename=None,
                  atoms=None,
-                 calculation_always_required=False,  calc_args=None,
+                 calculation_always_required=False, calc_args=None,
                  add_arrays=None, add_info=None, **kwargs):
         quippy.potential_module.Potential.__init__.__doc__
 
@@ -72,21 +72,20 @@ class Potential(ase.calculators.calculator.Calculator):
         ase.calculators.calculator.Calculator.__init__(self, restart=None, ignore_bad_restart_file=False, label=None,
                                                        atoms=atoms, **kwargs)
         # init the quip potential
-        if param_filename is not None and type(param_filename) == str:
+        if param_filename is not None and isinstance(param_filename, str):
             # from a param filename
             self._quip_potential = quippy.potential_module.Potential.filename_initialise(args_str=args_str,
                                                                                          param_filename=param_filename)
-        elif param_str is not None:
-            # from a param string
-            self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
         elif pot1 is not None and pot2 is not None:
             # from sum of two potentials
+            # noinspection PyProtectedMember
             self._quip_potential = quippy.potential_module.Potential(
                 args_str=args_str,
                 pot1=(pot1._quip_potential if isinstance(pot1, quippy.potential.Potential) else pot1),
                 pot2=(pot2._quip_potential if isinstance(pot2, quippy.potential.Potential) else pot2))
         else:
-            raise RuntimeError("None of param_filename, param_str or pot1+pot2 was given")
+            # from a param string
+            self._quip_potential = quippy.potential_module.Potential(args_str=args_str, param_str=param_str)
 
         # init the quip atoms as None, to have the variable
         self._quip_atoms = None
