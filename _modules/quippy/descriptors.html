@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.descriptors &mdash; quippy 04cadb6+ documentation</title>
+  <title>quippy.descriptors &mdash; quippy 5262b2f+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                04cadb6+
+                5262b2f+
               </div>
             
           
@@ -366,34 +366,12 @@
         <span class="c1"># make numpy arrays out of them</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># merge the arrays according to shape</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;has_grad_data&#39;</span><span class="p">,</span> <span class="s1">&#39;ii&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;ci&#39;</span><span class="p">]:</span>
-                <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]:</span>
-                <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;ci&#39;</span><span class="p">]:</span>
+                <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;covariance_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;has_data&#39;</span><span class="p">]:</span>
                 <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]:</span>
-                <span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># this is in case any yet unresolved output shows up</span>
-                <span class="c1"># fixme: should this raise an exception instead</span>
-                <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span>
-
-            <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
 
         <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">count</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-
-        <span class="c1"># yield C-contiguous shaped arrays</span>
-        <span class="k">if</span> <span class="s1">&#39;grad_covariance_cutoff&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_covariance_cutoff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="s1">&#39;pos&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;pos&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="s1">&#39;grad_data&#39;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">grad</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]</span>
-            <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;grad_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># This is a dictionary now and hence needs to be indexed as one, unlike the old version</span>
         <span class="k">return</span> <span class="n">descriptor_out</span></div>
