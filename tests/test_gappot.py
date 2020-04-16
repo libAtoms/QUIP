@@ -17,12 +17,15 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest
+import environ
+
 import quippy
 import numpy as np
 import quippytest
 import ase
 import ase.io
 
+@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestCalculator_GAP_Potential(quippytest.QuippyTestCase):
     def setUp(self):
         self.pot_calculator = quippy.potential.Potential("IP GAP", param_filename="GAP.xml")

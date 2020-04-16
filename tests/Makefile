@@ -16,9 +16,16 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+ifeq (${QUIP_ARCH},)
+  include Makefile.arch
+else
+  include Makefile.${QUIP_ARCH}
+endif
+include Makefile.inc
+include Makefile.rules
 
 # Updated to use python 3 all the time
 PYTHON := python3
 
 all:
-	QUIP_ARCH=${QUIP_ARCH} ${PYTHON} run_all.py -v
+	HAVE_GAP=${HAVE_GAP} QUIP_ARCH=${QUIP_ARCH} ${PYTHON} run_all.py -v
