@@ -17,7 +17,7 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest
-import environ
+import os
 
 import quippy
 import numpy as np
