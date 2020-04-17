@@ -727,6 +727,31 @@ contains
    end subroutine remove_bonds
 
 
+    subroutine calc_lat_eff(at, lat_eff, lat_eff_inv, lat_offset)
+        type(Atoms), intent(in) :: at
+        real(dp), intent(out) :: lat_eff(3,3), lat_eff_inv(3,3), lat_offset(3)
+
+        integer :: i
+        real(dp) :: lat_extent
+        real(dp), allocatable :: lat_pos(:,:)
+
+        lat_eff = at%lattice
+        lat_offset = 0.0
+        if (any(.not. at%is_periodic)) then
+            allocate(lat_pos(3,at%N))
+            lat_pos = at%g .mult. at%pos
+            do i=1,3
+                if (.not. at%is_periodic(i) .and. (minval(lat_pos(i,:)) <= 0.5 .or. maxval(lat_pos(i,:)) >= 0.5)) then
+                    lat_extent = (maxval(lat_pos(i,:)) - minval(lat_pos(i,:))) * 1.1
+                    lat_eff(:,i) = lat_eff(:,i)/norm(lat_eff(:,i)) * lat_extent
+                    lat_offset(i) = minval(lat_pos(i,:)) - 0.05
+                endif
+            end do
+            deallocate(lat_pos)
+        endif
+        call matrix3x3_inverse(lat_eff,lat_eff_inv)
+    end subroutine
+
 
   !%  As for 'calc_connect', but perform the connectivity update
   !%  hystertically: atoms must come within 'cutoff' to be considered
@@ -753,6 +778,7 @@ contains
     logical my_own_neighbour, my_store_is_min_image, my_store_n_neighb
     logical :: change_i, change_j, change_k, broken
     integer, pointer :: map_shift(:,:), n_neighb(:)
+    real(dp) :: lat_eff(3,3), lat_eff_inv(3,3), lat_offset(3)
 
     INIT_ERROR(error)
 
@@ -780,7 +806,8 @@ contains
       cellsNb = 1
       cellsNc = 1
     else
-      call divide_cell(at%lattice, cutoff, cellsNa, cellsNb, cellsNc)
+      call calc_lat_eff(at, lat_eff, lat_eff_inv, lat_offset)
+      call divide_cell(lat_eff, cutoff, cellsNa, cellsNb, cellsNc)
     endif
 
     call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_NERD)
@@ -825,7 +852,7 @@ contains
     endif
 
     ! Partition the atoms into cells
-    call partition_atoms(this, at, error=error)
+    call partition_atoms(this, at, lat_eff_inv, lat_offset, error=error)
     PASS_ERROR(error)
     if (.not. assign_pointer(at, 'map_shift', map_shift)) then
        RAISE_ERROR("calc_connect impossibly failed to assign map_shift pointer", error)
@@ -1012,6 +1039,8 @@ contains
     logical my_own_neighbour, my_store_is_min_image, my_skip_zero_zero_bonds, my_store_n_neighb, do_fill
     logical :: change_i, change_j, change_k
     integer, pointer :: map_shift(:,:), n_neighb(:)
+    real(dp) :: lat_eff(3,3), lat_eff_inv(3,3), lat_offset(3)
+    real(dp), allocatable :: lat_pos(:,:)
 
 
     INIT_ERROR(error)
@@ -1088,7 +1117,8 @@ contains
 
     call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_VERBOSE)
 
-    call divide_cell(at%lattice, cutoff, cellsNa, cellsNb, cellsNc)
+    call calc_lat_eff(at, lat_eff, lat_eff_inv, lat_offset)
+    call divide_cell(lat_eff, cutoff, cellsNa, cellsNb, cellsNc)
 
     call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_VERBOSE)
 
@@ -1122,7 +1152,7 @@ contains
          call connection_cells_initialise(this, cellsNa, cellsNb, cellsNc,at%N)
 
     ! Partition the atoms into cells
-    call partition_atoms(this, at, error=error)
+    call partition_atoms(this, at, lat_eff_inv, lat_offset, error=error)
     PASS_ERROR(error)
     if (.not. assign_pointer(at, 'map_shift', map_shift)) then
        RAISE_ERROR("calc_connect impossibly failed to assign map_shift pointer", error)
@@ -1473,10 +1503,11 @@ contains
   !% Spatially partition the atoms into cells. The number of cells in each dimension must already be
   !% set (cellsNa,b,c). Pre-wiping of the cells can be skipped (e.g. if they are already empty).
   !
-  subroutine partition_atoms(this, at, dont_wipe, error)
+  subroutine partition_atoms(this, at, lat_eff_inv, lat_offset, dont_wipe, error)
 
     type(Connection), intent(inout) :: this
     type(Atoms), intent(inout) :: at
+    real(dp), intent(in) :: lat_eff_inv(3,3), lat_offset(3)
     logical, optional, intent(in)    :: dont_wipe
     integer, intent(out), optional :: error
 
@@ -1526,8 +1557,11 @@ contains
        end if
 
        ! figure out shift to map atom into cell
-       lat_pos = at%g .mult. at%pos(:,n)
+       lat_pos = (lat_eff_inv .mult. at%pos(:,n)) - lat_offset
        map_shift(:,n) = - floor(lat_pos+0.5_dp)
+       where (.not. at%is_periodic)
+          map_shift(:,n) = 0.0
+       end where
        ! do the mapping
        lat_pos = lat_pos + map_shift(:,n)
 

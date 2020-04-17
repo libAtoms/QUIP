@@ -19,12 +19,13 @@
 import unittest
 import os
 
+import numpy as np
+import ase
+import ase.build
+
 import quippy
 import quippytest
-import ase
 
-import numpy as np
-import ase.build
 
 # ref data made in python2, with the old version of quippy, to reproduce the same behaviour
 """
