@@ -2,7 +2,7 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2019
+# HQ X   Copyright James Kermode 2020
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -17,12 +17,17 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest
-import quippytest
-from quippy.descriptors import Descriptor
+
 import ase
 import numpy as np
+import quippytest
+from quippy.descriptors import Descriptor
+
 
 class Test_NeighbourList(quippytest.QuippyTestCase):
+    """
+    Tests the NeighbourList with varying PBC settings as accessed by the wrapper.
+    """
 
     def setUp(self):
         p0 = []
@@ -38,10 +43,13 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
                      [20] * 3,
                      [[4, 4, 0], [4, 0, 4], [0, 4, 4]],
                      [4, 10, 10]]:
-            for pbc in [[True] * 3, [False] * 3, [True, False, False],
+            for pbc in [[True] * 3,
+                        [False] * 3,
+                        [True, False, False],
                         [False, True, False]]:
                 init_size = None
-                for offset_dir in [[1, 1, 1], [1, 0, 0]]:
+                for offset_dir in [[1, 1, 1],
+                                   [1, 0, 0]]:
                     for lat_offset in [-5.0, -1, -0.5, 0.0, 0.5, 1.0, 5.0]:
                         at = ase.Atoms(symbols=['Si'] * len(self.p0),
                                        positions=self.p0,
@@ -51,13 +59,12 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
                         desc = Descriptor('distance_2b cutoff=4.5')
                         sz = desc.sizes(at)
                         if init_size is None:
-                            #print("cell", cell, "pbc", pbc, "offset dir", offset_dir,
+                            # print("cell", cell, "pbc", pbc, "offset dir", offset_dir,
                             #      "offset mag", lat_offset, "desc size", sz)
                             init_size = sz
                         self.assert_(init_size == sz)
                         #    print("cell", cell, "pbc", pbc, "offset dir", offset_dir,
                         #          "offset mag", lat_offset, "desc size", sz, "PROBLEM")
-
 
     def test_large_offset_no_pbc(self):
         cell = [10] * 3
@@ -70,8 +77,7 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
         desc = Descriptor('distance_2b cutoff=4.5')
         sz = desc.sizes(at)
         # print("cell", cell, "pbc", pbc, "desc size", sz)
-        self.assert_(sz ==  (56, 112))
-
+        self.assert_(sz == (56, 112))
 
 
 if __name__ == '__main__':
