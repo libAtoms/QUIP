@@ -21,8 +21,17 @@ import unittest
 import ase
 import numpy as np
 import quippytest
-from quippy.descriptors import Descriptor
+from quippy.potential import Potential
 
+xml_string = """
+<SW_params n_types="1">
+      <per_type_data type="1" atomic_num="14" />
+      <per_pair_data atnum_i="14" atnum_j="14" AA="7.049556277" BB="0.6022245584"
+      p="4" q="0" a="1.80" sigma="2.0951" eps="2.1675" />
+      <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
+      lambda="21.0" gamma="1.20" eps="2.1675" />
+</SW_params>
+"""
 
 class Test_NeighbourList(quippytest.QuippyTestCase):
     """
@@ -34,37 +43,38 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
         for i in range(2):
             for j in range(2):
                 for k in range(2):
-                    p0.append([i * 2 - 1, j * 2 - 1, k * 2 - 1])
+                    p0.append([i * 2 - 1,
+                               j * 2 - 1,
+                               k * 2 - 1])
         self.p0 = np.array(p0)
+        self.sw_pot = Potential('IP SW', param_str=xml_string)
 
     def test_pbc(self):
-        for cell in [[4] * 3,
-                     [10] * 3,
-                     [20] * 3,
-                     [[4, 4, 0], [4, 0, 4], [0, 4, 4]],
-                     [4, 10, 10]]:
-            for pbc in [[True] * 3,
-                        [False] * 3,
-                        [True, False, False],
-                        [False, True, False]]:
-                init_size = None
-                for offset_dir in [[1, 1, 1],
-                                   [1, 0, 0]]:
+        for cell in [tuple([4] * 3),
+                     tuple([10] * 3),
+                     tuple([20] * 3),
+                     ((4, 4, 0), (4, 0, 4), (0, 4, 4)),
+                     (4, 10, 10)]:
+            for pbc in [tuple([True] * 3),
+                        tuple([False] * 3),
+                        (True, False, False),
+                        (False, True, False)]:
+                init_energy = None
+                for offset_dir in [(1, 1, 1),
+                                   (1, 0, 0)]:
                     for lat_offset in [-5.0, -1, -0.5, 0.0, 0.5, 1.0, 5.0]:
                         at = ase.Atoms(symbols=['Si'] * len(self.p0),
                                        positions=self.p0,
                                        cell=cell, pbc=pbc)
+                        at.calc = self.sw_pot
                         offset_v = np.dot(offset_dir, at.get_cell()) * lat_offset
                         at.positions += offset_v
-                        desc = Descriptor('distance_2b cutoff=4.5')
-                        sz = desc.sizes(at)
-                        if init_size is None:
-                            # print("cell", cell, "pbc", pbc, "offset dir", offset_dir,
-                            #      "offset mag", lat_offset, "desc size", sz)
-                            init_size = sz
-                        self.assert_(init_size == sz)
-                        #    print("cell", cell, "pbc", pbc, "offset dir", offset_dir,
-                        #          "offset mag", lat_offset, "desc size", sz, "PROBLEM")
+                        if init_energy is None:
+                            init_energy = at.get_potential_energy()
+                        print(cell, pbc, offset_dir, lat_offset,
+                              init_energy, at.get_potential_energy())
+                        self.assertAlmostEqual(init_energy,
+                                               at.get_potential_energy())
 
     def test_large_offset_no_pbc(self):
         cell = [10] * 3
@@ -74,10 +84,9 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
                        positions=self.p0 + offset,
                        cell=cell,
                        pbc=pbc)
-        desc = Descriptor('distance_2b cutoff=4.5')
-        sz = desc.sizes(at)
-        # print("cell", cell, "pbc", pbc, "desc size", sz)
-        self.assert_(sz == (56, 112))
+        at.calc = self.sw_pot
+        e = at.get_potential_energy()
+        self.assertAlmostEqual(e, 20.863001205176083)
 
 
 if __name__ == '__main__':
