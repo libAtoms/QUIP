@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.descriptors &mdash; quippy 6df2fda+ documentation</title>
+  <title>quippy.descriptors &mdash; quippy 5218dfa+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                6df2fda+
+                5218dfa+
               </div>
             
           
@@ -370,6 +370,19 @@
                 <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;covariance_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;has_data&#39;</span><span class="p">]:</span>
                 <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pos&quot;</span><span class="p">,</span> <span class="s2">&quot;grad_covariance_cutoff&quot;</span><span class="p">]:</span>
+                <span class="c1"># corresponds to the gradients</span>
+                <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">T</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">val</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;grad_data&quot;</span><span class="p">:</span>
+                <span class="n">descriptor_out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s2">&quot;ii&quot;</span> <span class="ow">in</span> <span class="n">descriptor_out</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">grad_index_0based</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">ii_perdesc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">descriptor_out</span><span class="p">[</span><span class="s2">&quot;ii&quot;</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">ii_item</span> <span class="ow">in</span> <span class="n">ii_perdesc</span><span class="p">:</span>
+                    <span class="n">grad_index_0based</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">descriptor_out</span><span class="p">[</span><span class="s2">&quot;ci&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">ii_item</span><span class="p">])</span>
+            <span class="c1"># same as in py2, makes iteration of gradient easier</span>
+            <span class="n">descriptor_out</span><span class="p">[</span><span class="s2">&quot;grad_index_0based&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grad_index_0based</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
 
         <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor_out</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">count</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
