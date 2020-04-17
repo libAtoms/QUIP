@@ -71,8 +71,6 @@ class Test_NeighbourList(quippytest.QuippyTestCase):
                         at.positions += offset_v
                         if init_energy is None:
                             init_energy = at.get_potential_energy()
-                        print(cell, pbc, offset_dir, lat_offset,
-                              init_energy, at.get_potential_energy())
                         self.assertAlmostEqual(init_energy,
                                                at.get_potential_energy())
 
