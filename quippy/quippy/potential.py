@@ -44,7 +44,8 @@ class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
     implemented_properties = ['energy', 'free_energy', 'forces', 'virial', 'stress',
-                              'local_virial', 'local_energy', 'stresses', 'energies']
+                              'local_virial', 'local_energy', 'stresses', 'energies',
+                              "local_gap_variance", "gap_variance_gradient", "gap_sigma"]
 
     @set_doc(quippy.potential_module.Potential.__init__.__doc__,
     """
@@ -120,6 +121,16 @@ class Potential(ase.calculators.calculator.Calculator):
         'pbc', 'initial_charges' and 'initial_magmoms'.
     calc_args: argument string to pass to Fortran calc() routine.
         This is appended to `self.calc_args`, if this is set.
+        
+    local_gap_variance, gap_sigma, gap_variance_gradient: bool
+        triggers calculation of local and global error estimates
+            local_gap_variance - local GAP variance estimate on energies, in units of (eV/atom)^2
+            gap_sigma - Global GAP error estimate for the entire frame, in eV/atom
+            gap_variance_gradient - Local GAP variance estimate on forces, in units of (eV/A)^2
+    
+    gap_variance_regularisation : float >= 0.
+        regularisation parameter of the error estimates, triggers the calculation of the error estimates if not None
+            
     add_arrays: list, str or True
         Arrays to carry over from `atoms.arrays` to the Fortran atoms object when calling calculate()
         If the same argument is filled in calculate, then it will overwrite this.
@@ -152,6 +163,8 @@ class Potential(ase.calculators.calculator.Calculator):
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
+                  local_gap_variance=None, gap_sigma=None,
+                  gap_variance_gradient=None, gap_variance_regularisation=None,
                   copy_all_results=True, calc_args=None, add_arrays=None,
                   add_info=None, **kwargs):
 
@@ -198,6 +211,9 @@ class Potential(ase.calculators.calculator.Calculator):
             properties += ['local_virial']
             _dict_args['local_virial'] = local_virial
 
+        if local_gap_variance is not None or gap_sigma is not None or isinstance(gap_variance_regularisation, float):
+            properties += ['local_gap_variance']
+
         # needed dry run of the ase calculator
         ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
 
@@ -230,6 +246,13 @@ class Potential(ase.calculators.calculator.Calculator):
             args_str += ' local_energy'
         if 'forces' in properties:
             args_str += ' force'
+        if "local_gap_variance" in properties or "gap_sigma" in properties:
+            args_str += " local_gap_variance"
+            if isinstance(gap_variance_regularisation, float):
+                if gap_variance_regularisation < 0.:
+                    raise ValueError("gap_variance_regularisation needs to be grater than zero")
+                else:
+                    args_str += " gap_variance_regularisation={}".format(gap_variance_regularisation)
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
         # fixme: workaround to get the calculated energy, because the wrapped dictionary is not handling that float well
@@ -263,6 +286,16 @@ class Potential(ase.calculators.calculator.Calculator):
 
         if 'local_virial' in _quip_properties.keys():
             self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
+
+        if "local_gap_variance" in _quip_properties.keys():
+            # local_gap_variance as is and root mean of that for the info, which is the energy error estimate
+            # for the entire structure in eV/atom
+            self.results['local_gap_variance'] = np.copy(_quip_properties['local_gap_variance'])
+            self.results['gap_sigma'] = np.sqrt(np.mean(np.copy(_quip_properties['local_gap_variance'])))
+
+        if "gap_variance_gradient" in _quip_properties.keys():
+            # error estimate of the gradient in (eV/A)^2
+            self.results['gap_variance_gradient'] = np.copy(_quip_properties['gap_variance_gradient'])
 
         if 'stresses' in properties:
             # use the correct atomic volume
@@ -331,6 +364,18 @@ class Potential(ase.calculators.calculator.Calculator):
 
     def get_stresses(self, atoms=None):
         return self.get_property('stresses', atoms)
+
+    def get_local_gap_variance(self, atoms=None):
+        """Local GAP variance estimate on energies, in units of (eV/atom)^2"""
+        return self.get_property("local_gap_variance", atoms)
+
+    def gap_variance_gradient(self, atoms=None):
+        """Local GAP variance estimate on forces, in units of (eV/A)^2"""
+        return self.get_property("gap_variance_gradient", atoms)
+
+    def get_gap_sigma(self, atoms=None):
+        """Global GAP error estimate for the entire frame, in eV/atom"""
+        return self.get_property("gap_sigma", atoms)
 
     def get_default_properties(self):
         """Get the list of properties to be calculated by default"""
