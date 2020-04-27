@@ -17,12 +17,13 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 import unittest
+import os
 
 import ase.build
 import quippy
 import quippytest
 
-
+@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestCalculatorSumPotential(quippytest.QuippyTestCase):
     def setUp(self):
         self.pot1 = quippy.potential.Potential("IP glue", param_filename="glue.xml")

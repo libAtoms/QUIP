@@ -44,6 +44,10 @@ import quippy
 print('Successfully imported quippy3')
 
 # find tests and run them
-# ONLY RUNS ONE NOW, THE ONE THAT IS DONE
-suite = unittest.defaultTestLoader.discover(os.getcwd())  # fixme run all tests not just one
-unittest.TextTestRunner().run(suite)
+suite = unittest.defaultTestLoader.discover(os.getcwd())
+result = unittest.TextTestRunner().run(suite)
+if result.wasSuccessful():
+    sys.exit(0)
+else:
+    sys.exit(1)
+
