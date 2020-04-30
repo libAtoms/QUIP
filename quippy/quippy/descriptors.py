@@ -200,6 +200,19 @@ class Descriptor:
                 descriptor_out[key] = np.concatenate(val, axis=0)
             elif key in ['covariance_cutoff', 'has_data']:
                 descriptor_out[key] = np.array(val)
+            elif key in ["pos", "grad_covariance_cutoff"]:
+                # corresponds to the gradients
+                descriptor_out[key] = np.concatenate([x.T for x in val])
+            elif key == "grad_data":
+                descriptor_out[key] = np.transpose(np.concatenate(val, axis=2), axes=(2, 1, 0))
+
+        if "ii" in descriptor_out.keys():
+            grad_index_0based = []
+            for idx, ii_perdesc in enumerate(descriptor_out["ii"]):
+                for ii_item in ii_perdesc:
+                    grad_index_0based.append([descriptor_out["ci"][idx], ii_item])
+            # same as in py2, makes iteration of gradient easier
+            descriptor_out["grad_index_0based"] = np.array(grad_index_0based) - 1
 
         descriptor_out['data'] = descriptor_out['data'].reshape((count, -1))
 

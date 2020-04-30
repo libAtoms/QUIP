@@ -100,7 +100,7 @@ ifeq (${HAVE_GAP},1)
 endif
 ifeq (${HAVE_TURBOGAP},1)
   DEFINES += -DHAVE_TURBOGAP
-  INCLUDES += $(addprefix -I,${TURBOGAP_DIR}/src)
+  INCLUDES += $(addprefix -I,${TURBOGAP_DIR}/include)
   SYSLIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
   SYSLIBS += -lturbogap
   QUIPPY_LIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
