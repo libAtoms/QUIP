@@ -32,7 +32,6 @@ include Makefile.rules
 
 QUIPPY_SRC_DIR := ../../quippy
 
-
 FPP = ${F90} -E -cpp ${QUIPPY_F90FLAGS}
 CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 
@@ -59,7 +58,6 @@ WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
-
 
 F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
 
