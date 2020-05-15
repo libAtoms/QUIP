@@ -270,7 +270,7 @@ to get up and running quickly.
 
 ## Fixing/updating the version f90wrap:
 
-  ```bahs
+  ```bash
   cd src/f90wrap
   ```
   ```bash 
