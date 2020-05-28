@@ -257,7 +257,7 @@ clean: ${BUILDDIR}
 	rm -rf src/${FOX}/objs.${QUIP_ARCH}
 
 deepclean: clean
-	find . -name \*.s | xargs rm
+	find . -name "*.s" -type f -delete
 
 distclean: clean
 	rm -rf build
