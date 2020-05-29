@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.dictionary_module &mdash; quippy fd5d621+ documentation</title>
+  <title>quippy.dictionary_module &mdash; quippy 809f170+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                fd5d621+
+                809f170+
               </div>
             
           
@@ -172,7 +172,7 @@
 <span class="sd">Module dictionary_module</span>
 
 
-<span class="sd">Defined at Dictionary.fpp lines 176-3304</span>
+<span class="sd">Defined at Dictionary.fpp lines 127-2675</span>
 
 <span class="sd">A Dictionary object contains a list of keys (strings) and corresponding entries.</span>
 <span class="sd">Entries are a variable type, containing one of:</span>
@@ -193,7 +193,7 @@
 <span class="sd">    Type(name=dictdata)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp lines 207-209</span>
+<span class="sd">    Defined at Dictionary.fpp lines 151-152</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -201,7 +201,7 @@
 <span class="sd">        self = Dictdata()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 207-209</span>
+<span class="sd">        Defined at Dictionary.fpp lines 151-152</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -221,7 +221,7 @@
 <span class="sd">        Destructor for class Dictdata</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 207-209</span>
+<span class="sd">        Defined at Dictionary.fpp lines 151-152</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -240,7 +240,7 @@
 <span class="sd">        Element d ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 208</span>
+<span class="sd">        Defined at Dictionary.fpp line 152</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictdata__array__d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -273,7 +273,7 @@
 <span class="sd">    Type(name=dictentry)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp lines 212-237</span>
+<span class="sd">    Defined at Dictionary.fpp lines 155-173</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -282,7 +282,7 @@
 <span class="sd">        Destructor for class Dictentry</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 568-598</span>
+<span class="sd">        Defined at Dictionary.fpp lines 457-475</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -298,7 +298,7 @@
 <span class="sd">        print(self, key[, verbosity, file])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 428-488</span>
+<span class="sd">        Defined at Dictionary.fpp lines 334-392</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -317,7 +317,7 @@
 <span class="sd">        self = Dictentry()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 212-237</span>
+<span class="sd">        Defined at Dictionary.fpp lines 155-173</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -338,7 +338,7 @@
 <span class="sd">        Element type_bn ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 214</span>
+<span class="sd">        Defined at Dictionary.fpp line 157</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__type_bn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -353,7 +353,7 @@
 <span class="sd">        Element len_bn ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 215</span>
+<span class="sd">        Defined at Dictionary.fpp line 158</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__len_bn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -368,7 +368,7 @@
 <span class="sd">        Element len2 ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 216</span>
+<span class="sd">        Defined at Dictionary.fpp line 159</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__len2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -391,7 +391,7 @@
 <span class="sd">        Element own_data ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 218</span>
+<span class="sd">        Defined at Dictionary.fpp line 160</span>
 <span class="sd">        </span>
 <span class="sd">        True if we own the data and should free it in finalise()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -407,7 +407,7 @@
 <span class="sd">        Element i ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 220</span>
+<span class="sd">        Defined at Dictionary.fpp line 161</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__i</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -422,7 +422,7 @@
 <span class="sd">        Element r ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 221</span>
+<span class="sd">        Defined at Dictionary.fpp line 162</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -437,7 +437,7 @@
 <span class="sd">        Element c ftype=complex(dp) pytype=complex</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 222</span>
+<span class="sd">        Defined at Dictionary.fpp line 163</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__c</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -452,7 +452,7 @@
 <span class="sd">        Element l ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 223</span>
+<span class="sd">        Defined at Dictionary.fpp line 164</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -467,7 +467,7 @@
 <span class="sd">        Element i_a ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 226</span>
+<span class="sd">        Defined at Dictionary.fpp line 166</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__i_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -490,7 +490,7 @@
 <span class="sd">        Element r_a ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 227</span>
+<span class="sd">        Defined at Dictionary.fpp line 167</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__r_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -513,7 +513,7 @@
 <span class="sd">        Element c_a ftype=complex(dp) pytype=complex</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 228</span>
+<span class="sd">        Defined at Dictionary.fpp line 168</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__c_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -536,7 +536,7 @@
 <span class="sd">        Element l_a ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 229</span>
+<span class="sd">        Defined at Dictionary.fpp line 169</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__l_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -559,7 +559,7 @@
 <span class="sd">        Element s_a ftype=character(len=1) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 230</span>
+<span class="sd">        Defined at Dictionary.fpp line 170</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__s_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -582,7 +582,7 @@
 <span class="sd">        Element i_a2 ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 232</span>
+<span class="sd">        Defined at Dictionary.fpp line 171</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__i_a2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -605,7 +605,7 @@
 <span class="sd">        Element r_a2 ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 233</span>
+<span class="sd">        Defined at Dictionary.fpp line 172</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__array__r_a2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -628,7 +628,7 @@
 <span class="sd">        Element d ftype=type(dictdata) pytype=Dictdata</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 235</span>
+<span class="sd">        Defined at Dictionary.fpp line 173</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">d_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictentry__get__d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -690,7 +690,7 @@
 <span class="sd">    Type(name=dictionary)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp lines 242-263</span>
+<span class="sd">    Defined at Dictionary.fpp lines 177-196</span>
 <span class="sd">    </span>
 <span class="sd">    Fortran implementation of a dictionary to store key/value pairs of the following types:</span>
 <span class="sd">    </span>
@@ -712,7 +712,7 @@
 <span class="sd">        key = get_key(self, i[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 600-613</span>
+<span class="sd">        Defined at Dictionary.fpp lines 477-486</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -733,7 +733,7 @@
 <span class="sd">        type_bn, thesize = get_type_and_size(self, key, thesize2[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 615-634</span>
+<span class="sd">        Defined at Dictionary.fpp lines 488-501</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -757,7 +757,7 @@
 <span class="sd">        lookup_entry_i = lookup_entry_i(self, key[, case_sensitive])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2772-2797</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2231-2252</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -779,7 +779,7 @@
 <span class="sd">        nd, dtype, dshape, dloc = _array__(self, key)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 3235-3302</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2620-2674</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -802,7 +802,7 @@
 <span class="sd">        self = Dictionary()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 530-538</span>
+<span class="sd">        Defined at Dictionary.fpp lines 426-431</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -820,7 +820,7 @@
 <span class="sd">        Destructor for class Dictionary</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 540-566</span>
+<span class="sd">        Defined at Dictionary.fpp lines 433-455</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -836,7 +836,7 @@
 <span class="sd">        print(self[, verbosity, file])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 510-522</span>
+<span class="sd">        Defined at Dictionary.fpp lines 411-419</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -853,7 +853,7 @@
 <span class="sd">        print_keys(self[, verbosity, file])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 490-508</span>
+<span class="sd">        Defined at Dictionary.fpp lines 394-409</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -870,7 +870,7 @@
 <span class="sd">        remove_value(self, key)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2244-2256</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1815-1824</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -886,7 +886,7 @@
 <span class="sd">        dictionary_write_string = write_string(self[, real_format, entry_sep, char_a_sep, quote_char, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2528-2633</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2056-2134</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -920,7 +920,7 @@
 <span class="sd">        read_string(self, str[, append, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2258-2303</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1826-1861</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -940,7 +940,7 @@
 <span class="sd">        subset(self, keys, out[, case_sensitive, out_no_initialise, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2810-2837</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2262-2281</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -960,7 +960,7 @@
 <span class="sd">        swap(self, key1, key2[, case_sensitive, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2965-3001</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2384-2411</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -979,7 +979,7 @@
 <span class="sd">        dictionary_has_key = has_key(self, key[, case_sensitive])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2800-2808</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2255-2260</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1001,7 +1001,7 @@
 <span class="sd">        deepcopy(self, from_[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 3214-3224</span>
+<span class="sd">        Defined at Dictionary.fpp lines 2606-2612</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1018,7 +1018,7 @@
 <span class="sd">        _set_value_none(self, key)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 642-655</span>
+<span class="sd">        Defined at Dictionary.fpp lines 508-517</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1033,7 +1033,7 @@
 <span class="sd">        _set_value_i(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 657-672</span>
+<span class="sd">        Defined at Dictionary.fpp lines 519-530</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1049,7 +1049,7 @@
 <span class="sd">        _set_value_r(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 674-689</span>
+<span class="sd">        Defined at Dictionary.fpp lines 532-543</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1065,7 +1065,7 @@
 <span class="sd">        _set_value_c(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 691-706</span>
+<span class="sd">        Defined at Dictionary.fpp lines 545-556</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1081,7 +1081,7 @@
 <span class="sd">        _set_value_l(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 708-723</span>
+<span class="sd">        Defined at Dictionary.fpp lines 558-569</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1097,7 +1097,7 @@
 <span class="sd">        _set_value_i_a(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 760-782</span>
+<span class="sd">        Defined at Dictionary.fpp lines 598-615</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1113,7 +1113,7 @@
 <span class="sd">        _set_value_r_a(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 784-805</span>
+<span class="sd">        Defined at Dictionary.fpp lines 617-634</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1129,7 +1129,7 @@
 <span class="sd">        _set_value_c_a(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 855-876</span>
+<span class="sd">        Defined at Dictionary.fpp lines 676-693</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1145,7 +1145,7 @@
 <span class="sd">        _set_value_l_a(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 878-899</span>
+<span class="sd">        Defined at Dictionary.fpp lines 695-712</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1161,7 +1161,7 @@
 <span class="sd">        _set_value_s(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 725-741</span>
+<span class="sd">        Defined at Dictionary.fpp lines 571-583</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1177,7 +1177,7 @@
 <span class="sd">        _set_value_s_a2(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 929-951</span>
+<span class="sd">        Defined at Dictionary.fpp lines 738-756</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1193,7 +1193,7 @@
 <span class="sd">        _set_value_s_a(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 901-927</span>
+<span class="sd">        Defined at Dictionary.fpp lines 714-736</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1209,7 +1209,7 @@
 <span class="sd">        _set_value_d(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 953-970</span>
+<span class="sd">        Defined at Dictionary.fpp lines 758-770</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1225,7 +1225,7 @@
 <span class="sd">        _set_value_i_a2(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 807-829</span>
+<span class="sd">        Defined at Dictionary.fpp lines 636-654</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1241,7 +1241,7 @@
 <span class="sd">        _set_value_r_a2(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 831-853</span>
+<span class="sd">        Defined at Dictionary.fpp lines 656-674</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1257,7 +1257,7 @@
 <span class="sd">        _set_value_dict(self, key, value)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 972-990</span>
+<span class="sd">        Defined at Dictionary.fpp lines 772-785</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1273,7 +1273,7 @@
 <span class="sd">        set_value(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 295-305</span>
+<span class="sd">        Defined at Dictionary.fpp lines 223-232</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _set_value_none</span>
@@ -1309,7 +1309,7 @@
 <span class="sd">        _set_value_pointer_i(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1673-1691</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1334-1348</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1325,7 +1325,7 @@
 <span class="sd">        _set_value_pointer_r(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1693-1711</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1350-1364</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1341,7 +1341,7 @@
 <span class="sd">        _set_value_pointer_c(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1713-1731</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1366-1380</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1357,7 +1357,7 @@
 <span class="sd">        _set_value_pointer_l(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1733-1751</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1382-1396</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1373,7 +1373,7 @@
 <span class="sd">        _set_value_pointer_s(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1753-1772</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1398-1413</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1389,7 +1389,7 @@
 <span class="sd">        _set_value_pointer_i2(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1774-1793</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1415-1430</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1405,7 +1405,7 @@
 <span class="sd">        _set_value_pointer_r2(self, key, ptr)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1795-1815</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1432-1447</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1421,7 +1421,7 @@
 <span class="sd">        set_value_pointer(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 308-316</span>
+<span class="sd">        Defined at Dictionary.fpp lines 235-242</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _set_value_pointer_i</span>
@@ -1446,7 +1446,7 @@
 <span class="sd">        dictionary_get_value_i, v = _get_value_i(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 998-1022</span>
+<span class="sd">        Defined at Dictionary.fpp lines 792-811</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1470,7 +1470,7 @@
 <span class="sd">        dictionary_get_value_r, v = _get_value_r(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1024-1049</span>
+<span class="sd">        Defined at Dictionary.fpp lines 813-832</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1494,7 +1494,7 @@
 <span class="sd">        dictionary_get_value_c, v = _get_value_c(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1051-1075</span>
+<span class="sd">        Defined at Dictionary.fpp lines 834-853</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1518,7 +1518,7 @@
 <span class="sd">        dictionary_get_value_l, v = _get_value_l(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1077-1102</span>
+<span class="sd">        Defined at Dictionary.fpp lines 855-874</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1542,7 +1542,7 @@
 <span class="sd">        dictionary_get_value_i_a = _get_value_i_a(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1159-1187</span>
+<span class="sd">        Defined at Dictionary.fpp lines 919-942</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1566,7 +1566,7 @@
 <span class="sd">        dictionary_get_value_r_a = _get_value_r_a(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1189-1217</span>
+<span class="sd">        Defined at Dictionary.fpp lines 944-967</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1590,7 +1590,7 @@
 <span class="sd">        dictionary_get_value_c_a = _get_value_c_a(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1282-1310</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1021-1044</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1614,7 +1614,7 @@
 <span class="sd">        dictionary_get_value_l_a = _get_value_l_a(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1312-1341</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1046-1069</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1638,7 +1638,7 @@
 <span class="sd">        dictionary_get_value_s, v = _get_value_s(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1104-1129</span>
+<span class="sd">        Defined at Dictionary.fpp lines 876-896</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1662,7 +1662,7 @@
 <span class="sd">        dictionary_get_value_s_a = _get_value_s_a(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1343-1375</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1071-1098</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1686,7 +1686,7 @@
 <span class="sd">        dictionary_get_value_s_a2 = _get_value_s_a2(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1377-1407</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1100-1123</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1710,7 +1710,7 @@
 <span class="sd">        dictionary_get_value_d, v = _get_value_d(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1409-1433</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1125-1144</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1735,7 +1735,7 @@
 <span class="sd">        dictionary_get_value_i_a2 = _get_value_i_a2(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1219-1248</span>
+<span class="sd">        Defined at Dictionary.fpp lines 969-993</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1759,7 +1759,7 @@
 <span class="sd">        dictionary_get_value_r_a2 = _get_value_r_a2(self, key, v[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1250-1280</span>
+<span class="sd">        Defined at Dictionary.fpp lines 995-1019</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1783,7 +1783,7 @@
 <span class="sd">        dictionary_get_value_dict, v = _get_value_dict(self, key[, case_sensitive, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1435-1466</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1146-1170</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1808,7 +1808,7 @@
 <span class="sd">        get_value(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 320-328</span>
+<span class="sd">        Defined at Dictionary.fpp lines 246-253</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _get_value_i</span>
@@ -1843,7 +1843,7 @@
 <span class="sd">        _add_array_i(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1823-1850</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1454-1477</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1861,7 +1861,7 @@
 <span class="sd">        _add_array_r(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1852-1879</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1479-1502</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1879,7 +1879,7 @@
 <span class="sd">        _add_array_c(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1881-1908</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1504-1527</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1897,7 +1897,7 @@
 <span class="sd">        _add_array_l(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1910-1937</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1529-1552</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1915,7 +1915,7 @@
 <span class="sd">        _add_array_s(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1939-1967</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1554-1578</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1933,7 +1933,7 @@
 <span class="sd">        _add_array_i2(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1969-1997</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1580-1604</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1951,7 +1951,7 @@
 <span class="sd">        _add_array_r2(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 1999-2029</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1606-1630</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1969,7 +1969,7 @@
 <span class="sd">        _add_array_i_a(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2031-2058</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1632-1655</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1987,7 +1987,7 @@
 <span class="sd">        _add_array_r_a(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2060-2087</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1657-1680</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2005,7 +2005,7 @@
 <span class="sd">        _add_array_c_a(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2089-2116</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1682-1705</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2023,7 +2023,7 @@
 <span class="sd">        _add_array_l_a(self, key, value, len_bn[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2118-2145</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1707-1730</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2041,7 +2041,7 @@
 <span class="sd">        _add_array_s_a(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2147-2175</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1732-1756</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2059,7 +2059,7 @@
 <span class="sd">        _add_array_i2_a(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2177-2205</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1758-1782</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2077,7 +2077,7 @@
 <span class="sd">        _add_array_r2_a(self, key, value, len2[, overwrite])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 2207-2236</span>
+<span class="sd">        Defined at Dictionary.fpp lines 1784-1808</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2095,7 +2095,7 @@
 <span class="sd">        add_array(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 343-358</span>
+<span class="sd">        Defined at Dictionary.fpp lines 267-281</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _add_array_i</span>
@@ -2129,7 +2129,7 @@
 <span class="sd">        Element n ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 258</span>
+<span class="sd">        Defined at Dictionary.fpp line 192</span>
 <span class="sd">        </span>
 <span class="sd">        number of entries in use</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2148,7 +2148,7 @@
 <span class="sd">        Element entries ftype=type(dictentry) pytype=Dictentry</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 260</span>
+<span class="sd">        Defined at Dictionary.fpp line 194</span>
 <span class="sd">        </span>
 <span class="sd">        array of entries</span>
 <span class="sd">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">DictEntry</span><span class="p">)</span>
@@ -2160,7 +2160,7 @@
 <span class="sd">        Element cache_invalid ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 261</span>
+<span class="sd">        Defined at Dictionary.fpp line 195</span>
 <span class="sd">        </span>
 <span class="sd">        non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations \</span>
 <span class="sd">            changed</span>
@@ -2177,7 +2177,7 @@
 <span class="sd">        Element key_cache_invalid ftype=integer  pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 262</span>
+<span class="sd">        Defined at Dictionary.fpp line 196</span>
 <span class="sd">        </span>
 <span class="sd">        non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any keys changed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2207,7 +2207,7 @@
 <span class="sd">    Type(name=c_dictionary_ptr_type)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp lines 266-268</span>
+<span class="sd">    Defined at Dictionary.fpp lines 199-200</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -2215,7 +2215,7 @@
 <span class="sd">        self = C_Dictionary_Ptr_Type()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 266-268</span>
+<span class="sd">        Defined at Dictionary.fpp lines 199-200</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -2235,7 +2235,7 @@
 <span class="sd">        Destructor for class C_Dictionary_Ptr_Type</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp lines 266-268</span>
+<span class="sd">        Defined at Dictionary.fpp lines 199-200</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2254,7 +2254,7 @@
 <span class="sd">        Element p ftype=type(dictionary) pytype=Dictionary</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at Dictionary.fpp line 267</span>
+<span class="sd">        Defined at Dictionary.fpp line 200</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">p_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_c_dictionary_ptr_type__get__p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -2285,7 +2285,7 @@
 <span class="sd">    Element t_none ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2298,7 +2298,7 @@
 <span class="sd">    Element t_integer ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2311,7 +2311,7 @@
 <span class="sd">    Element t_real ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2324,7 +2324,7 @@
 <span class="sd">    Element t_complex ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2337,7 +2337,7 @@
 <span class="sd">    Element t_logical ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2350,7 +2350,7 @@
 <span class="sd">    Element t_integer_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2363,7 +2363,7 @@
 <span class="sd">    Element t_real_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2376,7 +2376,7 @@
 <span class="sd">    Element t_complex_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2389,7 +2389,7 @@
 <span class="sd">    Element t_logical_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2402,7 +2402,7 @@
 <span class="sd">    Element t_char ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2415,7 +2415,7 @@
 <span class="sd">    Element t_char_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2428,7 +2428,7 @@
 <span class="sd">    Element t_data ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2441,7 +2441,7 @@
 <span class="sd">    Element t_integer_a2 ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2454,7 +2454,7 @@
 <span class="sd">    Element t_real_a2 ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2467,7 +2467,7 @@
 <span class="sd">    Element t_dict ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 194</span>
+<span class="sd">    Defined at Dictionary.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    OMIT</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2480,7 +2480,7 @@
 <span class="sd">    Element property_int ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 199</span>
+<span class="sd">    Defined at Dictionary.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_module__get__property_int</span><span class="p">()</span></div>
@@ -2492,7 +2492,7 @@
 <span class="sd">    Element property_real ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 199</span>
+<span class="sd">    Defined at Dictionary.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_module__get__property_real</span><span class="p">()</span></div>
@@ -2504,7 +2504,7 @@
 <span class="sd">    Element property_str ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 199</span>
+<span class="sd">    Defined at Dictionary.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_module__get__property_str</span><span class="p">()</span></div>
@@ -2516,7 +2516,7 @@
 <span class="sd">    Element property_logical ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 199</span>
+<span class="sd">    Defined at Dictionary.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_module__get__property_logical</span><span class="p">()</span></div>
@@ -2528,7 +2528,7 @@
 <span class="sd">    Element c_key_len ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 202</span>
+<span class="sd">    Defined at Dictionary.fpp line 147</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_module__get__c_key_len</span><span class="p">()</span></div>
@@ -2540,7 +2540,7 @@
 <span class="sd">    Element string_length ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 203</span>
+<span class="sd">    Defined at Dictionary.fpp line 148</span>
 <span class="sd">    </span>
 <span class="sd">    Maximum string length</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2553,7 +2553,7 @@
 <span class="sd">    Element dict_n_fields ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at Dictionary.fpp line 204</span>
+<span class="sd">    Defined at Dictionary.fpp line 149</span>
 <span class="sd">    </span>
 <span class="sd">    Maximum number of fields during parsing</span>
 <span class="sd">    &quot;&quot;&quot;</span>

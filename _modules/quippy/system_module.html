@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.system_module &mdash; quippy fd5d621+ documentation</title>
+  <title>quippy.system_module &mdash; quippy 809f170+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                fd5d621+
+                809f170+
               </div>
             
           
@@ -172,7 +172,7 @@
 <span class="sd">Module system_module</span>
 
 
-<span class="sd">Defined at System.fpp lines 186-3449</span>
+<span class="sd">Defined at System.fpp lines 137-2701</span>
 
 <span class="sd">The system module contains low-level routines for I/O, timing, random</span>
 <span class="sd">number generation etc. The Inoutput type is used to abstract both</span>
@@ -192,7 +192,7 @@
 <span class="sd">    Type(name=stack)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 222-225</span>
+<span class="sd">    Defined at System.fpp lines 153-155</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -200,7 +200,7 @@
 <span class="sd">        self = Stack([value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2692-2705</span>
+<span class="sd">        Defined at System.fpp lines 2115-2125</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -220,7 +220,7 @@
 <span class="sd">        Destructor for class Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2707-2712</span>
+<span class="sd">        Defined at System.fpp lines 2127-2129</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -235,7 +235,7 @@
 <span class="sd">        push(self, val)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2714-2736</span>
+<span class="sd">        Defined at System.fpp lines 2131-2147</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -250,7 +250,7 @@
 <span class="sd">        pop(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2738-2746</span>
+<span class="sd">        Defined at System.fpp lines 2149-2155</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -264,7 +264,7 @@
 <span class="sd">        stack_value = value(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2748-2757</span>
+<span class="sd">        Defined at System.fpp lines 2157-2164</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -283,7 +283,7 @@
 <span class="sd">        print(self[, verbosity, out])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2759-2769</span>
+<span class="sd">        Defined at System.fpp lines 2166-2174</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -300,7 +300,7 @@
 <span class="sd">        Element pos ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 223</span>
+<span class="sd">        Defined at System.fpp line 154</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack__get__pos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -315,7 +315,7 @@
 <span class="sd">        Element val ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 224</span>
+<span class="sd">        Defined at System.fpp line 155</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack__array__val</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -350,7 +350,7 @@
 <span class="sd">    Type(name=inoutput)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 227-240</span>
+<span class="sd">    Defined at System.fpp lines 157-169</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="InOutput.close"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -358,7 +358,7 @@
 <span class="sd">        close(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 627-632</span>
+<span class="sd">        Defined at System.fpp lines 489-492</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -373,7 +373,7 @@
 <span class="sd">        inoutput_do_output = do_output(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 726-735</span>
+<span class="sd">        Defined at System.fpp lines 566-573</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -392,7 +392,7 @@
 <span class="sd">        rewind(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1851-1854</span>
+<span class="sd">        Defined at System.fpp lines 1507-1509</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -407,7 +407,7 @@
 <span class="sd">        backspace(self[, n])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1858-1869</span>
+<span class="sd">        Defined at System.fpp lines 1513-1523</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -424,7 +424,7 @@
 <span class="sd">        print_mem_info([self])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 3290-3300</span>
+<span class="sd">        Defined at System.fpp lines 2577-2582</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -439,7 +439,7 @@
 <span class="sd">        self = Inoutput([filename, action, isformatted, append, verbosity, verbosity_cascade, master_only, unit, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 456-588</span>
+<span class="sd">        Defined at System.fpp lines 347-455</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -473,7 +473,7 @@
 <span class="sd">        Destructor for class Inoutput</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 617-624</span>
+<span class="sd">        Defined at System.fpp lines 480-486</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -489,7 +489,7 @@
 <span class="sd">        activate(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 610-614</span>
+<span class="sd">        Defined at System.fpp lines 475-477</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -504,7 +504,7 @@
 <span class="sd">        deactivate(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 604-607</span>
+<span class="sd">        Defined at System.fpp lines 470-472</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -519,7 +519,7 @@
 <span class="sd">        mpi_all_inoutput(self[, value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 634-645</span>
+<span class="sd">        Defined at System.fpp lines 494-501</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -534,7 +534,7 @@
 <span class="sd">        print_mpi_id(self[, value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 647-658</span>
+<span class="sd">        Defined at System.fpp lines 503-510</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -549,7 +549,7 @@
 <span class="sd">        inoutput_read_line = read_line(self[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 856-873</span>
+<span class="sd">        Defined at System.fpp lines 672-684</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -581,7 +581,7 @@
 <span class="sd">        num_fields = parse_line(self, delimiters, fields[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 950-963</span>
+<span class="sd">        Defined at System.fpp lines 749-759</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -604,7 +604,7 @@
 <span class="sd">        _reada_real_dim1(self, da[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1814-1830</span>
+<span class="sd">        Defined at System.fpp lines 1478-1490</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -623,7 +623,7 @@
 <span class="sd">        _reada_int_dim1(self, ia[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1832-1848</span>
+<span class="sd">        Defined at System.fpp lines 1492-1504</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -639,7 +639,7 @@
 <span class="sd">        read_ascii(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 340-342</span>
+<span class="sd">        Defined at System.fpp lines 251-252</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _reada_real_dim1</span>
@@ -658,7 +658,7 @@
 <span class="sd">        Element unit ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 228</span>
+<span class="sd">        Defined at System.fpp line 158</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -673,7 +673,7 @@
 <span class="sd">        Element filename ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 229</span>
+<span class="sd">        Defined at System.fpp line 159</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__filename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -688,7 +688,7 @@
 <span class="sd">        Element prefix ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 230</span>
+<span class="sd">        Defined at System.fpp line 160</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -703,7 +703,7 @@
 <span class="sd">        Element postfix ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 230</span>
+<span class="sd">        Defined at System.fpp line 160</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__postfix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -718,7 +718,7 @@
 <span class="sd">        Element default_real_precision ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 231</span>
+<span class="sd">        Defined at System.fpp line 161</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__default_real_precision</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -733,7 +733,7 @@
 <span class="sd">        Element formatted ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 232</span>
+<span class="sd">        Defined at System.fpp line 162</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__formatted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -748,7 +748,7 @@
 <span class="sd">        Element append ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 233</span>
+<span class="sd">        Defined at System.fpp line 163</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -763,7 +763,7 @@
 <span class="sd">        Element active ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 234</span>
+<span class="sd">        Defined at System.fpp line 164</span>
 <span class="sd">        </span>
 <span class="sd">        Does it print?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -779,7 +779,7 @@
 <span class="sd">        Element action ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 235</span>
+<span class="sd">        Defined at System.fpp line 165</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -794,7 +794,7 @@
 <span class="sd">        Element mpi_all_inoutput_flag ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 236</span>
+<span class="sd">        Defined at System.fpp line 166</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__mpi_all_inoutput_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -809,7 +809,7 @@
 <span class="sd">        Element mpi_print_id ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 237</span>
+<span class="sd">        Defined at System.fpp line 167</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__mpi_print_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -824,7 +824,7 @@
 <span class="sd">        Element verbosity_stack ftype=type(stack) pytype=Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 238</span>
+<span class="sd">        Defined at System.fpp line 168</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">verbosity_stack_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__verbosity_stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -846,7 +846,7 @@
 <span class="sd">        Element verbosity_cascade_stack ftype=type(stack) pytype=Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 238</span>
+<span class="sd">        Defined at System.fpp line 168</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">verbosity_cascade_stack_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__verbosity_cascade_stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -868,7 +868,7 @@
 <span class="sd">        Element initialised ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 239</span>
+<span class="sd">        Defined at System.fpp line 169</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__initialised</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -919,7 +919,7 @@
 <span class="sd">    Type(name=allocatable_array_pointers)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 242-247</span>
+<span class="sd">    Defined at System.fpp lines 171-175</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -927,7 +927,7 @@
 <span class="sd">        self = Allocatable_Array_Pointers()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 242-247</span>
+<span class="sd">        Defined at System.fpp lines 171-175</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -947,7 +947,7 @@
 <span class="sd">        Destructor for class Allocatable_Array_Pointers</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 242-247</span>
+<span class="sd">        Defined at System.fpp lines 171-175</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -966,7 +966,7 @@
 <span class="sd">        Element i_a ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 243</span>
+<span class="sd">        Defined at System.fpp line 172</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__i_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -989,7 +989,7 @@
 <span class="sd">        Element r_a ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 244</span>
+<span class="sd">        Defined at System.fpp line 173</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__r_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1012,7 +1012,7 @@
 <span class="sd">        Element c_a ftype=complex(dp) pytype=complex</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 245</span>
+<span class="sd">        Defined at System.fpp line 174</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__c_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1035,7 +1035,7 @@
 <span class="sd">        Element l_a ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 246</span>
+<span class="sd">        Defined at System.fpp line 175</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__l_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1073,7 +1073,7 @@
 <span class="sd">    unit = pick_up_unit()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 591-601</span>
+<span class="sd">    Defined at System.fpp lines 458-467</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1090,7 +1090,7 @@
 <span class="sd">    print_title(title[, verbosity])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 815-836</span>
+<span class="sd">    Defined at System.fpp lines 638-653</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1108,7 +1108,7 @@
 <span class="sd">    n_fields = split_string_simple(str, fields, separators[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 967-1002</span>
+<span class="sd">    Defined at System.fpp lines 763-793</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1140,7 +1140,7 @@
 <span class="sd">    num_fields_in_string_simple = num_fields_in_string_simple(this, separators)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1004-1020</span>
+<span class="sd">    Defined at System.fpp lines 795-804</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1160,7 +1160,7 @@
 <span class="sd">    num_fields = split_string(this, separators, quotes, fields[, matching])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1026-1163</span>
+<span class="sd">    Defined at System.fpp lines 810-942</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1188,7 +1188,7 @@
 <span class="sd">    c, dist = next_non_separator(this, start, end, separators)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1165-1185</span>
+<span class="sd">    Defined at System.fpp lines 944-961</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1211,7 +1211,7 @@
 <span class="sd">    num_fields = parse_string(this, delimiters, fields[, matching, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1192-1293</span>
+<span class="sd">    Defined at System.fpp lines 968-1059</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1240,7 +1240,7 @@
 <span class="sd">    pos = find_closing_delimiter(this, closing_delim, opening_delims, closing_delims, matching)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1295-1343</span>
+<span class="sd">    Defined at System.fpp lines 1061-1103</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1264,7 +1264,7 @@
 <span class="sd">    num_fields = parse_string_orig(this, delimiters, fields)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1349-1399</span>
+<span class="sd">    Defined at System.fpp lines 1109-1149</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1289,7 +1289,7 @@
 <span class="sd">    string_to_int = string_to_int(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1402-1416</span>
+<span class="sd">    Defined at System.fpp lines 1152-1162</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1310,7 +1310,7 @@
 <span class="sd">    string_to_logical = string_to_logical(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1419-1436</span>
+<span class="sd">    Defined at System.fpp lines 1165-1177</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1331,7 +1331,7 @@
 <span class="sd">    string_to_real = string_to_real(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1439-1454</span>
+<span class="sd">    Defined at System.fpp lines 1180-1190</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1352,7 +1352,7 @@
 <span class="sd">    round = round(r, digits)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1881-1897</span>
+<span class="sd">    Defined at System.fpp lines 1534-1546</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1377,7 +1377,7 @@
 <span class="sd">    len_bn = int_format_length(i)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1916-1920</span>
+<span class="sd">    Defined at System.fpp lines 1562-1565</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1396,7 +1396,7 @@
 <span class="sd">    len_bn = real_sci_format_length()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1960-1965</span>
+<span class="sd">    Defined at System.fpp lines 1597-1600</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1412,7 +1412,7 @@
 <span class="sd">    len_bn = real_format_length(r)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2038-2061</span>
+<span class="sd">    Defined at System.fpp lines 1661-1676</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1431,7 +1431,7 @@
 <span class="sd">    len_bn = complex_format_length(c)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2063-2068</span>
+<span class="sd">    Defined at System.fpp lines 1678-1681</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1450,7 +1450,7 @@
 <span class="sd">    nproc, rank_bn = get_mpi_size_rank(comm)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2136-2150</span>
+<span class="sd">    Defined at System.fpp lines 1735-1741</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1480,7 +1480,7 @@
 <span class="sd">        mainlog_unit])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2161-2232</span>
+<span class="sd">    Defined at System.fpp lines 1751-1806</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1523,7 +1523,7 @@
 <span class="sd">    get_mainlog_errorlog_ptr(mainlog_ptr, errorlog_ptr)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2234-2249</span>
+<span class="sd">    Defined at System.fpp lines 1808-1817</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1538,7 +1538,7 @@
 <span class="sd">    cmd_arg_count = cmd_arg_count()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2251-2264</span>
+<span class="sd">    Defined at System.fpp lines 1819-1823</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1554,7 +1554,7 @@
 <span class="sd">    arg = get_cmd_arg(i[, status])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2266-2281</span>
+<span class="sd">    Defined at System.fpp lines 1825-1831</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1574,7 +1574,7 @@
 <span class="sd">    arg = get_env_var(name[, status])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2283-2304</span>
+<span class="sd">    Defined at System.fpp lines 1833-1845</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1594,7 +1594,7 @@
 <span class="sd">    system_finalise()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2307-2324</span>
+<span class="sd">    Defined at System.fpp lines 1848-1855</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Shut down gracefully, finalising system objects.</span>
@@ -1606,7 +1606,7 @@
 <span class="sd">    print_warning(message)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2327-2331</span>
+<span class="sd">    Defined at System.fpp lines 1858-1861</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1621,7 +1621,7 @@
 <span class="sd">    date_and_time_string = date_and_time_string(values)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2334-2348</span>
+<span class="sd">    Defined at System.fpp lines 1864-1875</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1641,7 +1641,7 @@
 <span class="sd">    system_set_random_seeds(seed)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2350-2381</span>
+<span class="sd">    Defined at System.fpp lines 1877-1893</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1655,7 +1655,7 @@
 <span class="sd">    hello_world([seed, common_seed])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2385-2437</span>
+<span class="sd">    Defined at System.fpp lines 1897-1934</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1677,7 +1677,7 @@
 <span class="sd">    system_resync_rng()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2439-2441</span>
+<span class="sd">    Defined at System.fpp lines 1936-1937</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1688,7 +1688,7 @@
 <span class="sd">    th = th(n)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2446-2471</span>
+<span class="sd">    Defined at System.fpp lines 1942-1961</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1708,7 +1708,7 @@
 <span class="sd">    system_reseed_rng(new_seed)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2474-2479</span>
+<span class="sd">    Defined at System.fpp lines 1964-1967</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1723,7 +1723,7 @@
 <span class="sd">    system_get_random_seed = system_get_random_seed()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2482-2486</span>
+<span class="sd">    Defined at System.fpp lines 1970-1972</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1740,7 +1740,7 @@
 <span class="sd">    dran = ran()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2489-2505</span>
+<span class="sd">    Defined at System.fpp lines 1975-1989</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1757,7 +1757,7 @@
 <span class="sd">    ran_uniform = ran_uniform()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2508-2519</span>
+<span class="sd">    Defined at System.fpp lines 1992-2001</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1774,7 +1774,7 @@
 <span class="sd">    ran_normal = ran_normal()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2522-2531</span>
+<span class="sd">    Defined at System.fpp lines 2004-2012</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1791,7 +1791,7 @@
 <span class="sd">    r = ran_exp()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2535-2538</span>
+<span class="sd">    Defined at System.fpp lines 2016-2018</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1809,7 +1809,7 @@
 <span class="sd">    ran_string = ran_string(l)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2541-2558</span>
+<span class="sd">    Defined at System.fpp lines 2021-2034</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1829,7 +1829,7 @@
 <span class="sd">    current_times([cpu_t, wall_t, mpi_t])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2560-2577</span>
+<span class="sd">    Defined at System.fpp lines 2036-2044</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1845,7 +1845,7 @@
 <span class="sd">    system_timer(name[, do_always, time_elapsed, do_print])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2591-2668</span>
+<span class="sd">    Defined at System.fpp lines 2058-2098</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1875,7 +1875,7 @@
 <span class="sd">    is_file_readable = is_file_readable(filename)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2671-2690</span>
+<span class="sd">    Defined at System.fpp lines 2101-2113</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1895,7 +1895,7 @@
 <span class="sd">    str = verbosity_to_str(val)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2772-2790</span>
+<span class="sd">    Defined at System.fpp lines 2177-2193</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1915,7 +1915,7 @@
 <span class="sd">    val = verbosity_of_str(str)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2793-2813</span>
+<span class="sd">    Defined at System.fpp lines 2196-2213</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1935,7 +1935,7 @@
 <span class="sd">    verbosity_push(val)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2818-2828</span>
+<span class="sd">    Defined at System.fpp lines 2218-2226</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1952,7 +1952,7 @@
 <span class="sd">    verbosity_pop()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2831-2834</span>
+<span class="sd">    Defined at System.fpp lines 2229-2231</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    pop the current verbosity value off the stack</span>
@@ -1964,7 +1964,7 @@
 <span class="sd">    current_verbosity = current_verbosity()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2837-2840</span>
+<span class="sd">    Defined at System.fpp lines 2234-2236</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1981,7 +1981,7 @@
 <span class="sd">    verbosity_push_increment([n])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2843-2850</span>
+<span class="sd">    Defined at System.fpp lines 2239-2244</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1996,7 +1996,7 @@
 <span class="sd">    verbosity_push_decrement([n])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2853-2860</span>
+<span class="sd">    Defined at System.fpp lines 2247-2252</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2011,7 +2011,7 @@
 <span class="sd">    verbosity_set_minimum(verbosity)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2864-2869</span>
+<span class="sd">    Defined at System.fpp lines 2256-2259</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2027,7 +2027,7 @@
 <span class="sd">    verbosity_unset_minimum()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2873-2876</span>
+<span class="sd">    Defined at System.fpp lines 2263-2265</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    unset the minimum verbosity value, by popping value from</span>
@@ -2040,7 +2040,7 @@
 <span class="sd">    enable_timing()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2984-2986</span>
+<span class="sd">    Defined at System.fpp lines 2347-2348</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2051,7 +2051,7 @@
 <span class="sd">    disable_timing()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2988-2990</span>
+<span class="sd">    Defined at System.fpp lines 2350-2351</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2062,7 +2062,7 @@
 <span class="sd">    get_timing = get_timing()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2992-2995</span>
+<span class="sd">    Defined at System.fpp lines 2353-2355</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2078,7 +2078,7 @@
 <span class="sd">    set_timing(do_timing)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2997-3001</span>
+<span class="sd">    Defined at System.fpp lines 2357-2359</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2092,7 +2092,7 @@
 <span class="sd">    get_quippy_running = get_quippy_running()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3003-3008</span>
+<span class="sd">    Defined at System.fpp lines 2361-2363</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2108,7 +2108,7 @@
 <span class="sd">    increase_stack = increase_stack(stack_size)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3010-3017</span>
+<span class="sd">    Defined at System.fpp lines 2365-2369</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2127,7 +2127,7 @@
 <span class="sd">    abort_on_mpi_error(error_code, routine_name)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3020-3029</span>
+<span class="sd">    Defined at System.fpp lines 2372-2377</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2143,7 +2143,7 @@
 <span class="sd">    parallel_print(lines, comm[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3031-3044</span>
+<span class="sd">    Defined at System.fpp lines 2379-2389</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2160,7 +2160,7 @@
 <span class="sd">    alloc_trace(str, amt)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3046-3054</span>
+<span class="sd">    Defined at System.fpp lines 2391-2397</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2175,7 +2175,7 @@
 <span class="sd">    dealloc_trace(str, amt)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3056-3063</span>
+<span class="sd">    Defined at System.fpp lines 2399-2405</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2190,7 +2190,7 @@
 <span class="sd">    id = mpi_id()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3075-3078</span>
+<span class="sd">    Defined at System.fpp lines 2414-2416</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2207,7 +2207,7 @@
 <span class="sd">    n = mpi_n_procs()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3081-3084</span>
+<span class="sd">    Defined at System.fpp lines 2419-2421</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2224,7 +2224,7 @@
 <span class="sd">    reference_true = reference_true()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3086-3091</span>
+<span class="sd">    Defined at System.fpp lines 2423-2425</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2240,7 +2240,7 @@
 <span class="sd">    reference_false = reference_false()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3093-3098</span>
+<span class="sd">    Defined at System.fpp lines 2427-2429</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2256,7 +2256,7 @@
 <span class="sd">    a = s2a(s)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3101-3111</span>
+<span class="sd">    Defined at System.fpp lines 2432-2438</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2276,7 +2276,7 @@
 <span class="sd">    s = a2s(a)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3114-3124</span>
+<span class="sd">    Defined at System.fpp lines 2441-2447</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2296,7 +2296,7 @@
 <span class="sd">    a = pad(s, l)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3127-3138</span>
+<span class="sd">    Defined at System.fpp lines 2450-2458</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2317,7 +2317,7 @@
 <span class="sd">    dir = make_run_directory([basename, force_run_dir_i, run_dir_i, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3140-3183</span>
+<span class="sd">    Defined at System.fpp lines 2460-2495</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2340,7 +2340,7 @@
 <span class="sd">    dir = link_run_directory(sourcename[, basename, run_dir_i, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3185-3217</span>
+<span class="sd">    Defined at System.fpp lines 2497-2521</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2362,7 +2362,7 @@
 <span class="sd">    current_version = current_version()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3219-3228</span>
+<span class="sd">    Defined at System.fpp lines 2523-2525</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2378,7 +2378,7 @@
 <span class="sd">    length = linebreak_string_length(str, line_len)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3230-3237</span>
+<span class="sd">    Defined at System.fpp lines 2527-2531</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2398,7 +2398,7 @@
 <span class="sd">    lb_str = linebreak_string(str, line_len)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3239-3283</span>
+<span class="sd">    Defined at System.fpp lines 2533-2571</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2418,7 +2418,7 @@
 <span class="sd">    total_mem, free_mem = mem_info()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3285-3288</span>
+<span class="sd">    Defined at System.fpp lines 2573-2575</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2435,7 +2435,7 @@
 <span class="sd">    wait_for_file_to_exist(filename, max_wait_time[, cycle_time, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3302-3328</span>
+<span class="sd">    Defined at System.fpp lines 2584-2604</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2453,7 +2453,7 @@
 <span class="sd">    upper_case = upper_case(word)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3331-3346</span>
+<span class="sd">    Defined at System.fpp lines 2607-2619</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2473,7 +2473,7 @@
 <span class="sd">    lower_case = lower_case(word)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3349-3364</span>
+<span class="sd">    Defined at System.fpp lines 2622-2634</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2493,7 +2493,7 @@
 <span class="sd">    progress(total, current, name)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3367-3391</span>
+<span class="sd">    Defined at System.fpp lines 2637-2653</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2510,7 +2510,7 @@
 <span class="sd">    progress_timer(total, current, name, elapsed_seconds)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 3395-3449</span>
+<span class="sd">    Defined at System.fpp lines 2657-2701</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2529,7 +2529,7 @@
 <span class="sd">    _inoutput_print_string(string_bn[, verbosity, file, nocr, do_flush])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 666-724</span>
+<span class="sd">    Defined at System.fpp lines 517-564</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2548,7 +2548,7 @@
 <span class="sd">    _inoutput_print_integer(int_bn[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 761-768</span>
+<span class="sd">    Defined at System.fpp lines 593-598</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2564,7 +2564,7 @@
 <span class="sd">    _inoutput_print_real(real[, verbosity, file, precision, format])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 770-802</span>
+<span class="sd">    Defined at System.fpp lines 600-626</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2583,7 +2583,7 @@
 <span class="sd">    _inoutput_print_logical(log[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 752-759</span>
+<span class="sd">    Defined at System.fpp lines 586-591</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2599,7 +2599,7 @@
 <span class="sd">    _inoutput_print_char_array(char_a[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 737-750</span>
+<span class="sd">    Defined at System.fpp lines 575-584</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2616,7 +2616,7 @@
 <span class="sd">    print(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 333-337</span>
+<span class="sd">    Defined at System.fpp lines 245-248</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _inoutput_print_string</span>
@@ -2645,7 +2645,7 @@
 <span class="sd">    optional_default_l = _optional_default_l(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2878-2889</span>
+<span class="sd">    Defined at System.fpp lines 2267-2275</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2665,7 +2665,7 @@
 <span class="sd">    optional_default_i = _optional_default_i(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2891-2902</span>
+<span class="sd">    Defined at System.fpp lines 2277-2285</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2685,7 +2685,7 @@
 <span class="sd">    optional_default_r = _optional_default_r(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2918-2929</span>
+<span class="sd">    Defined at System.fpp lines 2297-2305</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2705,7 +2705,7 @@
 <span class="sd">    optional_default_c = _optional_default_c(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2958-2969</span>
+<span class="sd">    Defined at System.fpp lines 2327-2335</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2725,7 +2725,7 @@
 <span class="sd">    optional_default_ca = _optional_default_ca(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2971-2982</span>
+<span class="sd">    Defined at System.fpp lines 2337-2345</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2745,7 +2745,7 @@
 <span class="sd">    optional_default_z = _optional_default_z(def_)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2945-2956</span>
+<span class="sd">    Defined at System.fpp lines 2317-2325</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2764,7 +2764,7 @@
 <span class="sd">    optional_default_ia = _optional_default_ia(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2904-2916</span>
+<span class="sd">    Defined at System.fpp lines 2287-2295</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2784,7 +2784,7 @@
 <span class="sd">    optional_default_ra = _optional_default_ra(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2931-2943</span>
+<span class="sd">    Defined at System.fpp lines 2307-2315</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2804,7 +2804,7 @@
 <span class="sd">    optional_default(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 432-436</span>
+<span class="sd">    Defined at System.fpp lines 328-331</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _optional_default_l</span>
@@ -2832,7 +2832,7 @@
 <span class="sd">    real_number = _string_to_real_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1456-1471</span>
+<span class="sd">    Defined at System.fpp lines 1192-1202</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2852,7 +2852,7 @@
 <span class="sd">    integer_number = _string_to_integer_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1473-1488</span>
+<span class="sd">    Defined at System.fpp lines 1204-1214</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2872,7 +2872,7 @@
 <span class="sd">    logical_number = _string_to_logical_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1490-1505</span>
+<span class="sd">    Defined at System.fpp lines 1216-1226</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2892,7 +2892,7 @@
 <span class="sd">    _string_to_real1d(string_bn, real1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1507-1522</span>
+<span class="sd">    Defined at System.fpp lines 1228-1238</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2908,7 +2908,7 @@
 <span class="sd">    _string_to_integer1d(string_bn, integer1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1524-1539</span>
+<span class="sd">    Defined at System.fpp lines 1240-1250</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2924,7 +2924,7 @@
 <span class="sd">    _string_to_logical1d(string_bn, logical1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1541-1556</span>
+<span class="sd">    Defined at System.fpp lines 1252-1262</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2940,7 +2940,7 @@
 <span class="sd">    string_to_numerical(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 440-443</span>
+<span class="sd">    Defined at System.fpp lines 335-337</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _string_to_real_sub</span>
@@ -2963,7 +2963,7 @@
 <span class="sd">    Element system_always_flush ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 191</span>
+<span class="sd">    Defined at System.fpp line 141</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__system_always_flush</span><span class="p">()</span></div>
@@ -2976,7 +2976,7 @@
 <span class="sd">    Element system_use_fortran_random ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 193</span>
+<span class="sd">    Defined at System.fpp line 142</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__system_use_fortran_random</span><span class="p">()</span></div>
@@ -2989,7 +2989,7 @@
 <span class="sd">    Element qp ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 200</span>
+<span class="sd">    Defined at System.fpp line 143</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__qp</span><span class="p">()</span></div>
@@ -3001,7 +3001,7 @@
 <span class="sd">    Element dp ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 208</span>
+<span class="sd">    Defined at System.fpp line 144</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__dp</span><span class="p">()</span></div>
@@ -3013,7 +3013,7 @@
 <span class="sd">    Element quip_new_line ftype=character  pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 211</span>
+<span class="sd">    Defined at System.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__quip_new_line</span><span class="p">()</span></div>
@@ -3026,7 +3026,7 @@
 <span class="sd">    Element integer_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 213</span>
+<span class="sd">    Defined at System.fpp line 146</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__integer_size</span><span class="p">()</span></div>
@@ -3038,7 +3038,7 @@
 <span class="sd">    Element real_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 214</span>
+<span class="sd">    Defined at System.fpp line 147</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__real_size</span><span class="p">()</span></div>
@@ -3050,7 +3050,7 @@
 <span class="sd">    Element complex_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 215</span>
+<span class="sd">    Defined at System.fpp line 148</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__complex_size</span><span class="p">()</span></div>
@@ -3062,7 +3062,7 @@
 <span class="sd">    Element trace_memory ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 216</span>
+<span class="sd">    Defined at System.fpp line 149</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__trace_memory</span><span class="p">()</span></div>
@@ -3075,7 +3075,7 @@
 <span class="sd">    Element traced_memory ftype=integer  pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 217</span>
+<span class="sd">    Defined at System.fpp line 150</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__traced_memory</span><span class="p">()</span></div>
@@ -3088,7 +3088,7 @@
 <span class="sd">    Element line ftype=character(10240) pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 254</span>
+<span class="sd">    Defined at System.fpp line 182</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__line</span><span class="p">()</span></div>
@@ -3101,7 +3101,7 @@
 <span class="sd">    Element mainlog ftype=type(inoutput) pytype=Inoutput</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 256</span>
+<span class="sd">    Defined at System.fpp line 184</span>
 <span class="sd">    </span>
 <span class="sd">    main output, connected to &#39;stdout&#39; by default</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3123,7 +3123,7 @@
 <span class="sd">    Element errorlog ftype=type(inoutput) pytype=Inoutput</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 257</span>
+<span class="sd">    Defined at System.fpp line 185</span>
 <span class="sd">    </span>
 <span class="sd">    error output, connected to &#39;stderr&#39; by default</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3145,7 +3145,7 @@
 <span class="sd">    Element mpilog ftype=type(inoutput) pytype=Inoutput</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 258</span>
+<span class="sd">    Defined at System.fpp line 186</span>
 <span class="sd">    </span>
 <span class="sd">    MPI output, written to by each mpi process</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3167,7 +3167,7 @@
 <span class="sd">    Element numerical_zero ftype=real(dp) pytype=float</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 261</span>
+<span class="sd">    Defined at System.fpp line 189</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__numerical_zero</span><span class="p">()</span></div>
@@ -3179,7 +3179,7 @@
 <span class="sd">    Element ran_max ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 264</span>
+<span class="sd">    Defined at System.fpp line 191</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__ran_max</span><span class="p">()</span></div>
@@ -3192,7 +3192,7 @@
 <span class="sd">    Element print_always ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 268</span>
+<span class="sd">    Defined at System.fpp line 193</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_always</span><span class="p">()</span></div>
@@ -3204,7 +3204,7 @@
 <span class="sd">    Element print_silent ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 269</span>
+<span class="sd">    Defined at System.fpp line 194</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_silent</span><span class="p">()</span></div>
@@ -3216,7 +3216,7 @@
 <span class="sd">    Element print_normal ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 270</span>
+<span class="sd">    Defined at System.fpp line 195</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_normal</span><span class="p">()</span></div>
@@ -3228,7 +3228,7 @@
 <span class="sd">    Element print_verbose ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 271</span>
+<span class="sd">    Defined at System.fpp line 196</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_verbose</span><span class="p">()</span></div>
@@ -3240,7 +3240,7 @@
 <span class="sd">    Element print_nerd ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 272</span>
+<span class="sd">    Defined at System.fpp line 197</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_nerd</span><span class="p">()</span></div>
@@ -3252,7 +3252,7 @@
 <span class="sd">    Element print_analysis ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 273</span>
+<span class="sd">    Defined at System.fpp line 198</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__print_analysis</span><span class="p">()</span></div>
@@ -3264,7 +3264,7 @@
 <span class="sd">    Element input ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 275</span>
+<span class="sd">    Defined at System.fpp line 199</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__input</span><span class="p">()</span></div>
@@ -3276,7 +3276,7 @@
 <span class="sd">    Element output ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 276</span>
+<span class="sd">    Defined at System.fpp line 200</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__output</span><span class="p">()</span></div>
@@ -3288,7 +3288,7 @@
 <span class="sd">    Element inout ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 277</span>
+<span class="sd">    Defined at System.fpp line 201</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__inout</span><span class="p">()</span></div>
@@ -3300,7 +3300,7 @@
 <span class="sd">    Element ran_a ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 281</span>
+<span class="sd">    Defined at System.fpp line 203</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__ran_a</span><span class="p">()</span></div>
@@ -3312,7 +3312,7 @@
 <span class="sd">    Element ran_m ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 282</span>
+<span class="sd">    Defined at System.fpp line 204</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__ran_m</span><span class="p">()</span></div>
@@ -3324,7 +3324,7 @@
 <span class="sd">    Element ran_q ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 283</span>
+<span class="sd">    Defined at System.fpp line 205</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__ran_q</span><span class="p">()</span></div>
@@ -3336,7 +3336,7 @@
 <span class="sd">    Element ran_r ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 284</span>
+<span class="sd">    Defined at System.fpp line 206</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__ran_r</span><span class="p">()</span></div>
@@ -3348,7 +3348,7 @@
 <span class="sd">    Element timer_stack ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 287</span>
+<span class="sd">    Defined at System.fpp line 208</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__timer_stack</span><span class="p">()</span></div>
@@ -3360,7 +3360,7 @@
 <span class="sd">    Element num_command_args ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 290</span>
+<span class="sd">    Defined at System.fpp line 210</span>
 <span class="sd">    </span>
 <span class="sd">    The number of arguments on the command line</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3374,7 +3374,7 @@
 <span class="sd">    Element max_readable_args ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 291</span>
+<span class="sd">    Defined at System.fpp line 211</span>
 <span class="sd">    </span>
 <span class="sd">    The maximum number of arguments that will be read</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3387,7 +3387,7 @@
 <span class="sd">    Element exec_name ftype=character(255) pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 292</span>
+<span class="sd">    Defined at System.fpp line 212</span>
 <span class="sd">    </span>
 <span class="sd">    The name of the executable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3401,7 +3401,7 @@
 <span class="sd">    Element command_arg ftype=character(2550) pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 293</span>
+<span class="sd">    Defined at System.fpp line 213</span>
 <span class="sd">    </span>
 <span class="sd">    The first &#39;MAX_READABLE_ARGS&#39; command arguments</span>
 <span class="sd">    &quot;&quot;&quot;</span>

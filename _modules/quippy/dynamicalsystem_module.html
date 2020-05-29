@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.dynamicalsystem_module &mdash; quippy fd5d621+ documentation</title>
+  <title>quippy.dynamicalsystem_module &mdash; quippy 809f170+ documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                fd5d621+
+                809f170+
               </div>
             
           
@@ -172,7 +172,7 @@
 <span class="sd">Module dynamicalsystem_module</span>
 
 
-<span class="sd">Defined at DynamicalSystem.fpp lines 203-3284</span>
+<span class="sd">Defined at DynamicalSystem.fpp lines 154-2580</span>
 
 <span class="sd">A DynamicalSystem object contains an Atoms object, which holds infomation about</span>
 <span class="sd">velocities and accelerations of each atom, scalar quantities such as</span>
@@ -217,7 +217,7 @@
 <span class="sd">    Type(name=dynamicalsystem)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 250-290</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 195-228</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="DynamicalSystem.ds_save_state"><a class="viewcode-back" href="../../dynamicalsystem.html#quippy.dynamicalsystem.DynamicalSystem.ds_save_state">[docs]</a>    <span class="k">def</span> <span class="nf">ds_save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -225,7 +225,7 @@
 <span class="sd">        ds_save_state(self, from_[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 705-747</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 564-596</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -247,7 +247,7 @@
 <span class="sd">        ds_restore_state(self, from_)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 755-784</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 604-625</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -268,7 +268,7 @@
 <span class="sd">        n_thermostat = n_thermostat(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1062-1068</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 832-835</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -287,7 +287,7 @@
 <span class="sd">        is_damping_enabled = is_damping_enabled(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1242-1252</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 970-977</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -306,7 +306,7 @@
 <span class="sd">        get_damping_time = get_damping_time(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1254-1262</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 979-984</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -325,7 +325,7 @@
 <span class="sd">        enable_damping(self, damp_time)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1266-1274</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 988-992</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -342,7 +342,7 @@
 <span class="sd">        disable_damping(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1276-1281</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 994-996</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -356,7 +356,7 @@
 <span class="sd">        thermostat_temperatures(self, temps)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1580-1596</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1246-1258</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -371,7 +371,7 @@
 <span class="sd">        temperature = temperature(self[, property, value, include_all, instantaneous, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1608-1670</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1270-1324</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -405,7 +405,7 @@
 <span class="sd">        rescale_velo(self, temp[, mass_weighted, zero_l])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1694-1728</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1342-1370</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -427,7 +427,7 @@
 <span class="sd">        zero_momentum(self[, indices])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1793-1809</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1422-1434</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -444,7 +444,7 @@
 <span class="sd">        advance_verlet1(self, dt[, virial, parallel, store_constraint_force, do_calc_dists, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1942-2182</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1547-1714</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -477,7 +477,7 @@
 <span class="sd">        advance_verlet2(self, dt, f[, virial, e, parallel, store_constraint_force, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2209-2382</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1740-1857</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -501,7 +501,7 @@
 <span class="sd">        advance_verlet(self, dt, f[, virial, e, parallel, store_constraint_force, do_calc_dists, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2392-2416</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1867-1887</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -532,7 +532,7 @@
 <span class="sd">        ds_print_status(self[, label, epot, instantaneous, file, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2429-2506</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1899-1963</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -557,7 +557,7 @@
 <span class="sd">        constrain_bondanglecos(self, i, j, k[, c, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2563-2604</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2005-2038</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -582,7 +582,7 @@
 <span class="sd">        constrain_bondlength(self, i, j, d[, di, t0, tau, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2607-2657</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2041-2082</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -608,7 +608,7 @@
 <span class="sd">        constrain_bondlength_sq(self, i, j[, d, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2660-2694</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2085-2111</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -632,7 +632,7 @@
 <span class="sd">        constrain_bondlength_dev_pow(self, i, j, p, d[, di, t0, tau, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2697-2747</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2114-2155</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -660,7 +660,7 @@
 <span class="sd">        constrain_bondlength_diff(self, i, j, k, d[, di, t0, tau, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2753-2796</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2161-2195</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -687,7 +687,7 @@
 <span class="sd">        constrain_gap_energy(self, d[, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2802-2829</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2201-2222</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -708,7 +708,7 @@
 <span class="sd">        constrain_atom_plane(self, i, plane_n[, d, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2832-2863</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2225-2248</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -731,7 +731,7 @@
 <span class="sd">        constrain_struct_factor_like_mag(self, z, q, sf[, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2866-2921</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2251-2296</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -754,7 +754,7 @@
 <span class="sd">        constrain_struct_factor_like_r(self, z, q, sf[, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2924-2979</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2299-2344</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -777,7 +777,7 @@
 <span class="sd">        constrain_struct_factor_like_i(self, z, q, sf[, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2982-3037</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2347-2392</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -801,7 +801,7 @@
 <span class="sd">        ds_add_constraint(self, atoms, func, data[, update_ndof, restraint_k, bound, tol, print_summary])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 3041-3134</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2396-2468</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -826,7 +826,7 @@
 <span class="sd">        ds_amend_constraint(self, constraint, func, data[, k])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 3140-3149</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 2474-2479</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -846,7 +846,7 @@
 <span class="sd">        ds_print(self[, file])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2517-2551</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1970-1994</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -863,7 +863,7 @@
 <span class="sd">        self = Dynamicalsystem(atoms_in[, velocity, acceleration, constraints, restraints, rigidbodies, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 388-564</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 308-454</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -891,7 +891,7 @@
 <span class="sd">        Destructor for class Dynamicalsystem</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 566-611</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 456-488</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -908,7 +908,7 @@
 <span class="sd">        ke = ds_kinetic_energy(self[, local_ke, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1445-1455</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1135-1143</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -930,7 +930,7 @@
 <span class="sd">        kv = ds_kinetic_virial(self[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1516-1525</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1194-1201</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -951,7 +951,7 @@
 <span class="sd">        l = ds_angular_momentum(self[, origin, indices])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1334-1341</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1041-1046</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -974,7 +974,7 @@
 <span class="sd">        p = ds_momentum(self[, indices])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1291-1297</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1005-1009</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -998,7 +998,7 @@
 <span class="sd">            nhl_mu, massive, region_i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1078-1137</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 842-889</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1044,7 +1044,7 @@
 <span class="sd">        ds_remove_thermostat(self, index_bn)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1070-1076</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 837-840</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1059,7 +1059,7 @@
 <span class="sd">        ds_print_thermostats(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 2508-2514</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 1965-1967</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1075,7 +1075,7 @@
 <span class="sd">            w_epsilon, t, w_epsilon_factor, thermalise])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1039-1060</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 814-830</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1102,7 +1102,7 @@
 <span class="sd">        ds_add_thermostats(self, type_bn, n[, t, t_a, gamma, gamma_a, q, q_a, tau, tau_a, region_i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1145-1203</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 896-942</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1128,7 +1128,7 @@
 <span class="sd">        ds_update_thermostat(self[, t, p, i])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 1211-1225</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 949-957</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1145,7 +1145,7 @@
 <span class="sd">        _ds_add_atom_single(self, z[, mass, p, v, a, t, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 792-819</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 632-652</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1166,7 +1166,7 @@
 <span class="sd">        _ds_add_atom_multiple(self, z[, mass, p, v, a, t, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 824-894</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 657-709</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1187,7 +1187,7 @@
 <span class="sd">        add_atoms(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 298-300</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 235-236</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _ds_add_atom_single</span>
@@ -1207,7 +1207,7 @@
 <span class="sd">        _ds_remove_atom_single(self, i[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 896-908</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 711-717</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1223,7 +1223,7 @@
 <span class="sd">        _ds_remove_atom_multiple(self, atomlist_in[, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 910-988</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 719-776</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1239,7 +1239,7 @@
 <span class="sd">        remove_atoms(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp lines 304-306</span>
+<span class="sd">        Defined at DynamicalSystem.fpp lines 240-241</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _ds_remove_atom_single</span>
@@ -1260,7 +1260,7 @@
 <span class="sd">        Element n ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 253</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 197</span>
 <span class="sd">        </span>
 <span class="sd">        Number of atoms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1276,7 +1276,7 @@
 <span class="sd">        Element nsteps ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 254</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 198</span>
 <span class="sd">        </span>
 <span class="sd">        Number of integration steps</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1292,7 +1292,7 @@
 <span class="sd">        Element nrigid ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 255</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 199</span>
 <span class="sd">        </span>
 <span class="sd">        Number of rigid bodies</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1308,7 +1308,7 @@
 <span class="sd">        Element nconstraints ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 256</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 200</span>
 <span class="sd">        </span>
 <span class="sd">        Number of constraints</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1324,7 +1324,7 @@
 <span class="sd">        Element nrestraints ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 257</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 201</span>
 <span class="sd">        </span>
 <span class="sd">        Number of restraints</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1340,7 +1340,7 @@
 <span class="sd">        Element ndof ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 258</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 202</span>
 <span class="sd">        </span>
 <span class="sd">        Number of degrees of freedom</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1356,7 +1356,7 @@
 <span class="sd">        Element t ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 259</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 203</span>
 <span class="sd">        </span>
 <span class="sd">        Time</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1372,7 +1372,7 @@
 <span class="sd">        Element dt ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 260</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 204</span>
 <span class="sd">        </span>
 <span class="sd">        Last time step</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1388,7 +1388,7 @@
 <span class="sd">        Element avg_temp ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 261</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 205</span>
 <span class="sd">        </span>
 <span class="sd">        Time-averaged temperature</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1404,7 +1404,7 @@
 <span class="sd">        Element cur_temp ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 262</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 206</span>
 <span class="sd">        </span>
 <span class="sd">        Current temperature</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1420,7 +1420,7 @@
 <span class="sd">        Element avg_time ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 263</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 207</span>
 <span class="sd">        </span>
 <span class="sd">        Averaging time, in fs</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1436,7 +1436,7 @@
 <span class="sd">        Element dw ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 264</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 208</span>
 <span class="sd">        </span>
 <span class="sd">        Increment of work done this time step</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1452,7 +1452,7 @@
 <span class="sd">        Element work ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 265</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 209</span>
 <span class="sd">        </span>
 <span class="sd">        Total work done</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1468,7 +1468,7 @@
 <span class="sd">        Element epot ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 266</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 210</span>
 <span class="sd">        </span>
 <span class="sd">        Total potential energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1484,7 +1484,7 @@
 <span class="sd">        Element ekin ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 267</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 211</span>
 <span class="sd">        </span>
 <span class="sd">        Current kinetic energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1500,7 +1500,7 @@
 <span class="sd">        Element wkin ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 268</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 212</span>
 <span class="sd">        </span>
 <span class="sd">        Current kinetic contribution to the virial</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1524,7 +1524,7 @@
 <span class="sd">        Element ext_energy ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 269</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 213</span>
 <span class="sd">        </span>
 <span class="sd">        Extended energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1540,7 +1540,7 @@
 <span class="sd">        Element thermostat_dw ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 270</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 214</span>
 <span class="sd">        </span>
 <span class="sd">        Increment of work done by thermostat</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1556,7 +1556,7 @@
 <span class="sd">        Element thermostat_work ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 271</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 215</span>
 <span class="sd">        </span>
 <span class="sd">        Total work done by thermostat</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1572,7 +1572,7 @@
 <span class="sd">        Element initialised ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 272</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 216</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dynamicalsystem__get__initialised</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1587,7 +1587,7 @@
 <span class="sd">        Element random_seed ftype=integer                                pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 274</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 217</span>
 <span class="sd">        </span>
 <span class="sd">        RNG seed, used by &#39;ds_save_state&#39; and &#39;ds_restore_state&#39; only.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1603,7 +1603,7 @@
 <span class="sd">        Element group_lookup ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 277</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 219</span>
 <span class="sd">        </span>
 <span class="sd">        Stores which group atom $i$ is in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1627,7 +1627,7 @@
 <span class="sd">        Element atoms ftype=type(atoms) pytype=Atoms</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 280</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 221</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">atoms_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dynamicalsystem__get__atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1649,7 +1649,7 @@
 <span class="sd">        Element print_thermostat_temps ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at DynamicalSystem.fpp line 288</span>
+<span class="sd">        Defined at DynamicalSystem.fpp line 228</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dynamicalsystem__get__print_thermostat_temps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1719,7 +1719,7 @@
 <span class="sd">    moi = moment_of_inertia_tensor(self[, origin])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1418-1442</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1111-1132</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1739,7 +1739,7 @@
 <span class="sd">    tau = torque(pos, force[, origin])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1562-1578</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1231-1244</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1760,7 +1760,7 @@
 <span class="sd">    v = gaussian_velocity_component(m, t)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1769-1776</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1406-1409</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1782,7 +1782,7 @@
 <span class="sd">    zero_angular_momentum(self)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1812-1839</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1437-1458</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1797,7 +1797,7 @@
 <span class="sd">    dist, rel_velo = distance_relative_velocity(self, i, j)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 3156-3170</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 2486-2494</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1822,7 +1822,7 @@
 <span class="sd">    l = arrays_angular_momentum(mass, pos, velo[, origin, indices])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1356-1385</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1059-1083</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1847,7 +1847,7 @@
 <span class="sd">    p = arrays_momentum(mass, velo[, indices])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1311-1330</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1021-1037</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1870,7 +1870,7 @@
 <span class="sd">    ke = _single_kinetic_energy(mass, velo)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1495-1500</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1177-1180</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1891,7 +1891,7 @@
 <span class="sd">    ke = _arrays_kinetic_energy(mass, velo[, local_ke])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1503-1513</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1183-1191</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1913,7 +1913,7 @@
 <span class="sd">    kinetic_energy(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 322-324</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 254-255</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _single_kinetic_energy</span>
@@ -1931,7 +1931,7 @@
 <span class="sd">    kv = _single_kinetic_virial(mass, velo)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1546-1551</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1219-1222</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1952,7 +1952,7 @@
 <span class="sd">    kv = _arrays_kinetic_virial(mass, velo)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 1554-1560</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 1225-1229</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1973,7 +1973,7 @@
 <span class="sd">    kinetic_virial(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp lines 326-329</span>
+<span class="sd">    Defined at DynamicalSystem.fpp lines 257-259</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _single_kinetic_virial</span>
@@ -1991,7 +1991,7 @@
 <span class="sd">    Element type_atom ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp line 246</span>
+<span class="sd">    Defined at DynamicalSystem.fpp line 192</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dynamicalsystem_module__get__type_atom</span><span class="p">()</span>
@@ -2003,7 +2003,7 @@
 <span class="sd">    Element type_constrained ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at DynamicalSystem.fpp line 247</span>
+<span class="sd">    Defined at DynamicalSystem.fpp line 193</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dynamicalsystem_module__get__type_constrained</span><span class="p">()</span>
