@@ -255,9 +255,10 @@ clean: ${BUILDDIR}
 	done
 	rm -f ${BUILDDIR}/libquip.a
 	rm -rf src/${FOX}/objs.${QUIP_ARCH}
+	find . -name "*.s" -type f -delete
 
 deepclean: clean
-	find . -name "*.s" -type f -delete
+
 
 distclean: clean
 	rm -rf build
