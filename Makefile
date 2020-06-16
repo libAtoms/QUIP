@@ -101,13 +101,14 @@ GAP_PROGRAMS =
 endif
 
 # now add the rest of the modules
-MODULES += Potentials Utils Programs FilePot_drivers Structure_processors
+MODULES += Potentials Utils
 
+PROGRAMS = Programs FilePot_drivers Structure_processors
 # diagnostic
 $(info Using QUIP_ARCH=${QUIP_ARCH}, MODULES=${MODULES}, QUIP_ROOT=${QUIP_ROOT})
 
 # the first target
-all: ${MODULES} ${GAPFIT} ${GAP_PROGRAMS}
+all: ${MODULES} ${GAPFIT} ${GAP_PROGRAMS} ${PROGRAMS}
 
 FOX = fox
 export FOX_LIBDIR=${QUIP_ROOT}/src/${FOX}/objs.${QUIP_ARCH}/lib
@@ -143,7 +144,7 @@ FOX_STATIC_LIBFILE_OBJS = $(shell for i in ${FOX_STATIC_LIBFILES}; do ar -t $$i;
 
 # general rule to make a module
 
-${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
+${MODULES} ${PROGRAMS}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 	@echo "********************************************"
 	@echo ""
 	@echo " Making $@ "
@@ -158,7 +159,7 @@ ${MODULES}:  ${BUILDDIR}/Makefile.inc ${BUILDDIR} ${FOX}
 # src directory, makes sure everything else is
 # built first
 
-Programs/% src/Programs/% : ${MODULES}
+Programs/% src/Programs/% : ${MODULES} ${PROGRAMS}
 	@echo "********************************************"
 	@echo ""
 	@echo " Making Programs "
@@ -201,6 +202,7 @@ ThirdParty: libAtoms
 Potentials: libAtoms  ${GAP}
 Utils:  libAtoms ${GAP} Potentials
 FilePot_drivers:  libAtoms  Potentials Utils
+Structure_processors:  libAtoms  Potentials Utils
 Programs: libAtoms ${GAP} Potentials Utils
 Tests: libAtoms  ${GAP} Potentials Utils
 libatoms: libAtoms
@@ -271,7 +273,7 @@ else
 	${MAKE} -C share/Structures QUIP_STRUCTS_DIR=$(QUIP_STRUCTS_DIR) install
 endif
 
-install: ${MODULES} install-structures
+install: ${MODULES} ${PROGRAMS} install-structures
 ifeq (${QUIP_INSTALLDIR},)
 	@echo
 	@echo "'make install' needs QUIP_INSTALLDIR to be defined to install "
@@ -281,7 +283,7 @@ else
 	  echo "make install: QUIP_INSTALLDIR '${QUIP_INSTALLDIR}' doesn't exist or isn't a directory"; \
 	  exit 1; \
 	else	 \
-	  for mods in ${MODULES} ; do \
+	  for mods in ${MODULES} ${PROGRAMS} ; do \
 	    rm -f ${BUILDDIR}/Makefile ;\
 	    cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ;\
 	    ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch install ;\
