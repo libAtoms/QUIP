@@ -284,7 +284,7 @@ module linearalgebra_module
   !% '(abs(x-y) > NUMERICAL_ZERO * abs(x))', and true otherwise.
   private :: real_feq,complex_feq,matrix_feq,vector_feq  
   interface operator(.feq.)
-     module procedure real_feq,complex_feq,matrix_feq,vector_feq
+     module procedure real_feq,real_integer_feq,integer_real_feq,complex_feq,matrix_feq,vector_feq
   end interface
 
   !% Floating point inequality testing.
@@ -1260,6 +1260,26 @@ CONTAINS
      feq = (abs(x-y) <= NUMERICAL_ZERO * (abs(x)+abs(y))/2.0_dp) .or. (abs(x-y) <= NUMERICAL_ZERO)
      
    end function real_feq
+
+   pure function real_integer_feq(x,y) result(feq)
+
+     integer, intent(in)  :: x
+     real(dp), intent(in) :: y
+     logical              :: feq
+
+     feq = real_feq(real(x,dp),y)
+     
+   end function real_integer_feq
+
+   pure function integer_real_feq(x,y) result(feq)
+
+     real(dp), intent(in) :: x
+     integer, intent(in)  :: y
+     logical              :: feq
+
+     feq = real_feq(x,real(y,dp))
+     
+   end function integer_real_feq
 
    ! a .fne. b
    !
