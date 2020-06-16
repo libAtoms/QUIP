@@ -52,7 +52,7 @@ Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield.
 
-Copyright 2006-2016.
+Copyright 2006-2020
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
@@ -68,7 +68,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
 * Finnis-Sinclair (bcc metals)
 * Flikkema-Bromley
 * GAP (Gaussian Approximation Potentials: general many-body)
-* Guggenheim-!McGlashan
+* Guggenheim-McGlashan
 * Brenner (carbon)
 * OpenKIM (general interface)
 * Lennard-Jones
@@ -87,28 +87,16 @@ The following tight-binding functional forms and parametrisations are implemente
 * GSP
 * NRL-TB
 
-The following external packages can be called:
-
-* CASTEP
-* VASP
-* CP2K
-* ASAP
-* ASE (recent version, 3.11+, recommended)
-* Molpro
-
 Contents
 ========
 
 .. toctree::
    :maxdepth: 2
 
-   intro.rst
    install.rst
    Tutorials/index.rst
    quippy.rst
    visualisation.rst
-   fortran_wrapper.rst
-   gap_fit.rst
 
 
 Indices and tables

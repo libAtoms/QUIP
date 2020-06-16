@@ -27,11 +27,3 @@ Potential objects
     :inherited-members:
     :show-inheritance:
 
-.. autoclass:: ForceMixingPotential
-    :members:
-    :show-inheritance:
-
-.. autoclass:: Minim
-    :members:
-
-.. autofunction:: force_test

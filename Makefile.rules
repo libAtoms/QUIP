@@ -59,6 +59,7 @@ CFLAGS += ${INCLUDES} ${COPTIM} ${CDEBUG} ${DEFINES} ${CUSTOM_CFLAGS}
 
 SYSLIBS += -L${FOX_LIBDIR} ${FOX_LIBS} 
 INCLUDES += -I${QUIP_ROOT}/src/libAtoms -I${FOX_INCDIR}
+QUIPPY_LIBS=
 
 ifeq (${HAVE_NETCDF4},1)
   SYSLIBS += ${NETCDF4_LIBS}
@@ -96,6 +97,14 @@ ifeq (${HAVE_GAP},1)
   GAP_LIBFILE += libgap.a
   GAPFIT_LIB += -lgapfit
   GAPFIT_LIBFILE += libgapfit.a
+endif
+ifeq (${HAVE_TURBOGAP},1)
+  DEFINES += -DHAVE_TURBOGAP
+  INCLUDES += $(addprefix -I,${TURBOGAP_DIR}/include)
+  SYSLIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
+  SYSLIBS += -lturbogap
+  QUIPPY_LIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
+  QUIPPY_LIBS += -lturbogap
 endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB

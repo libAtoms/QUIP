@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # H0 X
 # H0 X   libAtoms+QUIP: atomistic simulation library
@@ -29,13 +28,19 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-from xml.parsers.xmlproc import xmlproc
-from xml.parsers.xmlproc import xmlval
-from xml.parsers.xmlproc import xmldtd
-import sys
+# declarations
 
-p = xmlval.XMLValidator()
-p.parse_resource(sys.argv[1])
+include arch/Makefile.linux_x86_64_gfortran
 
+DEFINES += -D_OPENMP
+F95FLAGS += -fopenmp
+F77FLAGS += -fopenmp
+CFLAGS += -fopenmp
+LINKOPTS += -fopenmp
 
-print('No errors found.')
+QUIPPY_F90FLAGS += -fopenmp
+QUIPPY_CFLAGS += -fopenmp
+QUIPPY_LDFLAGS += -fopenmp
+
+CP_OPTS="" # needed for CSD3 where `cp -p` would cause problems
+# rules

@@ -11,9 +11,7 @@ env:
 
 stages:
   - test
-  - name: documentation
-    # freezing the python2.7 version fot this at first
-    if: branch = archived_py2
+  - documentation
   - release
   - docker
 
@@ -66,9 +64,6 @@ script: # Compile QUIP, libquip and quippy.
 jobs:
   include:
     - stage: documentation
-      # freezing the python2.7 version fot this at first
-      python:
-        - "2.7"
       env:  # serial version of QUIP
         - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
 
@@ -79,13 +74,14 @@ jobs:
             pandoc
         
         - pip install
-            f90wrap==0.2.1
-            ase==3.17.0
+            f90wrap
+            ase
             docutils==0.14
             sphinx
             sphinx-rtd-theme
             nbsphinx
             numpydoc
+            pygments==2.5.2
 
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
@@ -112,7 +108,7 @@ jobs:
         github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
         keep-history: true
         on:
-          branch: archived_py2
+          branch: public
 
     - stage: release
       name: "Trigger for a new release of GAP"

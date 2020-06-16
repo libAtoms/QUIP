@@ -57,9 +57,10 @@ WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
 F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
-F2PY_LINK_ARGS = $(shell python -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
+F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
-F90WRAP_PATH = $(shell pip show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+
 F90WRAP = ${F90WRAP_PATH}/f90wrap
 F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
@@ -94,7 +95,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 		--py-max-line-length 120 --f90-max-line-length 120
 
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		-L. -lquip --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
+		-L. -lquip ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
 	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
 	ln -s _quippy.*.so _quippy.so
 
@@ -102,4 +103,4 @@ build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	python ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
+	${PYTHON} ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}

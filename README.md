@@ -43,7 +43,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Fanourgakis-Xantheas (water)
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
- - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials)
+ - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
  - Guggenheim-!McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
@@ -86,7 +86,7 @@ is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
   `quippy` package
-- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html)
+- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html) ([online docs](https://libatoms.github.io/GAP))
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
 
@@ -260,7 +260,7 @@ to get up and running quickly.
     GAP is a machine learning method that uses Gaussian process
     regression, and needs large data files to run. You can find
     potentials that have been published as well as training data in
-    our [data repository](http://www.libatoms.org/Home/DataRepository).
+    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
 
 14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
@@ -270,7 +270,7 @@ to get up and running quickly.
 
 ## Fixing/updating the version f90wrap:
 
-  ```bahs
+  ```bash
   cd src/f90wrap
   ```
   ```bash 

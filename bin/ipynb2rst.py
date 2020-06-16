@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -12,6 +12,6 @@ else:
 for dir in dirs:
     for notebook in glob.glob(os.path.join(dir, '*.ipynb')):
         cmd = 'ipython nbconvert --to rst {0}'.format(notebook)
-        print cmd
+        print(cmd)
         os.system(cmd)
 

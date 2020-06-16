@@ -19,7 +19,7 @@
 Low-level system routines
 =========================
 
-.. automodule:: quippy.system
+.. automodule:: quippy.system_module
     :synopsis:  Low-level routines
     :members:
     :inherited-members:

@@ -16,13 +16,17 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+import unittest
+import os
+
 import quippy
 import quippytest
 import ase
 import numpy as np
 
 
-class Test_Descriptor(quippytest.QuippyTestCase):
+@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
+class Test_Potential_Cell(quippytest.QuippyTestCase):
     def setUp(self):
         cell_sizes = np.linspace(2.5, 4.5, 5)
         self.at_list = []

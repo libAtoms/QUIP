@@ -214,12 +214,15 @@ libquip.a: ${MODULES} ${GAPFIT}
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
+PY_VERSION=$(shell python -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+HAVE_PYTHON3=$(shell python -c 'import sys; print(int(sys.version_info[0] >= 3))')
 quippy: libquip.a ${GAP_PROGRAMS}
 	@echo "********************************************"
 	@echo ""
 	@echo " Making quippy "
 	@echo ""
 	@echo "********************************************"
+	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch build
@@ -252,8 +255,10 @@ clean: ${BUILDDIR}
 	done
 	rm -f ${BUILDDIR}/libquip.a
 	rm -rf src/${FOX}/objs.${QUIP_ARCH}
+	find . -name "*.s" -type f -delete
 
 deepclean: clean
+
 
 distclean: clean
 	rm -rf build
@@ -286,9 +291,6 @@ else
 endif
 
 test: quippy
-	#- cd tests
-	#- make
-	#- cd ..
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/ThirdParty

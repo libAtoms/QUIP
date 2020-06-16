@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys, os, optparse, re
 
@@ -12,10 +12,10 @@ p.add_option("-n","--no_old_density", action="store_true", default=False, help="
 if len(args) < 2:
    p.error("At least infile and outfile are required")
 
-if not os.environ.has_key("PROFESS"):
+if "PROFESS" not in os.environ:
    p.error("PROFESS environment variable with path of executable is required")
 profess=os.environ['PROFESS']
-if not os.environ.has_key("PROFESS_TEMPLATE"):
+if "PROFESS_TEMPLATE" not in os.environ:
    profess_template='profess'
 else:
    profess_template=os.environ['PROFESS_TEMPLATE']
