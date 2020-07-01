@@ -101,7 +101,7 @@ GAP_PROGRAMS =
 endif
 
 # now add the rest of the modules
-MODULES += Potentials Utils FilePot_drivers Structure_processors
+MODULES += Potentials Utils
 
 PROGRAMS = Programs FilePot_drivers Structure_processors
 # diagnostic
