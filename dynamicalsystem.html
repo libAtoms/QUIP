@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Molecular Dynamics &mdash; quippy 4e6ef64+ documentation</title>
+  <title>Molecular Dynamics &mdash; quippy 1d35243+ documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                4e6ef64+
+                1d35243+
               </div>
             
           
@@ -1491,59 +1491,59 @@ Use special filename <code class="docutils literal notranslate"><span class="pre
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.add_thermostat" title="quippy.dynamicalsystem.Dynamics.add_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_thermostat</span></code></a>(self, type, T[, gamma, Q, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.add_thermostat" title="quippy.dynamicalsystem.Dynamics.add_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_thermostat</span></code></a>(type, T[, gamma, Q, tau, …])</p></td>
 <td><p>Add a new thermostat to this Dynamics, and return its index.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.attach" title="quippy.dynamicalsystem.Dynamics.attach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attach</span></code></a>(self, function[, interval])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.attach" title="quippy.dynamicalsystem.Dynamics.attach"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attach</span></code></a>(function[, interval])</p></td>
 <td><p>Attach callback function.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.converged" title="quippy.dynamicalsystem.Dynamics.converged"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converged</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.converged" title="quippy.dynamicalsystem.Dynamics.converged"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converged</span></code></a>()</p></td>
 <td><p>MD is ‘converged’ when number of maximum steps is reached.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.get_number_of_thermostats" title="quippy.dynamicalsystem.Dynamics.get_number_of_thermostats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_number_of_thermostats</span></code></a>(self)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.get_number_of_thermostats" title="quippy.dynamicalsystem.Dynamics.get_number_of_thermostats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_number_of_thermostats</span></code></a>()</p></td>
 <td><p>Return the number of active thermostats</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures" title="quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_thermostat_temperatures</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures" title="quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_thermostat_temperatures</span></code></a>()</p></td>
 <td><p>Return the current temperatures of all thermostated regions</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.insert_observer" title="quippy.dynamicalsystem.Dynamics.insert_observer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_observer</span></code></a>(self, function[, position, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.insert_observer" title="quippy.dynamicalsystem.Dynamics.insert_observer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_observer</span></code></a>(function[, position, interval])</p></td>
 <td><p>Insert an observer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.irun" title="quippy.dynamicalsystem.Dynamics.irun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">irun</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.irun" title="quippy.dynamicalsystem.Dynamics.irun"><code class="xref py py-obj docutils literal notranslate"><span class="pre">irun</span></code></a>()</p></td>
 <td><p>Run dynamics algorithm as generator.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.log" title="quippy.dynamicalsystem.Dynamics.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a>(self, *args)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.log" title="quippy.dynamicalsystem.Dynamics.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a>(*args)</p></td>
 <td><p>a dummy function as placeholder for a real logger, e.g.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.print_thermostats" title="quippy.dynamicalsystem.Dynamics.print_thermostats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_thermostats</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.print_thermostats" title="quippy.dynamicalsystem.Dynamics.print_thermostats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_thermostats</span></code></a>()</p></td>
 <td><p>Print a table of the current thermostats in this system</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.remove_thermostat" title="quippy.dynamicalsystem.Dynamics.remove_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_thermostat</span></code></a>(self, index)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.remove_thermostat" title="quippy.dynamicalsystem.Dynamics.remove_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_thermostat</span></code></a>(index)</p></td>
 <td><p>Remove thermostat number <cite>index</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.run" title="quippy.dynamicalsystem.Dynamics.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(self[, steps])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.run" title="quippy.dynamicalsystem.Dynamics.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>([steps])</p></td>
 <td><p>Run dynamics forwards for <cite>steps</cite> steps.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.set_barostat" title="quippy.dynamicalsystem.Dynamics.set_barostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_barostat</span></code></a>(self, type, p_ext, …[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.set_barostat" title="quippy.dynamicalsystem.Dynamics.set_barostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_barostat</span></code></a>(type, p_ext, …[, W_epsilon, …])</p></td>
 <td><p>Add a barostat to this dynamical system</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.set_temperature" title="quippy.dynamicalsystem.Dynamics.set_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_temperature</span></code></a>(self, temperature)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.set_temperature" title="quippy.dynamicalsystem.Dynamics.set_temperature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_temperature</span></code></a>(temperature)</p></td>
 <td><p>Randomise velocities to a target temperature (given in K)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.step" title="quippy.dynamicalsystem.Dynamics.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>(self, forces)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.step" title="quippy.dynamicalsystem.Dynamics.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a>(forces)</p></td>
 <td><p>Advance dynamics by one time-step.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.update_barostat" title="quippy.dynamicalsystem.Dynamics.update_barostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_barostat</span></code></a>(self, p, T)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.update_barostat" title="quippy.dynamicalsystem.Dynamics.update_barostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_barostat</span></code></a>(p, T)</p></td>
 <td><p>Update target pressure <cite>p</cite> or temperature <cite>T</cite> for NPT barostat</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.update_thermostat" title="quippy.dynamicalsystem.Dynamics.update_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_thermostat</span></code></a>(self[, T, p, index])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.dynamicalsystem.Dynamics.update_thermostat" title="quippy.dynamicalsystem.Dynamics.update_thermostat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_thermostat</span></code></a>([T, p, index])</p></td>
 <td><p>Change the target temperature <cite>T</cite> or presure <cite>p</cite> for thermostat <cite>index</cite>.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.add_thermostat">
-<code class="sig-name descname">add_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">T</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Q</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tau</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tau_cell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">NHL_tau</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">NHL_mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">massive</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.add_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.add_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">T</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Q</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tau</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tau_cell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">NHL_tau</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">NHL_mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">massive</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.add_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.add_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new thermostat to this Dynamics, and return its index.</p>
 <p>By default, all thermostats apply to the whole system. The
 ‘thermostat_region’ property can be used to control which
@@ -1573,7 +1573,7 @@ only one of the two should be specified.</p></li>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.attach">
-<code class="sig-name descname">attach</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">function</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.attach"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.attach" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">attach</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">function</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.attach"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.attach" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach callback function.</p>
 <p>At every <em>interval</em> steps, call <em>function</em> with arguments
 <em>args</em> and keyword arguments <em>kwargs</em>.</p>
@@ -1581,32 +1581,32 @@ only one of the two should be specified.</p></li>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.converged">
-<code class="sig-name descname">converged</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.converged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.converged" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">converged</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.converged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.converged" title="Permalink to this definition">¶</a></dt>
 <dd><p>MD is ‘converged’ when number of maximum steps is reached.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.get_number_of_thermostats">
-<code class="sig-name descname">get_number_of_thermostats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.get_number_of_thermostats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.get_number_of_thermostats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_number_of_thermostats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.get_number_of_thermostats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.get_number_of_thermostats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of active thermostats</p>
 <p>Excludes thermostat with index zero, which is used for damping.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures">
-<code class="sig-name descname">get_thermostat_temperatures</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.get_thermostat_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_thermostat_temperatures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.get_thermostat_temperatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.get_thermostat_temperatures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the current temperatures of all thermostated regions</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.insert_observer">
-<code class="sig-name descname">insert_observer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">function</span></em>, <em class="sig-param"><span class="n">position</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.insert_observer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.insert_observer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">insert_observer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">function</span></em>, <em class="sig-param"><span class="n">position</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">interval</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.insert_observer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.insert_observer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert an observer.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.irun">
-<code class="sig-name descname">irun</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/optimize/optimize.html#Dynamics.irun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.irun" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">irun</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/optimize/optimize.html#Dynamics.irun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.irun" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run dynamics algorithm as generator. This allows, e.g.,
 to easily run two optimizers or MD thermostats at the same time.</p>
 <p>Examples:
@@ -1618,33 +1618,33 @@ to easily run two optimizers or MD thermostats at the same time.</p>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.log">
-<code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/optimize/optimize.html#Dynamics.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.log" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ase/optimize/optimize.html#Dynamics.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.log" title="Permalink to this definition">¶</a></dt>
 <dd><p>a dummy function as placeholder for a real logger, e.g. in
 Optimizer</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.print_thermostats">
-<code class="sig-name descname">print_thermostats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.print_thermostats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.print_thermostats" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">print_thermostats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.print_thermostats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.print_thermostats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a table of the current thermostats in this system</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.remove_thermostat">
-<code class="sig-name descname">remove_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.remove_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.remove_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">remove_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.remove_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.remove_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove thermostat number <cite>index</cite>.</p>
 <p><cite>index</cite> should be in range 1 &lt;= index &lt;= dyn.get_number_of_thermostats()</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">steps</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">steps</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run dynamics forwards for <cite>steps</cite> steps.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.set_barostat">
-<code class="sig-name descname">set_barostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">p_ext</span></em>, <em class="sig-param"><span class="n">hydrostatic_strain</span></em>, <em class="sig-param"><span class="n">diagonal_strain</span></em>, <em class="sig-param"><span class="n">finite_strain_formulation</span></em>, <em class="sig-param"><span class="n">tau_epsilon</span></em>, <em class="sig-param"><span class="n">W_epsilon</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">W_epsilon_factor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.set_barostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.set_barostat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_barostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">p_ext</span></em>, <em class="sig-param"><span class="n">hydrostatic_strain</span></em>, <em class="sig-param"><span class="n">diagonal_strain</span></em>, <em class="sig-param"><span class="n">finite_strain_formulation</span></em>, <em class="sig-param"><span class="n">tau_epsilon</span></em>, <em class="sig-param"><span class="n">W_epsilon</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">W_epsilon_factor</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.set_barostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.set_barostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a barostat to this dynamical system</p>
 <p>Langevin NPT barostat based on fluctuation/dissipation, as
 originally implemented for hydrostatic strain using
@@ -1681,26 +1681,26 @@ infinitessimal strain formulation</p></li>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.set_temperature">
-<code class="sig-name descname">set_temperature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">temperature</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.set_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.set_temperature" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_temperature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">temperature</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.set_temperature"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.set_temperature" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomise velocities to a target temperature (given in K)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">forces</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">forces</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advance dynamics by one time-step.</p>
 <p>Returns forces at the end of the time-step, suitable for passing to next step()</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.update_barostat">
-<code class="sig-name descname">update_barostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.update_barostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.update_barostat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_barostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">T</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.update_barostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.update_barostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update target pressure <cite>p</cite> or temperature <cite>T</cite> for NPT barostat</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dynamicalsystem.Dynamics.update_thermostat">
-<code class="sig-name descname">update_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.update_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.update_thermostat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_thermostat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dynamicalsystem.html#Dynamics.update_thermostat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dynamicalsystem.Dynamics.update_thermostat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the target temperature <cite>T</cite> or presure <cite>p</cite> for thermostat <cite>index</cite>.</p>
 </dd></dl>
 

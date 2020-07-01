@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy 4e6ef64+ documentation</title>
+  <title>Potential objects &mdash; quippy 1d35243+ documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                4e6ef64+
+                1d35243+
               </div>
             
           
@@ -295,17 +295,17 @@ found in the <a class="reference external" href="https://github.com/libAtoms/QUI
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_properties</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_properties</span></code></a>()</p></td>
 <td><p>Get the list of properties to be calculated by default</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#quippy.potential.Potential.set_default_properties" title="quippy.potential.Potential.set_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default_properties</span></code></a>(self, properties)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.potential.Potential.set_default_properties" title="quippy.potential.Potential.set_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default_properties</span></code></a>(properties)</p></td>
 <td><p>Set the list of properties to be calculated by default</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="quippy.potential.Potential.band_structure">
-<code class="sig-name descname">band_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.band_structure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">band_structure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.band_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create band-structure object for plotting.</p>
 </dd></dl>
 
@@ -420,38 +420,38 @@ stresses; this can either be a scalar or the name of an array in
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.calculate_numerical_forces">
-<code class="sig-name descname">calculate_numerical_forces</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_forces" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_numerical_forces</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_forces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate numerical forces using finite difference.</p>
 <p>All atoms will be displaced by +d and -d in all directions.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.calculate_numerical_stress">
-<code class="sig-name descname">calculate_numerical_stress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">voigt</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_stress" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calculate_numerical_stress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">d</span><span class="o">=</span><span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">voigt</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate numerical stress using finite difference.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.check_state">
-<code class="sig-name descname">check_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-15</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.check_state" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">check_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-15</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.check_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check for any system changes since last calculation.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.get_default_properties">
-<code class="sig-name descname">get_default_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_default_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_default_properties" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_default_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_default_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_default_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the list of properties to be calculated by default</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.get_magnetic_moments">
-<code class="sig-name descname">get_magnetic_moments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">atoms</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_magnetic_moments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate magnetic moments projected onto atoms.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.read">
-<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.read" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read atoms, parameters and calculated properties from output file.</p>
 <p>Read result from self.label file.  Raise ReadError if the file
 is not there.  If the file is corrupted or contains an error
@@ -472,13 +472,13 @@ read_results() method.</p>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear all information from old calculation.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.set">
-<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set parameters like set(key1=value1, key2=value2, …).</p>
 <p>A dictionary containing the parameters that have been changed
 is returned.</p>
@@ -492,13 +492,13 @@ parameters from a file.</p>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.set_default_properties">
-<code class="sig-name descname">set_default_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">properties</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.set_default_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.set_default_properties" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_default_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">properties</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.set_default_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.set_default_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the list of properties to be calculated by default</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.potential.Potential.set_label">
-<code class="sig-name descname">set_label</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set_label" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_label</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set label and convert label to directory and prefix.</p>
 <p>Examples:</p>
 <ul class="simple">
