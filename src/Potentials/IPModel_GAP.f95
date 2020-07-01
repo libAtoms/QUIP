@@ -183,7 +183,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
      call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%xml_version)
      call initialise(this%my_descriptor(i_coordinate),string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      this%cutoff = max(this%cutoff,cutoff(this%my_descriptor(i_coordinate)))
-     call gpCoordinates_initialise_variance_estimate(this%my_gp%coordinate(i_coordinate), gap_variance_regularisation)
+     if( has_gap_variance_regularisation) call gpCoordinates_initialise_variance_estimate(this%my_gp%coordinate(i_coordinate), gap_variance_regularisation)
   enddo
 
 #endif  
