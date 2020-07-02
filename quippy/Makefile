@@ -30,6 +30,9 @@ include Makefile.${QUIP_ARCH}
 include ${BUILDDIR}/Makefile.inc
 include Makefile.rules
 
+PY_VERSION=$(shell ${PYTHON} -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+HAVE_PYTHON3=$(shell ${PYTHON} -c 'import sys; print(int(sys.version_info[0] >= 3))')
+
 QUIPPY_SRC_DIR := ../../quippy
 
 FPP = ${F90} -E -cpp ${QUIPPY_F90FLAGS}
@@ -83,6 +86,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
+	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
 	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
