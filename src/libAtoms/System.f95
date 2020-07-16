@@ -111,7 +111,7 @@ module system_module
   public   !standard setting for the module
   integer,private                  :: mpi_n, mpi_myid    ! Number of processes and local process ID
   real(dp),private                 :: start_time         ! Initial time
-  integer, parameter, private      :: SYSTEM_STRING_LENGTH = 1024 !max line length read
+  integer, parameter, private      :: SYSTEM_STRING_LENGTH = 10240 !max line length read
   integer, parameter, private      :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
   character(10240)                 :: line               ! 'line' is global and is used by other modules
   character(10240),private         :: local_line         ! 'local_line' is private and System should use this instead         

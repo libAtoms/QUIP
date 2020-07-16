@@ -135,7 +135,8 @@ subroutine IPModel_MBX_Initialise_str(this, args_str, param_str, error)
   !write(*,*)  "DEBUGGING: param_register monomers done"
   !call param_register(params, 'at_name', PARAM_MANDATORY,at_name_string, help_string="Name of the atoms, format {C H H H H O H H ...}")
   !write(*,*)  "DEBUGGING: param_register at_name done"
-  call param_register(params, 'n_monomers_types', PARAM_MANDATORY, n_monomers_types_string, help_string="Numbers and types of monomers, format {2 CHHHH 3 OHH 1 CHHHH ...}")
+  call param_register(params, 'n_monomers_types', PARAM_MANDATORY, n_monomers_types_string, &
+          help_string="Numbers and types of monomers, format {2_CHHHH_3_OHH_1_CHHHH ...}")
   !write(*,*)  "DEBUGGING: param_register monomers done"
   call param_register(params, 'nmon', PARAM_MANDATORY, this%nmon, help_string="Number of monomers")
   !write(*,*)  "DEBUGGING: param_register nmon done"
@@ -151,7 +152,7 @@ subroutine IPModel_MBX_Initialise_str(this, args_str, param_str, error)
   allocate(this%nats(this%nmon))
   allocate(this%monomers(this%nmon))
   allocate(n_monomers_types_fields((this%nmon)*2))
-  call split_string(n_monomers_types_string,' ','{}',n_monomers_types_fields(:),n_group4,matching=.true.)
+  call split_string(n_monomers_types_string,'_','{}',n_monomers_types_fields(:),n_group4,matching=.true.)
 
 
 

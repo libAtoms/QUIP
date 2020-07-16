@@ -128,7 +128,8 @@ subroutine IPModel_MBXPBC_Initialise_str(this, args_str, param_str, error)
   call finalize_system()
 
   call initialise(params)
-  call param_register(params, 'n_monomers_types', PARAM_MANDATORY, n_monomers_types_string, help_string="Numbers and types of monomers, format {2 CHHHH 3 OHH 1 CHHHH ...}")
+  call param_register(params, 'n_monomers_types', PARAM_MANDATORY, n_monomers_types_string, &
+          help_string="Numbers and types of monomers, format {2_CHHHH_3_OHH_1_CHHHH ...}")
   call param_register(params, 'nmon', PARAM_MANDATORY, this%nmon, help_string="Number of monomers")
   call param_register(params, 'json_file', PARAM_MANDATORY, json_file_string, help_string="Name of json file (to be already in the directory)")
   call param_register(params, 'diagonal_virial', 'F', this%diagonal_virial, help_string="Whether to make the virial diagonal or not.")
@@ -142,7 +143,7 @@ subroutine IPModel_MBXPBC_Initialise_str(this, args_str, param_str, error)
   allocate(this%nats(this%nmon))
   allocate(this%monomers(this%nmon))
   allocate(n_monomers_types_fields((this%nmon)*2))
-  call split_string(n_monomers_types_string,' ','{}',n_monomers_types_fields(:),n_group4,matching=.true.)
+  call split_string(n_monomers_types_string,'_','{}',n_monomers_types_fields(:),n_group4,matching=.true.)
 
 
   tmp_num_monomer=0
