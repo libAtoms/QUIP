@@ -214,7 +214,10 @@ class Descriptor:
             # same as in py2, makes iteration of gradient easier
             descriptor_out["grad_index_0based"] = np.array(grad_index_0based) - 1
 
-        descriptor_out['data'] = descriptor_out['data'].reshape((count, -1))
+        if count > 0:
+            descriptor_out['data'] = descriptor_out['data'].reshape((count, -1))
+        else:
+            descriptor_out['data'] = np.array([[]])
 
         # This is a dictionary now and hence needs to be indexed as one, unlike the old version
         return descriptor_out
