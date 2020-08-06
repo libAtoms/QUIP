@@ -28,23 +28,23 @@
 ! H0 X
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-program ts_main 
+program ts_main
   use libAtoms_module
-  use Potential_module 
+  use Potential_module
   use ts_module
   use tsParams_module
 
   implicit none
 
-  type(Dynamicalsystem) :: ds_in, ds_fin 
+  type(Dynamicalsystem) :: ds_in, ds_fin
   type(Potential)     :: classicalpot, qmpot
   type(Potential) :: hybrid_pot
   type(Atoms)         :: at_in, at_fin, at_image
   type(inoutput)      :: xmlfile
   type(Cinoutput)     :: in_in, in_fin, in_image, outimage, file_res
-  type(TS)            :: tts 
+  type(TS)            :: tts
   type(Dictionary)    :: pot_params
-  type(MPI_Context)   :: mpi
+  type(MPI_Context)   :: mpi_c
   type(tsParams)      :: params
 
   real(dp), allocatable :: forces(:,:)
@@ -52,11 +52,11 @@ program ts_main
   character(len=STRING_LENGTH) :: xmlfilename
   real(dp), allocatable, dimension(:,:) :: conf
 
-  call initialise(mpi)
+  call initialise(mpi_c)
 
-  if (mpi%active) then
+  if (mpi_c%active) then
      call system_initialise (common_seed = .true., enable_timing=.true., mpi_all_inoutput=.false.)
-     call print('MPI run with '//mpi%n_procs//' processes')
+     call print('MPI run with '//mpi_c%n_procs//' processes')
   else
      call system_initialise( enable_timing=.true.)
      call print('Serial run')
@@ -75,14 +75,14 @@ program ts_main
   call print ("Initialising classical potential with args " // trim(params%classical_args) &
        // " from file " // trim(xmlfilename))
   call rewind(xmlfile)
-  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj = mpi)
+  call initialise(classicalpot, params%classical_args, xmlfile, mpi_obj = mpi_c)
   call Print(classicalpot)
 
   if (params%simulation_hybrid) then
      call print ("Initialising QM potential with args " // trim(params%qm_args) &
           // " from file " // trim(xmlfilename))
      call rewind(xmlfile)
-     call initialise(qmpot, params%qm_args, xmlfile, mpi_obj=mpi)
+     call initialise(qmpot, params%qm_args, xmlfile, mpi_obj=mpi_c)
      call finalise(xmlfile)
      call Print(qmpot)
 
@@ -90,7 +90,7 @@ program ts_main
      call set_value(pot_params,'qm_args_str',params%qm_args_str)
      call set_value(pot_params,'method','force_mixing')
      call initialise(hybrid_pot, 'ForceMixing '//write_string(pot_params), &
-             classicalpot, qmpot, mpi_obj=mpi)
+             classicalpot, qmpot, mpi_obj=mpi_c)
 
      call print_title('Hybrid Potential')
      call print(hybrid_pot)
@@ -99,9 +99,9 @@ program ts_main
   end if
 
   call print_title('Initialising First and Last Image')
-  call Initialise(in_in, trim(params%chain_first_conf), action=INPUT, mpi=mpi)
+  call Initialise(in_in, trim(params%chain_first_conf), action=INPUT, mpi=mpi_c)
   call read(at_in, in_in)
-  call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT, mpi=mpi)
+  call Initialise(in_fin, trim(params%chain_last_conf), action=INPUT, mpi=mpi_c)
   call read(at_fin, in_fin)
   call Print('Setting neighbour cutoff to '//(cutoff(classicalpot))//' A.')
   call set_cutoff(at_in, cutoff(classicalpot))
@@ -109,14 +109,14 @@ program ts_main
 
   call initialise(ds_in,at_in)
   call initialise(ds_fin,at_fin)
-! Fix atoms (if necessary) 
+! Fix atoms (if necessary)
   if(params%chain_nfix.ne.0) then
     ds_in%atoms%move_mask(ds_in%atoms%N-params%chain_nfix+1:ds_in%atoms%N) = 0
   endif
   ds_in%Ndof = 3*count(ds_in%atoms%move_mask == 1)
   allocate(forces(3,at_in%N))
 
-  tts%cos%N = params%chain_nimages 
+  tts%cos%N = params%chain_nimages
 ! if you want to initialise interpolating between the first and last image
   if(.not.params%simulation_restart) then
      if(params%minim_end) then
@@ -148,7 +148,7 @@ program ts_main
              eps_guess=params%minim_end_eps_guess)
         end if
      endif
-   
+
      call print_title('Initialisation of the chain of state interpolating between the first and last image')
      call initialise(tts,ds_in%atoms,ds_fin%atoms,params=params)
 
@@ -158,8 +158,8 @@ program ts_main
      do im=1,tts%cos%N
        call Initialise(in_image, 'conf.'//im//'.xyz')
        call read(at_image, in_image)
-       conf(im,:) = reshape(at_image%pos, (/3*at_image%N/) ) 
-       call finalise(at_image)   
+       conf(im,:) = reshape(at_image%pos, (/3*at_image%N/) )
+       call finalise(at_image)
        call finalise(in_image)
      enddo
      call print_title('Initialisation of the chain of state using the guessed path')
@@ -167,7 +167,7 @@ program ts_main
   endif
 
   call print(tts)
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
+  if (.not. mpi_c%active .or. (mpi_c%active .and.mpi_c%my_proc == 0)) then
      do im =1, tts%cos%N
        call initialise(outimage, 'image.'//im//'.xyz', action=OUTPUT)
        call write(outimage, tts%cos%image(im)%at)
@@ -175,7 +175,7 @@ program ts_main
      enddo
   end if
 
-  call initialise(file_res, "out.xyz", OUTPUT, mpi=mpi)
+  call initialise(file_res, "out.xyz", OUTPUT, mpi=mpi_c)
 
   call print_title('Transition state calculation')
   if (.not. params%simulation_hybrid) then
@@ -185,8 +185,8 @@ program ts_main
   endif
   call print('Number or Iterations :  ' // niter )
 
-  if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
-     do im =1, tts%cos%N 
+  if (.not. mpi_c%active .or. (mpi_c%active .and.mpi_c%my_proc == 0)) then
+     do im =1, tts%cos%N
        call initialise(outimage, 'final.'//im//'.xyz', action=OUTPUT)
        call write(outimage, tts%cos%image(im)%at)
        call finalise(outimage)
@@ -201,4 +201,4 @@ program ts_main
 
   call system_finalise()
 
-  end program ts_main 
+  end program ts_main

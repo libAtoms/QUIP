@@ -47,8 +47,18 @@ module sparse_module
   use system_module
   use linearalgebra_module
   use table_module
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
 
   implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
   private
   SAVE
 
@@ -349,7 +359,6 @@ contains
     integer::i,j
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
-    include "mpif.h"
     real(dp)::vectout_all(this%Nrows)
 
     vectout_all = 0.0_dp
@@ -390,7 +399,6 @@ contains
     integer::N,i,k,M
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
-    include "mpif.h"
     real(dp)::vectout_all(this%Ncols)
 
     vectout_all = 0.0_dp

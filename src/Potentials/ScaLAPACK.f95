@@ -989,7 +989,6 @@ subroutine ScaLAPACK_Matrix_d_print(this, data, file)
   type(Inoutput), intent(inout), optional :: file
 
 #ifdef SCALAPACK
-include 'mpif.h'
   integer l_i, l_j, g_i, g_j
   character(len=200), allocatable :: lines(:)
 

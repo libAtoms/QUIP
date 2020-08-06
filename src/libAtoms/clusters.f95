@@ -43,7 +43,17 @@ module clusters_module
   use dynamicalsystem_module
   use cinoutput_module
 
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
 implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
 private
 
 integer, parameter :: &
@@ -1564,7 +1574,6 @@ end function cluster_in_out_in
 
 #ifdef _MPI
     integer::mpi_size, mpi_rank, PRINT_ALWAYS
-    include "mpif.h"
     integer :: mpi_force_size
     real(dp), allocatable, dimension(:)  :: mpi_force
 
