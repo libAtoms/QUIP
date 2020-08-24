@@ -2055,7 +2055,7 @@ def check_prototype(cl,file):
 
     m = prototype.match(cl)
     if m != None:
-        out = list(map(string.strip, list(map(string.lower, m.group(1).split(',')))))
+        out = list(map(str.strip, list(map(string.lower, m.group(1).split(',')))))
         cl = file.next_line()
         return [out, cl]
 
@@ -2279,7 +2279,7 @@ def split_attribs(atr):
     if atr!='':
         atrl.append(atr)
 
-    return list(map(string.strip,atrl)) # jrk33 added strip
+    return list(map(str.strip,atrl)) # jrk33 added strip
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
