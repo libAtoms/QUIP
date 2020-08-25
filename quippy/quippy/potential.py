@@ -152,7 +152,7 @@ class Potential(ase.calculators.calculator.Calculator):
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_all_results=False, calc_args=None, add_arrays=None,
+                  copy_additional_results=True, calc_args=None, add_arrays=None,
                   add_info=None, **kwargs):
 
         # handling the property inputs
@@ -287,7 +287,7 @@ class Potential(ase.calculators.calculator.Calculator):
             key = calc_args.get('local_gap_variance', 'local_gap_variance')
             self.results['local_gap_variance'] = np.copy(_quip_properties[key])
 
-        if isinstance(copy_all_results, bool) and copy_all_results:
+        if isinstance(copy_additional_results, bool) and copy_additional_results:
             if atoms is not None:
                 _at_list = [self.atoms, atoms]
             else:
@@ -298,17 +298,19 @@ class Potential(ase.calculators.calculator.Calculator):
                                                               'map_shift', 'n_neighb',
                                                               'force', 'local_energy',
                                                               'local_virial', 'velo'])
+                # we no longer want to copy back the standard results - these
+                # belong ONLY in `self.results` dictionary.
+                # 
+                # # default params arguments
+                # at.info['energy'] = self.results['energy']
 
-                # default params arguments
-                at.info['energy'] = self.results['energy']
+                # if 'stress' in self.results.keys():
+                #     at.info['stress'] = self.results['stress'].copy()
 
-                if 'stress' in self.results.keys():
-                    at.info['stress'] = self.results['stress'].copy()
-
-                # default array arguments
-                for key in ('forces', 'energies', 'stresses'):
-                    if key in self.results.keys():
-                        at.arrays[key] = self.results[key].copy()
+                # # default array arguments
+                # for key in ('forces', 'energies', 'stresses'):
+                #     if key in self.results.keys():
+                #         at.arrays[key] = self.results[key].copy()
 
                 # any other params
                 for param, val in _quip_params.items():
