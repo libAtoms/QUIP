@@ -4,10 +4,10 @@ python:
   - "3.6"
 env:
   matrix:
-    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc
-    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc GAP=0
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc GAP=0
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
 
 stages:
   - test
@@ -21,30 +21,27 @@ git:
 addons:
   apt:
     update: true
+    packages:
+      - gfortran
+      - libblas-dev
+      - liblapack-dev
+      - openmpi-bin
+      - libopenmpi-dev
+      - netcdf-bin
+      - libnetcdf-dev
+      - libhdf5-serial-dev
+      - python-numpy
 
 before_install:
-  - sudo apt-get install -y
-      gfortran
-      libblas-dev
-      liblapack-dev
-      openmpi-bin
-      libopenmpi-dev
-      netcdf-bin
-      libnetcdf-dev
-      libhdf5-serial-dev
-      python-numpy
-
   # Clone the private gap repository using deploy key
-  - echo $github_deploy_key | base64 -d > ~/.ssh/github_deploy_key
-  - chmod 0600  ~/.ssh/github_deploy_key
-  - eval $(ssh-agent -s)
-  - ssh-add ~/.ssh/github_deploy_key
-  - git clone --depth 10 git@github.com:libAtoms/GAP.git src/GAP
+  - |
+    if [[ $GAP == 1 ]]; then
+     bash travis/get_gap.sh
+    fi
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
-
 
 install:
   - pip install ase
@@ -64,24 +61,24 @@ script: # Compile QUIP, libquip and quippy.
 jobs:
   include:
     - stage: documentation
-      env:  # serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+      env: # serial version of QUIP
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
 
       install: # packages for building docs
         - sudo apt-get install -y
-            libgsl0-dev
-            libxpm-dev
-            pandoc
-        
+          libgsl0-dev
+          libxpm-dev
+          pandoc
+
         - pip install
-            f90wrap
-            ase
-            docutils==0.14
-            sphinx
-            sphinx-rtd-theme
-            nbsphinx
-            numpydoc
-            pygments==2.5.2
+          f90wrap
+          ase
+          docutils==0.14
+          sphinx
+          sphinx-rtd-theme
+          nbsphinx
+          numpydoc
+          pygments==2.5.2
 
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython<6'
@@ -105,12 +102,13 @@ jobs:
         provider: pages
         local_dir: doc/_build/html
         skip-cleanup: true
-        github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+        github-token: $GITHUB_TOKEN # Set in the settings page of your repository, as a secure variable
         keep-history: true
         on:
           branch: public
 
     - stage: release
+      if: fork = false
       name: "Trigger for a new release of GAP"
       before_install: skip
       install: skip
@@ -120,8 +118,9 @@ jobs:
         script: bash travis/trigger_gap_release.sh
         on:
           branch: public
-          
+
     - stage: docker
+      if: fork = false
       name: "Trigger for building docker images"
       before_install: skip
       install: skip
@@ -131,9 +130,17 @@ jobs:
         script: bash travis/trigger_quip_docker.sh
         on:
           branch: public
-      
-        
-notifications:
- email:
-   - quip-developers@eng.cam.ac.uk
 
+  exclude:
+    - if: type = pull_request
+      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+    - if: type = pull_request
+      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
+    - if: fork = true
+      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
+    - if: fork = true
+      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+
+notifications:
+  email:
+    - quip-developers@eng.cam.ac.uk
