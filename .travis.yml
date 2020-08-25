@@ -4,10 +4,10 @@ python:
   - "3.6"
 env:
   matrix:
-    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc GAP=0
-    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc GAP=0
-    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc TRAVIS_GAP=0
+    - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc TRAVIS_GAP=1
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.nogap.inc TRAVIS_GAP=0
+    - QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc TRAVIS_GAP=1
 
 stages:
   - test
@@ -35,7 +35,7 @@ addons:
 before_install:
   # Clone the private gap repository using deploy key
   - |
-    if [[ $GAP == 1 ]]; then
+    if [[ $TRAVIS_GAP == 1 ]]; then
      bash travis/get_gap.sh
     fi
   # Make the build directory manually for rules
@@ -62,7 +62,7 @@ jobs:
   include:
     - stage: documentation
       env: # serial version of QUIP
-        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+        - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc TRAVIS_GAP=1
 
       install: # packages for building docs
         - sudo apt-get install -y
@@ -133,13 +133,13 @@ jobs:
 
   exclude:
     - if: type = pull_request
-      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc TRAVIS_GAP=1
     - if: type = pull_request
-      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
+      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc TRAVIS_GAP=1
     - if: fork = true
-      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc GAP=1
+      env: QUIP_ARCH=linux_x86_64_gfortran_openmp QUIP_INC=Makefile.inc TRAVIS_GAP=1
     - if: fork = true
-      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc GAP=1
+      env: QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc TRAVIS_GAP=1
 
 notifications:
   email:
