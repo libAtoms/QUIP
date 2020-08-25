@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ase.optimize.optimize &mdash; quippy 1ff93b3+ documentation</title>
+  <title>ase.optimize.optimize &mdash; quippy ccc01b7+ documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                1ff93b3+
+                ccc01b7+
               </div>
             
           
@@ -182,7 +182,7 @@
 <span class="kn">from</span> <span class="nn">ase.calculators.calculator</span> <span class="kn">import</span> <span class="n">PropertyNotImplementedError</span>
 <span class="kn">from</span> <span class="nn">ase.parallel</span> <span class="kn">import</span> <span class="n">world</span><span class="p">,</span> <span class="n">barrier</span>
 <span class="kn">from</span> <span class="nn">ase.io.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
-<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">collections.abc</span>
 
 
 <span class="k">class</span> <span class="nc">Dynamics</span><span class="p">:</span>
@@ -250,7 +250,7 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Insert an observer.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Callable</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Callable</span><span class="p">):</span>
             <span class="n">function</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">write</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observers</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
 
@@ -297,7 +297,7 @@
 <span class="sd">        &gt;&gt;&gt;     opt1.run()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># compute inital structure and log the first step</span>
+        <span class="c1"># compute initial structure and log the first step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span>
 
         <span class="c1"># yield the first time to inspect before logging</span>
@@ -353,6 +353,9 @@
 
 <span class="k">class</span> <span class="nc">Optimizer</span><span class="p">(</span><span class="n">Dynamics</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base-class for all structure optimization classes.&quot;&quot;&quot;</span>
+
+    <span class="c1"># default maxstep for all optimizers</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;maxstep&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

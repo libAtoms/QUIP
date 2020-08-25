@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy 1ff93b3+ documentation</title>
+  <title>Potential objects &mdash; quippy ccc01b7+ documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                1ff93b3+
+                ccc01b7+
               </div>
             
           
@@ -432,6 +432,12 @@ stresses; this can either be a scalar or the name of an array in
 </dd></dl>
 
 <dl class="py method">
+<dt id="quippy.potential.Potential.calculate_properties">
+<code class="sig-name descname">calculate_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">properties</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is experimental; currently for internal use.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="quippy.potential.Potential.check_state">
 <code class="sig-name descname">check_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-15</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.check_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check for any system changes since last calculation.</p>
@@ -447,6 +453,13 @@ stresses; this can either be a scalar or the name of an array in
 <dt id="quippy.potential.Potential.get_magnetic_moments">
 <code class="sig-name descname">get_magnetic_moments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_magnetic_moments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate magnetic moments projected onto atoms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="quippy.potential.Potential.get_stresses">
+<code class="sig-name descname">get_stresses</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_stresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.potential.Potential.get_stresses" title="Permalink to this definition">¶</a></dt>
+<dd><p>the calculator should return intensive stresses, i.e., such that
+stresses.sum(axis=0) == stress</p>
 </dd></dl>
 
 <dl class="py method">
@@ -506,9 +519,6 @@ parameters from a file.</p>
 <li><p>label=’dir1/abc’: (directory=’dir1’, prefix=’abc’)</p></li>
 <li><p>label=None: (directory=’.’, prefix=None)</p></li>
 </ul>
-<p>Calculators that must write results to files with fixed names
-can override this method so that the directory is set to all
-of label.</p>
 </dd></dl>
 
 </dd></dl>
