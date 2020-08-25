@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # find size of pointer to Fortran derived type
 # used by quippy and AtomEye for Fortran<->C interoperability

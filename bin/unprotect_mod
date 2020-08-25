@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 # H0 X
 # H0 X   libAtoms+QUIP: atomistic simulation library
