@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # gitversion wrapper script which first checks for file ${QUIP_ROOT}/STABLE_VERSION  
 
 QUIP_ROOT=$(dirname $0)/..
