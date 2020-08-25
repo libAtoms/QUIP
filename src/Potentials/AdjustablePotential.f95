@@ -31,13 +31,13 @@
 !X
 !X     Learn-on-the-fly (LOTF) hybrid molecular dynamics code
 !X
-!X    
+!X
 !X     Authors: Gabor Csanyi, Alessio Commisso, Steven Winfield
 !X     James Kermode, Gianpietro Moras, Michael Payne, Alessandro De Vita
-!X     
-!X     Copyright 2005, All Rights Reserved 
 !X
-!X     This source code is confidential, all distribution is 
+!X     Copyright 2005, All Rights Reserved
+!X
+!X     This source code is confidential, all distribution is
 !X     prohibited. Making unauthorized copies is also prohibited
 !X
 !X     When using this software, the following should be referenced:
@@ -57,8 +57,8 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X  AdjustablePotential_linear module
-!X  
-!X  a set of linear potentials that can be adapted a reproduce 
+!X
+!X  a set of linear potentials that can be adapted a reproduce
 !X  given forces on atoms
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -75,12 +75,22 @@ module AdjustablePotential_module
   use atoms_module
   use clusters_module
 
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
   implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
   private
   SAVE
-  
+
   public :: adjustable_potential_init, adjustable_potential_optimise, adjustable_potential_force, adjustable_potential_finalise
-  
+
 
   ! ratio of smallest to largest eigenvalue of spring space spanning matrix
   ! for an atom to be considered not well described
@@ -104,14 +114,14 @@ module AdjustablePotential_module
   ! argument of the init() routine!!!
   !
   !                    int               real
-  ! 
+  !
   !fitlist indexes ->  fi,fj,shift       rij, fij <- fij: variable parameter
   type(table)::twobody
 
   ! this table is used as a store for old data which can be used to initialise
   ! parameters to values from the last interpolation step. It also stores
   ! parameters from one end point during interpolation
-  type(table)::twobody_old 
+  type(table)::twobody_old
 
   real(dp), dimension(:,:), allocatable:: fitforce_old
 
@@ -140,15 +150,15 @@ module AdjustablePotential_module
 !!$  type(Table) :: fitlist_old
 
   ! forcematrix multiplied onto the vector of
-  ! parameters (fij...) 
+  ! parameters (fij...)
   ! gives the force vector on the atoms. the number of columns
   ! is the number of parameters, the number of rows is 3*the number of atoms
   !
-  ! force = forcematrix * params 
+  ! force = forcematrix * params
   !
-  ! ...0..y1_x y2_x...0......       
+  ! ...0..y1_x y2_x...0......
   ! ...0..y1_y y2_y...0......
-  ! ...0..y1_z y2_z...0......      
+  ! ...0..y1_z y2_z...0......
   type(sparse)                          ::forcematrix ! linear part
 
 contains
@@ -157,7 +167,7 @@ contains
   !X
   !X Initialize adjustable potential
   !X
-  !X inputs are an atoms structure and a table with a single list integers 
+  !X inputs are an atoms structure and a table with a single list integers
   !X of atoms for which target forces are to be fitted.
   !X
   !X The adjustable potential will be fitted to the difference between
@@ -167,7 +177,7 @@ contains
   !X atoms that are given in the fitlist.
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
 
   ! this is called with a table
   subroutine adjustable_potential_init(atoms_in, fitlist, directionN, spring_hops, &
@@ -223,10 +233,10 @@ contains
 !!$          call print('fitlist unchanged, nothing to be done in adjustable_potential_init', PRINT_VERBOSE)
 !!$          deallocate(s1)
 !!$          deallocate(s2)
-          
+
           ! Atom set matches, but it's possible some of the shifts have changed
-          ! if any fit atoms have crossed a periodic boundary since last call to 
-          ! adjustable_potential_init. Let's overwrite with new shifts. 
+          ! if any fit atoms have crossed a periodic boundary since last call to
+          ! adjustable_potential_init. Let's overwrite with new shifts.
 !!$          do n=1,twobody%N
 !!$             i = atomlist%int(1,twobody%int(1,n))
 !!$             j = atomlist%int(1,twobody%int(2,n))
@@ -246,7 +256,7 @@ contains
 !!$
 !!$          return
 !!$       end if
-!!$       
+!!$
 !!$       deallocate(s1)
 !!$       deallocate(s2)
 !!$    end if
@@ -276,7 +286,7 @@ contains
     target_force = 0.0_dp
 
     ! copy atom indices from argument to global
-    
+
     call wipe(atomlist)
     call allocate(atomlist,1,0,0,0,fitlist%N)
     call append(atomlist, fitlist%int(1,1:fitlist%N))
@@ -319,7 +329,7 @@ contains
           if (i == j) cycle  ! don't join to self or images of self
 
           ! Have we already got this spring?
-          ! always store in order fi, fj with fi < fj  
+          ! always store in order fi, fj with fi < fj
           if (find(twobody, (/min(fi,fj), max(fi,fj), sign(1,fj-fi)*shift/)) /= 0) cycle
 
           ! Is this pair excluded?
@@ -336,9 +346,9 @@ contains
     write(line, '(a,f0.2)') 'Searching for difficult atoms, anisotropy threshold: ', AP_bad_atom_threshold
     call print(line, PRINT_VERBOSE)
 
-    oldn = twobody%N		
+    oldn = twobody%N
     atomcount = 0
-    ! For those fit atoms that we require directionality for, check how well the 
+    ! For those fit atoms that we require directionality for, check how well the
     ! springs connected to it span 3D space. If necessary add more springs for those atoms.
     do fi=1,directionN
        i = atomlist%int(1, fi)
@@ -369,7 +379,7 @@ contains
                ' springs has ratio ', ratio
           call print(line, PRINT_VERBOSE)
           call print('Smallest evect ='//small_evec, PRINT_VERBOSE)
-          
+
           ! Not well enough
           atomcount = atomcount + 1
 
@@ -385,7 +395,7 @@ contains
                    do sz=-1,1
 
                       shift = (/sx,sy,sz/)
-                      
+
                       if (find(springs, (/j,shift/)) /= 0) cycle ! We've tried this spring already
 
                       ! Don't add if this pair is excluded
@@ -416,7 +426,7 @@ contains
              best_fj    = cand_springs%int(2,k)
              best_shift = cand_springs%int(3:5,k)
              r_ij       = cand_springs%real(1,k)
-             
+
              call print('Trying spring to atom '//best_j//' (index '//best_fj//') shift '//best_shift//' length '//r_ij)
 
              call delete(cand_springs, k)
@@ -432,7 +442,7 @@ contains
              if (ratio > oldratio) then
                 default_row(1) = r_ij
                 call append(twobody,(/min(fi,best_fj),max(fi,best_fj),sign(1,best_fj-fi)*best_shift/), default_row)
-                
+
                 write (line, '(a,i0,a,f0.3)') '  Now got ', springs%N,' springs. Ratio improved to ', ratio
                 call print(line, PRINT_VERBOSE)
              end if
@@ -446,7 +456,7 @@ contains
 !!$
 !!$          if (tmpsprings%N == 0) then
 !!$             ! Didn't manage to add any atoms, so try nneigb_only = false, since
-!!$             ! these are the 'bad' atoms and their neighbours are 
+!!$             ! these are the 'bad' atoms and their neighbours are
 !!$             ! probably some distance away
 !!$
 !!$             call bfs_step(atoms_in, newsprings, tmpsprings, nneighb_only = .false.)
@@ -498,13 +508,13 @@ contains
           if (n == 8 .and. ratio < AP_bad_atom_threshold) then
              call system_abort('adjustable_potential_init: failed to sufficiently improve bad spring space spanning')
           end if
-          
+
        end if
 
     end do
 
     if(atomcount > 0) then
-       write(line, '(a,i0,a,i0,a)') 'Added ', twobody%N-oldn, ' springs to fix ', atomcount, ' atoms' 
+       write(line, '(a,i0,a,i0,a)') 'Added ', twobody%N-oldn, ' springs to fix ', atomcount, ' atoms'
        call print(line)
     end if
 
@@ -528,7 +538,7 @@ contains
        ! Only need to refit if spline set has changed since last time
        do_refit = .false.
        ! if sizes don't match definitely need to refit
-       if (twobody%N /= twobody_old%N) then 
+       if (twobody%N /= twobody_old%N) then
           do_refit = .true.
        else
           do i=1,twobody%N
@@ -546,7 +556,7 @@ contains
        if (do_refit) then
           call print('Springs changed, refitting old forces with new spring set')
           allocate(df(3,atomlist%N))
-          df = 0.0_dp 
+          df = 0.0_dp
           do i=1,atomlist_old%N
              fi = find(atomlist, atomlist_old%int(:,i)) ! find old fit atom in new fitlist
              if (fi /= 0) df(:,fi) = fitforce_old(:,i)         ! if found, copy target force
@@ -629,54 +639,54 @@ contains
          call system_abort('Adjustable_Potential_Map_Parameters: No parameters to map!')
     if (twobody_old%N == 0) &
          call system_abort('Adjustable_Potential_Map_Parameters: No parameters are saved')
-    
+
     if (twobody%N >= twobody_old%N) then  ! loop over the smallest table
 
        !Loop over the entries in the old table
        do n = 1, twobody_old%N
-          
+
           !look up the atom indices
           i     = atomlist_old%int(1,twobody_old%int(1,n))
           j     = atomlist_old%int(1,twobody_old%int(2,n))
           shift = twobody_old%int(3:5,n)
-          
+
           !try to find the corresponding atoms in the new list
           fi = find(atomlist,i)
           if (fi == 0) cycle !atom i is not present in the new list
           fj = find(atomlist,j)
           if (fj == 0) cycle !atom j is not present in the new list
-          
+
           !find the entry in the new twobody table
           m = find(twobody,(/min(fi,fj),max(fi,fj),sign(1,fj-fi)*shift/))
           if (m == 0) cycle ! i and j are no longer connected
-          
+
           ! copy the parameter values across
           do k=1,2*adjustable_potential_nparams
              twobody%real(1+k,m) = twobody_old%real(1+k,n)
           end do
-          
+
        end do
 
     else
 
        !Loop over the entries in the new table
        do n = 1, twobody%N
-          
+
           !look up the atom indices
           i     = atomlist%int(1,twobody%int(1,n))
           j     = atomlist%int(1,twobody%int(2,n))
           shift = twobody%int(3:5,n)
-          
+
           !try to find the corresponding atoms in the old list
           fi = find(atomlist_old, i)
           if (fi == 0) cycle !atom i is not present in the old list
           fj = find(atomlist_old, j)
           if (fj == 0) cycle !atom j is not present in the old list
-          
+
           !find the entry in the old twobody table
           m = find(twobody_old,(/min(fi,fj),max(fi,fj),sign(1,fj-fi)*shift/))
           if (m == 0) cycle ! i and j were not neighbours
-          
+
           !copy the param values across
           do k=1,2*adjustable_potential_nparams
              twobody%real(1+k,n) = twobody_old%real(1+k,m)
@@ -698,7 +708,7 @@ contains
   !X the parameters between twobody_old and twobody
   !X
   !X the force(:) array is the same size as the stored atomlist.
-  !X 
+  !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine adjustable_potential_force(atoms_in, force, interp, interp_space, interp_order, energy, power)
@@ -713,8 +723,8 @@ contains
     integer:: i, a1, a2, fi, fj, shift(3), my_interp_order
     real(dp), dimension(3)::f
     real(dp)::fij, r, interp_point, dalpha
-    logical::interpolate, do_interp_space   
-    
+    logical::interpolate, do_interp_space
+
     do_interp_space = optional_default(.false., interp_space)
 
     interpolate = present(interp) .or. do_interp_space
@@ -739,7 +749,7 @@ contains
     if(present(energy)) energy = 0.0_dp
     if(present(power))   power = 0.0_dp
 
-    do i=1,twobody%N       
+    do i=1,twobody%N
 
        fi = twobody%int(1,i)
        fj = twobody%int(2,i)
@@ -769,8 +779,8 @@ contains
                 case(3) ! cubic with zero derivatives at endpoints
                    fij = cubic_interpolate(0.0_dp,twobody_old%real(2,i),&   ! x0,y0
                         1.0_dp,twobody%real(2,i),interp) ! x1,y1, x
-                   
-                   dalpha = 0.0_dp                
+
+                   dalpha = 0.0_dp
                 case default
                    call System_Abort("Invalid interpolation order in Adjustable_Potential_Force")
              end select
@@ -806,22 +816,22 @@ contains
   !X sparse matrix
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
-  function adjustable_potential_force_sparse(params) result(force) 
+  !
+  function adjustable_potential_force_sparse(params) result(force)
     real(dp)::params(:)
     real(dp)::force(size(target_force))
 
-    if(.not.adjustable_potential_initialised) & 
+    if(.not.adjustable_potential_initialised) &
          call system_abort("adjustable_potential_force_sparse: not initialised!")
 
-    force = (forcematrix .mult. params) 
+    force = (forcematrix .mult. params)
   end function adjustable_potential_force_sparse
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X
   !X adjustable_potential_force_error(params)
   !X
-  !X normsq() of difference between target and adjustable force 
+  !X normsq() of difference between target and adjustable force
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
@@ -830,7 +840,7 @@ contains
     character,optional :: data(:)
     real(dp)::error
 
-    if(.not.adjustable_potential_initialised) & 
+    if(.not.adjustable_potential_initialised) &
          call system_abort("adjustable_potential_force_error: not initialised!")
 
     if(value(mainlog%verbosity_stack) .ge. PRINT_NERD) then
@@ -850,14 +860,14 @@ contains
   !X derivative of the force_error wrt variable parameters
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
   function adjustable_potential_force_error_deriv(params,data) result(deriv)
     real(dp)::params(:)
     character,optional :: data(:)
     real(dp)::force(size(target_force))
     real(dp)::deriv(size(params))
 
-    if(.not.adjustable_potential_initialised) & 
+    if(.not.adjustable_potential_initialised) &
          call system_abort("adjustable_potential_force_error_deriv: not initialised!")
 
     if(value(mainlog%verbosity_stack) .ge. PRINT_NERD) then
@@ -881,9 +891,9 @@ contains
   !X forcematrix has as many rows as the 3*number of atoms to be fitted
   !X on, so same as size(target_force), and as many columns as the
   !X number of adjustable parameters, so twobody%N*adjustable_potential_nparams
-  !X 
+  !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  !   
+  !
 
   subroutine adjustable_potential_create_forcematrix(atoms_in, precondition)
     type(Atoms), intent(IN)::atoms_in
@@ -908,7 +918,7 @@ contains
     tmpcolumns = 0
 
     ! loop through the springs
-    do i=1,twobody%N       
+    do i=1,twobody%N
        ! we take and cache the distance from atoms_in, as it might have changed since time
        ! we initialised the twobody table
        fi = twobody%int(1,i)
@@ -965,7 +975,7 @@ contains
   !X adjustable_potential_optimise()
   !X
   !X the whole point of this module: vary the adjustable parameters
-  !X to minimize the force_error() 
+  !X to minimize the force_error()
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -988,11 +998,7 @@ contains
     integer::LWORK, INFO, maxmn, minmn, M,N, RANK, a1, a2, error_code
     optional :: prec_func
 
-#ifdef _MPI
-    include 'mpif.h'
-#endif
-
-    interface 
+    interface
        function prec_func(r)
          use System_module
          real(dp), intent(in) :: r
@@ -1004,7 +1010,7 @@ contains
        call print("There are no parameters to optimise")
        return
     end if
-    
+
     do_fromscratch = .true.
     if(present(fromscratch)) do_fromscratch = fromscratch
 
@@ -1018,14 +1024,14 @@ contains
           call system_abort("Adjustable_potential_optimise: invalid method '" // trim(method) // "'")
        end if
     end if
-    
+
     !If the chosen method is SVD then the default is to run serially to
     !avoid memory bottlenecks when all processors do SVD.
     do_parallel_svd = optional_default(.false.,parallel_svd)
 
     if(size(target_force) /= size(fitforce)) &
          call system_abort("adjustable_potential_optimise: target force is wrong size")
-    
+
     ! Calculate preconditioning factors for each spring
     allocate(precondition(twobody%N))
     if (present(prec_func)) then
@@ -1041,14 +1047,14 @@ contains
 
     ! create matrices for fast evaluation
     call adjustable_potential_create_forcematrix(atoms_in, precondition)
-    
+
 
     target_force = reshape(fitforce, (/size(target_force)/))
 
     nparamtot = twobody%N*nparam
     allocate(params(nparamtot))
 
-    if(.not.adjustable_potential_initialised) & 
+    if(.not.adjustable_potential_initialised) &
          call system_abort("adjustable_potential_optimise: not initialised!")
 
     call print("Target force:", PRINT_NERD)
@@ -1109,9 +1115,9 @@ contains
        deallocate(S)
        deallocate(X)
        deallocate(full_forcematrix)
-       
+
 #ifdef _MPI
-       
+
        endif
 
        !Broadcast the params to each process if SVD only done on proc 0
@@ -1130,7 +1136,7 @@ contains
             adjustable_potential_force_error_deriv,&
             "cg",1e-10_dp,1000,"FAST_LINMIN")
     end if
-       
+
 
     ! compute RMS after optimisation
     err = sqrt(adjustable_potential_force_error(params)/(real(atomlist%N,dp)*3.0_dp))
@@ -1143,7 +1149,7 @@ contains
 !!$    call print('sparse force=')
 !!$    call Print(forcematrix .mult. params)
 !!$    call print('')
-    
+
     do i=1,atomlist%N
        write (line, '(i4,f12.6)') i, sqrt(normsq(ferr(:,i)))
        call print(line, PRINT_NERD)
@@ -1214,12 +1220,12 @@ contains
     real(dp)::f(size(target_force))
     integer::np
 
-    if(.not.adjustable_potential_initialised) & 
+    if(.not.adjustable_potential_initialised) &
          call system_abort("adjustable_potential_print_params: not initialised!")
 
 
     write(line,*) "Atoms              Shift                   Parameters" ; call print(line)
-    write(line,*) "-----------------------------------------------------" 
+    write(line,*) "-----------------------------------------------------"
     call print(line)
     call print(twobody)
     write(line, *) ; call print(line)
@@ -1270,7 +1276,7 @@ contains
   subroutine adjustable_potential_delete_exclusion(atom1,atom2,shift)
 
     integer, intent(in) :: atom1, atom2, shift(3)
-    
+
     if (atom1 < atom2) then
        call delete(exclusion_list,(/atom1,atom2,shift/))
     else
@@ -1301,7 +1307,7 @@ contains
        else
           Is_Excluded = .true.
        end if
-       
+
     end if
 
   end function is_excluded
