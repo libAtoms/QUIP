@@ -841,8 +841,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     goto FORMAT_DONE;
 
   FORMAT_DONE:
-    if ((type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) && shape[0] != 3) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s must have size 1 or 3, but got %d\n", param_key, shape[0]);
+    if ((type == T_INTEGER_A || type == T_REAL_A || type == T_LOGICAL_A) && (shape[0] != 3 && shape[0] != 6)) {
+      RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s must have size 1 or 3 or 6, but got %d\n", param_key, shape[0]);
     }
 
     // Create key in Fortran dictionary
@@ -1273,8 +1273,8 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	sprintf(param_value, "F");
     }
     else if (type == T_INTEGER_A) {
-      if (shape[0] != 3) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s integer array size=%d != 3", param_key, shape[0]);
+      if (shape[0] != 3 && shape[0] != 6) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s integer array size=%d != 3 or 6", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
@@ -1282,8 +1282,8 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
       }
     } else if (type == T_REAL_A) {
-      if (shape[0] != 3) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s real array size=%d != 3", param_key, shape[0]);
+      if (shape[0] != 3 && shape[0] != 6) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s real array size=%d != 3 or 6", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
@@ -1291,8 +1291,8 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 	strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
       }
     } else if (type == T_LOGICAL_A) {
-      if (shape[0] != 3) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s logical array size=%d != 3", param_key, shape[0]);
+      if (shape[0] != 3 && shape[0] != 6) {
+	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s logical array size=%d != 3 or 6", param_key, shape[0]);
       }
       sprintf(param_value, "%s %s %s",
 	      LOGICAL_A(data,0) ? "T" : "F",
