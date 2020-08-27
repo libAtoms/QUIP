@@ -40,8 +40,19 @@
 module extendable_str_module
 
 use system_module
-
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
 implicit none
+
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
+
 private
 
 integer, parameter :: EXTENDABLE_STRING_LENGTH_INCREMENT = 10240 !% Increment of extendable string
@@ -518,7 +529,6 @@ subroutine extendable_str_bcast(this, mpi_comm, mpi_id)
   integer, intent(in), optional :: mpi_comm, mpi_id
 
 #ifdef _MPI
-  include 'mpif.h'
   integer err, size_this_s
 
   if (present(mpi_comm)) then

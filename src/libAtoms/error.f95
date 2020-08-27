@@ -40,7 +40,17 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module error_module
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
   implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
 
   private
 
@@ -293,7 +303,6 @@ contains
 #endif
 #ifdef _MPI
     integer::PRINT_ALWAYS
-    include "mpif.h"
 #endif
 
     if (quippy_running()) call quippy_error_abort(message)

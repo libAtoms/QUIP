@@ -48,7 +48,17 @@
 module system_module
   use error_module
 !$ use omp_lib
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
   implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
 
   logical :: system_always_flush = .false.
 
@@ -2022,10 +2032,6 @@ contains
     integer, intent(out) :: rank  !% Rank of this process
 
 #ifdef _MPI
-    include 'mpif.h'
-#endif
-
-#ifdef _MPI
     
     integer::error_code
 
@@ -2072,12 +2078,11 @@ contains
 
 #ifdef _MPI
     integer::PRINT_ALWAYS
-    integer :: is_initialised
-    include "mpif.h"
+    logical :: is_initialised
 
     call MPI_initialized(is_initialised, PRINT_ALWAYS)
     call abort_on_mpi_error(PRINT_ALWAYS, "system_initialise, mpi_initialised()")
-    if (is_initialised == 0) then
+    if (.not. is_initialised) then
       call MPI_INIT(PRINT_ALWAYS)
       call abort_on_mpi_error(PRINT_ALWAYS, "system_initialise, mpi_init()")
     endif
@@ -2221,7 +2226,6 @@ contains
     integer :: values(8)
 #ifdef _MPI
     integer :: PRINT_ALWAYS
-    include "mpif.h"
 #endif
 
     call date_and_time(values=values)
@@ -2307,7 +2311,6 @@ contains
     integer :: np=1, myp=0
 #ifdef _MPI
     integer :: PRINT_ALWAYS
-    include "mpif.h"    
 #endif
 
     call date_and_time(values=values)
@@ -2368,7 +2371,6 @@ contains
 #ifdef _OPENMP
     integer, allocatable :: idum_buf(:)
 #endif
-    include "mpif.h"    
     call print('Resynchronising random number generator', PRINT_VERBOSE)
 
 #ifdef _OPENMP
@@ -2514,10 +2516,6 @@ contains
    subroutine current_times(cpu_t, wall_t, mpi_t)
       real(dp), intent(out), optional :: cpu_t, wall_t, mpi_t
       integer(kind=8) wall_t_count, count_rate, max_count
-#ifdef _MPI
-     include "mpif.h"
-#endif
-
       if (present(cpu_t)) call cpu_time(cpu_t)
       if (present(wall_t)) then
 	 call system_clock(wall_t_count, count_rate, max_count)
@@ -2983,7 +2981,6 @@ contains
     character(len=*), intent(in) :: routine_name
 
 #ifdef _MPI
-    include 'mpif.h'
 
     character(MPI_MAX_ERROR_STRING)::error_string
     integer::error_string_length, my_error_code
@@ -3012,7 +3009,6 @@ contains
 
     integer i
 #ifdef _MPI
-    include 'mpif.h'
 
     integer proc
     integer mpi_stat(MPI_STATUS_SIZE)

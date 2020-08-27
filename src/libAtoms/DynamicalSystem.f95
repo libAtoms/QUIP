@@ -80,7 +80,17 @@ module dynamicalsystem_module
    use thermostat_module
    use barostat_module
 
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
    implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
    private
 
    public :: dynamicalsystem, add_atoms, remove_atoms, print, initialise, finalise
@@ -1817,7 +1827,6 @@ contains
      real(dp), allocatable                 :: therm_ndof(:)
 
 #ifdef _MPI
-     include 'mpif.h'
      real(dp), dimension(:,:), allocatable :: mpi_pos, mpi_velo, mpi_acc, mpi_constraint_force
      real(dp), dimension(:,:), pointer :: constraint_force
      integer                               :: error_code
@@ -2163,7 +2172,6 @@ contains
      real(dp)                              :: decay
 
 #ifdef _MPI
-     include 'mpif.h'
      real(dp), dimension(:,:), allocatable :: mpi_velo, mpi_acc, mpi_constraint_force
      real(dp), dimension(:,:), pointer     :: constraint_force
      integer                               :: error_code

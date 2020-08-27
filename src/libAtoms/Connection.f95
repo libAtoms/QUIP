@@ -49,7 +49,17 @@ module Connection_module
   use table_module
   use Atoms_types_module
 
+#ifdef _MPI
+#ifndef _OLDMPI
+  use mpi
+#endif
+#endif
   implicit none
+#ifdef _MPI
+#ifdef _OLDMPI
+include 'mpif.h'
+#endif
+#endif
   private
 
   real(dp), parameter :: CONNECT_LATTICE_TOL = 1e-8_dp
@@ -1318,7 +1328,6 @@ contains
     real(dp), parameter :: small_number = 1.0e-10_dp
 #ifdef _MPI
     integer:: Nelements, mpi_pos, mpi_old_pos
-    include "mpif.h"
     real(dp), allocatable :: mpi_send(:), mpi_recv(:)
     integer err
 #endif
