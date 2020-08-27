@@ -40,6 +40,7 @@
 
 module ScaLAPACK_module
 
+use error_module
 use System_module
 use MPI_context_module
 

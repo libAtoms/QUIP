@@ -30,6 +30,7 @@
 
 #include "error.inc"
 module frametools_module
+use error_module
 use system_module
 use linearalgebra_module
 use atoms_types_module

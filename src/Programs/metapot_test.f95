@@ -31,6 +31,7 @@
 program pot_test
 
   use libAtoms_module
+  use system_module, only : rewind
   use Potential_Module
 
   implicit None

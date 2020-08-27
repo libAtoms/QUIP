@@ -32,6 +32,7 @@
 
 module topology_module
 
+  use error_module
   use system_module          
   use units_module           
   use extendable_str_module  

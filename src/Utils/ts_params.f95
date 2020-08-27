@@ -33,6 +33,7 @@ module tsparams_module
 use libAtoms_module
 use QUIP_Common_module
 use potential_module
+use system_module, only : verbosity_of_str
 
 implicit none
 

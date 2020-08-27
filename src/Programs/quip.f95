@@ -33,6 +33,7 @@
 program quip
 
 use libAtoms_module
+use system_module, only : verbosity_unset_minimum, verbosity_set_minimum
 #ifdef HAVE_TB
 use tb_module
 #endif

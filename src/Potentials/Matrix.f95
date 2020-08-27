@@ -43,6 +43,7 @@
 
 module matrix_module
 
+use error_module
 use System_module
 use linearalgebra_module
 

@@ -39,6 +39,7 @@
 
 module extendable_str_module
 
+use error_module
 use system_module
 #ifdef _MPI
 #ifndef _OLDMPI
