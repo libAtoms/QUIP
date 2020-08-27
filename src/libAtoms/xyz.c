@@ -782,9 +782,9 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       type = T_INTEGER;
       shape[0] = 1;
       shape[1] = 1;
-    } else if (k == 3) {
+    } else if (k == 3 || k == 6) {
       type = T_INTEGER_A;
-      shape[0] = 3;
+      shape[0] = k;
       shape[1] = 1;
     } else if (k == 9) {
       type = T_INTEGER_A2;
@@ -803,9 +803,9 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       type = T_REAL;
       shape[0] = 1;
       shape[1] = 1;
-    } else if (k == 3) {
+    } else if (k == 3 || k == 6) {
       type = T_REAL_A;
-      shape[0] = 3;
+      shape[0] = k;
       shape[1] = 1;
     } else if (k == 9) {
       type = T_REAL_A2;
@@ -825,9 +825,9 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       type = T_LOGICAL;
       shape[0] = 1;
       shape[1] = 1;
-    } else if (k == 3) {
+    } else if (k == 3 || k == 6) {
       type = T_LOGICAL_A;
-      shape[0] = 3;
+      shape[0] = k;
       shape[1] = 1;
     } else {
       RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad number of fields %d in logical parameter %s\n", k, param_key);
