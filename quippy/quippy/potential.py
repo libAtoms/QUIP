@@ -283,7 +283,7 @@ class Potential(ase.calculators.calculator.Calculator):
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if 'local_gap_variance' in calc_args:
+        if calc_args is not None and 'local_gap_variance' in calc_args:
             key = calc_args.get('local_gap_variance', 'local_gap_variance')
             self.results['local_gap_variance'] = np.copy(_quip_properties[key])
 
