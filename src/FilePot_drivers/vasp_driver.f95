@@ -727,7 +727,10 @@ subroutine read_vasp_incar_dict(incar_dict, incar_template_file, error)
 	 if (incar_field_n_fields > 2) then
 	    RAISE_ERROR("read_vasp_incar_dict got more than one '=' in field "//trim(incar_line_fields(j)), error)
 	 endif
-	 call set_value(incar_dict, trim(adjustl(incar_field_fields(1))), trim(adjustl(incar_field_fields(2))))
+         if (.not. has_key(incar_dict, trim(adjustl(incar_field_fields(1))))) then
+            ! VASP always uses first instance of a keyword, do same here
+            call set_value(incar_dict, trim(adjustl(incar_field_fields(1))), trim(adjustl(incar_field_fields(2))))
+         endif
       end do
    end do
 
