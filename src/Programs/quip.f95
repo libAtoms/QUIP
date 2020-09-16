@@ -812,6 +812,7 @@ implicit none
         deallocate(descriptor_array)
         if(allocated(grad_descriptor_array)) deallocate(grad_descriptor_array)
         if(allocated(grad_descriptor_index)) deallocate(grad_descriptor_index)
+        if(allocated(grad_descriptor_pos)) deallocate(grad_descriptor_pos)
      end if
 #endif
 

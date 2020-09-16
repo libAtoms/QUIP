@@ -62,7 +62,7 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
-F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -e 's|/lib/.*|/bin|')
 
 F90WRAP = ${F90WRAP_PATH}/f90wrap
 F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
