@@ -61,6 +61,9 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   !%  - changes in the potential on the fly are picked up only if reload_pot is specified
   !%  - MPI context cannot be changed on the fly
 
+  use system_module, only: optional_default, print
+  implicit none
+
   ! arguments in call order
   integer,                          intent(in)            :: N
   real(dp),         dimension(3,N), intent(in),  optional :: pos
@@ -111,16 +114,15 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
      call Print(pot)
      call verbosity_pop()
      call initialise(at,N,use_lattice)
-  else if (reload_pot) then
+  end if
+
+  if (optional_default(.false., reload_pot)) then
+    print("potential reloaded in quip_unified_wrapper from file:"//quip_param_file)
     ! deallocate old potential -- this was initialised in first_run
     call Finalise(pot)
     ! initialise with new parameters
     call Potential_Filename_Initialise(pot, args_str=trim(init_args_str), param_filename=quip_param_file,mpi_obj=mpi_glob)
     call Print(pot)
-
-    ! debug:
-    write(output_unit, *) "potential reloaded in quip_unified_wrapper from file:", quip_param_file
-
   endif
   
   if( .not. first_run .and. (N /= at%N) ) then
