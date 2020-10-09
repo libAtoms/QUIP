@@ -5,8 +5,9 @@
 ! H0 X   Portions of this code were written by
 ! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
 ! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X     Tamas K. Stenczel
 ! H0 X
-! H0 X   Copyright 2006-2010.
+! H0 X   Copyright 2006-2020.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
 ! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -46,44 +47,58 @@ use periodictable_module, only : atomic_number_from_symbol
 use mpi_context_module, only : mpi_context, initialise
 use atoms_types_module, only : assign_pointer
 use atoms_module, only : atoms, initialise, finalise, set_cutoff, calc_connect, set_lattice, get_param_value
-use potential_module, only : potential, potential_filename_initialise, calc, cutoff, print
+use potential_module, only : potential, potential_filename_initialise, calc, cutoff, print, Finalise
 implicit none
 
 contains
 
 subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
    quip_param_file,quip_param_file_len,init_args_str,init_args_str_len,calc_args_str,calc_args_str_len, &
-   energy,force,virial,do_energy,do_force,do_virial,output_unit,mpi_communicator)
+   energy,force,virial,do_energy,do_force,do_virial,output_unit,mpi_communicator,reload_pot)
+  !% Unified wrapper for QUIP potentials
+  !%
+  !% Notes: (tks32)
+  !%  - changes in the potential on the fly are picked up only if reload_pot is specified
+  !%  - MPI context cannot be changed on the fly
 
-  integer, intent(in) :: N
-  real(dp), dimension(3,N), intent(in), optional :: pos, frac_pos
-  real(dp), dimension(3,3), intent(in), optional :: lattice
-  character(len=*), dimension(N), intent(in), optional :: symbol
-  integer, dimension(N), intent(in), optional :: Z
-  integer, intent(in) :: quip_param_file_len
-  character(len=quip_param_file_len) :: quip_param_file
-  integer, intent(in) :: init_args_str_len
-  character(len=init_args_str_len) :: init_args_str
-  integer, intent(in) :: calc_args_str_len
-  character(len=calc_args_str_len) :: calc_args_str
-  real(dp), intent(out), optional :: energy
-  real(dp), dimension(3,N), intent(out), optional :: force
-  real(dp), dimension(3,3), intent(out), optional :: virial
-  logical, intent(in), optional :: do_energy, do_force, do_virial
-  integer, intent(in), optional :: output_unit
-  integer, intent(in), optional :: mpi_communicator
+  use system_module, only: optional_default, print
+  implicit none
 
-  integer :: i
+  ! arguments in call order
+  integer,                          intent(in)            :: N
+  real(dp),         dimension(3,N), intent(in),  optional :: pos
+  real(dp),         dimension(3,N), intent(in),  optional :: frac_pos
+  real(dp),         dimension(3,3), intent(in),  optional :: lattice
+  character(len=*), dimension(N),   intent(in),  optional :: symbol
+  integer,          dimension(N),   intent(in),  optional :: Z
+  integer,                          intent(in)            :: quip_param_file_len
+  character(len=quip_param_file_len)                      :: quip_param_file
+  integer,                          intent(in)            :: init_args_str_len
+  character(len=init_args_str_len)                        :: init_args_str
+  integer,                          intent(in)            :: calc_args_str_len
+  character(len=calc_args_str_len)                        :: calc_args_str
+  real(dp),                         intent(out), optional :: energy
+  real(dp),         dimension(3,N), intent(out), optional :: force
+  real(dp),         dimension(3,3), intent(out), optional :: virial
+  logical,                          intent(in),  optional :: do_energy
+  logical,                          intent(in),  optional :: do_force
+  logical,                          intent(in),  optional :: do_virial
+  integer,                          intent(in),  optional :: output_unit
+  integer,                          intent(in),  optional :: mpi_communicator
+  logical,                          intent(in),  optional :: reload_pot                ! reloads the potential
+
+  ! internal variables
+  integer                           :: i
   real(dp), dimension(:,:), pointer :: quip_wrapper_force
-  character(len=STRING_LENGTH) :: use_calc_args
-  real(dp) :: use_lattice(3,3)
-  logical :: use_do_energy, use_do_force, use_do_virial
+  character(len=STRING_LENGTH)      :: use_calc_args
+  real(dp)                          :: use_lattice(3,3)
+  logical                           :: use_do_energy, use_do_force, use_do_virial
 
   ! saved stuff
-  type(atoms), save       :: at
-  type(Potential), save   :: pot
+  type(atoms),       save :: at
+  type(Potential),   save :: pot
   type(MPI_context), save :: mpi_glob
-  logical, save :: first_run = .true.
+  logical,           save :: first_run = .true.
 
   if (present(lattice)) then
      use_lattice = lattice
@@ -99,6 +114,15 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
      call Print(pot)
      call verbosity_pop()
      call initialise(at,N,use_lattice)
+  end if
+
+  if (optional_default(.false., reload_pot)) then
+    print("potential reloaded in quip_unified_wrapper from file:"//quip_param_file)
+    ! deallocate old potential -- this was initialised in first_run
+    call Finalise(pot)
+    ! initialise with new parameters
+    call Potential_Filename_Initialise(pot, args_str=trim(init_args_str), param_filename=quip_param_file,mpi_obj=mpi_glob)
+    call Print(pot)
   endif
   
   if( .not. first_run .and. (N /= at%N) ) then
@@ -181,35 +205,46 @@ endsubroutine quip_wrapper
 
 subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
       quip_param_file,quip_param_file_len,init_args_str,init_args_str_len,calc_args_str,calc_args_str_len, &
-      energy,force,virial,do_energy,do_force,do_virial,output_unit)
+      energy,force,virial,do_energy,do_force,do_virial,output_unit, reload_pot)
+
+  !% Castep wrapper for QUIP potentials
+  !%
+  !% Notes: (tks32)
+  !%  - added reload_pot optional arg
+  !%  - lattice was intent(inout), made no sense so changed it to intent(in)
+  !%  as it is in the unitied wrapper as well
 
   use system_module, only : dp
   use quip_unified_wrapper_module
   
   implicit none
 
-  integer, intent(in) :: N
-  real(dp), dimension(3,N), intent(in) :: frac_pos
-  real(dp), dimension(3,3), intent(inout) :: lattice
-  character(len=3), dimension(N), intent(in) :: symbol
-  integer, intent(in) :: quip_param_file_len
-  character(len=quip_param_file_len) :: quip_param_file
-  integer, intent(in) :: init_args_str_len
-  character(len=init_args_str_len) :: init_args_str
-  integer, intent(in) :: calc_args_str_len
-  character(len=calc_args_str_len) :: calc_args_str
-  real(dp), intent(out) :: energy
-  real(dp), dimension(3,N), intent(out) :: force
-  real(dp), dimension(3,3), intent(out) :: virial
-  logical, intent(in) :: do_energy, do_force, do_virial
-  integer, intent(in), optional :: output_unit
+  integer,                          intent(in)            :: N
+  real(dp),         dimension(3,N), intent(in)            :: frac_pos
+  real(dp),         dimension(3,3), intent(in)            :: lattice
+  character(len=3), dimension(N),   intent(in)            :: symbol
+  integer,                          intent(in)            :: quip_param_file_len
+  character(len=quip_param_file_len)                      :: quip_param_file
+  integer,                          intent(in)            :: init_args_str_len
+  character(len=init_args_str_len)                        :: init_args_str
+  integer,                          intent(in)            :: calc_args_str_len
+  character(len=calc_args_str_len)                        :: calc_args_str
+  real(dp),                         intent(out)           :: energy
+  real(dp),         dimension(3,N), intent(out)           :: force
+  real(dp),         dimension(3,3), intent(out)           :: virial
+  logical,                          intent(in)            :: do_energy
+  logical,                          intent(in)            :: do_force
+  logical,                          intent(in)            :: do_virial
+  integer,                          intent(in),  optional :: output_unit
+  logical,                          intent(in),  optional :: reload_pot                ! reloads the potential
 
   call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
      quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
      init_args_str=init_args_str,init_args_str_len=init_args_str_len, &
      calc_args_str=calc_args_str,calc_args_str_len=calc_args_str_len, &
      energy=energy,force=force,virial=virial,&
-     do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit)
+     do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit, &
+     reload_pot=reload_pot)
 
 
 endsubroutine quip_wrapper_castep
