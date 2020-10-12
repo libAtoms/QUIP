@@ -194,7 +194,6 @@ class Potential(ase.calculators.calculator.Calculator):
         val = _check_arg(local_virial)
         if val == 'y':
             properties += ['local_virial']
-        elif val == 'add':
             properties += ['local_virial']
             _dict_args['local_virial'] = local_virial
 
@@ -283,7 +282,7 @@ class Potential(ase.calculators.calculator.Calculator):
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if isinstance(copy_additional_results, bool) and copy_additional_results:
+        if copy_additional_results:
             if atoms is not None:
                 _at_list = [self.atoms, atoms]
             else:
