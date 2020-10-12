@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.potential &mdash; quippy 618434c+ documentation</title>
+  <title>quippy.potential &mdash; quippy 6991012+ documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                618434c+
+                6991012+
               </div>
             
           
@@ -371,11 +371,12 @@
             <span class="n">properties</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">]</span>
             <span class="n">_dict_args</span><span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_virial</span>
 
-        <span class="c1"># needed dry run of the ase calculator</span>
-        <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_required</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+        <span class="c1"># check if a calculation is needed - this must be done before we update self.atoms</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculation_required</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
             <span class="k">return</span>
+        
+        <span class="c1"># call the base class method, which updates self.atoms to atoms</span>
+        <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
 
         <span class="c1"># construct the quip atoms object which we will use to calculate on</span>
         <span class="c1"># if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__</span>
