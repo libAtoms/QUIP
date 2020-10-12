@@ -198,11 +198,12 @@ class Potential(ase.calculators.calculator.Calculator):
             properties += ['local_virial']
             _dict_args['local_virial'] = local_virial
 
-        # needed dry run of the ase calculator
-        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
-
-        if not self.calculation_always_required and not self.calculation_required(self.atoms, properties):
+        # check if a calculation is needed - this must be done before we update self.atoms
+        if not self.calculation_always_required and not self.calculation_required(atoms, properties):
             return
+        
+        # call the base class method, which updates self.atoms to atoms
+        ase.calculators.calculator.Calculator.calculate(self, atoms, properties, system_changes)
 
         # construct the quip atoms object which we will use to calculate on
         # if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__
