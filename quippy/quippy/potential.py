@@ -194,6 +194,7 @@ class Potential(ase.calculators.calculator.Calculator):
         val = _check_arg(local_virial)
         if val == 'y':
             properties += ['local_virial']
+        elif val == 'add':
             properties += ['local_virial']
             _dict_args['local_virial'] = local_virial
 
