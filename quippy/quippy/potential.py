@@ -43,9 +43,11 @@ Pythonic interface to auto-generated quippy.potential_module.Potential class
 class Potential(ase.calculators.calculator.Calculator):
     callback_map = {}
 
-    implemented_properties = ['energy', 'free_energy', 'forces', 'virial', 'stress',
-                              'local_virial', 'local_energy', 'stresses', 'energies']
-
+    # this list only includes standard ASE properties. Additional non-standard
+    # results are returned in the `extra_results` dictionary.
+    implemented_properties = ['energy', 'free_energy', 'forces', 'stress',
+                              'stresses', 'energies']
+    
     @set_doc(quippy.potential_module.Potential.__init__.__doc__,
     """
     ------------------------------------------------------------------------
@@ -102,6 +104,9 @@ class Potential(ase.calculators.calculator.Calculator):
         elif calc_args is None:
             calc_args = ""
         self.calc_args = calc_args
+        
+        # storage of non-standard results
+        self.extra_results = {}
 
     @set_doc(quippy.potential_module.Potential.calc.__doc__,
     """
@@ -148,11 +153,15 @@ class Potential(ase.calculators.calculator.Calculator):
     `atoms.arrays`. If not present the average volume per atom is used.
 
     Additional keyword arguments are appended to `calc_args`.
+    
+    Non-standard calculation results (such as `gap_local_variance`) are stored in 
+    `self.extra_results`.
+    
     """)
     def calculate(self, atoms=None, properties=None, system_changes=None,
                   forces=None, virial=None, local_energy=None,
                   local_virial=None, vol_per_atom=None,
-                  copy_additional_results=True, calc_args=None, add_arrays=None,
+                  calc_args=None, add_arrays=None,
                   add_info=None, **kwargs):
 
         # handling the property inputs
@@ -165,7 +174,7 @@ class Potential(ase.calculators.calculator.Calculator):
             raise RuntimeError('Nothing to calculate')
 
         for prop in properties:
-            if prop not in self.implemented_properties:
+            if prop not in self.implemented_properties + self.extra_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % prop)
 
         # initialise dictionary to arguments to be passed to calculator
@@ -203,6 +212,8 @@ class Potential(ase.calculators.calculator.Calculator):
 
         if not self.calculation_always_required and not self.calculation_required(self.atoms, properties):
             return
+
+        self.extra_results = {} # reset all extra results on each new calculation       
 
         # construct the quip atoms object which we will use to calculate on
         # if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__
@@ -253,16 +264,17 @@ class Potential(ase.calculators.calculator.Calculator):
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
-            self.results['virial'] = _quip_params['virial'].copy()
+            self.extra_results['virial'] = _quip_params['virial'].copy()
 
         if 'force' in _quip_properties.keys():
             self.results['forces'] = np.copy(_quip_properties['force'].T)
 
         if 'local_energy' in _quip_properties.keys():
-            self.results['energies'] = np.copy(_quip_properties['local_energy'].T)
+            self.results['energies'] = np.copy(_quip_properties['local_energy'])
+            self.extra_results['local_energy'] = np.copy(_quip_properties['local_energy'])
 
         if 'local_virial' in _quip_properties.keys():
-            self.results['local_virial'] = np.copy(_quip_properties['local_virial'])
+            self.extra_results['local_virial'] = np.copy(_quip_properties['local_virial'])
 
         if 'stresses' in properties:
             # use the correct atomic volume
@@ -283,41 +295,22 @@ class Potential(ase.calculators.calculator.Calculator):
                 _v_atom = self.atoms.get_volume() / self._quip_atoms.n
             self.results['stresses'] = -np.copy(_quip_properties['local_virial']).T.reshape((self._quip_atoms.n, 3, 3),
                                                                                             order='F') / _v_atom
-        if copy_additional_results:
-            if atoms is not None:
-                _at_list = [self.atoms, atoms]
-            else:
-                _at_list = list(self.atoms)
 
-            for at in _at_list:
-                _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species',
-                                                              'map_shift', 'n_neighb',
-                                                              'force', 'local_energy',
-                                                              'local_virial', 'velo'])
-                # we no longer want to copy back the standard results - these
-                # belong ONLY in `self.results` dictionary.
-                # 
-                # # default params arguments
-                # at.info['energy'] = self.results['energy']
+        # all non-standard results now go in self.extra_results
+        _skip_keys = set(list(self.results.keys()) + ['Z', 'pos', 'species',
+                                                      'map_shift', 'n_neighb',
+                                                      'force', 'local_energy',
+                                                      'local_virial', 'velo'])
+        # any other params
+        for param, val in _quip_params.items():
+            if param not in _skip_keys:
+                self.extra_results[param] = cp(val)
 
-                # if 'stress' in self.results.keys():
-                #     at.info['stress'] = self.results['stress'].copy()
-
-                # # default array arguments
-                # for key in ('forces', 'energies', 'stresses'):
-                #     if key in self.results.keys():
-                #         at.arrays[key] = self.results[key].copy()
-
-                # any other params
-                for param, val in _quip_params.items():
-                    if param not in _skip_keys:
-                        at.info[param] = cp(val)
-
-                # any other arrays
-                for prop, val in _quip_properties.items():
-                    if prop not in _skip_keys:
-                        # transpose before copying because of setting `order=C` here; issue#151
-                        at.arrays[prop] = np.copy(val.T, order='C')
+        # any other arrays
+        for prop, val in _quip_properties.items():
+            if prop not in _skip_keys:
+                # transpose before copying because of setting `order=C` here; issue#151
+                self.extra_results[prop] = np.copy(val.T, order='C')
 
     def get_virial(self, atoms=None):
         return self.get_property('virial', atoms)
