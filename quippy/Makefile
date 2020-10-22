@@ -100,7 +100,7 @@ _quippy.so: ${WRAP_FPP_FILES}
 
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
-	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
+	if [ -f "_quippy.so" ] ; then rm _quippy.so; fi
 	ln -s _quippy.*.so _quippy.so
 
 build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
