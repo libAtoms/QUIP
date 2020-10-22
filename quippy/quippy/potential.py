@@ -174,7 +174,7 @@ class Potential(ase.calculators.calculator.Calculator):
             raise RuntimeError('Nothing to calculate')
 
         for prop in properties:
-            if prop not in self.implemented_properties + self.extra_properties:
+            if prop not in self.implemented_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % prop)
 
         # initialise dictionary to arguments to be passed to calculator
