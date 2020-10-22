@@ -106,7 +106,8 @@ class Potential(ase.calculators.calculator.Calculator):
         self.calc_args = calc_args
         
         # storage of non-standard results
-        self.extra_results = {}
+        self.extra_results = {'config': {},
+                              'atoms': {}}
 
     @set_doc(quippy.potential_module.Potential.calc.__doc__,
     """
@@ -213,7 +214,8 @@ class Potential(ase.calculators.calculator.Calculator):
         if not self.calculation_always_required and not self.calculation_required(self.atoms, properties):
             return
 
-        self.extra_results = {} # reset all extra results on each new calculation       
+        self.extra_results = {'config': {},
+                              'atoms': {}}} # reset all extra results on each new calculation       
 
         # construct the quip atoms object which we will use to calculate on
         # if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__
@@ -264,17 +266,17 @@ class Potential(ase.calculators.calculator.Calculator):
             # convert to 6-element array in Voigt order
             self.results['stress'] = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                                stress[1, 2], stress[0, 2], stress[0, 1]])
-            self.extra_results['virial'] = _quip_params['virial'].copy()
+            self.extra_results['config']['virial'] = _quip_params['virial'].copy()
 
         if 'force' in _quip_properties.keys():
             self.results['forces'] = np.copy(_quip_properties['force'].T)
 
         if 'local_energy' in _quip_properties.keys():
             self.results['energies'] = np.copy(_quip_properties['local_energy'])
-            self.extra_results['local_energy'] = np.copy(_quip_properties['local_energy'])
+            self.extra_results['atoms']['local_energy'] = np.copy(_quip_properties['local_energy'])
 
         if 'local_virial' in _quip_properties.keys():
-            self.extra_results['local_virial'] = np.copy(_quip_properties['local_virial'])
+            self.extra_results['atoms']['local_virial'] = np.copy(_quip_properties['local_virial'])
 
         if 'stresses' in properties:
             # use the correct atomic volume
@@ -301,24 +303,24 @@ class Potential(ase.calculators.calculator.Calculator):
                                                       'map_shift', 'n_neighb',
                                                       'force', 'local_energy',
                                                       'local_virial', 'velo'])
-        # any other params
+        # any other params (per-config properties)
         for param, val in _quip_params.items():
             if param not in _skip_keys:
-                self.extra_results[param] = cp(val)
+                self.extra_results['config'][param] = cp(val)
 
-        # any other arrays
+        # any other arrays (per-atom properties)
         for prop, val in _quip_properties.items():
             if prop not in _skip_keys:
                 # transpose before copying because of setting `order=C` here; issue#151
-                self.extra_results[prop] = np.copy(val.T, order='C')
+                self.extra_results['atoms'][prop] = np.copy(val.T, order='C')
 
     def get_virial(self, atoms=None):
         self.get_stress(atoms)
-        return self.extra_results['virial']
+        return self.extra_results['config']['virial']
 
     def get_local_virial(self, atoms=None):
         self.get_stresses(atoms)
-        return self.extra_results['local_virial']
+        return self.extra_results['atoms']['local_virial']
 
     def get_local_energy(self, atoms=None):
         return self.get_energies(atoms)
