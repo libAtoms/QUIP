@@ -124,13 +124,4 @@ ifeq (${HAVE_THIRDPARTY},1)
   LIBS += -lthirdparty
 endif
 
-ifeq (${USE_MAKEDEP},1)
-ALL_F95_FPP_FILES = ${addsuffix .fpp, ${basename ${ALL_F95_FILES}}}
-
-Potentials.depend: ${ALL_F95_FPP_FILES}
-	${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../../src/Potentials/,${ALL_F95_FILES}} > Potentials.depend
-
--include Potentials.depend
-endif
-
 install: 
