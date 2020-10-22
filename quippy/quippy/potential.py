@@ -48,6 +48,8 @@ class Potential(ase.calculators.calculator.Calculator):
     implemented_properties = ['energy', 'free_energy', 'forces', 'stress',
                               'stresses', 'energies']
     
+    extra_properties = ['virial', 'local_virial', 'local_energy']
+    
     @set_doc(quippy.potential_module.Potential.__init__.__doc__,
     """
     ------------------------------------------------------------------------
@@ -175,7 +177,7 @@ class Potential(ase.calculators.calculator.Calculator):
             raise RuntimeError('Nothing to calculate')
 
         for prop in properties:
-            if prop not in self.implemented_properties:
+            if prop not in self.implemented_properties + self.extra_properties:
                 raise RuntimeError("Don't know how to calculate property '%s'" % prop)
 
         # initialise dictionary to arguments to be passed to calculator
@@ -215,7 +217,7 @@ class Potential(ase.calculators.calculator.Calculator):
             return
 
         self.extra_results = {'config': {},
-                              'atoms': {}}} # reset all extra results on each new calculation       
+                              'atoms': {}} # reset all extra results on each new calculation       
 
         # construct the quip atoms object which we will use to calculate on
         # if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__
