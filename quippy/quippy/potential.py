@@ -313,10 +313,12 @@ class Potential(ase.calculators.calculator.Calculator):
                 self.extra_results[prop] = np.copy(val.T, order='C')
 
     def get_virial(self, atoms=None):
-        return self.get_property('virial', atoms)
+        self.get_stress(atoms)
+        return self.extra_results['virial']
 
     def get_local_virial(self, atoms=None):
-        return self.get_stresses(atoms)
+        self.get_stresses(atoms)
+        return self.extra_results['local_virial']
 
     def get_local_energy(self, atoms=None):
         return self.get_energies(atoms)
