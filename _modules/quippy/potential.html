@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.potential &mdash; quippy 6991012+ documentation</title>
+  <title>quippy.potential &mdash; quippy b2c4ff2+ documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                6991012+
+                b2c4ff2+
               </div>
             
           
@@ -216,9 +216,13 @@
 <span class="k">class</span> <span class="nc">Potential</span><span class="p">(</span><span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="p">):</span>
     <span class="n">callback_map</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;free_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">,</span> <span class="s1">&#39;virial&#39;</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">,</span>
-                              <span class="s1">&#39;local_virial&#39;</span><span class="p">,</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;stresses&#39;</span><span class="p">,</span> <span class="s1">&#39;energies&#39;</span><span class="p">]</span>
-
+    <span class="c1"># this list only includes standard ASE properties. Additional non-standard</span>
+    <span class="c1"># results are returned in the `extra_results` dictionary.</span>
+    <span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;free_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;stresses&#39;</span><span class="p">,</span> <span class="s1">&#39;energies&#39;</span><span class="p">]</span>
+    
+    <span class="n">extra_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">,</span> <span class="s1">&#39;local_virial&#39;</span><span class="p">,</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">]</span>
+    
     <span class="nd">@set_doc</span><span class="p">(</span><span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ------------------------------------------------------------------------</span>
@@ -275,6 +279,10 @@
         <span class="k">elif</span> <span class="n">calc_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">calc_args</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calc_args</span> <span class="o">=</span> <span class="n">calc_args</span>
+        
+        <span class="c1"># storage of non-standard results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                              <span class="s1">&#39;atoms&#39;</span><span class="p">:</span> <span class="p">{}}</span>
 
 <div class="viewcode-block" id="Potential.calculate"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.calculate">[docs]</a>    <span class="nd">@set_doc</span><span class="p">(</span><span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -321,11 +329,15 @@
 <span class="sd">    `atoms.arrays`. If not present the average volume per atom is used.</span>
 
 <span class="sd">    Additional keyword arguments are appended to `calc_args`.</span>
+<span class="sd">    </span>
+<span class="sd">    Non-standard calculation results (such as `gap_local_variance`) are stored in </span>
+<span class="sd">    `self.extra_results`.</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system_changes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">forces</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">virial</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">local_virial</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vol_per_atom</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">copy_all_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">calc_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">calc_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_arrays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">add_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="c1"># handling the property inputs</span>
@@ -338,7 +350,7 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Nothing to calculate&#39;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">implemented_properties</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_properties</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to calculate property &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">prop</span><span class="p">)</span>
 
         <span class="c1"># initialise dictionary to arguments to be passed to calculator</span>
@@ -377,6 +389,9 @@
         
         <span class="c1"># call the base class method, which updates self.atoms to atoms</span>
         <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                              <span class="s1">&#39;atoms&#39;</span><span class="p">:</span> <span class="p">{}}</span> <span class="c1"># reset all extra results on each new calculation       </span>
 
         <span class="c1"># construct the quip atoms object which we will use to calculate on</span>
         <span class="c1"># if add_arrays/add_info given to this object is not None, then OVERWRITES the value set in __init__</span>
@@ -427,16 +442,17 @@
             <span class="c1"># convert to 6-element array in Voigt order</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
                                                <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_quip_params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_quip_params</span><span class="p">[</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="s1">&#39;force&#39;</span> <span class="ow">in</span> <span class="n">_quip_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;forces&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;force&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s1">&#39;local_energy&#39;</span> <span class="ow">in</span> <span class="n">_quip_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_energy&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_energy&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="s1">&#39;local_virial&#39;</span> <span class="ow">in</span> <span class="n">_quip_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_virial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="s1">&#39;stresses&#39;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
             <span class="c1"># use the correct atomic volume</span>
@@ -457,45 +473,30 @@
                 <span class="n">_v_atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span><span class="o">.</span><span class="n">n</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;stresses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_quip_properties</span><span class="p">[</span><span class="s1">&#39;local_virial&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
                                                                                             <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">_v_atom</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">copy_all_results</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">and</span> <span class="n">copy_all_results</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">_at_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">atoms</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">_at_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">_at_list</span><span class="p">:</span>
-                <span class="n">_skip_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">,</span>
-                                                              <span class="s1">&#39;map_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;n_neighb&#39;</span><span class="p">,</span>
-                                                              <span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">,</span>
-                                                              <span class="s1">&#39;local_virial&#39;</span><span class="p">,</span> <span class="s1">&#39;velo&#39;</span><span class="p">])</span>
+        <span class="c1"># all non-standard results now go in self.extra_results</span>
+        <span class="n">_skip_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;pos&#39;</span><span class="p">,</span> <span class="s1">&#39;species&#39;</span><span class="p">,</span>
+                                                      <span class="s1">&#39;map_shift&#39;</span><span class="p">,</span> <span class="s1">&#39;n_neighb&#39;</span><span class="p">,</span>
+                                                      <span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="s1">&#39;local_energy&#39;</span><span class="p">,</span>
+                                                      <span class="s1">&#39;local_virial&#39;</span><span class="p">,</span> <span class="s1">&#39;velo&#39;</span><span class="p">])</span>
+        <span class="c1"># any other params (per-config properties)</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_quip_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_skip_keys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-                <span class="c1"># default params arguments</span>
-                <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span>
-
-                <span class="k">if</span> <span class="s1">&#39;stress&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-                <span class="c1"># default array arguments</span>
-                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;forces&#39;</span><span class="p">,</span> <span class="s1">&#39;energies&#39;</span><span class="p">,</span> <span class="s1">&#39;stresses&#39;</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                        <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-                <span class="c1"># any other params</span>
-                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_quip_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_skip_keys</span><span class="p">:</span>
-                        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">cp</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-
-                <span class="c1"># any other arrays</span>
-                <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_quip_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_skip_keys</span><span class="p">:</span>
-                        <span class="c1"># transpose before copying because of setting `order=C` here; issue#151</span>
-                        <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span></div>
+        <span class="c1"># any other arrays (per-atom properties)</span>
+        <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">_quip_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">prop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_skip_keys</span><span class="p">:</span>
+                <span class="c1"># transpose before copying because of setting `order=C` here; issue#151</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="n">prop</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">get_virial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">(</span><span class="s1">&#39;virial&#39;</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_stress</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="s1">&#39;virial&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">get_local_virial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_stresses</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_virial&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">get_local_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_energies</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>

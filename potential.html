@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Potential objects &mdash; quippy 6991012+ documentation</title>
+  <title>Potential objects &mdash; quippy b2c4ff2+ documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                6991012+
+                b2c4ff2+
               </div>
             
           
@@ -358,6 +358,8 @@ e.g. <cite>forces = np.zeros((len(atoms), 3), order=’F’)</cite>.</p>
 stresses; this can either be a scalar or the name of an array in
 <cite>atoms.arrays</cite>. If not present the average volume per atom is used.</p>
 <p>Additional keyword arguments are appended to <cite>calc_args</cite>.</p>
+<p>Non-standard calculation results (such as <cite>gap_local_variance</cite>) are stored in
+<cite>self.extra_results</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
