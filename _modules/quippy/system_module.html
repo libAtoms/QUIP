@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>quippy.system_module &mdash; quippy b2c4ff2+ documentation</title>
+  <title>quippy.system_module &mdash; quippy 63a58db+ documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                b2c4ff2+
+                63a58db+
               </div>
             
           
@@ -175,7 +175,7 @@
 <span class="sd">Module system_module</span>
 
 
-<span class="sd">Defined at System.fpp lines 137-2701</span>
+<span class="sd">Defined at System.fpp lines 137-2777</span>
 
 <span class="sd">The system module contains low-level routines for I/O, timing, random</span>
 <span class="sd">number generation etc. The Inoutput type is used to abstract both</span>
@@ -195,7 +195,7 @@
 <span class="sd">    Type(name=stack)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 153-155</span>
+<span class="sd">    Defined at System.fpp lines 154-156</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -203,7 +203,7 @@
 <span class="sd">        self = Stack([value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2115-2125</span>
+<span class="sd">        Defined at System.fpp lines 2191-2201</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -223,7 +223,7 @@
 <span class="sd">        Destructor for class Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2127-2129</span>
+<span class="sd">        Defined at System.fpp lines 2203-2205</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -238,7 +238,7 @@
 <span class="sd">        push(self, val)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2131-2147</span>
+<span class="sd">        Defined at System.fpp lines 2207-2223</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -253,7 +253,7 @@
 <span class="sd">        pop(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2149-2155</span>
+<span class="sd">        Defined at System.fpp lines 2225-2231</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -267,7 +267,7 @@
 <span class="sd">        stack_value = value(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2157-2164</span>
+<span class="sd">        Defined at System.fpp lines 2233-2240</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -286,7 +286,7 @@
 <span class="sd">        print(self[, verbosity, out])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2166-2174</span>
+<span class="sd">        Defined at System.fpp lines 2242-2250</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -303,7 +303,7 @@
 <span class="sd">        Element pos ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 154</span>
+<span class="sd">        Defined at System.fpp line 155</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack__get__pos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -318,7 +318,7 @@
 <span class="sd">        Element val ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 155</span>
+<span class="sd">        Defined at System.fpp line 156</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span>     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack__array__val</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -353,49 +353,15 @@
 <span class="sd">    Type(name=inoutput)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 157-169</span>
+<span class="sd">    Defined at System.fpp lines 158-170</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="InOutput.close"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        close(self)</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 489-492</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        this : Inoutput</span>
-<span class="sd">        </span>
-<span class="sd">        Close file but don&#39;t finalise this Inoutput</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput_close</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span></div>
-    
-<div class="viewcode-block" id="InOutput.do_output"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.do_output">[docs]</a>    <span class="k">def</span> <span class="nf">do_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        inoutput_do_output = do_output(self)</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 566-573</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        this : Inoutput</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        inoutput_do_output : bool</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">inoutput_do_output</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput_do_output</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">inoutput_do_output</span></div>
-    
 <div class="viewcode-block" id="InOutput.rewind"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.rewind">[docs]</a>    <span class="k">def</span> <span class="nf">rewind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        rewind(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1507-1509</span>
+<span class="sd">        Defined at System.fpp lines 1583-1585</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -405,44 +371,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_rewind</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="InOutput.backspace"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.backspace">[docs]</a>    <span class="k">def</span> <span class="nf">backspace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        backspace(self[, n])</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1513-1523</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        this : Inoutput</span>
-<span class="sd">        n : int</span>
-<span class="sd">        </span>
-<span class="sd">        Move the file pointer back by &#39;n&#39; (defaults to 1) records. Works for</span>
-<span class="sd">        formatted and unformatted files.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_backspace</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
-    
-<div class="viewcode-block" id="InOutput.print_mem_info"><a class="viewcode-back" href="../../system.html#quippy.system_module.InOutput.print_mem_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_mem_info</span><span class="p">(</span><span class="bp">self</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        print_mem_info([self])</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2577-2582</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        file : Inoutput</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_print_mem_info</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span></div>
-    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isformatted</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity_cascade</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> \
         <span class="n">master_only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        self = Inoutput([filename, action, isformatted, append, verbosity, verbosity_cascade, master_only, unit, error])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 347-455</span>
+<span class="sd">        Defined at System.fpp lines 423-531</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -476,7 +411,7 @@
 <span class="sd">        Destructor for class Inoutput</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 480-486</span>
+<span class="sd">        Defined at System.fpp lines 556-562</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -492,7 +427,7 @@
 <span class="sd">        activate(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 475-477</span>
+<span class="sd">        Defined at System.fpp lines 551-553</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -507,7 +442,7 @@
 <span class="sd">        deactivate(self)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 470-472</span>
+<span class="sd">        Defined at System.fpp lines 546-548</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -522,7 +457,7 @@
 <span class="sd">        mpi_all_inoutput(self[, value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 494-501</span>
+<span class="sd">        Defined at System.fpp lines 570-577</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -537,7 +472,7 @@
 <span class="sd">        print_mpi_id(self[, value])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 503-510</span>
+<span class="sd">        Defined at System.fpp lines 579-586</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -552,7 +487,7 @@
 <span class="sd">        inoutput_read_line = read_line(self[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 672-684</span>
+<span class="sd">        Defined at System.fpp lines 748-760</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -584,7 +519,7 @@
 <span class="sd">        num_fields = parse_line(self, delimiters, fields[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 749-759</span>
+<span class="sd">        Defined at System.fpp lines 825-835</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -607,7 +542,7 @@
 <span class="sd">        _reada_real_dim1(self, da[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1478-1490</span>
+<span class="sd">        Defined at System.fpp lines 1554-1566</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -626,7 +561,7 @@
 <span class="sd">        _reada_int_dim1(self, ia[, status])</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 1492-1504</span>
+<span class="sd">        Defined at System.fpp lines 1568-1580</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -642,7 +577,7 @@
 <span class="sd">        read_ascii(*args, **kwargs)</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 251-252</span>
+<span class="sd">        Defined at System.fpp lines 259-260</span>
 <span class="sd">        </span>
 <span class="sd">        Overloaded interface containing the following procedures:</span>
 <span class="sd">          _reada_real_dim1</span>
@@ -661,7 +596,7 @@
 <span class="sd">        Element unit ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 158</span>
+<span class="sd">        Defined at System.fpp line 159</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -676,7 +611,7 @@
 <span class="sd">        Element filename ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 159</span>
+<span class="sd">        Defined at System.fpp line 160</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__filename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -691,7 +626,7 @@
 <span class="sd">        Element prefix ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 160</span>
+<span class="sd">        Defined at System.fpp line 161</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__prefix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -706,7 +641,7 @@
 <span class="sd">        Element postfix ftype=character(256) pytype=str</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 160</span>
+<span class="sd">        Defined at System.fpp line 161</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__postfix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -721,7 +656,7 @@
 <span class="sd">        Element default_real_precision ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 161</span>
+<span class="sd">        Defined at System.fpp line 162</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__default_real_precision</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -736,7 +671,7 @@
 <span class="sd">        Element formatted ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 162</span>
+<span class="sd">        Defined at System.fpp line 163</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__formatted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -751,7 +686,7 @@
 <span class="sd">        Element append ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 163</span>
+<span class="sd">        Defined at System.fpp line 164</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -766,7 +701,7 @@
 <span class="sd">        Element active ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 164</span>
+<span class="sd">        Defined at System.fpp line 165</span>
 <span class="sd">        </span>
 <span class="sd">        Does it print?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -782,7 +717,7 @@
 <span class="sd">        Element action ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 165</span>
+<span class="sd">        Defined at System.fpp line 166</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -797,7 +732,7 @@
 <span class="sd">        Element mpi_all_inoutput_flag ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 166</span>
+<span class="sd">        Defined at System.fpp line 167</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__mpi_all_inoutput_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -812,7 +747,7 @@
 <span class="sd">        Element mpi_print_id ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 167</span>
+<span class="sd">        Defined at System.fpp line 168</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__mpi_print_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -827,7 +762,7 @@
 <span class="sd">        Element verbosity_stack ftype=type(stack) pytype=Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 168</span>
+<span class="sd">        Defined at System.fpp line 169</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">verbosity_stack_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__verbosity_stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -849,7 +784,7 @@
 <span class="sd">        Element verbosity_cascade_stack ftype=type(stack) pytype=Stack</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 168</span>
+<span class="sd">        Defined at System.fpp line 169</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">verbosity_cascade_stack_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__verbosity_cascade_stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -871,7 +806,7 @@
 <span class="sd">        Element initialised ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 169</span>
+<span class="sd">        Defined at System.fpp line 170</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_inoutput__get__initialised</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -922,7 +857,7 @@
 <span class="sd">    Type(name=allocatable_array_pointers)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 171-175</span>
+<span class="sd">    Defined at System.fpp lines 172-176</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handle</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -930,7 +865,7 @@
 <span class="sd">        self = Allocatable_Array_Pointers()</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 171-175</span>
+<span class="sd">        Defined at System.fpp lines 172-176</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -950,7 +885,7 @@
 <span class="sd">        Destructor for class Allocatable_Array_Pointers</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 171-175</span>
+<span class="sd">        Defined at System.fpp lines 172-176</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -969,7 +904,7 @@
 <span class="sd">        Element i_a ftype=integer pytype=int</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 172</span>
+<span class="sd">        Defined at System.fpp line 173</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__i_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -992,7 +927,7 @@
 <span class="sd">        Element r_a ftype=real(dp) pytype=float</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 173</span>
+<span class="sd">        Defined at System.fpp line 174</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__r_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1015,7 +950,7 @@
 <span class="sd">        Element c_a ftype=complex(dp) pytype=complex</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 174</span>
+<span class="sd">        Defined at System.fpp line 175</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__c_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1038,7 +973,7 @@
 <span class="sd">        Element l_a ftype=logical pytype=bool</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
-<span class="sd">        Defined at System.fpp line 175</span>
+<span class="sd">        Defined at System.fpp line 176</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">array_ndim</span><span class="p">,</span> <span class="n">array_type</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">,</span> <span class="n">array_handle</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_allocatable_array_pointers__array__l_a</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
@@ -1071,29 +1006,12 @@
     <span class="n">_dt_array_initialisers</span> <span class="o">=</span> <span class="p">[]</span></div>
     
 
-<div class="viewcode-block" id="pick_up_unit"><a class="viewcode-back" href="../../system.html#quippy.system_module.pick_up_unit">[docs]</a><span class="k">def</span> <span class="nf">pick_up_unit</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    unit = pick_up_unit()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 458-467</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    unit : int</span>
-<span class="sd">    </span>
-<span class="sd">    OMIT</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">unit</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_pick_up_unit</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">unit</span></div>
-
 <div class="viewcode-block" id="print_title"><a class="viewcode-back" href="../../system.html#quippy.system_module.print_title">[docs]</a><span class="k">def</span> <span class="nf">print_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    print_title(title[, verbosity])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 638-653</span>
+<span class="sd">    Defined at System.fpp lines 714-729</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1111,7 +1029,7 @@
 <span class="sd">    n_fields = split_string_simple(str, fields, separators[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 763-793</span>
+<span class="sd">    Defined at System.fpp lines 839-869</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1143,7 +1061,7 @@
 <span class="sd">    num_fields_in_string_simple = num_fields_in_string_simple(this, separators)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 795-804</span>
+<span class="sd">    Defined at System.fpp lines 871-880</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1163,7 +1081,7 @@
 <span class="sd">    num_fields = split_string(this, separators, quotes, fields[, matching])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 810-942</span>
+<span class="sd">    Defined at System.fpp lines 886-1018</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1186,35 +1104,12 @@
         <span class="n">matching</span><span class="o">=</span><span class="n">matching</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">num_fields</span></div>
 
-<div class="viewcode-block" id="next_non_separator"><a class="viewcode-back" href="../../system.html#quippy.system_module.next_non_separator">[docs]</a><span class="k">def</span> <span class="nf">next_non_separator</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">separators</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    c, dist = next_non_separator(this, start, end, separators)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 944-961</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    this : str</span>
-<span class="sd">    start : int</span>
-<span class="sd">    end : int</span>
-<span class="sd">    separators : str</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    c : str</span>
-<span class="sd">    dist : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">c</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_next_non_separator</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">this</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="n">separators</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">dist</span></div>
-
 <div class="viewcode-block" id="parse_string"><a class="viewcode-back" href="../../system.html#quippy.system_module.parse_string">[docs]</a><span class="k">def</span> <span class="nf">parse_string</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">delimiters</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">matching</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    num_fields = parse_string(this, delimiters, fields[, matching, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 968-1059</span>
+<span class="sd">    Defined at System.fpp lines 1044-1135</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1238,61 +1133,12 @@
         <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">num_fields</span></div>
 
-<div class="viewcode-block" id="find_closing_delimiter"><a class="viewcode-back" href="../../system.html#quippy.system_module.find_closing_delimiter">[docs]</a><span class="k">def</span> <span class="nf">find_closing_delimiter</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">closing_delim</span><span class="p">,</span> <span class="n">opening_delims</span><span class="p">,</span> <span class="n">closing_delims</span><span class="p">,</span> <span class="n">matching</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    pos = find_closing_delimiter(this, closing_delim, opening_delims, closing_delims, matching)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1061-1103</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    this : str</span>
-<span class="sd">    closing_delim : str</span>
-<span class="sd">    opening_delims : str</span>
-<span class="sd">    closing_delims : str</span>
-<span class="sd">    matching : bool</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    pos : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pos</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_find_closing_delimiter</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">this</span><span class="p">,</span> <span class="n">closing_delim</span><span class="o">=</span><span class="n">closing_delim</span><span class="p">,</span> <span class="n">opening_delims</span><span class="o">=</span><span class="n">opening_delims</span><span class="p">,</span> \
-        <span class="n">closing_delims</span><span class="o">=</span><span class="n">closing_delims</span><span class="p">,</span> <span class="n">matching</span><span class="o">=</span><span class="n">matching</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pos</span></div>
-
-<div class="viewcode-block" id="parse_string_orig"><a class="viewcode-back" href="../../system.html#quippy.system_module.parse_string_orig">[docs]</a><span class="k">def</span> <span class="nf">parse_string_orig</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">delimiters</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    num_fields = parse_string_orig(this, delimiters, fields)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1109-1149</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    this : str</span>
-<span class="sd">    delimiters : str</span>
-<span class="sd">    fields : str array</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    num_fields : int</span>
-<span class="sd">    </span>
-<span class="sd">    Parse a string into fields delimited by certain characters. On exit</span>
-<span class="sd">    the &#39;fields&#39; array will contain one field per entry and &#39;num_fields&#39;</span>
-<span class="sd">    gives the total number of fields. &#39;status&#39; will be given the error status</span>
-<span class="sd">    (if present) and so can be used to tell if an end-of-file occurred.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">num_fields</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_parse_string_orig</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">this</span><span class="p">,</span> <span class="n">delimiters</span><span class="o">=</span><span class="n">delimiters</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">num_fields</span></div>
-
 <div class="viewcode-block" id="string_to_int"><a class="viewcode-back" href="../../system.html#quippy.system_module.string_to_int">[docs]</a><span class="k">def</span> <span class="nf">string_to_int</span><span class="p">(</span><span class="n">string_bn</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    string_to_int = string_to_int(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1152-1162</span>
+<span class="sd">    Defined at System.fpp lines 1228-1238</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1313,7 +1159,7 @@
 <span class="sd">    string_to_logical = string_to_logical(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1165-1177</span>
+<span class="sd">    Defined at System.fpp lines 1241-1253</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1334,7 +1180,7 @@
 <span class="sd">    string_to_real = string_to_real(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1180-1190</span>
+<span class="sd">    Defined at System.fpp lines 1256-1266</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1355,7 +1201,7 @@
 <span class="sd">    round = round(r, digits)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1534-1546</span>
+<span class="sd">    Defined at System.fpp lines 1610-1622</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1375,85 +1221,12 @@
     <span class="nb">round</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_round</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">digits</span><span class="o">=</span><span class="n">digits</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">round</span></div>
 
-<div class="viewcode-block" id="int_format_length"><a class="viewcode-back" href="../../system.html#quippy.system_module.int_format_length">[docs]</a><span class="k">def</span> <span class="nf">int_format_length</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    len_bn = int_format_length(i)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1562-1565</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    i : int</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    len_bn : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">len_bn</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_int_format_length</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">len_bn</span></div>
-
-<div class="viewcode-block" id="real_sci_format_length"><a class="viewcode-back" href="../../system.html#quippy.system_module.real_sci_format_length">[docs]</a><span class="k">def</span> <span class="nf">real_sci_format_length</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    len_bn = real_sci_format_length()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1597-1600</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    len_bn : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">len_bn</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_real_sci_format_length</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">len_bn</span></div>
-
-<div class="viewcode-block" id="real_format_length"><a class="viewcode-back" href="../../system.html#quippy.system_module.real_format_length">[docs]</a><span class="k">def</span> <span class="nf">real_format_length</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    len_bn = real_format_length(r)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1661-1676</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    r : float</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    len_bn : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">len_bn</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_real_format_length</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">len_bn</span></div>
-
-<div class="viewcode-block" id="complex_format_length"><a class="viewcode-back" href="../../system.html#quippy.system_module.complex_format_length">[docs]</a><span class="k">def</span> <span class="nf">complex_format_length</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    len_bn = complex_format_length(c)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1678-1681</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    c : complex</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    len_bn : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">len_bn</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_complex_format_length</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">len_bn</span></div>
-
 <div class="viewcode-block" id="get_mpi_size_rank"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_mpi_size_rank">[docs]</a><span class="k">def</span> <span class="nf">get_mpi_size_rank</span><span class="p">(</span><span class="n">comm</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    nproc, rank_bn = get_mpi_size_rank(comm)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1735-1741</span>
+<span class="sd">    Defined at System.fpp lines 1811-1817</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1483,7 +1256,7 @@
 <span class="sd">        mainlog_unit])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1751-1806</span>
+<span class="sd">    Defined at System.fpp lines 1827-1882</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1521,27 +1294,12 @@
         <span class="n">common_seed</span><span class="o">=</span><span class="n">common_seed</span><span class="p">,</span> <span class="n">enable_timing</span><span class="o">=</span><span class="n">enable_timing</span><span class="p">,</span> <span class="n">quippy_running</span><span class="o">=</span><span class="n">quippy_running</span><span class="p">,</span> <span class="n">mainlog_file</span><span class="o">=</span><span class="n">mainlog_file</span><span class="p">,</span> \
         <span class="n">mainlog_unit</span><span class="o">=</span><span class="n">mainlog_unit</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="get_mainlog_errorlog_ptr"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_mainlog_errorlog_ptr">[docs]</a><span class="k">def</span> <span class="nf">get_mainlog_errorlog_ptr</span><span class="p">(</span><span class="n">mainlog_ptr</span><span class="p">,</span> <span class="n">errorlog_ptr</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get_mainlog_errorlog_ptr(mainlog_ptr, errorlog_ptr)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1808-1817</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    mainlog_ptr : int array</span>
-<span class="sd">    errorlog_ptr : int array</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_get_mainlog_errorlog_ptr</span><span class="p">(</span><span class="n">mainlog_ptr</span><span class="o">=</span><span class="n">mainlog_ptr</span><span class="p">,</span> <span class="n">errorlog_ptr</span><span class="o">=</span><span class="n">errorlog_ptr</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="cmd_arg_count"><a class="viewcode-back" href="../../system.html#quippy.system_module.cmd_arg_count">[docs]</a><span class="k">def</span> <span class="nf">cmd_arg_count</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    cmd_arg_count = cmd_arg_count()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1819-1823</span>
+<span class="sd">    Defined at System.fpp lines 1895-1899</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1557,7 +1315,7 @@
 <span class="sd">    arg = get_cmd_arg(i[, status])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1825-1831</span>
+<span class="sd">    Defined at System.fpp lines 1901-1907</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1577,7 +1335,7 @@
 <span class="sd">    arg = get_env_var(name[, status])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1833-1845</span>
+<span class="sd">    Defined at System.fpp lines 1909-1921</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1597,7 +1355,7 @@
 <span class="sd">    system_finalise()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1848-1855</span>
+<span class="sd">    Defined at System.fpp lines 1924-1931</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Shut down gracefully, finalising system objects.</span>
@@ -1609,7 +1367,7 @@
 <span class="sd">    print_warning(message)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1858-1861</span>
+<span class="sd">    Defined at System.fpp lines 1934-1937</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1619,32 +1377,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_print_warning</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="date_and_time_string"><a class="viewcode-back" href="../../system.html#quippy.system_module.date_and_time_string">[docs]</a><span class="k">def</span> <span class="nf">date_and_time_string</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    date_and_time_string = date_and_time_string(values)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1864-1875</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    values : int array</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    date_and_time_string : str</span>
-<span class="sd">    </span>
-<span class="sd">    Take the values from &#39;date_and_time&#39; and make a nice string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">date_and_time_string</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_date_and_time_string</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">date_and_time_string</span></div>
-
 <div class="viewcode-block" id="system_set_random_seeds"><a class="viewcode-back" href="../../system.html#quippy.system_module.system_set_random_seeds">[docs]</a><span class="k">def</span> <span class="nf">system_set_random_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    system_set_random_seeds(seed)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1877-1893</span>
+<span class="sd">    Defined at System.fpp lines 1953-1969</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1653,34 +1391,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_set_random_seeds</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="hello_world"><a class="viewcode-back" href="../../system.html#quippy.system_module.hello_world">[docs]</a><span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">common_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    hello_world([seed, common_seed])</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1897-1934</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    seed : int</span>
-<span class="sd">    	Seed for the random number generator.</span>
-<span class="sd">    </span>
-<span class="sd">    common_seed : bool</span>
-<span class="sd">    	If &#39;common_seed&#39; is true (default), random seed will be the same for each</span>
-<span class="sd">    	MPI process.</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Called by &#39;system_initialise&#39; to print welcome messages and</span>
-<span class="sd">    seed the random number generator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_hello_world</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">common_seed</span><span class="o">=</span><span class="n">common_seed</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="system_resync_rng"><a class="viewcode-back" href="../../system.html#quippy.system_module.system_resync_rng">[docs]</a><span class="k">def</span> <span class="nf">system_resync_rng</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    system_resync_rng()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1936-1937</span>
+<span class="sd">    Defined at System.fpp lines 2012-2013</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1691,7 +1407,7 @@
 <span class="sd">    th = th(n)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1942-1961</span>
+<span class="sd">    Defined at System.fpp lines 2018-2037</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1711,7 +1427,7 @@
 <span class="sd">    system_reseed_rng(new_seed)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1964-1967</span>
+<span class="sd">    Defined at System.fpp lines 2040-2043</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1726,7 +1442,7 @@
 <span class="sd">    system_get_random_seed = system_get_random_seed()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1970-1972</span>
+<span class="sd">    Defined at System.fpp lines 2046-2048</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1743,7 +1459,7 @@
 <span class="sd">    dran = ran()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1975-1989</span>
+<span class="sd">    Defined at System.fpp lines 2051-2065</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1760,7 +1476,7 @@
 <span class="sd">    ran_uniform = ran_uniform()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1992-2001</span>
+<span class="sd">    Defined at System.fpp lines 2068-2077</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1777,7 +1493,7 @@
 <span class="sd">    ran_normal = ran_normal()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2004-2012</span>
+<span class="sd">    Defined at System.fpp lines 2080-2088</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1789,50 +1505,12 @@
     <span class="n">ran_normal</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_ran_normal</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">ran_normal</span></div>
 
-<div class="viewcode-block" id="ran_exp"><a class="viewcode-back" href="../../system.html#quippy.system_module.ran_exp">[docs]</a><span class="k">def</span> <span class="nf">ran_exp</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    r = ran_exp()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2016-2018</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    r : float</span>
-<span class="sd">    </span>
-<span class="sd">    Return a random real distributed exponentially between zero and positive infinity</span>
-<span class="sd">    with mean and variance of unity</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_ran_exp</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">r</span></div>
-
-<div class="viewcode-block" id="ran_string"><a class="viewcode-back" href="../../system.html#quippy.system_module.ran_string">[docs]</a><span class="k">def</span> <span class="nf">ran_string</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    ran_string = ran_string(l)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2021-2034</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    l : int</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ran_string : str</span>
-<span class="sd">    </span>
-<span class="sd">    Return a random string of length l containing the characters A-Z, a-z, and 0-9</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ran_string</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_ran_string</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ran_string</span></div>
-
 <div class="viewcode-block" id="current_times"><a class="viewcode-back" href="../../system.html#quippy.system_module.current_times">[docs]</a><span class="k">def</span> <span class="nf">current_times</span><span class="p">(</span><span class="n">cpu_t</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wall_t</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mpi_t</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    current_times([cpu_t, wall_t, mpi_t])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2036-2044</span>
+<span class="sd">    Defined at System.fpp lines 2112-2120</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1848,7 +1526,7 @@
 <span class="sd">    system_timer(name[, do_always, time_elapsed, do_print])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2058-2098</span>
+<span class="sd">    Defined at System.fpp lines 2134-2174</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1878,7 +1556,7 @@
 <span class="sd">    is_file_readable = is_file_readable(filename)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2101-2113</span>
+<span class="sd">    Defined at System.fpp lines 2177-2189</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1898,7 +1576,7 @@
 <span class="sd">    str = verbosity_to_str(val)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2177-2193</span>
+<span class="sd">    Defined at System.fpp lines 2253-2269</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1918,7 +1596,7 @@
 <span class="sd">    val = verbosity_of_str(str)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2196-2213</span>
+<span class="sd">    Defined at System.fpp lines 2272-2289</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1938,7 +1616,7 @@
 <span class="sd">    verbosity_push(val)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2218-2226</span>
+<span class="sd">    Defined at System.fpp lines 2294-2302</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1955,7 +1633,7 @@
 <span class="sd">    verbosity_pop()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2229-2231</span>
+<span class="sd">    Defined at System.fpp lines 2305-2307</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    pop the current verbosity value off the stack</span>
@@ -1967,7 +1645,7 @@
 <span class="sd">    current_verbosity = current_verbosity()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2234-2236</span>
+<span class="sd">    Defined at System.fpp lines 2310-2312</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -1984,7 +1662,7 @@
 <span class="sd">    verbosity_push_increment([n])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2239-2244</span>
+<span class="sd">    Defined at System.fpp lines 2315-2320</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1999,7 +1677,7 @@
 <span class="sd">    verbosity_push_decrement([n])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2247-2252</span>
+<span class="sd">    Defined at System.fpp lines 2323-2328</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2014,7 +1692,7 @@
 <span class="sd">    verbosity_set_minimum(verbosity)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2256-2259</span>
+<span class="sd">    Defined at System.fpp lines 2332-2335</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2030,7 +1708,7 @@
 <span class="sd">    verbosity_unset_minimum()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2263-2265</span>
+<span class="sd">    Defined at System.fpp lines 2339-2341</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    unset the minimum verbosity value, by popping value from</span>
@@ -2043,59 +1721,18 @@
 <span class="sd">    enable_timing()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2347-2348</span>
+<span class="sd">    Defined at System.fpp lines 2423-2424</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_enable_timing</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="disable_timing"><a class="viewcode-back" href="../../system.html#quippy.system_module.disable_timing">[docs]</a><span class="k">def</span> <span class="nf">disable_timing</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    disable_timing()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2350-2351</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_disable_timing</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="get_timing"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_timing">[docs]</a><span class="k">def</span> <span class="nf">get_timing</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get_timing = get_timing()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2353-2355</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    get_timing : bool</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">get_timing</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_get_timing</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">get_timing</span></div>
-
-<div class="viewcode-block" id="set_timing"><a class="viewcode-back" href="../../system.html#quippy.system_module.set_timing">[docs]</a><span class="k">def</span> <span class="nf">set_timing</span><span class="p">(</span><span class="n">do_timing</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    set_timing(do_timing)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2357-2359</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    do_timing : bool</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_set_timing</span><span class="p">(</span><span class="n">do_timing</span><span class="o">=</span><span class="n">do_timing</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="get_quippy_running"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_quippy_running">[docs]</a><span class="k">def</span> <span class="nf">get_quippy_running</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    get_quippy_running = get_quippy_running()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2361-2363</span>
+<span class="sd">    Defined at System.fpp lines 2437-2439</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2111,7 +1748,7 @@
 <span class="sd">    increase_stack = increase_stack(stack_size)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2365-2369</span>
+<span class="sd">    Defined at System.fpp lines 2441-2445</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2130,7 +1767,7 @@
 <span class="sd">    abort_on_mpi_error(error_code, routine_name)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2372-2377</span>
+<span class="sd">    Defined at System.fpp lines 2448-2453</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2146,7 +1783,7 @@
 <span class="sd">    parallel_print(lines, comm[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2379-2389</span>
+<span class="sd">    Defined at System.fpp lines 2455-2465</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2163,7 +1800,7 @@
 <span class="sd">    alloc_trace(str, amt)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2391-2397</span>
+<span class="sd">    Defined at System.fpp lines 2467-2473</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2178,7 +1815,7 @@
 <span class="sd">    dealloc_trace(str, amt)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2399-2405</span>
+<span class="sd">    Defined at System.fpp lines 2475-2481</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2193,7 +1830,7 @@
 <span class="sd">    id = mpi_id()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2414-2416</span>
+<span class="sd">    Defined at System.fpp lines 2490-2492</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2210,7 +1847,7 @@
 <span class="sd">    n = mpi_n_procs()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2419-2421</span>
+<span class="sd">    Defined at System.fpp lines 2495-2497</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2227,7 +1864,7 @@
 <span class="sd">    reference_true = reference_true()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2423-2425</span>
+<span class="sd">    Defined at System.fpp lines 2499-2501</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2243,7 +1880,7 @@
 <span class="sd">    reference_false = reference_false()</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2427-2429</span>
+<span class="sd">    Defined at System.fpp lines 2503-2505</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
@@ -2259,7 +1896,7 @@
 <span class="sd">    a = s2a(s)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2432-2438</span>
+<span class="sd">    Defined at System.fpp lines 2508-2514</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2279,7 +1916,7 @@
 <span class="sd">    s = a2s(a)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2441-2447</span>
+<span class="sd">    Defined at System.fpp lines 2517-2523</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2299,7 +1936,7 @@
 <span class="sd">    a = pad(s, l)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2450-2458</span>
+<span class="sd">    Defined at System.fpp lines 2526-2534</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2315,93 +1952,12 @@
     <span class="n">a</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_pad</span><span class="p">(</span><span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">a</span></div>
 
-<div class="viewcode-block" id="make_run_directory"><a class="viewcode-back" href="../../system.html#quippy.system_module.make_run_directory">[docs]</a><span class="k">def</span> <span class="nf">make_run_directory</span><span class="p">(</span><span class="n">basename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_run_dir_i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_dir_i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    dir = make_run_directory([basename, force_run_dir_i, run_dir_i, error])</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2460-2495</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    basename : str</span>
-<span class="sd">    force_run_dir_i : int</span>
-<span class="sd">    run_dir_i : int</span>
-<span class="sd">    error : int</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dir : str</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">dir</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_make_run_directory</span><span class="p">(</span><span class="n">basename</span><span class="o">=</span><span class="n">basename</span><span class="p">,</span> <span class="n">force_run_dir_i</span><span class="o">=</span><span class="n">force_run_dir_i</span><span class="p">,</span> <span class="n">run_dir_i</span><span class="o">=</span><span class="n">run_dir_i</span><span class="p">,</span> \
-        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">dir</span></div>
-
-<div class="viewcode-block" id="link_run_directory"><a class="viewcode-back" href="../../system.html#quippy.system_module.link_run_directory">[docs]</a><span class="k">def</span> <span class="nf">link_run_directory</span><span class="p">(</span><span class="n">sourcename</span><span class="p">,</span> <span class="n">basename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_dir_i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    dir = link_run_directory(sourcename[, basename, run_dir_i, error])</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2497-2521</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    sourcename : str</span>
-<span class="sd">    basename : str</span>
-<span class="sd">    run_dir_i : int</span>
-<span class="sd">    error : int</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dir : str</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">dir</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_link_run_directory</span><span class="p">(</span><span class="n">sourcename</span><span class="o">=</span><span class="n">sourcename</span><span class="p">,</span> <span class="n">basename</span><span class="o">=</span><span class="n">basename</span><span class="p">,</span> <span class="n">run_dir_i</span><span class="o">=</span><span class="n">run_dir_i</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">dir</span></div>
-
-<div class="viewcode-block" id="current_version"><a class="viewcode-back" href="../../system.html#quippy.system_module.current_version">[docs]</a><span class="k">def</span> <span class="nf">current_version</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    current_version = current_version()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2523-2525</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    current_version : str</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">current_version</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_current_version</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">current_version</span></div>
-
-<div class="viewcode-block" id="linebreak_string_length"><a class="viewcode-back" href="../../system.html#quippy.system_module.linebreak_string_length">[docs]</a><span class="k">def</span> <span class="nf">linebreak_string_length</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    length = linebreak_string_length(str, line_len)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2527-2531</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    str : str</span>
-<span class="sd">    line_len : int</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    length : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">length</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_linebreak_string_length</span><span class="p">(</span><span class="nb">str</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="o">=</span><span class="n">line_len</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">length</span></div>
-
 <div class="viewcode-block" id="linebreak_string"><a class="viewcode-back" href="../../system.html#quippy.system_module.linebreak_string">[docs]</a><span class="k">def</span> <span class="nf">linebreak_string</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    lb_str = linebreak_string(str, line_len)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2533-2571</span>
+<span class="sd">    Defined at System.fpp lines 2609-2647</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2416,67 +1972,12 @@
     <span class="n">lb_str</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_linebreak_string</span><span class="p">(</span><span class="nb">str</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="o">=</span><span class="n">line_len</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lb_str</span></div>
 
-<div class="viewcode-block" id="mem_info"><a class="viewcode-back" href="../../system.html#quippy.system_module.mem_info">[docs]</a><span class="k">def</span> <span class="nf">mem_info</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    total_mem, free_mem = mem_info()</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2573-2575</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    total_mem : float</span>
-<span class="sd">    free_mem : float</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">total_mem</span><span class="p">,</span> <span class="n">free_mem</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_mem_info</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">total_mem</span><span class="p">,</span> <span class="n">free_mem</span></div>
-
-<div class="viewcode-block" id="wait_for_file_to_exist"><a class="viewcode-back" href="../../system.html#quippy.system_module.wait_for_file_to_exist">[docs]</a><span class="k">def</span> <span class="nf">wait_for_file_to_exist</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_wait_time</span><span class="p">,</span> <span class="n">cycle_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    wait_for_file_to_exist(filename, max_wait_time[, cycle_time, error])</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2584-2604</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    filename : str</span>
-<span class="sd">    max_wait_time : float</span>
-<span class="sd">    cycle_time : float</span>
-<span class="sd">    error : int</span>
-<span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_wait_for_file_to_exist</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">max_wait_time</span><span class="o">=</span><span class="n">max_wait_time</span><span class="p">,</span> <span class="n">cycle_time</span><span class="o">=</span><span class="n">cycle_time</span><span class="p">,</span> \
-        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="upper_case"><a class="viewcode-back" href="../../system.html#quippy.system_module.upper_case">[docs]</a><span class="k">def</span> <span class="nf">upper_case</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    upper_case = upper_case(word)</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2607-2619</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    word : str</span>
-<span class="sd">    </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    upper_case : str</span>
-<span class="sd">    </span>
-<span class="sd">    Convert a word to upper case</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">upper_case</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_upper_case</span><span class="p">(</span><span class="n">word</span><span class="o">=</span><span class="n">word</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">upper_case</span></div>
-
 <div class="viewcode-block" id="lower_case"><a class="viewcode-back" href="../../system.html#quippy.system_module.lower_case">[docs]</a><span class="k">def</span> <span class="nf">lower_case</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    lower_case = lower_case(word)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2622-2634</span>
+<span class="sd">    Defined at System.fpp lines 2698-2710</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2496,7 +1997,7 @@
 <span class="sd">    progress(total, current, name)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2637-2653</span>
+<span class="sd">    Defined at System.fpp lines 2713-2729</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2513,7 +2014,7 @@
 <span class="sd">    progress_timer(total, current, name, elapsed_seconds)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2657-2701</span>
+<span class="sd">    Defined at System.fpp lines 2733-2777</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2532,7 +2033,7 @@
 <span class="sd">    _inoutput_print_string(string_bn[, verbosity, file, nocr, do_flush])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 517-564</span>
+<span class="sd">    Defined at System.fpp lines 593-640</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2551,7 +2052,7 @@
 <span class="sd">    _inoutput_print_integer(int_bn[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 593-598</span>
+<span class="sd">    Defined at System.fpp lines 669-674</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2567,7 +2068,7 @@
 <span class="sd">    _inoutput_print_real(real[, verbosity, file, precision, format])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 600-626</span>
+<span class="sd">    Defined at System.fpp lines 676-702</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2586,7 +2087,7 @@
 <span class="sd">    _inoutput_print_logical(log[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 586-591</span>
+<span class="sd">    Defined at System.fpp lines 662-667</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2602,7 +2103,7 @@
 <span class="sd">    _inoutput_print_char_array(char_a[, verbosity, file])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 575-584</span>
+<span class="sd">    Defined at System.fpp lines 651-660</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2619,7 +2120,7 @@
 <span class="sd">    print(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 245-248</span>
+<span class="sd">    Defined at System.fpp lines 252-255</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _inoutput_print_string</span>
@@ -2648,7 +2149,7 @@
 <span class="sd">    optional_default_l = _optional_default_l(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2267-2275</span>
+<span class="sd">    Defined at System.fpp lines 2343-2351</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2668,7 +2169,7 @@
 <span class="sd">    optional_default_i = _optional_default_i(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2277-2285</span>
+<span class="sd">    Defined at System.fpp lines 2353-2361</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2688,7 +2189,7 @@
 <span class="sd">    optional_default_r = _optional_default_r(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2297-2305</span>
+<span class="sd">    Defined at System.fpp lines 2373-2381</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2708,7 +2209,7 @@
 <span class="sd">    optional_default_c = _optional_default_c(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2327-2335</span>
+<span class="sd">    Defined at System.fpp lines 2403-2411</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2728,7 +2229,7 @@
 <span class="sd">    optional_default_ca = _optional_default_ca(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2337-2345</span>
+<span class="sd">    Defined at System.fpp lines 2413-2421</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2748,7 +2249,7 @@
 <span class="sd">    optional_default_z = _optional_default_z(def_)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2317-2325</span>
+<span class="sd">    Defined at System.fpp lines 2393-2401</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2767,7 +2268,7 @@
 <span class="sd">    optional_default_ia = _optional_default_ia(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2287-2295</span>
+<span class="sd">    Defined at System.fpp lines 2363-2371</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2787,7 +2288,7 @@
 <span class="sd">    optional_default_ra = _optional_default_ra(def_[, opt_val])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 2307-2315</span>
+<span class="sd">    Defined at System.fpp lines 2383-2391</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2807,7 +2308,7 @@
 <span class="sd">    optional_default(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 328-331</span>
+<span class="sd">    Defined at System.fpp lines 347-350</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _optional_default_l</span>
@@ -2835,7 +2336,7 @@
 <span class="sd">    real_number = _string_to_real_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1192-1202</span>
+<span class="sd">    Defined at System.fpp lines 1268-1278</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2855,7 +2356,7 @@
 <span class="sd">    integer_number = _string_to_integer_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1204-1214</span>
+<span class="sd">    Defined at System.fpp lines 1280-1290</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2875,7 +2376,7 @@
 <span class="sd">    logical_number = _string_to_logical_sub(string_bn[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1216-1226</span>
+<span class="sd">    Defined at System.fpp lines 1292-1302</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2895,7 +2396,7 @@
 <span class="sd">    _string_to_real1d(string_bn, real1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1228-1238</span>
+<span class="sd">    Defined at System.fpp lines 1304-1314</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2911,7 +2412,7 @@
 <span class="sd">    _string_to_integer1d(string_bn, integer1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1240-1250</span>
+<span class="sd">    Defined at System.fpp lines 1316-1326</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2927,7 +2428,7 @@
 <span class="sd">    _string_to_logical1d(string_bn, logical1d[, error])</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 1252-1262</span>
+<span class="sd">    Defined at System.fpp lines 1328-1338</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -2943,7 +2444,7 @@
 <span class="sd">    string_to_numerical(*args, **kwargs)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp lines 335-337</span>
+<span class="sd">    Defined at System.fpp lines 355-357</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface containing the following procedures:</span>
 <span class="sd">      _string_to_real_sub</span>
@@ -2966,7 +2467,7 @@
 <span class="sd">    Element system_always_flush ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 141</span>
+<span class="sd">    Defined at System.fpp line 142</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__system_always_flush</span><span class="p">()</span></div>
@@ -2979,7 +2480,7 @@
 <span class="sd">    Element system_use_fortran_random ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 142</span>
+<span class="sd">    Defined at System.fpp line 143</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__system_use_fortran_random</span><span class="p">()</span></div>
@@ -2992,7 +2493,7 @@
 <span class="sd">    Element qp ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 143</span>
+<span class="sd">    Defined at System.fpp line 144</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__qp</span><span class="p">()</span></div>
@@ -3004,7 +2505,7 @@
 <span class="sd">    Element dp ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 144</span>
+<span class="sd">    Defined at System.fpp line 145</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__dp</span><span class="p">()</span></div>
@@ -3013,10 +2514,10 @@
 
 <div class="viewcode-block" id="get_quip_new_line"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_quip_new_line">[docs]</a><span class="k">def</span> <span class="nf">get_quip_new_line</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Element quip_new_line ftype=character  pytype=str</span>
+<span class="sd">    Element quip_new_line ftype=character pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 145</span>
+<span class="sd">    Defined at System.fpp line 146</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__quip_new_line</span><span class="p">()</span></div>
@@ -3029,7 +2530,7 @@
 <span class="sd">    Element integer_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 146</span>
+<span class="sd">    Defined at System.fpp line 147</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__integer_size</span><span class="p">()</span></div>
@@ -3041,7 +2542,7 @@
 <span class="sd">    Element real_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 147</span>
+<span class="sd">    Defined at System.fpp line 148</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__real_size</span><span class="p">()</span></div>
@@ -3053,7 +2554,7 @@
 <span class="sd">    Element complex_size ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 148</span>
+<span class="sd">    Defined at System.fpp line 149</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__complex_size</span><span class="p">()</span></div>
@@ -3065,7 +2566,7 @@
 <span class="sd">    Element trace_memory ftype=logical pytype=bool</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 149</span>
+<span class="sd">    Defined at System.fpp line 150</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__trace_memory</span><span class="p">()</span></div>
@@ -3075,10 +2576,10 @@
 
 <div class="viewcode-block" id="get_traced_memory"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_traced_memory">[docs]</a><span class="k">def</span> <span class="nf">get_traced_memory</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Element traced_memory ftype=integer  pytype=int</span>
+<span class="sd">    Element traced_memory ftype=integer pytype=int</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    Defined at System.fpp line 150</span>
+<span class="sd">    Defined at System.fpp line 151</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_system_module__get__traced_memory</span><span class="p">()</span></div>
