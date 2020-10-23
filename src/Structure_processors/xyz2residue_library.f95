@@ -1,5 +1,6 @@
 program xyz2residue_library
-use libatoms_module
+  use system_module, only : string_cat_string_array 
+  use libatoms_module
 implicit none
 
    type(Atoms) :: at, m_at

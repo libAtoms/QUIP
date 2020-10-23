@@ -113,6 +113,7 @@ module CrackParams_module
   use libAtoms_module
   use QUIP_Common_module
   use Potential_module
+  use system_module, only : verbosity_to_str, verbosity_of_str, get_env_var
 
   implicit none
 

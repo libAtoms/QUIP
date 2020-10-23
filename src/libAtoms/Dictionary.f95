@@ -37,6 +37,7 @@
 
 module dictionary_module
 
+  use error_module
   use system_module
   use linearalgebra_module
   use mpi_context_module

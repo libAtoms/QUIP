@@ -30,6 +30,7 @@
 
 #include "error.inc"
 module clusters_module
+  use error_module
   use system_module
   use linearalgebra_module
   use Table_module

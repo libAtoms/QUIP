@@ -33,6 +33,7 @@ program ts_main
   use Potential_module
   use ts_module
   use tsParams_module
+  use system_module, only : rewind
 
   implicit none
 
