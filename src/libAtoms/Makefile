@@ -140,13 +140,4 @@ ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  %.o libatoms.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 
-ifeq (${USE_MAKEDEP},1)
-LIBATOMS_F95_FPP_FILES = ${addsuffix .fpp, ${LIBATOMS_F95_FILES}}
-
-libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
-	${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../../src/libAtoms/,${LIBATOMS_F95_SOURCES}} > libAtoms.depend
-
--include libAtoms.depend
-endif
-
 install:

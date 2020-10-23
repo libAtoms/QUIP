@@ -250,7 +250,7 @@ clean: ${BUILDDIR}
 	  echo "clean in $$mods"; \
 	  rm -f ${BUILDDIR}/Makefile ; \
 	  cp ${PWD}/src/$$mods/Makefile ${BUILDDIR}/Makefile ; \
-	  ${MAKE} -C ${BUILDDIR} USE_MAKEDEP=0 QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/arch clean ; \
+	  ${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} VPATH=${PWD}/src/$$mods -I${PWD} -I${PWD}/arch clean ; \
 	done
 	rm -f ${BUILDDIR}/libquip.a
 	rm -rf src/${FOX}/objs.${QUIP_ARCH}
