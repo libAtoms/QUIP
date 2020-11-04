@@ -401,6 +401,9 @@ private
   public :: is_file_readable
   public :: ALLOC_TRACE
   public :: DEALLOC_TRACE
+  public :: make_run_directory
+  public :: link_run_directory
+  public :: wait_for_file_to_exist
 contains
 
 #ifdef NO_FORTRAN_ISNAN
