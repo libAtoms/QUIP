@@ -49,9 +49,9 @@ class TestNyeTensor(quippytest.QuippyTestCase):
         return d.unit_cell, disloc
     
     def test_screw(self):
-        unit_cell, disloc = build_disloc(BCCScrew111Dislocation)
-        alpha = nye_tensor(disloc, unit_cell)
-        
+        unit_cell, disloc = self.build_disloc(BCCScrew111Dislocation)
+        alpha = nye_tensor(disloc, unit_cell, cutoff=3.0)
+        asum = alpha.sum(axis=-1)        
         mask = np.ones((3, 3), dtype=bool)        
         mask[2, 2] = False # only alpha_33 should be significantly non-zero for screw
         assert np.all(np.abs(asum[mask]) < 1e-1)
@@ -59,9 +59,9 @@ class TestNyeTensor(quippytest.QuippyTestCase):
         
     
     def test_edge(self):
-        unit_cell, disloc = build_disloc(BCCEdge111Dislocation)
-        alpha = nye_tensor(disloc, unit_cell)
-
+        unit_cell, disloc = self.build_disloc(BCCEdge111Dislocation)
+        alpha = nye_tensor(disloc, unit_cell, cutoff=3.0)
+        asum = alpha.sum(axis=-1)
         mask = np.ones((3, 3), dtype=bool)        
         mask[2, 0] = False # only alpha_31 should be significantly non-zero for edge
         assert np.all(np.abs(asum[mask]) < 1e-1)
