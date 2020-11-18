@@ -117,7 +117,6 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   end if
 
   if (optional_default(.false., reload_pot)) then
-    print("potential reloaded in quip_unified_wrapper from file:"//quip_param_file)
     ! deallocate old potential -- this was initialised in first_run
     call Finalise(pot)
     ! initialise with new parameters
