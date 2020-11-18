@@ -479,23 +479,3 @@ void call_callbackpot_sub_(int* i, int* at) {
 char error_h_info[1000];
 int error_h_line;
 int error_h_kind;
-
-// quippy error_abort() handler
-
-#include <setjmp.h>
-jmp_buf environment_buffer;
-char abort_message[1024];
-
-void quippy_error_abort_(char *message, int len)
-{
-  strncpy(abort_message, message, len);
-  abort_message[len] = '\0';
-  longjmp(environment_buffer,0);
-}
-
-void quippy_error_abort_int_handler(int signum)
-{
-  char message[] = "Interrupt occured";
-  quippy_error_abort_(message, strlen(message));
-}
-

@@ -32,7 +32,7 @@ PROGRAMS = minimal_md xyz2pdb convert
 
 .PHONY: default all clean docclean
 
-default: libatoms.a 
+default: libatoms.a f90wrap_stub.o
 
 all: default ${PROGRAMS}
 
@@ -94,7 +94,7 @@ LIBATOMS_F95_FILES = \
   partition \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_utils_no_module
+  libAtoms_utils_no_module \
 
 
 LIBATOMS_F77_FILES= \
