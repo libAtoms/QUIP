@@ -31,6 +31,7 @@ from quippy.nye_tensor import nye_tensor
 try:
     from matscipy.dislocation import (BCCScrew111Dislocation, 
                                       BCCEdge111Dislocation)
+    from atomman import ElasticConstants
 except ImportError:
     BCCScrew111Dislocation = None
     BCCEdge111Dislocation = None
