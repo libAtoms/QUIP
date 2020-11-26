@@ -81,15 +81,15 @@ clean:
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	for f in ${WRAP_FILES}; do \
-	    echo ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
-	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
+	    echo ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
+	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
 _quippy.so: ${WRAP_FPP_FILES}
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	${F90WRAP} -v -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
