@@ -52,7 +52,7 @@ default: all
 all: ${PROGRAMS}
 
 
-LIBS =  -L. -lquiputils -lquip_core ${GAP_LIB} -latoms f90wrap_stub.o
+LIBS =  -L. -lquiputils -lquip_core ${GAP_LIB} -latoms
 ifeq (${HAVE_THIRDPARTY},1)
   LIBS += -lthirdparty
 endif

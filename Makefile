@@ -213,10 +213,13 @@ libquip.a: ${MODULES} ${GAPFIT}
 	LIBQUIP_OBJS="$(shell for i in ${BUILDDIR}/libquiputils.a ${BUILDDIR}/libquip_core.a $(addprefix ${BUILDDIR}/,${GAPFIT_LIBFILE}) $(addprefix ${BUILDDIR}/,${GAP_LIBFILE}) ${BUILDDIR}/libatoms.a $(addprefix ${BUILDDIR}/,${THIRDPARTY_LIBS}) ${FOX_STATIC_LIBFILES}; do ar -t $$i; done | grep \.o)" && \
 		     cd ${BUILDDIR} && for i in ${FOX_STATIC_LIBFILES}; do ar -x $$i; done && ar -rcs $@ $$LIBQUIP_OBJS
 
+libquip_nostub.a: libquip.a
+	cd ${BUILDDIR} && cp libquip.a libquip_nostub.a && ar d libquip_nostub.a f90wrap_stub.o
+
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy: libquip.a ${GAP_PROGRAMS}
+quippy: libquip_nostub.a ${GAP_PROGRAMS}
 	@echo "********************************************"
 	@echo ""
 	@echo " Making quippy "
