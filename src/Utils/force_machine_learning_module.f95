@@ -685,7 +685,7 @@ subroutine  read_distance_file(distance_matrix, data_dir)
 
        call system_timer('Read Pair Distance and Bulid Covariance')
  !      OPEN(2,status='old',file=trim(data_dir)//'Dist.dat',form='UNFORMATTED')
-       call fread_array_d(1, (/distance_matrix(1,1)/), trim(data_dir)//'Dist.dat') 
+       call fread_array_d(1, distance_matrix(1,1:1), trim(data_dir)//'Dist.dat') 
 
        do i=2, size(distance_matrix(:,1))
               call  fread_array_d(i-1, distance_matrix(i,:(i-1)), trim(data_dir)//'Dist.dat')
