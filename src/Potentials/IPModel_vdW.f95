@@ -471,8 +471,10 @@ subroutine IPModel_vdW_Calc(this, at, e, local_e, f, virial, local_virial, args_
   enddo
 
 
-!$omp parallel default(none) private(i)
-!$omp shared(this,at,do_derivative)
+!$omp parallel default(none) private(i,j,k,n,m,r_ij,u_ij,r6_ij,dr6_ij_dr_ij,scaled_buffer,f_cut_ij,df_cut_ij_dr_ij, &
+!$omp c6_eff,r0_ij,d_sR_r0_ij,exp_factor,f_damp,e_i,df_damp_dr_ij,df_damp_dr0_ij,df_damp_dvi,df_damp_dvj, &
+!$omp dc6_eff_dvi,dc6_eff_dvj,de_i_dr_ij,f_ij,de_i_drk) &
+!$omp shared(this,at,e,f,virial,do_derivative,local_v,r0_eff,dr0_eff_dv) &
 !$omp reduction(+:local_e_in,f_in,virial_in)
 !$omp do schedule(dynamic)
   do i = 1, at%N
@@ -536,9 +538,10 @@ subroutine IPModel_vdW_Calc(this, at, e, local_e, f, virial, local_virial, args_
            enddo
         endif
 
-        virial_in(:,:,i) = virial_in(:,:,i) + 0.0_dp
      enddo
   enddo
+!$omp end do
+!$omp end parallel 
 
   if(present(f)) f = f_in
   if(present(e)) e = sum(local_e_in)
