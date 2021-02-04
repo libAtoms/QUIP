@@ -171,7 +171,7 @@ class Dynamics(optimize.Dynamics):
         self.ase_atoms = atoms
 
         if not atoms.has('momenta'):  # so that there is a velocity initialisation on the quip object
-            atoms.set_momenta(np.zeros(len(atoms), 3))
+            atoms.set_momenta(np.zeros((len(atoms), 3)))
         self._quip_atoms = quippy.convert.ase_to_quip(self.ase_atoms)
 
         # add the mass separately, because converter is not doing it
