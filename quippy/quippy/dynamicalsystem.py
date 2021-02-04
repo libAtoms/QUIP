@@ -180,7 +180,7 @@ class Dynamics(optimize.Dynamics):
 
         # initialise accelerations as zero, so that we have the objects in QUIP
         _quippy.f90wrap_atoms_add_property_real_2da(this=self._quip_atoms._handle, name='acc',
-                                                    value=np.zeros(len(atoms), 3))
+                                                    value=np.zeros((len(atoms), 3)))
 
         self._ds = DynamicalSystem(self._quip_atoms)
 
