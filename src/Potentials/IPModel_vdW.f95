@@ -180,6 +180,7 @@ subroutine IPModel_vdW_Initialise_str(this, args_str, param_str)
      call initialise(this%my_descriptor(i_coordinate),string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      this%cutoff = max(this%cutoff,cutoff(this%my_descriptor(i_coordinate)))
   enddo
+  this%cutoff = max(this%cutoff,this%vdW_cutoff)
 
 #endif  
 
@@ -199,6 +200,7 @@ subroutine IPModel_vdW_Finalise(this)
   this%map = -1
 
   this%cutoff = 0.0_dp
+  this%vdW_cutoff = 0.0_dp
   this%sr = 0.0_dp
   this%d = 0.0_dp
 
