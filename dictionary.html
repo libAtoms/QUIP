@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy d467b6c+ documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 14c8ab9+ documentation</title>
   
 
   
@@ -36,8 +36,6 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -72,7 +70,7 @@
             
             
               <div class="version">
-                d467b6c+
+                14c8ab9+
               </div>
             
           
@@ -222,7 +220,7 @@ Entries are a variable type, containing one of:
 or a 1-D array of any of those. 2-D arrays of integers and reals are also supported.</p>
 <dl class="py class">
 <dt id="quippy.dictionary_module.DictData">
-<em class="property">class </em><code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">DictData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">dictdata</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.DictData" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">DictData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dictdata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.DictData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 152-153</p>
 <dl class="field-list simple">
@@ -235,7 +233,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 </dl>
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictData.d">
-<em class="property">property </em><code class="sig-name descname">d</code><a class="headerlink" href="#quippy.dictionary_module.DictData.d" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">d</span></code><a class="headerlink" href="#quippy.dictionary_module.DictData.d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element d ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 153</p>
 </dd></dl>
@@ -244,7 +242,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 
 <dl class="py class">
 <dt id="quippy.dictionary_module.DictEntry">
-<em class="property">class </em><code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">DictEntry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">dictentry</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictEntry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.DictEntry" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">DictEntry</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dictentry</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.DictEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 156-174</p>
 <p>OMIT</p>
@@ -300,7 +298,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 </table>
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.print">
-<code class="sig-name descname">print</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="optional">[</span>, <em class="sig-param">verbosity</em>, <em class="sig-param">file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictEntry.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.DictEntry.print" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">print</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">key</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">file</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictEntry.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.DictEntry.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 335-393</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -317,77 +315,77 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.c">
-<em class="property">property </em><code class="sig-name descname">c</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.c" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">c</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.c" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element c ftype=complex(dp) pytype=complex</p>
 <p>Defined at Dictionary.fpp line 164</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.c_a">
-<em class="property">property </em><code class="sig-name descname">c_a</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.c_a" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">c_a</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.c_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element c_a ftype=complex(dp) pytype=complex</p>
 <p>Defined at Dictionary.fpp line 169</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.d">
-<em class="property">property </em><code class="sig-name descname">d</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.d" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">d</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element d ftype=type(dictdata) pytype=Dictdata</p>
 <p>Defined at Dictionary.fpp line 174</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.i">
-<em class="property">property </em><code class="sig-name descname">i</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">i</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element i ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 162</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.i_a">
-<em class="property">property </em><code class="sig-name descname">i_a</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i_a" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">i_a</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element i_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 167</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.i_a2">
-<em class="property">property </em><code class="sig-name descname">i_a2</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i_a2" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">i_a2</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.i_a2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element i_a2 ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 172</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.l">
-<em class="property">property </em><code class="sig-name descname">l</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.l" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">l</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.l" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element l ftype=logical pytype=bool</p>
 <p>Defined at Dictionary.fpp line 165</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.l_a">
-<em class="property">property </em><code class="sig-name descname">l_a</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.l_a" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">l_a</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.l_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element l_a ftype=logical pytype=bool</p>
 <p>Defined at Dictionary.fpp line 170</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.len2">
-<em class="property">property </em><code class="sig-name descname">len2</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.len2" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">len2</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.len2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element len2 ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 160</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.len_bn">
-<em class="property">property </em><code class="sig-name descname">len_bn</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.len_bn" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">len_bn</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.len_bn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element len_bn ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 159</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.own_data">
-<em class="property">property </em><code class="sig-name descname">own_data</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.own_data" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">own_data</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.own_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element own_data ftype=logical pytype=bool</p>
 <p>Defined at Dictionary.fpp line 161</p>
 <p>True if we own the data and should free it in finalise()</p>
@@ -395,35 +393,35 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.r">
-<em class="property">property </em><code class="sig-name descname">r</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">r</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element r ftype=real(dp) pytype=float</p>
 <p>Defined at Dictionary.fpp line 163</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.r_a">
-<em class="property">property </em><code class="sig-name descname">r_a</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r_a" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">r_a</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element r_a ftype=real(dp) pytype=float</p>
 <p>Defined at Dictionary.fpp line 168</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.r_a2">
-<em class="property">property </em><code class="sig-name descname">r_a2</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r_a2" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">r_a2</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.r_a2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element r_a2 ftype=real(dp) pytype=float</p>
 <p>Defined at Dictionary.fpp line 173</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.s_a">
-<em class="property">property </em><code class="sig-name descname">s_a</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.s_a" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">s_a</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.s_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element s_a ftype=character(len=1) pytype=str</p>
 <p>Defined at Dictionary.fpp line 171</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.DictEntry.type_bn">
-<em class="property">property </em><code class="sig-name descname">type_bn</code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.type_bn" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">type_bn</span></code><a class="headerlink" href="#quippy.dictionary_module.DictEntry.type_bn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element type_bn ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 158</p>
 </dd></dl>
@@ -432,7 +430,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 
 <dl class="py class">
 <dt id="quippy.dictionary_module.Dictionary">
-<em class="property">class </em><code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">Dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">dictionary</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">Dictionary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dictionary</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 178-197</p>
 <p>Fortran implementation of a dictionary to store key/value pairs of the following types:</p>
@@ -521,7 +519,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 </table>
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.add_array">
-<code class="sig-name descname">add_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.add_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.add_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_array</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.add_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.add_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 268-282</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_add_array_i
@@ -544,7 +542,7 @@ _add_array_r2_a</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.deepcopy">
-<code class="sig-name descname">deepcopy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">from_</em><span class="optional">[</span>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.deepcopy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">deepcopy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">from_</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.deepcopy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.deepcopy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2607-2613</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -560,7 +558,7 @@ _add_array_r2_a</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.get_key">
-<code class="sig-name descname">get_key</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">i</em><span class="optional">[</span>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_key" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">i</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 478-487</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -580,7 +578,7 @@ _add_array_r2_a</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.get_type_and_size">
-<code class="sig-name descname">get_type_and_size</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em>, <em class="sig-param">thesize2</em><span class="optional">[</span>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_type_and_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_type_and_size" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_type_and_size</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">key</span></em>, <em class="sig-param"><span class="pre">thesize2</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_type_and_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_type_and_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 489-502</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -602,7 +600,7 @@ _add_array_r2_a</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.get_value">
-<code class="sig-name descname">get_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">get_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 247-254</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_get_value_i
@@ -627,7 +625,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.has_key">
-<code class="sig-name descname">has_key</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="optional">[</span>, <em class="sig-param">case_sensitive</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.has_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.has_key" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">has_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">key</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">case_sensitive</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.has_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.has_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2256-2261</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -648,7 +646,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.lookup_entry_i">
-<code class="sig-name descname">lookup_entry_i</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="optional">[</span>, <em class="sig-param">case_sensitive</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.lookup_entry_i"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.lookup_entry_i" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lookup_entry_i</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">key</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">case_sensitive</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.lookup_entry_i"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.lookup_entry_i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2232-2253</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -669,7 +667,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.print">
-<code class="sig-name descname">print</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="optional">[</span>, <em class="sig-param">verbosity</em>, <em class="sig-param">file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">print</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">file</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 412-420</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -685,7 +683,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.print_keys">
-<code class="sig-name descname">print_keys</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="optional">[</span>, <em class="sig-param">verbosity</em>, <em class="sig-param">file</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">print_keys</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">file</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 395-410</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -700,7 +698,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.read_string">
-<code class="sig-name descname">read_string</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">str</em><span class="optional">[</span>, <em class="sig-param">append</em>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.read_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">read_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">str</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">append</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.read_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.read_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 1827-1862</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -718,7 +716,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.remove_value">
-<code class="sig-name descname">remove_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.remove_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">remove_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.remove_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.remove_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 1816-1825</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -733,7 +731,7 @@ _get_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.set_value">
-<code class="sig-name descname">set_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.set_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.set_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.set_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.set_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 224-233</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_set_value_none
@@ -759,7 +757,7 @@ _set_value_dict</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.set_value_pointer">
-<code class="sig-name descname">set_value_pointer</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.set_value_pointer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.set_value_pointer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_value_pointer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.set_value_pointer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.set_value_pointer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 236-243</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_set_value_pointer_i
@@ -775,7 +773,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.subset">
-<code class="sig-name descname">subset</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">keys</em>, <em class="sig-param">out</em><span class="optional">[</span>, <em class="sig-param">case_sensitive</em>, <em class="sig-param">out_no_initialise</em>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.subset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">subset</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">keys</span></em>, <em class="sig-param"><span class="pre">out</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">case_sensitive</span></em>, <em class="sig-param"><span class="pre">out_no_initialise</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.subset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2263-2282</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -793,7 +791,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.swap">
-<code class="sig-name descname">swap</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key1</em>, <em class="sig-param">key2</em><span class="optional">[</span>, <em class="sig-param">case_sensitive</em>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.swap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">swap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">key1</span></em>, <em class="sig-param"><span class="pre">key2</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">case_sensitive</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.swap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.swap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2385-2412</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -811,7 +809,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.write_string">
-<code class="sig-name descname">write_string</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="optional">[</span>, <em class="sig-param">real_format</em>, <em class="sig-param">entry_sep</em>, <em class="sig-param">char_a_sep</em>, <em class="sig-param">quote_char</em>, <em class="sig-param">error</em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.write_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">write_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">real_format</span></em>, <em class="sig-param"><span class="pre">entry_sep</span></em>, <em class="sig-param"><span class="pre">char_a_sep</span></em>, <em class="sig-param"><span class="pre">quote_char</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.write_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.write_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2057-2135</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -839,7 +837,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.cache_invalid">
-<em class="property">property </em><code class="sig-name descname">cache_invalid</code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.cache_invalid" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">cache_invalid</span></code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.cache_invalid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element cache_invalid ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 196</p>
 <p>non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any array memory locations             changed</p>
@@ -847,7 +845,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.key_cache_invalid">
-<em class="property">property </em><code class="sig-name descname">key_cache_invalid</code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.key_cache_invalid" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">key_cache_invalid</span></code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.key_cache_invalid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element key_cache_invalid ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 197</p>
 <p>non-zero on exit from set_value(), set_value_pointer(), add_array(), remove_entry() if any keys changed</p>
@@ -855,7 +853,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py method">
 <dt id="quippy.dictionary_module.Dictionary.n">
-<em class="property">property </em><code class="sig-name descname">n</code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.n" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">n</span></code><a class="headerlink" href="#quippy.dictionary_module.Dictionary.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element n ftype=integer  pytype=int</p>
 <p>Defined at Dictionary.fpp line 193</p>
 <p>number of entries in use</p>
@@ -865,7 +863,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py class">
 <dt id="quippy.dictionary_module.c_dictionary_ptr_type">
-<em class="property">class </em><code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">c_dictionary_ptr_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">c_dictionary_ptr_type</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#c_dictionary_ptr_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.c_dictionary_ptr_type" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">c_dictionary_ptr_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">c_dictionary_ptr_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#c_dictionary_ptr_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.c_dictionary_ptr_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 200-201</p>
 <dl class="field-list simple">
@@ -878,7 +876,7 @@ _set_value_pointer_r2</p>
 </dl>
 <dl class="py method">
 <dt id="quippy.dictionary_module.c_dictionary_ptr_type.p">
-<em class="property">property </em><code class="sig-name descname">p</code><a class="headerlink" href="#quippy.dictionary_module.c_dictionary_ptr_type.p" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">p</span></code><a class="headerlink" href="#quippy.dictionary_module.c_dictionary_ptr_type.p" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element p ftype=type(dictionary) pytype=Dictionary</p>
 <p>Defined at Dictionary.fpp line 201</p>
 </dd></dl>
@@ -887,14 +885,14 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_c_key_len">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_c_key_len</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_c_key_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_c_key_len" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_c_key_len</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_c_key_len"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_c_key_len" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element c_key_len ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 148</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_dict_n_fields">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_dict_n_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_dict_n_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_dict_n_fields" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_dict_n_fields</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_dict_n_fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_dict_n_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element dict_n_fields ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 150</p>
 <p>Maximum number of fields during parsing</p>
@@ -902,35 +900,35 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_property_int">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_property_int</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_int" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_property_int</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element property_int ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 146</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_property_logical">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_property_logical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_logical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_logical" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_property_logical</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_logical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_logical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element property_logical ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 146</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_property_real">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_property_real</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_real"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_real" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_property_real</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_real" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element property_real ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 146</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_property_str">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_property_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_str" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_property_str</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_property_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_property_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element property_str ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 146</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_string_length">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_string_length</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_string_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_string_length" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_string_length</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_string_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_string_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element string_length ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 149</p>
 <p>Maximum string length</p>
@@ -938,7 +936,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_char">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_char</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_char"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_char" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_char</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_char"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_char" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_char ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -946,7 +944,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_char_a">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_char_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_char_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_char_a" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_char_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_char_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_char_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_char_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -954,7 +952,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_complex">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_complex</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_complex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_complex" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_complex</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_complex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_complex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_complex ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -962,7 +960,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_complex_a">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_complex_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_complex_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_complex_a" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_complex_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_complex_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_complex_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_complex_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -970,7 +968,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_data">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_data</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_data ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -978,7 +976,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_dict">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_dict</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_dict ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -986,7 +984,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_integer">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_integer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_integer</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_integer ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -994,7 +992,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_integer_a">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_integer_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer_a" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_integer_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_integer_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1002,7 +1000,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_integer_a2">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_integer_a2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer_a2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer_a2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_integer_a2</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_integer_a2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_integer_a2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_integer_a2 ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1010,7 +1008,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_logical">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_logical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_logical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_logical" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_logical</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_logical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_logical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_logical ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1018,7 +1016,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_logical_a">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_logical_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_logical_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_logical_a" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_logical_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_logical_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_logical_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_logical_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1026,7 +1024,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_none">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_none</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_none"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_none" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_none</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_none"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_none" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_none ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1034,7 +1032,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_real">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_real</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_real</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_real ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1042,7 +1040,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_real_a">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_real_a</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real_a" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_real_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_real_a ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
@@ -1050,7 +1048,7 @@ _set_value_pointer_r2</p>
 
 <dl class="py function">
 <dt id="quippy.dictionary_module.get_t_real_a2">
-<code class="sig-prename descclassname">quippy.dictionary_module.</code><code class="sig-name descname">get_t_real_a2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real_a2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real_a2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">quippy.dictionary_module.</span></code><code class="sig-name descname"><span class="pre">get_t_real_a2</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#get_t_real_a2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.get_t_real_a2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element t_real_a2 ftype=integer pytype=int</p>
 <p>Defined at Dictionary.fpp line 142</p>
 <p>OMIT</p>
