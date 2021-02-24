@@ -166,8 +166,8 @@ to get up and running quickly.
     calculate the properties of an atomic configuration using a
     variety of models. For example::
     ```bash
-    quip at_file=test.xyz init_args='IP LJ' \
-        param_file=share/Parameters/ip.parms.LJ.xml E
+    quip atoms_filename=test.xyz init_args='IP LJ' \
+        param_filename=share/Parameters/ip.parms.LJ.xml E
     ```
     assuming that you have a file called `test.xyz` with the following
     data in it representing Cu atoms in a cubic fcc lattice::
