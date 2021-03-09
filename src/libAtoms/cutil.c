@@ -167,9 +167,9 @@ int fmd5sum_(char* filename, char md5sum[static 33]) {
 
    free(md5_command);
 
-   if(fgets(md5sum, 33, fp) == NULL) return -1;
+   if(fgets(md5sum, 33, fp) == NULL) return -2;
 
-   if(pclose(fp)) return -1;
+   if(pclose(fp)) return -3;
 
    return 0;
 }
