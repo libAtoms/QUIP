@@ -40,6 +40,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #ifndef DARWIN
 #include <sys/sysinfo.h>
@@ -161,8 +162,9 @@ int fmd5sum_(char* filename, char md5sum[static 33]) {
    strcat(md5_command,filename);
 
    if ((fp = popen(md5_command, "r")) == NULL) {
+      int errsv = errno;
       free(md5_command);
-      return -1;
+      return errsv;
    }
 
    free(md5_command);
