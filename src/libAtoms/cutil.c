@@ -40,7 +40,6 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 #ifndef DARWIN
 #include <sys/sysinfo.h>
