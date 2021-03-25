@@ -115,6 +115,16 @@ to get up and running quickly.
     ```bash
     git clone --recursive https://github.com/libAtoms/QUIP.git
     ```
+
+    One submodule is the GAP code, which can be found in `src/GAP`.
+    Note that GAP is distributed under a diferent
+    [license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md).
+    
+    GAP is a machine learning method that uses Gaussian process
+    regression, and needs large data files to run. You can find
+    potentials that have been published as well as training data in
+    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+
 3.  Decide your architecture by looking in the `arch/` directory, and
     define an environmental variable `QUIP_ARCH`, e.g.::
     ```bash
@@ -252,15 +262,7 @@ to get up and running quickly.
     ```
 13. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
-    (DFTB parameters, TTM3f water model), `GAP` (Gaussian
-    Approximation Potential models and training). These packages are
-    not distributed with QUIP because they come with different licensing
-    restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
-
-    GAP is a machine learning method that uses Gaussian process
-    regression, and needs large data files to run. You can find
-    potentials that have been published as well as training data in
-    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+    (DFTB parameters, TTM3f water model).
 
 14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
@@ -268,10 +270,10 @@ to get up and running quickly.
 
 # Developer notes:
 
-## Fixing/updating the version f90wrap:
+## Fixing/updating the version of GAP or f90wrap:
 
   ```bash
-  cd src/f90wrap
+  cd src/GAP # or src/f90wrap
   ```
   ```bash 
   git checkout <commit> 
@@ -284,8 +286,8 @@ to get up and running quickly.
   Updating the version in the `QUIP` repository:
   ```
   cd ../..
-  git add src/f90wrap
-  git commit -m "updating the version of f90wrap"
+  git add src/GAP # or src/f90wrap
+  git commit -m "updating the version of GAP"
   ```
 
 
