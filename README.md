@@ -43,7 +43,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Fanourgakis-Xantheas (water)
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
- - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
+ - GAP (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
  - Guggenheim-!McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
@@ -86,7 +86,7 @@ is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
   `quippy` package
-- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html) ([online docs](https://libatoms.github.io/GAP))
+- Support for Gaussian Approximation Potentials (GAP) - [online docs](https://libatoms.github.io/GAP)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
 
