@@ -9,4 +9,4 @@
 	fetchRecursiveSubmodules = on-demand
 [submodule "src/GAP"]
 	path = src/GAP
-	url = https://github.com/jameskermode/f90wrap
+	url = https://github.com/libAtoms/GAP
