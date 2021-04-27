@@ -214,7 +214,7 @@ to get up and running quickly.
     - Python 3
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
-    - [f90wrap](https://github.com/jameskermode/f90wrap)
+    - [f90wrap](https://github.com/jameskermode/f90wrap) - please use the exact version linked in `src/f90wrap` submodule, which can be installed as described below, rather than the released version that would be obtained with `pip install f90wrap`
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
