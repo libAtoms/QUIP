@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>quippy.dynamicalsystem &mdash; quippy 5066a26+ documentation</title>
+  <title>quippy.dynamicalsystem &mdash; quippy 9ffe56f+ documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                5066a26+
+                9ffe56f+
               </div>
             
           
@@ -346,7 +346,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ase_atoms</span> <span class="o">=</span> <span class="n">atoms</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">atoms</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">):</span>  <span class="c1"># so that there is a velocity initialisation on the quip object</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_momenta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span> <span class="o">=</span> <span class="n">quippy</span><span class="o">.</span><span class="n">convert</span><span class="o">.</span><span class="n">ase_to_quip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ase_atoms</span><span class="p">)</span>
 
         <span class="c1"># add the mass separately, because converter is not doing it</span>
@@ -355,7 +355,7 @@
 
         <span class="c1"># initialise accelerations as zero, so that we have the objects in QUIP</span>
         <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_atoms_add_property_real_2da</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;acc&#39;</span><span class="p">,</span>
-                                                    <span class="n">value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+                                                    <span class="n">value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">)))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ds</span> <span class="o">=</span> <span class="n">DynamicalSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_quip_atoms</span><span class="p">)</span>
 
