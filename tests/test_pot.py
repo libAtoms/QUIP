@@ -190,19 +190,14 @@ class TestPotential(quippytest.QuippyTestCase):
         </RS_params>"""
 
         calc = Potential(param_str=RS_str, args_str='IP RS')
-
-        E1 = []
+        E_RS_ref = [2.6570710989046, 1.0933824843445803]
+        
+        E_RS = []
         for at in ats:
-            at.calc = calc
-            at.calc.calculate(at, properties=['energy'])
-            E1.append(at.calc.results['energy'])
-
-        E2 = []
-        for at in ats:
-            at.calc = calc
-            E2.append(at.get_potential_energy())
+            at.set_calculator(calc)
+            E_RS.append(at.get_potential_energy())
             
-        self.assertAlmostEqual(E1, E2)  
+        self.assertAlmostEqual(E_RS, E_RS_ref)  
             
 if __name__ == '__main__':
     unittest.main()
