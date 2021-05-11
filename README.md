@@ -280,7 +280,7 @@ to get up and running quickly.
   ```
   OR 
   ```bash 
-  git checkout master
+  git checkout main # or master, in case of f90wrap
 
   ```
   Updating the version in the `QUIP` repository:
