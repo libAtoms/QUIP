@@ -182,6 +182,27 @@ class TestPotential(quippytest.QuippyTestCase):
             
         self.assertAlmostEqual(E1, E2)  
             
+        RS_str = """
+        <RS_params n_types="1" cutoff="10.0" label="default">
+        <per_type_data type="1" atomic_num="13" />
+        <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0"
+              sigma1="1.45" k="10" />
+        </RS_params>"""
 
+        calc = Potential(param_str=RS_str, args_str='IP RS')
+
+        E1 = []
+        for at in ats:
+            at.calc = calc
+            at.calc.calculate(at, properties=['energy'])
+            E1.append(at.calc.results['energy'])
+
+        E2 = []
+        for at in ats:
+            at.calc = calc
+            E2.append(at.get_potential_energy())
+            
+        self.assertAlmostEqual(E1, E2)  
+            
 if __name__ == '__main__':
     unittest.main()
