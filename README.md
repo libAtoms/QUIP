@@ -43,7 +43,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Fanourgakis-Xantheas (water)
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
- - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
+ - GAP (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
  - Guggenheim-!McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
@@ -86,7 +86,7 @@ is much more widely used, but QUIP has a number of unique features:
 
 - Deep access to most of the Fortran types and routines from Python via the
   `quippy` package
-- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html) ([online docs](https://libatoms.github.io/GAP))
+- Support for Gaussian Approximation Potentials (GAP) - [online docs](https://libatoms.github.io/GAP)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
 
@@ -115,6 +115,16 @@ to get up and running quickly.
     ```bash
     git clone --recursive https://github.com/libAtoms/QUIP.git
     ```
+
+    One submodule is the GAP code, which can be found in `src/GAP`.
+    Note that GAP is distributed under a diferent
+    [license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md).
+    
+    GAP is a machine learning method that uses Gaussian process
+    regression, and needs large data files to run. You can find
+    potentials that have been published as well as training data in
+    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+
 3.  Decide your architecture by looking in the `arch/` directory, and
     define an environmental variable `QUIP_ARCH`, e.g.::
     ```bash
@@ -166,8 +176,8 @@ to get up and running quickly.
     calculate the properties of an atomic configuration using a
     variety of models. For example::
     ```bash
-    quip at_file=test.xyz init_args='IP LJ' \
-        param_file=share/Parameters/ip.parms.LJ.xml E
+    quip atoms_filename=test.xyz init_args='IP LJ' \
+        param_filename=share/Parameters/ip.parms.LJ.xml E
     ```
     assuming that you have a file called `test.xyz` with the following
     data in it representing Cu atoms in a cubic fcc lattice::
@@ -204,7 +214,7 @@ to get up and running quickly.
     - Python 3
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
-    - [f90wrap](https://github.com/jameskermode/f90wrap)
+    - [f90wrap](https://github.com/jameskermode/f90wrap) - please use the exact version linked in `src/f90wrap` submodule, which can be installed as described below, rather than the released version that would be obtained with `pip install f90wrap`
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
@@ -252,15 +262,7 @@ to get up and running quickly.
     ```
 13. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
-    (DFTB parameters, TTM3f water model), `GAP` (Gaussian
-    Approximation Potential models and training). These packages are
-    not distributed with QUIP because they come with different licensing
-    restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
-
-    GAP is a machine learning method that uses Gaussian process
-    regression, and needs large data files to run. You can find
-    potentials that have been published as well as training data in
-    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+    (DFTB parameters, TTM3f water model).
 
 14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
@@ -268,10 +270,10 @@ to get up and running quickly.
 
 # Developer notes:
 
-## Fixing/updating the version f90wrap:
+## Fixing/updating the version of GAP or f90wrap:
 
   ```bash
-  cd src/f90wrap
+  cd src/GAP # or src/f90wrap
   ```
   ```bash 
   git checkout <commit> 
@@ -284,8 +286,8 @@ to get up and running quickly.
   Updating the version in the `QUIP` repository:
   ```
   cd ../..
-  git add src/f90wrap
-  git commit -m "updating the version of f90wrap"
+  git add src/GAP # or src/f90wrap
+  git commit -m "updating the version of GAP"
   ```
 
 

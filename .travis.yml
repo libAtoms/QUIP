@@ -33,11 +33,6 @@ addons:
       - python-numpy
 
 before_install:
-  # Clone the private gap repository using deploy key
-  - |
-    if [[ $TRAVIS_GAP == 1 ]]; then
-     bash travis/get_gap.sh
-    fi
   # Make the build directory manually for rules
   - mkdir -p build/${QUIP_ARCH}
   # Copy the rules file (rather than make config)

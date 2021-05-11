@@ -8,7 +8,6 @@ doc/_build
 .idea/
 GitStatistics
 
-src/GAP
 src/ThirdParty
 
 src/libAtoms/*.mod
