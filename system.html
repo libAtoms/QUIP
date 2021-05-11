@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Low-level system routines &mdash; quippy 9ffe56f+ documentation</title>
+  <title>Low-level system routines &mdash; quippy f5f4543+ documentation</title>
   
 
   
@@ -32,6 +32,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -70,7 +71,7 @@
             
             
               <div class="version">
-                9ffe56f+
+                f5f4543+
               </div>
             
           
@@ -218,8 +219,8 @@
 number generation etc. The Inoutput type is used to abstract both
 formatted and unformatted (i.e. binary) I/O.</p>
 <dl class="py class">
-<dt id="quippy.system_module.InOutput">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">InOutput</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inoutput</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">InOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inoutput</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at System.fpp lines 158-170</p>
 <dl class="field-list simple">
@@ -290,8 +291,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.activate">
-<code class="sig-name descname"><span class="pre">activate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.activate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.activate">
+<span class="sig-name descname"><span class="pre">activate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.activate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 554-556</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -304,8 +305,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.deactivate">
-<code class="sig-name descname"><span class="pre">deactivate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.deactivate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.deactivate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.deactivate">
+<span class="sig-name descname"><span class="pre">deactivate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.deactivate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.deactivate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 549-551</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -318,8 +319,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.mpi_all_inoutput">
-<code class="sig-name descname"><span class="pre">mpi_all_inoutput</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">value</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.mpi_all_inoutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.mpi_all_inoutput">
+<span class="sig-name descname"><span class="pre">mpi_all_inoutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">value</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.mpi_all_inoutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.mpi_all_inoutput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 573-580</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -332,8 +333,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.parse_line">
-<code class="sig-name descname"><span class="pre">parse_line</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">delimiters</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.parse_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.parse_line">
+<span class="sig-name descname"><span class="pre">parse_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">delimiters</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.parse_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.parse_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 828-838</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -354,8 +355,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.print_mpi_id">
-<code class="sig-name descname"><span class="pre">print_mpi_id</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">value</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.print_mpi_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.print_mpi_id">
+<span class="sig-name descname"><span class="pre">print_mpi_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">value</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.print_mpi_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.print_mpi_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 582-589</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -368,8 +369,8 @@ formatted and unformatted (i.e. binary) I/O.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.read_ascii">
-<code class="sig-name descname"><span class="pre">read_ascii</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.read_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.read_ascii" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.read_ascii">
+<span class="sig-name descname"><span class="pre">read_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.read_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.read_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 259-260</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_reada_real_dim1
@@ -379,8 +380,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.read_line">
-<code class="sig-name descname"><span class="pre">read_line</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.read_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.read_line">
+<span class="sig-name descname"><span class="pre">read_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.read_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.read_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 751-763</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -407,8 +408,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.InOutput.rewind">
-<code class="sig-name descname"><span class="pre">rewind</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.rewind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.rewind" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput.rewind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput.rewind" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1586-1588</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -420,101 +421,101 @@ _reada_int_dim1</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.action">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">action</span></code><a class="headerlink" href="#quippy.system_module.InOutput.action" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.action">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#quippy.system_module.InOutput.action" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element action ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 166</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.active">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">active</span></code><a class="headerlink" href="#quippy.system_module.InOutput.active" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.active">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">active</span></span><a class="headerlink" href="#quippy.system_module.InOutput.active" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element active ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 165</p>
 <p>Does it print?</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.append">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">append</span></code><a class="headerlink" href="#quippy.system_module.InOutput.append" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.append">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">append</span></span><a class="headerlink" href="#quippy.system_module.InOutput.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element append ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 164</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.default_real_precision">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">default_real_precision</span></code><a class="headerlink" href="#quippy.system_module.InOutput.default_real_precision" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.default_real_precision">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">default_real_precision</span></span><a class="headerlink" href="#quippy.system_module.InOutput.default_real_precision" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element default_real_precision ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 162</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.filename">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">filename</span></code><a class="headerlink" href="#quippy.system_module.InOutput.filename" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.filename">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#quippy.system_module.InOutput.filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element filename ftype=character(256) pytype=str</p>
 <p>Defined at System.fpp line 160</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.formatted">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">formatted</span></code><a class="headerlink" href="#quippy.system_module.InOutput.formatted" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.formatted">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">formatted</span></span><a class="headerlink" href="#quippy.system_module.InOutput.formatted" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element formatted ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 163</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.initialised">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">initialised</span></code><a class="headerlink" href="#quippy.system_module.InOutput.initialised" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.initialised">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">initialised</span></span><a class="headerlink" href="#quippy.system_module.InOutput.initialised" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element initialised ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 170</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.mpi_all_inoutput_flag">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mpi_all_inoutput_flag</span></code><a class="headerlink" href="#quippy.system_module.InOutput.mpi_all_inoutput_flag" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.mpi_all_inoutput_flag">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">mpi_all_inoutput_flag</span></span><a class="headerlink" href="#quippy.system_module.InOutput.mpi_all_inoutput_flag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element mpi_all_inoutput_flag ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 167</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.mpi_print_id">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mpi_print_id</span></code><a class="headerlink" href="#quippy.system_module.InOutput.mpi_print_id" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.mpi_print_id">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">mpi_print_id</span></span><a class="headerlink" href="#quippy.system_module.InOutput.mpi_print_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element mpi_print_id ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 168</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.postfix">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">postfix</span></code><a class="headerlink" href="#quippy.system_module.InOutput.postfix" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.postfix">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">postfix</span></span><a class="headerlink" href="#quippy.system_module.InOutput.postfix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element postfix ftype=character(256) pytype=str</p>
 <p>Defined at System.fpp line 161</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.prefix">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">prefix</span></code><a class="headerlink" href="#quippy.system_module.InOutput.prefix" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.prefix">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">prefix</span></span><a class="headerlink" href="#quippy.system_module.InOutput.prefix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element prefix ftype=character(256) pytype=str</p>
 <p>Defined at System.fpp line 161</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.unit">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">unit</span></code><a class="headerlink" href="#quippy.system_module.InOutput.unit" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.unit">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">unit</span></span><a class="headerlink" href="#quippy.system_module.InOutput.unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element unit ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 159</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.verbosity_cascade_stack">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">verbosity_cascade_stack</span></code><a class="headerlink" href="#quippy.system_module.InOutput.verbosity_cascade_stack" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.verbosity_cascade_stack">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">verbosity_cascade_stack</span></span><a class="headerlink" href="#quippy.system_module.InOutput.verbosity_cascade_stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element verbosity_cascade_stack ftype=type(stack) pytype=Stack</p>
 <p>Defined at System.fpp line 169</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.InOutput.verbosity_stack">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">verbosity_stack</span></code><a class="headerlink" href="#quippy.system_module.InOutput.verbosity_stack" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.InOutput.verbosity_stack">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">verbosity_stack</span></span><a class="headerlink" href="#quippy.system_module.InOutput.verbosity_stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element verbosity_stack ftype=type(stack) pytype=Stack</p>
 <p>Defined at System.fpp line 169</p>
 </dd></dl>
@@ -522,8 +523,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="quippy.system_module.Stack">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">Stack</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">stack</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.Stack">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">stack</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at System.fpp lines 154-156</p>
 <dl class="field-list simple">
@@ -558,8 +559,8 @@ _reada_int_dim1</p>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="quippy.system_module.Stack.pop">
-<code class="sig-name descname"><span class="pre">pop</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.pop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.Stack.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.pop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2217-2223</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -571,8 +572,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.Stack.print">
-<code class="sig-name descname"><span class="pre">print</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">out</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.print" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.Stack.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">out</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2234-2242</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -586,8 +587,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.Stack.push">
-<code class="sig-name descname"><span class="pre">push</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.push" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.Stack.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.push" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2199-2215</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -600,8 +601,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="quippy.system_module.Stack.value">
-<code class="sig-name descname"><span class="pre">value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.value" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.Stack.value">
+<span class="sig-name descname"><span class="pre">value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#Stack.value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.Stack.value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2225-2232</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -617,16 +618,16 @@ _reada_int_dim1</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.Stack.pos">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pos</span></code><a class="headerlink" href="#quippy.system_module.Stack.pos" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.Stack.pos">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">pos</span></span><a class="headerlink" href="#quippy.system_module.Stack.pos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element pos ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 155</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.Stack.val">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">val</span></code><a class="headerlink" href="#quippy.system_module.Stack.val" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.Stack.val">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#quippy.system_module.Stack.val" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element val ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 156</p>
 </dd></dl>
@@ -634,8 +635,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="quippy.system_module.allocatable_array_pointers">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">allocatable_array_pointers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">allocatable_array_pointers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#allocatable_array_pointers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.allocatable_array_pointers">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">allocatable_array_pointers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">allocatable_array_pointers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#allocatable_array_pointers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">f90wrap.fortrantype.FortranDerivedType</span></code></p>
 <p>Defined at System.fpp lines 172-176</p>
 <dl class="field-list simple">
@@ -652,30 +653,30 @@ _reada_int_dim1</p>
 </dl>
 </dd>
 </dl>
-<dl class="py method">
-<dt id="quippy.system_module.allocatable_array_pointers.c_a">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">c_a</span></code><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.c_a" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.allocatable_array_pointers.c_a">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">c_a</span></span><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.c_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element c_a ftype=complex(dp) pytype=complex</p>
 <p>Defined at System.fpp line 175</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.allocatable_array_pointers.i_a">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">i_a</span></code><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.i_a" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.allocatable_array_pointers.i_a">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">i_a</span></span><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.i_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element i_a ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 173</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.allocatable_array_pointers.l_a">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">l_a</span></code><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.l_a" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.allocatable_array_pointers.l_a">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">l_a</span></span><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.l_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element l_a ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 176</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="quippy.system_module.allocatable_array_pointers.r_a">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">r_a</span></code><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.r_a" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="quippy.system_module.allocatable_array_pointers.r_a">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">r_a</span></span><a class="headerlink" href="#quippy.system_module.allocatable_array_pointers.r_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element r_a ftype=real(dp) pytype=float</p>
 <p>Defined at System.fpp line 174</p>
 </dd></dl>
@@ -683,8 +684,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.a2s">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">a2s</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#a2s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.a2s" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.a2s">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">a2s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#a2s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.a2s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2509-2515</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -702,8 +703,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.abort_on_mpi_error">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">abort_on_mpi_error</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routine_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#abort_on_mpi_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.abort_on_mpi_error" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.abort_on_mpi_error">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">abort_on_mpi_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routine_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#abort_on_mpi_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.abort_on_mpi_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2440-2445</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -717,8 +718,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.alloc_trace">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">alloc_trace</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#alloc_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.alloc_trace" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.alloc_trace">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">alloc_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#alloc_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.alloc_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2459-2465</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -731,8 +732,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.cmd_arg_count">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">cmd_arg_count</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#cmd_arg_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.cmd_arg_count" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.cmd_arg_count">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">cmd_arg_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#cmd_arg_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.cmd_arg_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1898-1900</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -744,8 +745,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.current_times">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">current_times</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">cpu_t</span></em>, <em class="sig-param"><span class="pre">wall_t</span></em>, <em class="sig-param"><span class="pre">mpi_t</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#current_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.current_times" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.current_times">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">current_times</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">cpu_t</span></em>, <em class="sig-param"><span class="pre">wall_t</span></em>, <em class="sig-param"><span class="pre">mpi_t</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#current_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.current_times" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2104-2112</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -759,8 +760,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.current_verbosity">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">current_verbosity</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#current_verbosity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.current_verbosity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.current_verbosity">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">current_verbosity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#current_verbosity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.current_verbosity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2302-2304</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -773,8 +774,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.dealloc_trace">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">dealloc_trace</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#dealloc_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.dealloc_trace" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.dealloc_trace">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">dealloc_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#dealloc_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.dealloc_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2467-2473</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -787,30 +788,30 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.enable_timing">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">enable_timing</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#enable_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.enable_timing" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.enable_timing">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">enable_timing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#enable_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.enable_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2415-2416</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.func">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">func</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system_module.func" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.func">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.system_module.func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element command_arg ftype=character(2550) pytype=str</p>
 <p>Defined at System.fpp line 213</p>
 <p>The first ‘MAX_READABLE_ARGS’ command arguments</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_array_command_arg">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_array_command_arg</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_array_command_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_array_command_arg" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_array_command_arg">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_array_command_arg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_array_command_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_array_command_arg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element command_arg ftype=character(2550) pytype=str</p>
 <p>Defined at System.fpp line 213</p>
 <p>The first ‘MAX_READABLE_ARGS’ command arguments</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_cmd_arg">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_cmd_arg</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">i</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_cmd_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_cmd_arg" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_cmd_arg">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_cmd_arg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">i</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_cmd_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_cmd_arg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1902-1906</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -828,22 +829,22 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_complex_size">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_complex_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_complex_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_complex_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_complex_size">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_complex_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_complex_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_complex_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element complex_size ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 149</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_dp">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_dp</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_dp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_dp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_dp">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_dp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_dp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_dp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element dp ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 145</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_env_var">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_env_var</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_env_var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_env_var" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_env_var">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_env_var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">status</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_env_var"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_env_var" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1908-1913</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -861,68 +862,68 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_errorlog">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_errorlog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_errorlog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_errorlog" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_errorlog">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_errorlog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_errorlog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_errorlog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element errorlog ftype=type(inoutput) pytype=Inoutput</p>
 <p>Defined at System.fpp line 185</p>
 <p>error output, connected to ‘stderr’ by default</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_exec_name">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_exec_name</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_exec_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_exec_name" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_exec_name">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_exec_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_exec_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_exec_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element exec_name ftype=character(255) pytype=str</p>
 <p>Defined at System.fpp line 212</p>
 <p>The name of the executable</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_inout">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_inout</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_inout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_inout" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_inout">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_inout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_inout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_inout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element inout ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 201</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_input">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_input</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_input" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_input">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element input ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 199</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_integer_size">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_integer_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_integer_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_integer_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_integer_size">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_integer_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_integer_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_integer_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element integer_size ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 147</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_line">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_line</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_line" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_line">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element line ftype=character(10240) pytype=str</p>
 <p>Defined at System.fpp line 182</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_mainlog">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_mainlog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mainlog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mainlog" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_mainlog">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_mainlog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mainlog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mainlog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element mainlog ftype=type(inoutput) pytype=Inoutput</p>
 <p>Defined at System.fpp line 184</p>
 <p>main output, connected to ‘stdout’ by default</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_max_readable_args">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_max_readable_args</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_max_readable_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_max_readable_args" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_max_readable_args">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_max_readable_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_max_readable_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_max_readable_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element max_readable_args ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 211</p>
 <p>The maximum number of arguments that will be read</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_mpi_size_rank">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_mpi_size_rank</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mpi_size_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mpi_size_rank" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_mpi_size_rank">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_mpi_size_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mpi_size_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mpi_size_rank" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1814-1820</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -945,94 +946,94 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_mpilog">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_mpilog</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mpilog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mpilog" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_mpilog">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_mpilog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_mpilog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_mpilog" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element mpilog ftype=type(inoutput) pytype=Inoutput</p>
 <p>Defined at System.fpp line 186</p>
 <p>MPI output, written to by each mpi process</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_num_command_args">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_num_command_args</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_num_command_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_num_command_args" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_num_command_args">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_num_command_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_num_command_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_num_command_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element num_command_args ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 210</p>
 <p>The number of arguments on the command line</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_numerical_zero">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_numerical_zero</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_numerical_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_numerical_zero" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_numerical_zero">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_numerical_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_numerical_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_numerical_zero" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element numerical_zero ftype=real(dp) pytype=float</p>
 <p>Defined at System.fpp line 189</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_output">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_output</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_output" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_output">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element output ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 200</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_always">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_always</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_always"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_always" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_always">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_always</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_always"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_always" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_always ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 193</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_analysis">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_analysis</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_analysis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_analysis">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_analysis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_analysis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_analysis ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 198</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_nerd">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_nerd</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_nerd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_nerd" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_nerd">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_nerd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_nerd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_nerd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_nerd ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 197</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_normal">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_normal</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_normal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_normal">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_normal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_normal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_normal ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 195</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_silent">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_silent</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_silent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_silent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_silent">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_silent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_silent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_silent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_silent ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 194</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_print_verbose">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_print_verbose</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_verbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_verbose" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_print_verbose">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_print_verbose</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_print_verbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_print_verbose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element print_verbose ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 196</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_qp">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_qp</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_qp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_qp" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_qp">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_qp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_qp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_qp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element qp ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 144</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_quip_new_line">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_quip_new_line</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_quip_new_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_quip_new_line" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_quip_new_line">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_quip_new_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_quip_new_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_quip_new_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element quip_new_line ftype=character pytype=str</p>
 <p>Defined at System.fpp line 146</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_quippy_running">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_quippy_running</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_quippy_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_quippy_running" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_quippy_running">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_quippy_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_quippy_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_quippy_running" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2429-2431</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1044,85 +1045,85 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_ran_a">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_ran_a</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_a" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_ran_a">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_ran_a</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element ran_a ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 203</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_ran_m">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_ran_m</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_m"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_m" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_ran_m">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_ran_m</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_m"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_m" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element ran_m ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 204</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_ran_max">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_ran_max</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_max" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_ran_max">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_ran_max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element ran_max ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 191</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_ran_q">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_ran_q</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_q" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_ran_q">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_ran_q</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_q" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element ran_q ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 205</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_ran_r">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_ran_r</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_r" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_ran_r">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_ran_r</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_ran_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_ran_r" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element ran_r ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 206</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_real_size">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_real_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_real_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_real_size" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_real_size">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_real_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_real_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_real_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element real_size ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 148</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_system_always_flush">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_system_always_flush</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_system_always_flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_system_always_flush" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_system_always_flush">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_system_always_flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_system_always_flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_system_always_flush" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element system_always_flush ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 142</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_system_use_fortran_random">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_system_use_fortran_random</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_system_use_fortran_random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_system_use_fortran_random" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_system_use_fortran_random">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_system_use_fortran_random</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_system_use_fortran_random"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_system_use_fortran_random" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element system_use_fortran_random ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 143</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_timer_stack">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_timer_stack</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_timer_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_timer_stack" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_timer_stack">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_timer_stack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_timer_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_timer_stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element timer_stack ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 208</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_trace_memory">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_trace_memory</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_trace_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_trace_memory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_trace_memory">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_trace_memory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_trace_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_trace_memory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element trace_memory ftype=logical pytype=bool</p>
 <p>Defined at System.fpp line 150</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.get_traced_memory">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">get_traced_memory</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_traced_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_traced_memory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.get_traced_memory">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">get_traced_memory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#get_traced_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.get_traced_memory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element traced_memory ftype=integer pytype=int</p>
 <p>Defined at System.fpp line 151</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.increase_stack">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">increase_stack</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#increase_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.increase_stack" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.increase_stack">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">increase_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#increase_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.increase_stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2433-2437</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1139,8 +1140,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.is_file_readable">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">is_file_readable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#is_file_readable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.is_file_readable" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.is_file_readable">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">is_file_readable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#is_file_readable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.is_file_readable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2169-2181</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1158,8 +1159,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.linebreak_string">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">linebreak_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_len</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#linebreak_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.linebreak_string" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.linebreak_string">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">linebreak_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_len</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#linebreak_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.linebreak_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2601-2639</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1177,8 +1178,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.link_run_directory">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">link_run_directory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">sourcename</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">basename</span></em>, <em class="sig-param"><span class="pre">run_dir_i</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#link_run_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.link_run_directory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.link_run_directory">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">link_run_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">sourcename</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">basename</span></em>, <em class="sig-param"><span class="pre">run_dir_i</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#link_run_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.link_run_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2565-2589</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1198,8 +1199,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.lower_case">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">lower_case</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#lower_case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.lower_case" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.lower_case">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">lower_case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#lower_case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.lower_case" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2690-2702</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1217,8 +1218,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.make_run_directory">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">make_run_directory</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">basename</span></em>, <em class="sig-param"><span class="pre">force_run_dir_i</span></em>, <em class="sig-param"><span class="pre">run_dir_i</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#make_run_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.make_run_directory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.make_run_directory">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">make_run_directory</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">basename</span></em>, <em class="sig-param"><span class="pre">force_run_dir_i</span></em>, <em class="sig-param"><span class="pre">run_dir_i</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#make_run_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.make_run_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2528-2563</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1238,8 +1239,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.mpi_id">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">mpi_id</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#mpi_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.mpi_id" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.mpi_id">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">mpi_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#mpi_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.mpi_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2482-2484</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1252,8 +1253,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.mpi_n_procs">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">mpi_n_procs</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#mpi_n_procs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.mpi_n_procs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.mpi_n_procs">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">mpi_n_procs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#mpi_n_procs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.mpi_n_procs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2487-2489</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1266,8 +1267,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.num_fields_in_string_simple">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">num_fields_in_string_simple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">this</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#num_fields_in_string_simple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.num_fields_in_string_simple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.num_fields_in_string_simple">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">num_fields_in_string_simple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">this</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#num_fields_in_string_simple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.num_fields_in_string_simple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 874-883</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1285,8 +1286,8 @@ _reada_int_dim1</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.optional_default">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">optional_default</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#optional_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.optional_default" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.optional_default">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">optional_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#optional_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.optional_default" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 347-350</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_optional_default_l
@@ -1305,8 +1306,8 @@ the default value</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.pad">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">pad</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.pad" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.pad">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.pad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2518-2526</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1325,8 +1326,8 @@ the default value</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.parallel_print">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">parallel_print</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lines</span></em>, <em class="sig-param"><span class="pre">comm</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">file</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#parallel_print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.parallel_print" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.parallel_print">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">parallel_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">lines</span></em>, <em class="sig-param"><span class="pre">comm</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">file</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#parallel_print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.parallel_print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2447-2457</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1341,8 +1342,8 @@ the default value</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.parse_string">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">parse_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">this</span></em>, <em class="sig-param"><span class="pre">delimiters</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">matching</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#parse_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.parse_string" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.parse_string">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">parse_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">this</span></em>, <em class="sig-param"><span class="pre">delimiters</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">matching</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#parse_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.parse_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1047-1138</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1368,8 +1369,8 @@ the default value</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.print">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">print</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.print">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 252-255</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_inoutput_print_string
@@ -1389,8 +1390,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.print_title">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">print_title</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">title</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print_title" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.print_title">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">print_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">title</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">verbosity</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print_title" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 717-732</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1405,8 +1406,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.print_warning">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">print_warning</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print_warning" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.print_warning">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">print_warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#print_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.print_warning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1926-1929</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1419,8 +1420,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.progress">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">progress</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.progress" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.progress">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.progress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2705-2721</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1435,8 +1436,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.progress_timer">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">progress_timer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_seconds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#progress_timer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.progress_timer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.progress_timer">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">progress_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_seconds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#progress_timer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.progress_timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2725-2769</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1453,8 +1454,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.ran">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">ran</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.ran">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">ran</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2043-2057</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1467,8 +1468,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.ran_normal">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">ran_normal</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran_normal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.ran_normal">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">ran_normal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran_normal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2072-2080</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1481,8 +1482,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.ran_uniform">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">ran_uniform</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran_uniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran_uniform" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.ran_uniform">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">ran_uniform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#ran_uniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.ran_uniform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2060-2069</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1495,8 +1496,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.reference_false">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">reference_false</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#reference_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.reference_false" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.reference_false">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">reference_false</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#reference_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.reference_false" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2495-2497</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1508,8 +1509,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.reference_true">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">reference_true</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#reference_true"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.reference_true" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.reference_true">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">reference_true</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#reference_true"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.reference_true" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2491-2493</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1521,8 +1522,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.round">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">round</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#round"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.round" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.round">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">digits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#round"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.round" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1613-1625</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1545,8 +1546,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.s2a">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">s2a</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#s2a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.s2a" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.s2a">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">s2a</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#s2a"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.s2a" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2500-2506</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1564,8 +1565,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.split_string">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">split_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">this</span></em>, <em class="sig-param"><span class="pre">separators</span></em>, <em class="sig-param"><span class="pre">quotes</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">matching</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#split_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.split_string" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.split_string">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">split_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">this</span></em>, <em class="sig-param"><span class="pre">separators</span></em>, <em class="sig-param"><span class="pre">quotes</span></em>, <em class="sig-param"><span class="pre">fields</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">matching</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#split_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.split_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 889-1021</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1590,8 +1591,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.split_string_simple">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">split_string_simple</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">str</span></em>, <em class="sig-param"><span class="pre">fields</span></em>, <em class="sig-param"><span class="pre">separators</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#split_string_simple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.split_string_simple" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.split_string_simple">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">split_string_simple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">str</span></em>, <em class="sig-param"><span class="pre">fields</span></em>, <em class="sig-param"><span class="pre">separators</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#split_string_simple"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.split_string_simple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 842-872</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1617,8 +1618,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.string_to_int">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">string_to_int</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_int" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.string_to_int">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">string_to_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1231-1241</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1637,8 +1638,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.string_to_logical">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">string_to_logical</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_logical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_logical" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.string_to_logical">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">string_to_logical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_logical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_logical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1244-1256</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1657,8 +1658,8 @@ Other user-defined types define the Print interface in the same way.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.string_to_numerical">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">string_to_numerical</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_numerical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_numerical" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.string_to_numerical">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">string_to_numerical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_numerical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_numerical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 355-357</p>
 <dl class="simple">
 <dt>Overloaded interface containing the following procedures:</dt><dd><p>_string_to_real_sub
@@ -1672,8 +1673,8 @@ _string_to_logical1d</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.string_to_real">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">string_to_real</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_real" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.string_to_real">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">string_to_real</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">string_bn</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#string_to_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.string_to_real" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1259-1269</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1692,15 +1693,15 @@ _string_to_logical1d</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_finalise">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_finalise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_finalise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_finalise">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_finalise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_finalise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_finalise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1916-1923</p>
 <p>Shut down gracefully, finalising system objects.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_get_random_seed">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_get_random_seed</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_get_random_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_get_random_seed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_get_random_seed">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_get_random_seed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_get_random_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_get_random_seed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2038-2040</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1713,8 +1714,8 @@ _string_to_logical1d</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_initialise">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_initialise</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">seed</span></em>, <em class="sig-param"><span class="pre">mpi_all_inoutput</span></em>, <em class="sig-param"><span class="pre">common_seed</span></em>, <em class="sig-param"><span class="pre">enable_timing</span></em>, <em class="sig-param"><span class="pre">quippy_running</span></em>, <em class="sig-param"><span class="pre">mainlog_file</span></em>, <em class="sig-param"><span class="pre">mainlog_unit</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_initialise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_initialise">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_initialise</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">verbosity</span></em>, <em class="sig-param"><span class="pre">seed</span></em>, <em class="sig-param"><span class="pre">mpi_all_inoutput</span></em>, <em class="sig-param"><span class="pre">common_seed</span></em>, <em class="sig-param"><span class="pre">enable_timing</span></em>, <em class="sig-param"><span class="pre">quippy_running</span></em>, <em class="sig-param"><span class="pre">mainlog_file</span></em>, <em class="sig-param"><span class="pre">mainlog_unit</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_initialise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1830-1885</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1747,8 +1748,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_reseed_rng">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_reseed_rng</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_reseed_rng"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_reseed_rng" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_reseed_rng">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_reseed_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_reseed_rng"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_reseed_rng" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2032-2035</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1761,14 +1762,14 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_resync_rng">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_resync_rng</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_resync_rng"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_resync_rng" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_resync_rng">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_resync_rng</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_resync_rng"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_resync_rng" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2004-2005</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_set_random_seeds">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_set_random_seeds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_set_random_seeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_set_random_seeds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_set_random_seeds">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_set_random_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_set_random_seeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_set_random_seeds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 1945-1961</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1780,8 +1781,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.system_timer">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">system_timer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">do_always</span></em>, <em class="sig-param"><span class="pre">time_elapsed</span></em>, <em class="sig-param"><span class="pre">do_print</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_timer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_timer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.system_timer">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">system_timer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">do_always</span></em>, <em class="sig-param"><span class="pre">time_elapsed</span></em>, <em class="sig-param"><span class="pre">do_print</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#system_timer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.system_timer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2126-2166</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1807,8 +1808,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.th">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">th</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#th"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.th" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.th">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">th</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#th"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.th" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2010-2029</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1826,8 +1827,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_of_str">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_of_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_of_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_of_str" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_of_str">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_of_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_of_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_of_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2264-2281</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1845,15 +1846,15 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_pop">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_pop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_pop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_pop">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_pop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_pop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2297-2299</p>
 <p>pop the current verbosity value off the stack</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_push">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_push</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_push">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2286-2294</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1868,8 +1869,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_push_decrement">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_push_decrement</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">n</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push_decrement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push_decrement" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_push_decrement">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_push_decrement</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">n</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push_decrement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push_decrement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2315-2320</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1882,8 +1883,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_push_increment">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_push_increment</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">n</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push_increment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push_increment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_push_increment">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_push_increment</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">n</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_push_increment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_push_increment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2307-2312</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1896,8 +1897,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_set_minimum">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_set_minimum</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_set_minimum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_set_minimum" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_set_minimum">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_set_minimum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_set_minimum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_set_minimum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2324-2327</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1911,8 +1912,8 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_to_str">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_to_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_to_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_to_str" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_to_str">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_to_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_to_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2245-2261</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1930,16 +1931,16 @@ MPI process.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.verbosity_unset_minimum">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">verbosity_unset_minimum</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_unset_minimum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_unset_minimum" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.verbosity_unset_minimum">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">verbosity_unset_minimum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#verbosity_unset_minimum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.verbosity_unset_minimum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2331-2333</p>
 <p>unset the minimum verbosity value, by popping value from
 stack and popping from verbosity_cascade_stack</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="quippy.system_module.wait_for_file_to_exist">
-<code class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></code><code class="sig-name descname"><span class="pre">wait_for_file_to_exist</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename</span></em>, <em class="sig-param"><span class="pre">max_wait_time</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">cycle_time</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#wait_for_file_to_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.wait_for_file_to_exist" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="quippy.system_module.wait_for_file_to_exist">
+<span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">wait_for_file_to_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename</span></em>, <em class="sig-param"><span class="pre">max_wait_time</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">cycle_time</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#wait_for_file_to_exist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.wait_for_file_to_exist" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defined at System.fpp lines 2652-2672</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
