@@ -9,7 +9,7 @@ if [[ $# -gt 1 ]]; then
 fi
 if [[ $# == 1 ]]; then
     if [[ $1 == "--hash-only" ]]; then
-        hash-only=1
+        hashonly=1
     else
         echo $usage 1>&2
         exit 1
@@ -23,7 +23,7 @@ if [ -s "${QUIP_ROOT}/GIT_VERSION" ]; then
    exit 0
 elif [ -d ${QUIP_ROOT}/.git ] || [ -s ${QUIP_ROOT}/.git ]; then
    cd ${QUIP_ROOT}
-   if [ ! -z $hash-only ]; then
+   if [ ! -z $hashonly ]; then
        echo "$(git describe --always --tags --dirty)"
    else
        echo "$(git config --get remote.origin.url),$(git describe --always --tags --dirty)"
