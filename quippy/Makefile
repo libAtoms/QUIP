@@ -112,3 +112,8 @@ install: build
 	cp ../../quippy/setup.py .
 	${PIP} install ${QUIPPY_INSTALL_OPTS} .
 	rm setup.py
+
+wheel:
+	cp ../../quippy/setup.py .
+	${PIP} wheel ${QUIPPY_INSTALL_OPTS} . -d wheel
+	rm setup.py

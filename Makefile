@@ -241,6 +241,18 @@ install-quippy: quippy
 	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch install
 	rm ${BUILDDIR}/Makefile
 
+
+wheel-quippy: quippy
+	@echo "********************************************"
+	@echo ""
+	@echo " Binary distribution of quippy (wheel)"
+	@echo ""
+	@echo "********************************************"
+	rm -f ${BUILDDIR}/Makefile
+	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
+	${MAKE} -C ${BUILDDIR} QUIP_ROOT=${QUIP_ROOT} -I${PWD} -I${PWD}/arch wheel
+	rm ${BUILDDIR}/Makefile
+
 clean-quippy:
 	rm -f ${BUILDDIR}/Makefile
 	cp ${PWD}/quippy/Makefile ${BUILDDIR}/Makefile
