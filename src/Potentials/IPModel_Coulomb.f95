@@ -278,7 +278,6 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       enddo
    endif
 
-
    selectcase(this%method)
    case(IPCoulomb_Method_Direct)
       call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)

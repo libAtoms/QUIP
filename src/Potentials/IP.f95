@@ -69,6 +69,7 @@
 !%    \item    CH4 potential ({\bf IPModel_CH4})
 !%    \item    Confining monomer potential ({\bf IPModel_ConfiningMonomer})
 !%    \item    Repulsive Step potential ({\bf IPModel_RS})
+!%    \item    QEq potential ({\bf IPModel_QEq})
 !%    \item    Template potential ({\bf IPModel_Template})
 !%   \end{itemize}
 !%  The IP_type object contains details regarding the selected IP.
@@ -117,6 +118,7 @@
 !%    \item    'IP TTM_nF'
 !%    \item    'IP CH4'
 !%    \item    'IP RS'
+!%    \item    'IP QEq'
 !%    \item    'IP Template'
 !%   \end{itemize}
 !X
@@ -185,6 +187,7 @@ use IPModel_MBD_module, only : ipmodel_mbd, initialise, finalise, calc, print
 use IPModel_TTM_nF_module, only : ipmodel_ttm_nf, initialise, finalise, calc, print
 use IPModel_vdW_module, only : ipmodel_vdW, initialise, finalise, calc, print
 use IPModel_RS_module, only : ipmodel_rs, initialise, finalise, calc, print
+use IPModel_QEq_module, only : ipmodel_QEq, initialise, finalise, calc, print
 ! Add new IP here
 use IPModel_Template_module, only : ipmodel_template, initialise, finalise, calc, print
 
@@ -198,7 +201,7 @@ integer, parameter :: FF_LJ = 1, FF_SW = 2, FF_Tersoff = 3, FF_EAM_ErcolAd = 4, 
      FF_Einstein = 19, FF_Coulomb = 20, FF_Sutton_Chen = 21, FF_KIM = 22, FF_FX = 23, FF_HFdimer = 24, FF_Custom = 25, FF_SW_VP=26, &
      FF_BornMayer = 27, FF_WaterDimer_Gillan=28, FF_WaterTrimer_Gillan=29, FF_Tether=30, FF_LMTO_TBE=31, FF_FC4 = 32, FF_Spring=33, &
      FF_Multipoles=34, FF_SCME = 35, FF_MTP = 36, FF_ZBL=37, FF_LinearSOAP=38, &
-     FF_MBD=39, FF_DispTS=40, FF_TTM_NF = 41, FF_CH4=42, FF_ConfiningMonomer=43, FF_vdW = 44, FF_RS=45, & ! Add new IPs here
+     FF_MBD=39, FF_DispTS=40, FF_TTM_NF = 41, FF_CH4=42, FF_ConfiningMonomer=43, FF_vdW = 44, FF_RS=45, FF_QEq = 46, & ! Add new IPs here
      FF_Template = 99
 
 public :: IP_type
@@ -255,6 +258,7 @@ type IP_type
   type(IPModel_CH4) ip_CH4
   type(IPModel_vdW) ip_vdW
   type(IPModel_RS) ip_RS
+  type(IPModel_QEq) ip_QEq
   type(IPModel_Template) ip_Template
   type(mpi_context) :: mpi_glob, mpi_local
 
@@ -363,7 +367,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
        is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & 
-       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, is_CH4, is_ConfiningMonomer, is_vdW, is_RS, &! Add new IPs here
+       is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, is_CH4, is_ConfiningMonomer, is_vdW, is_RS, is_QEq, &! Add new IPs here
        is_Template
 
   INIT_ERROR(error)
@@ -425,6 +429,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'CH4', 'false', is_CH4, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'vdW', 'false', is_vdW, help_string="van der Waals correction")
   call param_register(params, 'RS', 'false', is_RS, help_string="Repulsive Step potential")
+  call param_register(params, 'QEq', 'false', is_QEq, help_string="Charge Equilibration")
   call param_register(params, 'Template', 'false', is_Template, help_string="No help yet.  This source file was $LastChangedBy$")
 
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IP_Initialise_str args_str')) then
@@ -436,7 +441,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan,is_WaterTrimer_Gillan, &
        is_Tether, is_Spring, is_LMTO_TBE, is_FC4, is_Multipoles, is_DispTS, is_SCME, is_MTP, is_MBD, is_ZBL,is_linearSOAP, &
-       is_TTM_nF, is_CH4, is_ConfiningMonomer, is_vdW, is_RS, & ! add new IPs here
+       is_TTM_nF, is_CH4, is_ConfiningMonomer, is_vdW, is_RS, is_QEq, & ! add new IPs here
        is_Template /)) /= 1) then
     RAISE_ERROR("IP_Initialise_str found too few or too many IP Model types args_str='"//trim(args_str)//"'", error)
   endif
@@ -580,6 +585,9 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   else if (is_RS) then
     this%functional_form = FF_RS
     call Initialise(this%ip_RS, args_str, param_str) 
+  else if (is_QEq) then
+    this%functional_form = FF_QEq
+    call Initialise(this%ip_QEq, args_str, param_str) 
      ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
@@ -689,6 +697,8 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_vdW)
    case (FF_RS)
       call Finalise(this%ip_RS)
+   case (FF_QEq)
+      call Finalise(this%ip_QEq)
    ! add new IP here
    case (FF_Template)
       call Finalise(this%ip_Template)
@@ -795,6 +805,8 @@ function IP_cutoff(this)
      IP_cutoff = this%ip_vdW%cutoff
   case (FF_RS)
      IP_cutoff = this%ip_RS%cutoff
+  case (FF_QEq)
+     IP_cutoff = this%ip_QEq%cutoff
   ! Add new IP here
   case (FF_Template)
      IP_cutoff = this%ip_Template%cutoff
@@ -964,6 +976,8 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_vdW, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_RS)
       call calc(this%ip_RS, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
+   case (FF_QEq)
+      call calc(this%ip_QEq, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    ! Add new IP here   
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
@@ -1080,6 +1094,8 @@ subroutine IP_Print(this, file, dict, error)
       call Print(this%ip_vdW, file=file)
    case (FF_RS)
       call Print(this%ip_RS, file=file)
+   case (FF_QEq)
+      call Print(this%ip_QEq, file=file)
     ! add new IP here
    case (FF_Template)
       call Print(this%ip_Template, file=file)

@@ -56,7 +56,7 @@ contains
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, error)
+  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, de_dq, d2e_dq2, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -67,6 +67,8 @@ contains
     real(dp), intent(in), optional                     :: ewald_error
     logical, intent(in), optional                      :: use_ewald_cutoff
     real(dp), intent(in), optional                     :: smooth_coulomb_cutoff
+    real(dp), dimension(:), intent(out), optional      :: de_dq
+    real(dp), dimension(:,:), intent(out), optional    :: d2e_dq2
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, k, n, n1, n2, n3, not_needed !for reciprocal force
@@ -79,7 +81,7 @@ contains
 
     real(dp), dimension(3) :: force, u_ij, a, b, c, h
     real(dp), dimension(3,3) :: identity3x3, k3x3
-    real(dp), dimension(:,:,:,:), allocatable :: coskr, sinkr 
+    real(dp), dimension(:,:,:,:), allocatable :: coskr, sinkr, dcoskr_dq, dsinkr_dq
     real(dp), dimension(:,:,:,:), allocatable :: k_vec   ! reciprocal vectors
     real(dp), dimension(:,:,:,:), allocatable :: force_factor
     real(dp), dimension(:,:,:), allocatable   :: energy_factor
@@ -91,6 +93,8 @@ contains
     INIT_ERROR(error)
 
     call check_size('charge',charge,at_in%N,'IPEwald',error)
+    if(present(de_dq)) call check_size('de_dq',de_dq,at_in%N,'IPEwald',error)
+    if(present(d2e_dq2)) call check_size('d2e_dq2',d2e_dq2,(/at_in%N,at_in%N/),'IPEwald',error)
 
     identity3x3 = 0.0_dp
     call add_identity(identity3x3)
@@ -155,6 +159,10 @@ contains
     allocate( coskr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
             & sinkr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
 
+    if(present(de_dq) .or. present(d2e_dq2)) then
+       allocate( dcoskr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
+               & dsinkr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
+    endif
     k_vec = 0.0_dp
     mod2_k = 0.0_dp
     force_factor = 0.0_dp
@@ -162,6 +170,10 @@ contains
 
     coskr = 0.0_dp
     sinkr = 0.0_dp
+    if(present(de_dq) .or. present(d2e_dq2)) then
+       dcoskr_dq = 0.0_dp
+       dsinkr_dq = 0.0_dp
+    endif
 
     not_needed = ( 2*nmax(3) + 1 ) * nmax(2) + nmax(3) + 1 ! lot of symmetries for k and -k so count only
 
@@ -197,6 +209,10 @@ contains
                    arg = dot_product(at%pos(:,i), k_vec(:,n3,n2,n1))
                    coskr(n3,n2,n1,i) = cos(arg)*charge(i)
                    sinkr(n3,n2,n1,i) = sin(arg)*charge(i)
+                   if(present(de_dq) .or. present(d2e_dq2)) then
+                      dcoskr_dq(n3,n2,n1,i) = cos(arg)
+                      dsinkr_dq(n3,n2,n1,i) = sin(arg)
+                   endif
 
                 endif
              enddo
@@ -207,6 +223,8 @@ contains
     if(present(e)) e = 0.0_dp
     if(present(f)) f  = 0.0_dp
     if(present(virial)) virial  = 0.0_dp
+    if(present(de_dq)) de_dq = 0.0_dp
+    if(present(d2e_dq2)) d2e_dq2 = 0.0_dp
 
     do i=1,at%N
        !Loop over neighbours
@@ -226,6 +244,8 @@ contains
           erfc_ar = erfc(r_ij*alpha)/r_ij
 
           if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)* ( erfc_ar - smooth_f )
+          if(present(de_dq)) de_dq(i) = de_dq(i) + charge(j)* ( erfc_ar - smooth_f )
+          if(present(d2e_dq2)) d2e_dq2(j,i) = d2e_dq2(j,i) + 0.5_dp*( erfc_ar - smooth_f )
 
           if( present(f) .or. present(virial) ) then
               force(:) = charge(i)*charge(j) * &
@@ -243,7 +263,27 @@ contains
              
     ! reciprocal energy
     if(present(e)) e = e + sum((sum(coskr,dim=4)**2 + sum(sinkr,dim=4)**2)*energy_factor) * prefac &
-    & - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
+       - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
+
+    if(present(de_dq)) then
+       do i=1,at%N
+          de_dq(i) = de_dq(i) + 2.0_dp * prefac * &
+             sum(( sum(coskr,dim=4)*dcoskr_dq(:,:,:,i) + sum(sinkr,dim=4)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
+             - 2.0_dp*charge(i) * alpha / sqrt(PI) - 2.0_dp * PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)
+       enddo
+    endif
+
+    if(present(d2e_dq2)) then
+       do i=1,at%N
+          do j=1,at%N
+             d2e_dq2(j,i) = d2e_dq2(j,i) + prefac * &
+             sum(( dcoskr_dq(:,:,:,j)*dcoskr_dq(:,:,:,i) + dsinkr_dq(:,:,:,j)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
+             - PI / ( 2.0_dp * alpha**2 * v )
+          enddo
+          d2e_dq2(i,i) = d2e_dq2(i,i) - alpha / sqrt(PI)
+       enddo
+    endif
+
 
     ! reciprocal force
     if( present(f) ) then
@@ -295,9 +335,14 @@ contains
     if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
     if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
     if(present(virial)) virial = virial * HARTREE*BOHR
+    if(present(de_dq)) de_dq = de_dq * HARTREE*BOHR
+    if(present(d2e_dq2)) d2e_dq2 = 2.0_dp * d2e_dq2 * HARTREE*BOHR
 
 
     deallocate( coskr, sinkr )
+    if(allocated(dcoskr_dq)) deallocate(dcoskr_dq)
+    if(allocated(dsinkr_dq)) deallocate(dsinkr_dq)
+
     deallocate( k_vec, mod2_k, force_factor, energy_factor )
     if (associated(at,my_at)) call finalise(my_at)
 
@@ -375,7 +420,7 @@ contains
 
   endsubroutine Ewald_corr_calc
 
-  subroutine Direct_Coulomb_calc(at_in,charge, e,f,virial,local_e,cutoff,error)
+  subroutine Direct_Coulomb_calc(at_in,charge, e,f,virial,local_e,cutoff,de_dq,d2e_dq2,error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -385,6 +430,8 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), dimension(:), intent(out), optional      :: local_e
     real(dp), intent(in), optional                     :: cutoff
+    real(dp), dimension(:), intent(out), optional      :: de_dq
+    real(dp), dimension(:,:), intent(out), optional    :: d2e_dq2
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, n
@@ -398,7 +445,9 @@ contains
     type(Atoms), pointer :: at => null()
 
     INIT_ERROR(error)
-    call check_size('charge',charge,(/at_in%N/),'Ewald_corr_calc',error)
+    call check_size('charge',charge,(/at_in%N/),'Direct_Coulomb_calc',error)
+    if(present(de_dq)) call check_size('de_dq',de_dq,(/at_in%N/),'Direct_Coulomb_calc',error)
+    if(present(d2e_dq2)) call check_size('d2e_dq2',d2e_dq2,(/at_in%N,at_in%N/),'Direct_Coulomb_calc',error)
 
     my_cutoff = optional_default(at_in%cutoff,cutoff)
 
@@ -415,6 +464,8 @@ contains
     if( present(f) ) f = 0.0_dp
     if( present(virial) ) virial = 0.0_dp
     if( present(local_e) ) local_e = 0.0_dp
+    if( present(de_dq) ) de_dq = 0.0_dp
+    if( present(d2e_dq2) ) d2e_dq2 = 0.0_dp
 
     do i = 1, at%N
        !Loop over neighbours
@@ -423,6 +474,8 @@ contains
           if( r_ij > my_cutoff )  cycle
            
           de = 0.5_dp * charge(i)*charge(j) / r_ij
+          if(present(de_dq)) de_dq(i) =  de_dq(i) + charge(j) / r_ij
+          if(present(d2e_dq2)) d2e_dq2(j,i) =  d2e_dq2(j,i) + 0.5_dp / r_ij
 
           if( present(e) ) e = e + de
           if( present(local_e) ) local_e(i) = local_e(i) + de
@@ -444,6 +497,8 @@ contains
     if(present(e)) e = e * HARTREE*BOHR ! convert from internal units to eV
     if(present(f)) f = f * HARTREE*BOHR ! convert from internal units to eV/A
     if(present(virial)) virial = virial * HARTREE*BOHR
+    if(present(de_dq)) de_dq = de_dq * HARTREE*BOHR
+    if(present(d2e_dq2)) d2e_dq2 = d2e_dq2 * HARTREE*BOHR
 
     if(associated(at,my_at)) call finalise(my_at)
     at => null()
