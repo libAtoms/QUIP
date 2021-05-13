@@ -105,7 +105,10 @@ _quippy.so: ${WRAP_FPP_FILES}
 	ln -s _quippy.*.so _quippy.so
 
 build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
+	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	${PYTHON} ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
+	cp ../../quippy/setup.py .
+	${PIP} install ${QUIPPY_INSTALL_OPTS} .
+	rm setup.py

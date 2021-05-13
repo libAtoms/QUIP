@@ -1,7 +1,7 @@
-import subprocess
 from setuptools import setup, Extension
 
-version = subprocess.getoutput(["../../bin/gitversion"]).strip()
+with open('VERSION') as fin:
+    version='0.9+git'+fin.readline().strip().replace('-dirty', '.dirty')
 print('version:', version)
 
 setup(
