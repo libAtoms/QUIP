@@ -242,7 +242,8 @@ recursive subroutine IPModel_QEq_Calc(this, at, e, local_e, f, virial, local_vir
 
    allocate(x(at%N+1),b(at%N+1),J_matrix(at%N+1,at%N+1))
    !call Direct_Coulomb_calc(at, charge, e=e, d2e_dq2 = J_matrix(1:at%N,1:at%N) )
-   call Ewald_calc(at, charge, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_qeq_cutoff, d2e_dq2 = J_matrix(1:at%N,1:at%N) )
+   call Ewald_calc(at, charge, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_qeq_cutoff, &
+   d2e_dq2 = J_matrix(1:at%N,1:at%N), real_space = .false. )
 
    J_matrix(at%N+1,1:at%N) = -1.0_dp 
    J_matrix(1:at%N,at%N+1) = -1.0_dp 

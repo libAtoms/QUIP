@@ -56,7 +56,8 @@ contains
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, de_dq, d2e_dq2, error)
+  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, real_space, reciprocal_space, &
+        de_dq, d2e_dq2, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -67,14 +68,16 @@ contains
     real(dp), intent(in), optional                     :: ewald_error
     logical, intent(in), optional                      :: use_ewald_cutoff
     real(dp), intent(in), optional                     :: smooth_coulomb_cutoff
+    logical, intent(in), optional                      :: real_space, reciprocal_space
     real(dp), dimension(:), intent(out), optional      :: de_dq
     real(dp), dimension(:,:), intent(out), optional    :: d2e_dq2
+
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, k, n, n1, n2, n3, not_needed !for reciprocal force
     integer, dimension(3) :: nmax !how many reciprocal vectors are to be taken
 
-    logical :: my_use_ewald_cutoff
+    logical :: my_use_ewald_cutoff, my_real_space, my_reciprocal_space
 
     real(dp) :: r_ij, erfc_ar, arg, my_ewald_error, alpha, kmax, kmax2, prefac, infac, two_alpha_over_sqrt_pi, v, &
     & ewald_precision, ewald_cutoff, my_cutoff, my_smooth_coulomb_cutoff, smooth_arg, smooth_f, dsmooth_f
@@ -95,6 +98,9 @@ contains
     call check_size('charge',charge,at_in%N,'IPEwald',error)
     if(present(de_dq)) call check_size('de_dq',de_dq,at_in%N,'IPEwald',error)
     if(present(d2e_dq2)) call check_size('d2e_dq2',d2e_dq2,(/at_in%N,at_in%N/),'IPEwald',error)
+
+    my_real_space = optional_default(.true., real_space)
+    my_reciprocal_space = optional_default(.true., reciprocal_space)
 
     identity3x3 = 0.0_dp
     call add_identity(identity3x3)
@@ -151,74 +157,76 @@ contains
     prefac = 4.0_dp * PI / v
     infac  = - 1.0_dp / (4.0_dp * alpha**2.0_dp) 
 
-    allocate( k_vec(3,-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1)), &
-            & mod2_k(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ),  &
-            & force_factor(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),3), & 
-            & energy_factor(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ) )
+    if( my_reciprocal_space ) then
+       allocate( k_vec(3,-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1)), &
+               & mod2_k(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ),  &
+               & force_factor(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),3), & 
+               & energy_factor(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1) ) )
 
-    allocate( coskr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
-            & sinkr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
+       allocate( coskr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
+               & sinkr(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
 
-    if(present(de_dq) .or. present(d2e_dq2)) then
-       allocate( dcoskr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
-               & dsinkr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
-    endif
-    k_vec = 0.0_dp
-    mod2_k = 0.0_dp
-    force_factor = 0.0_dp
-    energy_factor = 0.0_dp
+       if(present(de_dq) .or. present(d2e_dq2)) then
+          allocate( dcoskr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N), &
+                  & dsinkr_dq(-nmax(3):nmax(3),-nmax(2):nmax(2),0:nmax(1),at%N) )
+       endif
+       k_vec = 0.0_dp
+       mod2_k = 0.0_dp
+       force_factor = 0.0_dp
+       energy_factor = 0.0_dp
 
-    coskr = 0.0_dp
-    sinkr = 0.0_dp
-    if(present(de_dq) .or. present(d2e_dq2)) then
-       dcoskr_dq = 0.0_dp
-       dsinkr_dq = 0.0_dp
-    endif
+       coskr = 0.0_dp
+       sinkr = 0.0_dp
+       if(present(de_dq) .or. present(d2e_dq2)) then
+          dcoskr_dq = 0.0_dp
+          dsinkr_dq = 0.0_dp
+       endif
 
-    not_needed = ( 2*nmax(3) + 1 ) * nmax(2) + nmax(3) + 1 ! lot of symmetries for k and -k so count only
+       not_needed = ( 2*nmax(3) + 1 ) * nmax(2) + nmax(3) + 1 ! lot of symmetries for k and -k so count only
 
-    n = 0
-    do n1 = 0, nmax(1)
-       do n2 = -nmax(2), nmax(2)
-           do n3 = -nmax(3), nmax(3)
-
-              n = n + 1
-
-              if( n>not_needed ) then
-                  k_vec(:,n3,n2,n1) = ( at%g(1,:)*n1 + at%g(2,:)*n2 + at%g(3,:)*n3 ) * 2.0_dp * PI
-                  mod2_k(n3,n2,n1)  = normsq( k_vec(:,n3,n2,n1) )
-
-                  force_factor(n3,n2,n1,:) = 1.0_dp/mod2_k(n3,n2,n1) * &
-                  & exp(mod2_k(n3,n2,n1)*infac) * k_vec(:,n3,n2,n1)
-                  energy_factor(n3,n2,n1)  = 1.0_dp/mod2_k(n3,n2,n1) * exp(infac*mod2_k(n3,n2,n1))
-              endif
-
-           enddo
-       enddo
-    enddo
-
-    do i = 1, at%N
        n = 0
        do n1 = 0, nmax(1)
           do n2 = -nmax(2), nmax(2)
-             do n3 = -nmax(3), nmax(3)
-             
-                n = n + 1
+              do n3 = -nmax(3), nmax(3)
 
-                if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
-                   arg = dot_product(at%pos(:,i), k_vec(:,n3,n2,n1))
-                   coskr(n3,n2,n1,i) = cos(arg)*charge(i)
-                   sinkr(n3,n2,n1,i) = sin(arg)*charge(i)
-                   if(present(de_dq) .or. present(d2e_dq2)) then
-                      dcoskr_dq(n3,n2,n1,i) = cos(arg)
-                      dsinkr_dq(n3,n2,n1,i) = sin(arg)
+                 n = n + 1
+
+                 if( n>not_needed ) then
+                     k_vec(:,n3,n2,n1) = ( at%g(1,:)*n1 + at%g(2,:)*n2 + at%g(3,:)*n3 ) * 2.0_dp * PI
+                     mod2_k(n3,n2,n1)  = normsq( k_vec(:,n3,n2,n1) )
+
+                     force_factor(n3,n2,n1,:) = 1.0_dp/mod2_k(n3,n2,n1) * &
+                     & exp(mod2_k(n3,n2,n1)*infac) * k_vec(:,n3,n2,n1)
+                     energy_factor(n3,n2,n1)  = 1.0_dp/mod2_k(n3,n2,n1) * exp(infac*mod2_k(n3,n2,n1))
+                 endif
+
+              enddo
+          enddo
+       enddo
+
+       do i = 1, at%N
+          n = 0
+          do n1 = 0, nmax(1)
+             do n2 = -nmax(2), nmax(2)
+                do n3 = -nmax(3), nmax(3)
+                
+                   n = n + 1
+
+                   if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
+                      arg = dot_product(at%pos(:,i), k_vec(:,n3,n2,n1))
+                      coskr(n3,n2,n1,i) = cos(arg)*charge(i)
+                      sinkr(n3,n2,n1,i) = sin(arg)*charge(i)
+                      if(present(de_dq) .or. present(d2e_dq2)) then
+                         dcoskr_dq(n3,n2,n1,i) = cos(arg)
+                         dsinkr_dq(n3,n2,n1,i) = sin(arg)
+                      endif
+
                    endif
-
-                endif
+                enddo
              enddo
           enddo
        enddo
-    enddo
+    endif
 
     if(present(e)) e = 0.0_dp
     if(present(f)) f  = 0.0_dp
@@ -226,107 +234,111 @@ contains
     if(present(de_dq)) de_dq = 0.0_dp
     if(present(d2e_dq2)) d2e_dq2 = 0.0_dp
 
-    do i=1,at%N
-       !Loop over neighbours
-       do n = 1, n_neighbours(at,i)
-          j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
-          if( r_ij > my_cutoff )  cycle
-
-          if( r_ij < my_smooth_coulomb_cutoff ) then
-             smooth_arg = r_ij * PI / my_smooth_coulomb_cutoff / 2.0_dp
-             smooth_f = ( 1.0_dp - sin(smooth_arg) ) / r_ij
-             dsmooth_f = cos(smooth_arg) * PI / my_smooth_coulomb_cutoff / 2.0_dp
-          else
-             smooth_f = 0.0_dp
-             dsmooth_f = 0.0_dp
-          endif
-           
-          erfc_ar = erfc(r_ij*alpha)/r_ij
-
-          if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)* ( erfc_ar - smooth_f )
-          if(present(de_dq)) de_dq(i) = de_dq(i) + charge(j)* ( erfc_ar - smooth_f )
-          if(present(d2e_dq2)) d2e_dq2(j,i) = d2e_dq2(j,i) + 0.5_dp*( erfc_ar - smooth_f )
-
-          if( present(f) .or. present(virial) ) then
-              force(:) = charge(i)*charge(j) * &
-              & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar - smooth_f - dsmooth_f) / r_ij * u_ij(:)
-
-              if(present(f)) then
-                 f(:,i) = f(:,i) - force(:) 
-              endif
-
-              if (present(virial)) virial = virial + 0.5_dp * (force .outer. u_ij) * r_ij
-          endif
- 
-      enddo
-    enddo
-             
-    ! reciprocal energy
-    if(present(e)) e = e + sum((sum(coskr,dim=4)**2 + sum(sinkr,dim=4)**2)*energy_factor) * prefac &
-       - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
-
-    if(present(de_dq)) then
+    if( my_real_space ) then
        do i=1,at%N
-          de_dq(i) = de_dq(i) + 2.0_dp * prefac * &
-             sum(( sum(coskr,dim=4)*dcoskr_dq(:,:,:,i) + sum(sinkr,dim=4)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
-             - 2.0_dp*charge(i) * alpha / sqrt(PI) - 2.0_dp * PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)
+          !Loop over neighbours
+          do n = 1, n_neighbours(at,i)
+             j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
+             if( r_ij > my_cutoff )  cycle
+
+             if( r_ij < my_smooth_coulomb_cutoff ) then
+                smooth_arg = r_ij * PI / my_smooth_coulomb_cutoff / 2.0_dp
+                smooth_f = ( 1.0_dp - sin(smooth_arg) ) / r_ij
+                dsmooth_f = cos(smooth_arg) * PI / my_smooth_coulomb_cutoff / 2.0_dp
+             else
+                smooth_f = 0.0_dp
+                dsmooth_f = 0.0_dp
+             endif
+              
+             erfc_ar = erfc(r_ij*alpha)/r_ij
+
+             if( present(e) ) e = e + 0.5_dp * charge(i)*charge(j)* ( erfc_ar - smooth_f )
+             if(present(de_dq)) de_dq(i) = de_dq(i) + charge(j)* ( erfc_ar - smooth_f )
+             if(present(d2e_dq2)) d2e_dq2(j,i) = d2e_dq2(j,i) + 0.5_dp*( erfc_ar - smooth_f )
+
+             if( present(f) .or. present(virial) ) then
+                 force(:) = charge(i)*charge(j) * &
+                 & ( two_alpha_over_sqrt_pi * exp(-(r_ij*alpha)**2) + erfc_ar - smooth_f - dsmooth_f) / r_ij * u_ij(:)
+
+                 if(present(f)) then
+                    f(:,i) = f(:,i) - force(:) 
+                 endif
+
+                 if (present(virial)) virial = virial + 0.5_dp * (force .outer. u_ij) * r_ij
+             endif
+    
+         enddo
        enddo
     endif
+             
+    if( my_reciprocal_space ) then
+       ! reciprocal energy
+       if(present(e)) e = e + sum((sum(coskr,dim=4)**2 + sum(sinkr,dim=4)**2)*energy_factor) * prefac &
+          - sum(charge**2) * alpha / sqrt(PI) - PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)**2
 
-    if(present(d2e_dq2)) then
-       do i=1,at%N
-          do j=1,at%N
-             d2e_dq2(j,i) = d2e_dq2(j,i) + prefac * &
-             sum(( dcoskr_dq(:,:,:,j)*dcoskr_dq(:,:,:,i) + dsinkr_dq(:,:,:,j)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
-             - PI / ( 2.0_dp * alpha**2 * v )
+       if(present(de_dq)) then
+          do i=1,at%N
+             de_dq(i) = de_dq(i) + 2.0_dp * prefac * &
+                sum(( sum(coskr,dim=4)*dcoskr_dq(:,:,:,i) + sum(sinkr,dim=4)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
+                - 2.0_dp*charge(i) * alpha / sqrt(PI) - 2.0_dp * PI / ( 2.0_dp * alpha**2 * v ) * sum(charge)
           enddo
-          d2e_dq2(i,i) = d2e_dq2(i,i) - alpha / sqrt(PI)
-       enddo
-    endif
+       endif
+
+       if(present(d2e_dq2)) then
+          do i=1,at%N
+             do j=1,at%N
+                d2e_dq2(j,i) = d2e_dq2(j,i) + prefac * &
+                sum(( dcoskr_dq(:,:,:,j)*dcoskr_dq(:,:,:,i) + dsinkr_dq(:,:,:,j)*dsinkr_dq(:,:,:,i) )*energy_factor ) &
+                - PI / ( 2.0_dp * alpha**2 * v )
+             enddo
+             d2e_dq2(i,i) = d2e_dq2(i,i) - alpha / sqrt(PI)
+          enddo
+       endif
 
 
-    ! reciprocal force
-    if( present(f) ) then
-        do i = 1, at%N
-           do j = 1, at%N
+       ! reciprocal force
+       if( present(f) ) then
+           do i = 1, at%N
+              do j = 1, at%N
 
-              if( i<=j ) cycle
+                 if( i<=j ) cycle
 
-              force = (/( sum(force_factor(:,:,:,k) * &
-              & ( sinkr(:,:,:,j)*coskr(:,:,:,i) - sinkr(:,:,:,i)*coskr(:,:,:,j) ) ), k=1,3 )/) * prefac * 2.0_dp
+                 force = (/( sum(force_factor(:,:,:,k) * &
+                 & ( sinkr(:,:,:,j)*coskr(:,:,:,i) - sinkr(:,:,:,i)*coskr(:,:,:,j) ) ), k=1,3 )/) * prefac * 2.0_dp
 
-              !force acting on atom j by atom i
-              f(:,i) = f(:,i) - force(:)
-              f(:,j) = f(:,j) + force(:)
+                 !force acting on atom j by atom i
+                 f(:,i) = f(:,i) - force(:)
+                 f(:,j) = f(:,j) + force(:)
 
+              enddo
            enddo
-        enddo
-    endif
+       endif
 
-    ! reciprocal contribution to virial
-    if(present(virial)) then
-       n = 0
-       do n1 = 0, nmax(1)
-          do n2 = -nmax(2), nmax(2)
-             do n3 = -nmax(3), nmax(3)
-             
-                n = n + 1
+       ! reciprocal contribution to virial
+       if(present(virial)) then
+          n = 0
+          do n1 = 0, nmax(1)
+             do n2 = -nmax(2), nmax(2)
+                do n3 = -nmax(3), nmax(3)
+                
+                   n = n + 1
 
-                if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
-   
-                   k3x3 = k_vec(:,n3,n2,n1) .outer. k_vec(:,n3,n2,n1)
-                   virial = virial &
-                   & + ( identity3x3 - 2*(-infac + 1.0_dp/mod2_k(n3,n2,n1))*k3x3 ) * &
-                   & (sum(coskr(n3,n2,n1,:))**2 + sum(sinkr(n3,n2,n1,:))**2) * energy_factor(n3,n2,n1) * &
-                   & prefac
+                   if( (n>not_needed) .and. ( mod2_k(n3,n2,n1)<kmax2 ) ) then
+      
+                      k3x3 = k_vec(:,n3,n2,n1) .outer. k_vec(:,n3,n2,n1)
+                      virial = virial &
+                      & + ( identity3x3 - 2*(-infac + 1.0_dp/mod2_k(n3,n2,n1))*k3x3 ) * &
+                      & (sum(coskr(n3,n2,n1,:))**2 + sum(sinkr(n3,n2,n1,:))**2) * energy_factor(n3,n2,n1) * &
+                      & prefac
 
-                endif
+                   endif
+                enddo
              enddo
           enddo
-       enddo
-    endif
+       endif
 
-    if(present(virial)) virial = virial - identity3x3 * sum(charge)**2 * PI / v / alpha**2 / 2
+       if(present(virial)) virial = virial - identity3x3 * sum(charge)**2 * PI / v / alpha**2 / 2
+    endif
 
    ! if(present(e)) e = e / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV
    ! if(present(f)) f = f / ( 4.0_dp * PI * EPSILON_0 ) ! convert from internal units to eV/A
@@ -339,11 +351,15 @@ contains
     if(present(d2e_dq2)) d2e_dq2 = 2.0_dp * d2e_dq2 * HARTREE*BOHR
 
 
-    deallocate( coskr, sinkr )
+    if(allocated(coskr)) deallocate( coskr )
+    if(allocated(sinkr)) deallocate( sinkr )
     if(allocated(dcoskr_dq)) deallocate(dcoskr_dq)
     if(allocated(dsinkr_dq)) deallocate(dsinkr_dq)
 
-    deallocate( k_vec, mod2_k, force_factor, energy_factor )
+    if(allocated(k_vec)) deallocate( k_vec )
+    if(allocated(mod2_k)) deallocate( mod2_k )
+    if(allocated(force_factor)) deallocate( force_factor )
+    if(allocated(energy_factor)) deallocate( energy_factor )
     if (associated(at,my_at)) call finalise(my_at)
 
   endsubroutine Ewald_calc
