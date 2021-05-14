@@ -82,7 +82,7 @@ f90wrap:
 	$(eval F90WRAP := ${F90WRAP_PATH}/f90wrap)
 	$(eval F2PY_F90WRAP := ${F90WRAP_PATH}/f2py-f90wrap)
 clean:
-	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
+	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
 	rm -rf src.*
 	rm -rf build dist quippy quippy.egg-info
@@ -111,12 +111,12 @@ ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
 
-_quippy${EXT_SUFFIX}.so: ${F90WRAP_OBJS}
+_quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
 	${CC} -static-libgcc -undefined dynamic_lookup -bundle $^ \
 		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
-		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}.so
+		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}
 
-build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
+build: _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
