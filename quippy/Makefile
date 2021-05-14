@@ -127,5 +127,6 @@ install: build
 
 wheel:
 	cp ../../quippy/setup.py .
-	${PIP} wheel .
+	[ ! -d ../../bdist_wheel ] && mkdir ../../bdist_wheel
+	${PIP} wheel . -w ../../bdist_wheel
 	rm setup.py
