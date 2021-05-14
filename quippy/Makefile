@@ -67,19 +67,20 @@ F90WRAP_OBJS= $(addsuffix .o,$(basename ${F90WRAP_FILES})) src.${PLATFORM}/_quip
 
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
-F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|')
-
-F90WRAP = ${F90WRAP_PATH}/f90wrap
-F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
 
 
 #################################
-.PHONY: all build install clean
+.PHONY: all build install clean f90wrap
 
 
 all: build
 
+f90wrap:
+	${PIP} install ${QUIP_ROOT}/src/f90wrap ${QUIPPY_INSTALL_OPTS}
+	$(eval F90WRAP_PATH := $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|'))
+	$(eval F90WRAP := ${F90WRAP_PATH}/f90wrap)
+	$(eval F2PY_F90WRAP := ${F90WRAP_PATH}/f2py-f90wrap)
 clean:
 	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
@@ -92,7 +93,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-${F90WRAP_FILES}: ${WRAP_FPP_FILES}
+${F90WRAP_FILES}: ${WRAP_FPP_FILES} f90wrap
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
@@ -110,12 +111,10 @@ ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
 
-_quippy.so: ${F90WRAP_OBJS}
+_quippy${EXT_SUFFIX}.so: ${F90WRAP_OBJS}
 	${CC} -static-libgcc -undefined dynamic_lookup -bundle $^ \
-	 	-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
-		 ${QUIPPY_LDFLAGS} -o _quippy.so 
-	rm -f _quippy${EXT_SUFFIX}
-	ln -s _quippy.so _quippy${EXT_SUFFIX}
+		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
+		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}.so
 
 build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
