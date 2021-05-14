@@ -47,6 +47,7 @@ script: # Compile QUIP, libquip and quippy.
   - make
   - make libquip
   - make quippy
+  - make wheel-quippy
 
   # Sometimes file limit is 64000 and read_loop reads and writes this many
   # files causing the build to time out
