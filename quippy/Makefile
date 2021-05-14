@@ -60,12 +60,19 @@ WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
 F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
+EXT_SUFFIX=$(shell ${PYTHON} -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
+PLATFORM=$(shell ${PYTHON} -c 'import sysconfig; print(sysconfig.get_platform()+"-"+sysconfig.get_python_version())')
+
+F90WRAP_OBJS= $(addsuffix .o,$(basename ${F90WRAP_FILES})) src.${PLATFORM}/_quippymodule.o src.${PLATFORM}/src.${PLATFORM}/fortranobject.o
+
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
 F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|')
 
 F90WRAP = ${F90WRAP_PATH}/f90wrap
 F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
+
+
 
 #################################
 .PHONY: all build install clean
@@ -85,7 +92,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-_quippy.so: ${WRAP_FPP_FILES}
+${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
@@ -99,10 +106,16 @@ _quippy.so: ${WRAP_FPP_FILES}
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
 
+${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
-	if [ -f "_quippy.so" ] ; then rm _quippy.so; fi
-	ln -s _quippy.*.so _quippy.so
+		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
+
+_quippy.so: ${F90WRAP_OBJS}
+	${CC} -static-libgcc -undefined dynamic_lookup -bundle $^ \
+	 	-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
+		 ${QUIPPY_LDFLAGS} -o _quippy.so 
+	rm -f _quippy${EXT_SUFFIX}
+	ln -s _quippy.so _quippy${EXT_SUFFIX}
 
 build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
@@ -115,5 +128,5 @@ install: build
 
 wheel:
 	cp ../../quippy/setup.py .
-	${PIP} wheel ${QUIPPY_INSTALL_OPTS} . -d wheel
+	${PIP} wheel .
 	rm setup.py
