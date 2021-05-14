@@ -62,17 +62,18 @@ F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES}
 
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
-F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|')
-
-F90WRAP = ${F90WRAP_PATH}/f90wrap
-F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
 
 #################################
-.PHONY: all build install clean
+.PHONY: all build install clean f90wrap
 
 
 all: build
 
+f90wrap:
+	${PIP} install ${QUIP_ROOT}/src/f90wrap ${QUIPPY_INSTALL_OPTS}
+	$(eval F90WRAP_PATH := $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|'))
+	$(eval F90WRAP := ${F90WRAP_PATH}/f90wrap)
+	$(eval F2PY_F90WRAP := ${F90WRAP_PATH}/f2py-f90wrap)
 clean:
 	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
@@ -85,7 +86,7 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-_quippy.so: ${WRAP_FPP_FILES}
+_quippy.so: ${WRAP_FPP_FILES} f90wrap
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
@@ -115,5 +116,5 @@ install: build
 
 wheel:
 	cp ../../quippy/setup.py .
-	${PIP} wheel ${QUIPPY_INSTALL_OPTS} . -d wheel
+	${PIP} wheel .
 	rm setup.py
