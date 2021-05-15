@@ -97,7 +97,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES} f90wrap
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	${F90WRAP} -v -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
