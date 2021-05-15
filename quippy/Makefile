@@ -105,7 +105,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES} f90wrap
                 potential_local_e_mix_initialise potential_local_e_mix_finalise \
                 --skip-types spherical_harmonics_type potential_local_e_mix --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
-		--py-max-line-length 120 --f90-max-line-length 120 > f90wrap.log
+		--py-max-line-length 120 --f90-max-line-length 120 > f90wrap.log 2>&1
 
 ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
