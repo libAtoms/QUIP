@@ -107,11 +107,11 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 		--py-max-line-length 120 --f90-max-line-length 120
 
 ${F90WRAP_OBJS}: ${F90WRAP_FILES}
-	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
+	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _tmp ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
 
 _quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
-	${CC} -static-libgcc -undefined dynamic_lookup -bundle $^ \
+	${CC} -static-libgcc -undefined dynamic_lookup $^ \
 		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
 		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}
 
