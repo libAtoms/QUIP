@@ -109,6 +109,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _tmp ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
+	mv src.${PLATFORM}/_tmpmodule.o src.${PLATFORM}/_quippymodule.o
 
 _quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
 	${CC} -static-libgcc $^ \
