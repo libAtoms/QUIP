@@ -103,17 +103,6 @@ jobs:
         on:
           branch: public
 
-    - stage: release
-      if: fork = false
-      name: "Trigger for a new release of GAP"
-      before_install: skip
-      install: skip
-      script: skip
-      deploy:
-        provider: script
-        script: bash travis/trigger_gap_release.sh
-        on:
-          branch: public
 
     - stage: docker
       if: fork = false
