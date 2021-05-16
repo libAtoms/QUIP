@@ -111,7 +111,7 @@ ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
 
 _quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
-	${CC} -static-libgcc -undefined dynamic_lookup $^ \
+	${CC} -static-libgcc $^ \
 		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
 		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}
 
