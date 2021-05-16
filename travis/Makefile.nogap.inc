@@ -42,5 +42,5 @@ HAVE_LMTO_TBE=0
 SIZEOF_FORTRAN_T=2
 PIP=pip3
 PYTHON=python3
-QUIPPY_LDFLAGS=/usr/lib/gcc/x86_64-linux-gnu/10/libgfortran.a /usr/lib/gcc/x86_64-linux-gnu/10/libgomp.a /usr/lib/gcc/x86_64-linux-gnu/10/libquadmath.a ${MATH_LINKOPTS}
+QUIPPY_LDFLAGS=/usr/lib/gcc/x86_64-linux-gnu/5/libgfortran.a /usr/lib/gcc/x86_64-linux-gnu/5/libgomp.a /usr/lib/gcc/x86_64-linux-gnu/5/libquadmath.a ${MATH_LINKOPTS}
 
