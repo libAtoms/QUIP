@@ -81,6 +81,7 @@ f90wrap:
 	$(eval F90WRAP_PATH := $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|'))
 	$(eval F90WRAP := ${F90WRAP_PATH}/f90wrap)
 	$(eval F2PY_F90WRAP := ${F90WRAP_PATH}/f2py-f90wrap)
+
 clean:
 	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
@@ -93,8 +94,8 @@ ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-${F90WRAP_FILES}: ${WRAP_FPP_FILES} f90wrap
-	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
+${F90WRAP_FILES}: ${WRAP_FPP_FILES}
+	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
 	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
@@ -105,7 +106,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES} f90wrap
                 potential_local_e_mix_initialise potential_local_e_mix_finalise \
                 --skip-types spherical_harmonics_type potential_local_e_mix --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
-		--py-max-line-length 120 --f90-max-line-length 120 > f90wrap.log 2>&1
+		--py-max-line-length 120 --f90-max-line-length 120
 
 ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
@@ -116,7 +117,7 @@ _quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
 		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
 		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}
 
-build: _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
+build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
