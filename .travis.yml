@@ -2,6 +2,7 @@
 language: python
 python:
   - "3.6"
+
 env:
   matrix:
     - QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.nogap.inc TRAVIS_GAP=0
@@ -12,7 +13,6 @@ env:
 stages:
   - test
   - documentation
-  - release
   - docker
 
 git:

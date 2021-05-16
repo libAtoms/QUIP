@@ -68,8 +68,6 @@ F90WRAP_OBJS= $(addsuffix .o,$(basename ${F90WRAP_FILES})) src.${PLATFORM}/_quip
 F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
 
 
-
-
 #################################
 .PHONY: all build install clean f90wrap
 
@@ -128,6 +126,6 @@ install: build
 
 wheel:
 	cp ../../quippy/setup.py .
-	[ ! -d ../../bdist_wheel ] && mkdir ../../bdist_wheel
+	[ -d ../../bdist_wheel ] || mkdir ../../bdist_wheel
 	${PIP} wheel . -w ../../bdist_wheel
 	rm setup.py
