@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>quippy.dictionary_module &mdash; quippy e290bfc+ documentation</title>
+  <title>quippy.dictionary_module &mdash; quippy ff27dd4+ documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                e290bfc+
+                ff27dd4+
               </div>
             
           
@@ -1733,7 +1733,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dictionary_get_value_d</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_get_value_d</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> \
             <span class="n">case_sensitive</span><span class="o">=</span><span class="n">case_sensitive</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">f90wrap</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">lookup_class</span><span class="p">(</span><span class="s2">&quot;quippy.DictData&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">from_handle</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">f90wrap</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">lookup_class</span><span class="p">(</span><span class="s2">&quot;quippy.DictData&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">from_handle</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">alloc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dictionary_get_value_d</span><span class="p">,</span> <span class="n">v</span>
     
     <span class="k">def</span> <span class="nf">_get_value_i_a2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1806,7 +1806,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dictionary_get_value_dict</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_dictionary_get_value_dict</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> \
             <span class="n">case_sensitive</span><span class="o">=</span><span class="n">case_sensitive</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">f90wrap</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">lookup_class</span><span class="p">(</span><span class="s2">&quot;quippy.Dictionary&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">from_handle</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">f90wrap</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">lookup_class</span><span class="p">(</span><span class="s2">&quot;quippy.Dictionary&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">from_handle</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">alloc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dictionary_get_value_dict</span><span class="p">,</span> <span class="n">v</span>
     
 <div class="viewcode-block" id="Dictionary.get_value"><a class="viewcode-back" href="../../dictionary.html#quippy.dictionary_module.Dictionary.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
