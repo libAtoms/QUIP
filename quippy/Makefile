@@ -75,10 +75,8 @@ F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg i
 all: build
 
 f90wrap:
+	${PIP} install -r ${QUIP_ROOT}/src/f90wrap/requirements.txt ${QUIPPY_INSTALL_OPTS}
 	${PIP} install ${QUIP_ROOT}/src/f90wrap ${QUIPPY_INSTALL_OPTS}
-	$(eval F90WRAP_PATH := $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -E -e 's|/lib(64)?/.*|/bin|'))
-	$(eval F90WRAP := ${F90WRAP_PATH}/f90wrap)
-	$(eval F2PY_F90WRAP := ${F90WRAP_PATH}/f2py-f90wrap)
 
 clean:
 	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -96,7 +94,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	f90wrap -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
@@ -106,15 +104,9 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
 
-${F90WRAP_OBJS}: ${F90WRAP_FILES}
-	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _tmp ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
+_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
+	F90=${F90} f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
 		-L. -lquip_nostub ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" 
-	mv src.${PLATFORM}/_tmpmodule.o src.${PLATFORM}/_quippymodule.o
-
-_quippy${EXT_SUFFIX}: ${F90WRAP_OBJS}
-	${CC} -static-libgcc $^ \
-		-L${FOX_LIBDIR} -lFoX_sax -lFoX_wxml -lFoX_utils -lFoX_common -lFoX_fsys -L. -lquip_nostub \
-		${QUIPPY_LDFLAGS} -o _quippy${EXT_SUFFIX}
 
 build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
@@ -123,10 +115,4 @@ build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 install: build
 	cp ../../quippy/setup.py .
 	${PIP} install ${QUIPPY_INSTALL_OPTS} .
-	rm setup.py
-
-wheel:
-	cp ../../quippy/setup.py .
-	[ -d ../../bdist_wheel ] || mkdir ../../bdist_wheel
-	${PIP} wheel . -w ../../bdist_wheel
 	rm setup.py
