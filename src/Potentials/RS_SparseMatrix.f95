@@ -219,7 +219,7 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
     do ji=1, n_neighbours(at, i)
       neighbour_sorted(ji) = neighbour(at, i, ji, neighbour_distance_sorted(ji))
     end do
-    call sort_array(neighbour_sorted, neighbour_distance_sorted)
+    call sort_array(neighbour_sorted, r_data=neighbour_distance_sorted)
 
     n_uniq = uniq_minval(neighbour_sorted, neighbour_distance_sorted)
 
@@ -268,7 +268,7 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
     do ji=1, n_neighbours(at, i)
       neighbour_sorted(ji) = neighbour(at, i, ji, neighbour_distance_sorted(ji))
     end do
-    call sort_array(neighbour_sorted, neighbour_distance_sorted)
+    call sort_array(neighbour_sorted, r_data=neighbour_distance_sorted)
 
     n_uniq = uniq_minval(neighbour_sorted, neighbour_distance_sorted)
 
