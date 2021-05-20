@@ -1,0 +1,65 @@
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# H0 X
+# H0 X   libAtoms+QUIP: atomistic simulation library
+# H0 X
+# H0 X   Portions of this code were written by
+# H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# H0 X
+# H0 X   Copyright 2006-2010.
+# H0 X
+# H0 X   These portions of the source code are released under the GNU General
+# H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# H0 X
+# H0 X   If you would like to license the source code under different terms,
+# H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+# H0 X
+# H0 X   Portions of this code were written by Noam Bernstein as part of
+# H0 X   his employment for the U.S. Government, and are not subject
+# H0 X   to copyright in the USA.
+# H0 X
+# H0 X
+# H0 X   When using this software, please cite the following reference:
+# H0 X
+# H0 X   http://www.libatoms.org
+# H0 X
+# H0 X  Additional contributions by
+# H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# H0 X
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# declarations
+
+F77 = gfortran
+F90 = gfortran
+F95 = gfortran
+CC = gcc
+CPLUSPLUS = g++
+LINKER = gfortran
+FPP = gfortran -E -x f95-cpp-input -P
+
+#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
+SAMPLE_DEBUG = -O0 -g -fbounds-check -DDUMP_CORE_ON_ABORT
+DEBUG = 
+OPTIM = -O3
+
+DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -fPIC
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC
+F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC
+CFLAGS += -fPIC
+
+LIBTOOL = libtool -static
+
+export DEFAULT_MATH_LINKOPTS = -framework Accelerate
+
+NETCDF4_EXTRA_LIBS= -lz 
+
+
+QUIPPY_INSTALL_OPTS = 
+QUIPPY_FCOMPILER = gnu95
+QUIPPY_F90FLAGS = -ffree-line-length-none
+QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
+QUIPPY_CPP = gfortran -E -x f95-cpp-input
+QUIPPY_DEBUG = 1
+
+FPP_PRE_TARGET_STRING = -o
