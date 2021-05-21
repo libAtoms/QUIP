@@ -59,10 +59,7 @@ ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
 	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
 
 QUIPPY_INSTALL_OPTS = 
-QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
-QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_DEBUG = 1
+QUIPPY_LDFLAGS=${DEFAULT_MATH_LINKOPTS}
 
 FPP_PRE_TARGET_STRING = -o
