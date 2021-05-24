@@ -76,7 +76,7 @@ jobs:
           pygments==2.5.2
 
         # needed to nbconvert ipynb files and to process the rst files
-        - pip install 'nbconvert[execute]' 'ipython<6'
+        - pip install 'nbconvert[execute]' 'ipython'
 
         # quippy is working, install it
         - make &> /dev/null
