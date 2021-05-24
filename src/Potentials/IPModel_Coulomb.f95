@@ -99,6 +99,7 @@ type IPModel_Coulomb
   real(dp) :: smooth_coulomb_cutoff
 
   real(dp) :: dsf_alpha = 0.0_dp
+  logical :: force_neutral = .false.
 
   character(len=STRING_LENGTH) :: label
 
@@ -141,6 +142,8 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'method', '', method_str, help_string="If present, method for Coulomb calculation.  Will be overridden &
       by xml parameters if present", has_value_target=has_method)
+  call param_register(params, 'force_neutral', 'F',this%force_neutral, help_string="If true, modify charges to make system neutral.&
+     & Only works with predefined charges, not those passed in the atoms object.")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Initialise_str args_str')) then
     call system_abort("IPModel_Coulomb_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -195,6 +198,7 @@ subroutine IPModel_Coulomb_Finalise(this)
   this%label = ''
   this%cutoff = 0.0_dp
   this%method = 0
+  this%force_neutral = .false.
 
 end subroutine IPModel_Coulomb_Finalise
 
@@ -213,7 +217,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    real(dp), dimension(:), pointer :: charge
    real(dp), dimension(:,:), allocatable :: dummy_force
    real(dp) :: r_scale, E_scale, e_pre_calc
-   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f
+   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, force_neutral, has_force_neutral, do_force_neutral
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
@@ -254,6 +258,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
       call param_register(params, 'pairwise_by_Z', 'F',do_pairwise_by_Z, help_string="If true, calculate pairwise contributions to local_e broken down by Z")
 
+      call param_register(params, 'force_neutral', 'F',force_neutral, has_value_target=has_force_neutral, help_string="If true, modify charges to make system neutral.&
+         & Only works with predefined charges, not those passed in the atoms object.")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
       endif
@@ -263,6 +269,12 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       end if
    else
       charge_property_name = 'charge'
+   endif
+
+   if( has_force_neutral ) then
+      do_force_neutral = force_neutral
+   else
+      do_force_neutral = this%force_neutral
    endif
 
    if(has_property(at,charge_property_name)) then
@@ -276,6 +288,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       do i = 1, at%N
          charge(i) = this%charge(this%type_of_atomic_num(at%Z(i))) 
       enddo
+      if( do_force_neutral ) charge = charge - sum(charge)/at%N
    endif
 
    selectcase(this%method)
