@@ -160,7 +160,7 @@ recursive subroutine IPModel_QEq_Calc(this, at, e, local_e, f, virial, local_vir
    real(dp), dimension(:,:), allocatable :: J_matrix
    real(dp), dimension(:), pointer :: en, hardness, charge
    real(dp) :: r_scale, E_scale
-   logical :: do_rescale_r, do_rescale_E
+   logical :: do_rescale_r, do_rescale_E, real_space, reciprocal_space
 
    integer :: i, n_it
    character(len=STRING_LENGTH) :: charge_property_name, en_property_name, hardness_property_name, atom_mask_name, source_mask_name
@@ -191,6 +191,8 @@ recursive subroutine IPModel_QEq_Calc(this, at, e, local_e, f, virial, local_vir
       call param_register(params, 'source_mask_name', '', source_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Rescaling factor for distances. Default 1.0.")
       call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
+      call param_register(params, 'real_space', 'T',real_space, help_string="Do real-space contribution only")
+      call param_register(params, 'reciprocal_space', 'T',reciprocal_space, help_string="Do reciprocal-space contribution only")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_QEq_Calc args_str')) then
          RAISE_ERROR("IPModel_QEq_Calc failed to parse args_str="//trim(args_str), error)
@@ -243,7 +245,7 @@ recursive subroutine IPModel_QEq_Calc(this, at, e, local_e, f, virial, local_vir
    allocate(x(at%N+1),b(at%N+1),J_matrix(at%N+1,at%N+1))
    !call Direct_Coulomb_calc(at, charge, e=e, d2e_dq2 = J_matrix(1:at%N,1:at%N) )
    call Ewald_calc(at, charge, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_qeq_cutoff, &
-   d2e_dq2 = J_matrix(1:at%N,1:at%N), real_space = .false. )
+   d2e_dq2 = J_matrix(1:at%N,1:at%N), real_space = real_space, reciprocal_space=reciprocal_space, error=error )
 
    J_matrix(at%N+1,1:at%N) = -1.0_dp 
    J_matrix(1:at%N,at%N+1) = -1.0_dp 
