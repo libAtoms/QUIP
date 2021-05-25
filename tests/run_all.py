@@ -36,9 +36,15 @@ print('QUIP_ARCH', quip_arch)
 platform = '{0}-{1}'.format(get_platform(), get_python_version())
 print('platform', platform)
 
-# extend sys.path
-print(os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
-sys.path.insert(0, os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
+# optionally extend sys.path
+quip_test_in_place = True
+if 'QUIP_TEST_IN_PLACE' in os.environ:
+    quip_test_in_place = int(os.environ['QUIP_TEST_IN_PLACE']
+
+if quip_test_inplace:
+    build_dir = os.path.join(quip_root, 'build/{0}/'.format(quip_arch)
+    print(f'Adding QUIP build directory {build_dir} to sys.path')
+    sys.path.insert(0, build_dir)
 
 import quippy
 print('Successfully imported quippy3')
