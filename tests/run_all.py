@@ -41,7 +41,7 @@ quip_test_in_place = True
 if 'QUIP_TEST_IN_PLACE' in os.environ:
     quip_test_in_place = int(os.environ['QUIP_TEST_IN_PLACE'])
 
-if quip_test_inplace:
+if quip_test_in_place:
     build_dir = os.path.join(quip_root, 'build/{0}/'.format(quip_arch))
     print(f'Adding QUIP build directory {build_dir} to sys.path')
     sys.path.insert(0, build_dir)
