@@ -9,7 +9,7 @@ platform = sysconfig.get_platform() + "-" + sysconfig.get_python_version()
 ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
 
 setup(
-    name='quippy',
+    name='quippy-ase',
     version=version,
     author='James Kermode <james.kermode@gmail.com>',
     install_requires=['numpy', 'f90wrap', 'ase'],
