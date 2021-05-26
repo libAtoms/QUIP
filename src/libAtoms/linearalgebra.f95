@@ -3567,9 +3567,10 @@ CONTAINS
 
   end subroutine int_matrix_print
 
+  ! print real matrix to file, either one entry per line (always == .true.) or as a block with restrictions
   subroutine matrix_print(this,verbosity,file, always)
+    real(dp),       intent(in), dimension(:,:) :: this
     type(inoutput), intent(in)                 :: file
-    real(dp),       intent(in),dimension(:,:)  :: this
     integer, optional, intent(in)              :: verbosity
     logical, optional, intent(in)              :: always
 
@@ -3585,7 +3586,7 @@ CONTAINS
     if (do_always) then
       do i=1, size(this,2)
 	do j=1, size(this,1)
-	  call print(i // " " // j // " " // this(i,j), verbosity, file)
+	  call print(j // " " // i // " " // this(j,i), verbosity, file)
 	end do
       end do
     else
