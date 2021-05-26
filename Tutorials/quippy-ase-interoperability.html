@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Interoperability with Atomic Simulation Environment &mdash; quippy e07c62a+ documentation</title>
+  <title>Interoperability with Atomic Simulation Environment &mdash; quippy e8cc4da+ documentation</title>
   
 
   
@@ -37,8 +37,6 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -73,7 +71,7 @@
             
             
               <div class="version">
-                e07c62a+
+                e8cc4da+
               </div>
             
           
@@ -103,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Interoperability with Atomic Simulation Environment</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Example:-vacancy-formation-energy">Example: vacancy formation energy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-vacancy-formation-energy">Example: vacancy formation energy</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
@@ -111,7 +109,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../visualisation.html">Visualisation Tools</a></li>
 </ul>
 
             
@@ -176,7 +173,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/Tutorials/quippy-ase-interoperability.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/Tutorials/quippy-ase-interoperability.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -191,252 +188,6 @@
             
   
 <style>
-/* CSS for nbsphinx extension */
-
-/* remove conflicting styling from Sphinx themes */
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt *,
-div.nbinput.container div.input_area pre,
-div.nboutput.container div.output_area pre,
-div.nbinput.container div.input_area .highlight,
-div.nboutput.container div.output_area .highlight {
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-}
-
-div.nbinput.container > div[class*=highlight],
-div.nboutput.container > div[class*=highlight] {
-    margin: 0;
-}
-
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt * {
-    background: none;
-}
-
-div.nboutput.container div.output_area .highlight,
-div.nboutput.container div.output_area pre {
-    background: unset;
-}
-
-div.nboutput.container div.output_area div.highlight {
-    color: unset;  /* override Pygments text color */
-}
-
-/* avoid gaps between output lines */
-div.nboutput.container div[class*=highlight] pre {
-    line-height: normal;
-}
-
-/* input/output containers */
-div.nbinput.container,
-div.nboutput.container {
-    display: -webkit-flex;
-    display: flex;
-    align-items: flex-start;
-    margin: 0;
-    width: 100%;
-}
-@media (max-width: 540px) {
-    div.nbinput.container,
-    div.nboutput.container {
-        flex-direction: column;
-    }
-}
-
-/* input container */
-div.nbinput.container {
-    padding-top: 5px;
-}
-
-/* last container */
-div.nblast.container {
-    padding-bottom: 5px;
-}
-
-/* input prompt */
-div.nbinput.container div.prompt pre {
-    color: #307FC1;
-}
-
-/* output prompt */
-div.nboutput.container div.prompt pre {
-    color: #BF5B3D;
-}
-
-/* all prompts */
-div.nbinput.container div.prompt,
-div.nboutput.container div.prompt {
-    width: 4.5ex;
-    padding-top: 5px;
-    position: relative;
-    user-select: none;
-}
-
-div.nbinput.container div.prompt > div,
-div.nboutput.container div.prompt > div {
-    position: absolute;
-    right: 0;
-    margin-right: 0.3ex;
-}
-
-@media (max-width: 540px) {
-    div.nbinput.container div.prompt,
-    div.nboutput.container div.prompt {
-        width: unset;
-        text-align: left;
-        padding: 0.4em;
-    }
-    div.nboutput.container div.prompt.empty {
-        padding: 0;
-    }
-
-    div.nbinput.container div.prompt > div,
-    div.nboutput.container div.prompt > div {
-        position: unset;
-    }
-}
-
-/* disable scrollbars on prompts */
-div.nbinput.container div.prompt pre,
-div.nboutput.container div.prompt pre {
-    overflow: hidden;
-}
-
-/* input/output area */
-div.nbinput.container div.input_area,
-div.nboutput.container div.output_area {
-    -webkit-flex: 1;
-    flex: 1;
-    overflow: auto;
-}
-@media (max-width: 540px) {
-    div.nbinput.container div.input_area,
-    div.nboutput.container div.output_area {
-        width: 100%;
-    }
-}
-
-/* input area */
-div.nbinput.container div.input_area {
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    /*background: #f5f5f5;*/
-}
-
-/* override MathJax center alignment in output cells */
-div.nboutput.container div[class*=MathJax] {
-    text-align: left !important;
-}
-
-/* override sphinx.ext.imgmath center alignment in output cells */
-div.nboutput.container div.math p {
-    text-align: left;
-}
-
-/* standard error */
-div.nboutput.container div.output_area.stderr {
-    background: #fdd;
-}
-
-/* ANSI colors */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-default-inverse-fg { color: #FFFFFF; }
-.ansi-default-inverse-bg { background-color: #000000; }
-
-.ansi-bold { font-weight: bold; }
-.ansi-underline { text-decoration: underline; }
-
-
-div.nbinput.container div.input_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight].math,
-div.nboutput.container div.output_area.rendered_html,
-div.nboutput.container div.output_area > div.output_javascript,
-div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 5px;
-    margin: 0;
-}
-
-/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
-div.nbinput.container div.input_area > div[class^='highlight'],
-div.nboutput.container div.output_area > div[class^='highlight']{
-    overflow-y: hidden;
-}
-
-/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
-    display: none;
-}
-
-/* Some additional styling taken form the Jupyter notebook CSS */
-div.rendered_html table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 12px;
-  table-layout: fixed;
-}
-div.rendered_html thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-div.rendered_html tr,
-div.rendered_html th,
-div.rendered_html td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-div.rendered_html th {
-  font-weight: bold;
-}
-div.rendered_html tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-div.rendered_html tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
-}
-
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
@@ -459,27 +210,25 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Interoperability-with-Atomic-Simulation-Environment">
-<h1>Interoperability with Atomic Simulation Environment<a class="headerlink" href="#Interoperability-with-Atomic-Simulation-Environment" title="Permalink to this headline">¶</a></h1>
-<p>[<a class="reference external" href="http://nbviewer.ipython.org/github/libAtoms/QUIP/blob/public/doc/Tutorials/quippy-ase-interoperability.ipynb">View with IPython nbviewer</a>]</p>
+<div class="section" id="interoperability-with-atomic-simulation-environment">
+<h1>Interoperability with Atomic Simulation Environment<a class="headerlink" href="#interoperability-with-atomic-simulation-environment" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><p>quippy now uses the standard <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms</span></code> class to represent Atomic structures</p></li>
-<li><p>quippy <code class="docutils literal notranslate"><span class="pre">Potential</span></code> objects can be used as ASE calculators, and vice-versa</p></li>
-<li><p>Can use standard ASE tools, plus communicate with other packages using ASE as <em>lingua franca</em></p></li>
+<li><p>quippy uses the standard <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms</span></code> class to represent
+Atomic structures</p></li>
+<li><p>quippy <code class="docutils literal notranslate"><span class="pre">Potential</span></code> objects can be used as ASE calculators, and
+vice-versa</p></li>
+<li><p>Can use standard ASE tools, plus communicate with other packages
+using ASE as <em>lingua franca</em></p></li>
 </ul>
-<div class="section" id="Example:-vacancy-formation-energy">
-<h2>Example: vacancy formation energy<a class="headerlink" href="#Example:-vacancy-formation-energy" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="example-vacancy-formation-energy">
+<h2>Example: vacancy formation energy<a class="headerlink" href="#example-vacancy-formation-energy" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Generate structure with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> lattice tools</p></li>
 <li><p>Stillinger-Weber potential implementation from <code class="docutils literal notranslate"><span class="pre">QUIP</span></code></p></li>
-<li><p>Elastic constant fitting routine from <code class="docutils literal notranslate"><span class="pre">matscipy</span></code>, internal relaxations with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> FIRE minimiser</p></li>
+<li><p>Elastic constant fitting routine from <code class="docutils literal notranslate"><span class="pre">matscipy</span></code>, internal
+relaxations with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> FIRE minimiser</p></li>
 </ul>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="o">%</span><span class="k">pylab</span> inline
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pylab</span> inline
 <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
 <span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">BFGS</span>
 <span class="kn">from</span> <span class="nn">ase.optimize.precon</span> <span class="kn">import</span> <span class="n">PreconLBFGS</span>
@@ -510,120 +259,105 @@ div.rendered_html tbody tr:hover {
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SW vacancy formation energy&#39;</span><span class="p">,</span> <span class="n">e_vac</span><span class="p">,</span> <span class="s1">&#39;eV&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Populating the interactive namespace from numpy and matplotlib
-      Step     Time          Energy         fmax
-BFGS:    0 21:22:10      -34.635777        0.3247
-BFGS:    1 21:22:10      -34.644590        0.1504
-BFGS:    2 21:22:10      -34.646997        0.0001
-      Step     Time          Energy         fmax
-BFGS:    0 21:22:10      -34.670667        0.1584
-BFGS:    1 21:22:10      -34.672777        0.0749
-BFGS:    2 21:22:10      -34.673385        0.0000
-      Step     Time          Energy         fmax
-BFGS:    0 21:22:10      -34.678737        0.0000
-      Step     Time          Energy         fmax
-BFGS:    0 21:22:10      -34.660845        0.1508
-BFGS:    1 21:22:10      -34.662784        0.0742
-BFGS:    2 21:22:10      -34.663403        0.0000
-      Step     Time          Energy         fmax
-BFGS:    0 21:22:10      -34.617822        0.2945
-BFGS:    1 21:22:10      -34.625262        0.1477
-BFGS:    2 21:22:10      -34.627763        0.0001
-Fitting C_11
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-2.56044687, -1.01247671,  0.5027424 ,  1.98366491,  3.42893711]) GPa
-Cij (gradient) / GPa    :     149.74909575669915
-Error in Cij / GPa      :     1.1696996170085603
-Correlation coefficient :     0.9999084935045536
-Setting C11 (1) to 0.934660 +/- 0.007301
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Populating</span> <span class="n">the</span> <span class="n">interactive</span> <span class="n">namespace</span> <span class="kn">from</span> <span class="nn">numpy</span> <span class="ow">and</span> <span class="n">matplotlib</span>
+      <span class="n">Step</span>     <span class="n">Time</span>          <span class="n">Energy</span>         <span class="n">fmax</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">0</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.635777</span>        <span class="mf">0.3247</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">1</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.644590</span>        <span class="mf">0.1504</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">2</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.646997</span>        <span class="mf">0.0001</span>
+      <span class="n">Step</span>     <span class="n">Time</span>          <span class="n">Energy</span>         <span class="n">fmax</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">0</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.670667</span>        <span class="mf">0.1584</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">1</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.672777</span>        <span class="mf">0.0749</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">2</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.673385</span>        <span class="mf">0.0000</span>
+      <span class="n">Step</span>     <span class="n">Time</span>          <span class="n">Energy</span>         <span class="n">fmax</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">0</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.678737</span>        <span class="mf">0.0000</span>
+      <span class="n">Step</span>     <span class="n">Time</span>          <span class="n">Energy</span>         <span class="n">fmax</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">0</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.660845</span>        <span class="mf">0.1508</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">1</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.662784</span>        <span class="mf">0.0742</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">2</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.663403</span>        <span class="mf">0.0000</span>
+      <span class="n">Step</span>     <span class="n">Time</span>          <span class="n">Energy</span>         <span class="n">fmax</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">0</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.617822</span>        <span class="mf">0.2945</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">1</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.625262</span>        <span class="mf">0.1477</span>
+<span class="n">BFGS</span><span class="p">:</span>    <span class="mi">2</span> <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>      <span class="o">-</span><span class="mf">34.627763</span>        <span class="mf">0.0001</span>
+<span class="n">Fitting</span> <span class="n">C_11</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">2.56044687</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.01247671</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.98366491</span><span class="p">,</span>  <span class="mf">3.42893711</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">149.74909575669915</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.1696996170085603</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.9999084935045536</span>
+<span class="n">Setting</span> <span class="n">C11</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.934660</span> <span class="o">+/-</span> <span class="mf">0.007301</span>
 
 
-Fitting C_21
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-1.07663577, -0.26643655,  0.5027424 ,  1.23345414,  1.92818198]) GPa
-Cij (gradient) / GPa    :     75.0952617697293
-Error in Cij / GPa      :     1.3149075235415504
-Correlation coefficient :     0.9995404242109733
-Setting C21 (7) to 0.468708 +/- 0.008207
+<span class="n">Fitting</span> <span class="n">C_21</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.07663577</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.26643655</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.23345414</span><span class="p">,</span>  <span class="mf">1.92818198</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">75.0952617697293</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.3149075235415504</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.9995404242109733</span>
+<span class="n">Setting</span> <span class="n">C21</span> <span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.468708</span> <span class="o">+/-</span> <span class="mf">0.008207</span>
 
 
-Fitting C_31
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-1.07663577, -0.26643655,  0.5027424 ,  1.23345414,  1.92818198]) GPa
-Cij (gradient) / GPa    :     75.09526176972929
-Error in Cij / GPa      :     1.31490752354155
-Correlation coefficient :     0.9995404242109733
-Updating C31 (7) with value 0.468708 +/- 0.008207
+<span class="n">Fitting</span> <span class="n">C_31</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.07663577</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.26643655</span><span class="p">,</span>  <span class="mf">0.5027424</span> <span class="p">,</span>  <span class="mf">1.23345414</span><span class="p">,</span>  <span class="mf">1.92818198</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">75.09526176972929</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">1.31490752354155</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.9995404242109733</span>
+<span class="n">Updating</span> <span class="n">C31</span> <span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">with</span> <span class="n">value</span> <span class="mf">0.468708</span> <span class="o">+/-</span> <span class="mf">0.008207</span>
 
 
-Fitting C_44
-Strain array([-0.02, -0.01,  0.  ,  0.01,  0.02])
-Stress array([-1.13572340e+00, -5.65842409e-01, -9.46072689e-15,  5.60142655e-01,
-        1.11304586e+00]) GPa
-Cij (gradient) / GPa    :     56.23523568430933
-Error in Cij / GPa      :     0.19437884854805132
-Correlation coefficient :     0.9999820790695022
-Setting C44 (4) to 0.350993 +/- 0.001213
+<span class="n">Fitting</span> <span class="n">C_44</span>
+<span class="n">Strain</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.</span>  <span class="p">,</span>  <span class="mf">0.01</span><span class="p">,</span>  <span class="mf">0.02</span><span class="p">])</span>
+<span class="n">Stress</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.13572340e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.65842409e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.46072689e-15</span><span class="p">,</span>  <span class="mf">5.60142655e-01</span><span class="p">,</span>
+        <span class="mf">1.11304586e+00</span><span class="p">])</span> <span class="n">GPa</span>
+<span class="n">Cij</span> <span class="p">(</span><span class="n">gradient</span><span class="p">)</span> <span class="o">/</span> <span class="n">GPa</span>    <span class="p">:</span>     <span class="mf">56.23523568430933</span>
+<span class="n">Error</span> <span class="ow">in</span> <span class="n">Cij</span> <span class="o">/</span> <span class="n">GPa</span>      <span class="p">:</span>     <span class="mf">0.19437884854805132</span>
+<span class="n">Correlation</span> <span class="n">coefficient</span> <span class="p">:</span>     <span class="mf">0.9999820790695022</span>
+<span class="n">Setting</span> <span class="n">C44</span> <span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="n">to</span> <span class="mf">0.350993</span> <span class="o">+/-</span> <span class="mf">0.001213</span>
 
 
-[[b C11 b C12 b C12 b     b     b    ]
- [b C12 b C11 b C12 b     b     b    ]
- [b C12 b C12 b C11 b     b     b    ]
- [b     b     b     b C44 b     b    ]
- [b     b     b     b     b C44 b    ]
- [b     b     b     b     b     b C44]]
+<span class="p">[[</span><span class="n">b</span> <span class="n">C11</span> <span class="n">b</span> <span class="n">C12</span> <span class="n">b</span> <span class="n">C12</span> <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>    <span class="p">]</span>
+ <span class="p">[</span><span class="n">b</span> <span class="n">C12</span> <span class="n">b</span> <span class="n">C11</span> <span class="n">b</span> <span class="n">C12</span> <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>    <span class="p">]</span>
+ <span class="p">[</span><span class="n">b</span> <span class="n">C12</span> <span class="n">b</span> <span class="n">C12</span> <span class="n">b</span> <span class="n">C11</span> <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>    <span class="p">]</span>
+ <span class="p">[</span><span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span> <span class="n">C44</span> <span class="n">b</span>     <span class="n">b</span>    <span class="p">]</span>
+ <span class="p">[</span><span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span> <span class="n">C44</span> <span class="n">b</span>    <span class="p">]</span>
+ <span class="p">[</span><span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span>     <span class="n">b</span> <span class="n">C44</span><span class="p">]]</span>
 
- =
+ <span class="o">=</span>
 
-[[149.75  75.1   75.1    0.     0.     0.  ]
- [ 75.1  149.75  75.1    0.     0.     0.  ]
- [ 75.1   75.1  149.75   0.     0.     0.  ]
- [  0.     0.     0.    56.24   0.     0.  ]
- [  0.     0.     0.     0.    56.24   0.  ]
- [  0.     0.     0.     0.     0.    56.24]]
-C_11 = 149.75 +/- 1.17 GPa
-C_12 = 75.10 +/- 1.31 GPa
-C_44 = 56.24 +/- 0.19 GPa
-PreconLBFGS:   0  21:22:10     -927.087471       0.8332
-estimate_mu(): mu=2.3315998829549316, mu_c=1.0
-PreconLBFGS:   1  21:22:10     -927.611735       0.1487
-PreconLBFGS:   2  21:22:11     -927.643943       0.0642
-PreconLBFGS:   3  21:22:11     -927.652380       0.0393
-PreconLBFGS:   4  21:22:11     -927.655827       0.0210
-PreconLBFGS:   5  21:22:11     -927.656988       0.0092
-PreconLBFGS:   6  21:22:11     -927.657131       0.0052
-PreconLBFGS:   7  21:22:11     -927.657193       0.0030
-PreconLBFGS:   8  21:22:11     -927.657220       0.0011
-PreconLBFGS:   9  21:22:11     -927.657224       0.0009
-PreconLBFGS:  10  21:22:11     -927.657226       0.0004
-PreconLBFGS:  11  21:22:11     -927.657226       0.0002
-PreconLBFGS:  12  21:22:11     -927.657226       0.0001
-PreconLBFGS:  13  21:22:11     -927.657226       0.0001
-PreconLBFGS:  14  21:22:11     -927.657226       0.0000
-PreconLBFGS:  15  21:22:11     -927.657226       0.0000
-PreconLBFGS:  16  21:22:11     -927.657226       0.0000
-PreconLBFGS:  17  21:22:11     -927.657226       0.0000
-PreconLBFGS:  18  21:22:12     -927.657226       0.0000
-PreconLBFGS:  19  21:22:12     -927.657226       0.0000
-PreconLBFGS:  20  21:22:12     -927.657226       0.0000
-PreconLBFGS:  21  21:22:12     -927.657226       0.0000
-SW vacancy formation energy 4.33384020178346 eV
-</pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<span class="p">[[</span><span class="mf">149.75</span>  <span class="mf">75.1</span>   <span class="mf">75.1</span>    <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">75.1</span>  <span class="mf">149.75</span>  <span class="mf">75.1</span>    <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">75.1</span>   <span class="mf">75.1</span>  <span class="mf">149.75</span>   <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>    <span class="mf">56.24</span>   <span class="mf">0.</span>     <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>    <span class="mf">56.24</span>   <span class="mf">0.</span>  <span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>     <span class="mf">0.</span>    <span class="mf">56.24</span><span class="p">]]</span>
+<span class="n">C_11</span> <span class="o">=</span> <span class="mf">149.75</span> <span class="o">+/-</span> <span class="mf">1.17</span> <span class="n">GPa</span>
+<span class="n">C_12</span> <span class="o">=</span> <span class="mf">75.10</span> <span class="o">+/-</span> <span class="mf">1.31</span> <span class="n">GPa</span>
+<span class="n">C_44</span> <span class="o">=</span> <span class="mf">56.24</span> <span class="o">+/-</span> <span class="mf">0.19</span> <span class="n">GPa</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">0</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>     <span class="o">-</span><span class="mf">927.087471</span>       <span class="mf">0.8332</span>
+<span class="n">estimate_mu</span><span class="p">():</span> <span class="n">mu</span><span class="o">=</span><span class="mf">2.3315998829549316</span><span class="p">,</span> <span class="n">mu_c</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">1</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">10</span>     <span class="o">-</span><span class="mf">927.611735</span>       <span class="mf">0.1487</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">2</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.643943</span>       <span class="mf">0.0642</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">3</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.652380</span>       <span class="mf">0.0393</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">4</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.655827</span>       <span class="mf">0.0210</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">5</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.656988</span>       <span class="mf">0.0092</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">6</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657131</span>       <span class="mf">0.0052</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">7</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657193</span>       <span class="mf">0.0030</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">8</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657220</span>       <span class="mf">0.0011</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>   <span class="mi">9</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657224</span>       <span class="mf">0.0009</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">10</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0004</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">11</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0002</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">12</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0001</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">13</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0001</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">14</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">15</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">16</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">17</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">11</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">18</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">12</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">19</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">12</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">20</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">12</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">PreconLBFGS</span><span class="p">:</span>  <span class="mi">21</span>  <span class="mi">21</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">12</span>     <span class="o">-</span><span class="mf">927.657226</span>       <span class="mf">0.0000</span>
+<span class="n">SW</span> <span class="n">vacancy</span> <span class="n">formation</span> <span class="n">energy</span> <span class="mf">4.33384020178346</span> <span class="n">eV</span>
 </pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
 </div>
 </div>
 </div>

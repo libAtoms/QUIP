@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>quippy.system_module &mdash; quippy e07c62a+ documentation</title>
+  <title>quippy.system_module &mdash; quippy e8cc4da+ documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                e07c62a+
+                e8cc4da+
               </div>
             
           
@@ -99,7 +99,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quippy.html">Quippy library reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../visualisation.html">Visualisation Tools</a></li>
 </ul>
 
             
@@ -182,7 +181,7 @@
 
 <span class="sd">The system module contains low-level routines for I/O, timing, random</span>
 <span class="sd">number generation etc. The Inoutput type is used to abstract both</span>
-<span class="sd">formatted and unformatted (i.e. binary) I/O.</span>
+<span class="sd">formatted and unformatted(i.e. binary) I/O.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">_quippy</span>
@@ -236,6 +235,29 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alloc</span><span class="p">:</span>
             <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack_finalise</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
     
+<div class="viewcode-block" id="Stack.print"><a class="viewcode-back" href="../../system.html#quippy.system_module.Stack.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        print(self[, verbosity, out])</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Defined at System.fpp lines 2234-2242</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        this : Stack</span>
+<span class="sd">        verbosity : int</span>
+<span class="sd">        out : Inoutput</span>
+<span class="sd">        </span>
+<span class="sd">        Overloaded interface for printing. With the</span>
+<span class="sd">        &#39;this&#39; parameter omitted output goes to the default mainlog(&#39;stdout&#39;). The</span>
+<span class="sd">        &#39;verbosity&#39; parameter controls whether the object is actually printed;</span>
+<span class="sd">        if the verbosity is greater than that currently at the top of the</span>
+<span class="sd">        verbosity stack then output is suppressed. Possible verbosity levels</span>
+<span class="sd">        range from &#39;ERROR&#39; through &#39;NORMAL&#39;, &#39;VERBOSE&#39;, &#39;NERD&#39; and &#39;ANALYSIS&#39;.</span>
+<span class="sd">        Other user-defined types define the Print interface in the same way.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack_print</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">out</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="Stack.push"><a class="viewcode-back" href="../../system.html#quippy.system_module.Stack.push">[docs]</a>    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        push(self, val)</span>
@@ -283,22 +305,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">stack_value</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack_value</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">stack_value</span></div>
-    
-<div class="viewcode-block" id="Stack.print"><a class="viewcode-back" href="../../system.html#quippy.system_module.Stack.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        print(self[, verbosity, out])</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        Defined at System.fpp lines 2234-2242</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        this : Stack</span>
-<span class="sd">        verbosity : int</span>
-<span class="sd">        out : Inoutput</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_stack_print</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">out</span><span class="o">.</span><span class="n">_handle</span><span class="p">)</span></div>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -501,8 +507,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        inoutput_read_line : str</span>
 <span class="sd">        </span>
-<span class="sd">        Read a line of text from a file (up to a line break, or 1024 characters).</span>
-<span class="sd">        This can then be parsed by the calling routine (using &#39;parse_line&#39; for example)</span>
+<span class="sd">        Read a line of text from a file(up to a line break, or 1024 characters).</span>
+<span class="sd">        This can then be parsed by the calling routine(using &#39;parse_line&#39; for example)</span>
 <span class="sd">        </span>
 <span class="sd">        Optionally, a status is returned which is:</span>
 <span class="sd">        </span>
@@ -1099,7 +1105,7 @@
 <span class="sd">    num_fields : int</span>
 <span class="sd">    </span>
 <span class="sd">    split a string at separators, making sure not to break up bits that</span>
-<span class="sd">    are in quotes (possibly matching opening and closing quotes), and</span>
+<span class="sd">    are in quotes(possibly matching opening and closing quotes), and</span>
 <span class="sd">    also strip one level of quotes off, sort of like a shell would when</span>
 <span class="sd">    tokenizing</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1270,18 +1276,18 @@
 <span class="sd">    	Seed for the random number generator.</span>
 <span class="sd">    </span>
 <span class="sd">    mpi_all_inoutput : bool</span>
-<span class="sd">    	Print on all MPI nodes (false by default)</span>
+<span class="sd">    	Print on all MPI nodes(false by default)</span>
 <span class="sd">    </span>
 <span class="sd">    common_seed : bool</span>
 <span class="sd">    enable_timing : bool</span>
 <span class="sd">    	Enable system_timer() calls</span>
 <span class="sd">    </span>
 <span class="sd">    quippy_running : bool</span>
-<span class="sd">    	.true. if running under quippy (Python interface)</span>
+<span class="sd">    	.true. if running under quippy(Python interface)</span>
 <span class="sd">    </span>
 <span class="sd">    mainlog_file : str</span>
 <span class="sd">    mainlog_unit : int</span>
-<span class="sd">    	If &#39;common_seed&#39; is true (default), random seed will be the same for each</span>
+<span class="sd">    	If &#39;common_seed&#39; is true(default), random seed will be the same for each</span>
 <span class="sd">    	MPI process.</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
@@ -1420,7 +1426,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    th : str</span>
 <span class="sd">    </span>
-<span class="sd">    Return the correct ordinal ending (st,nd,rd,th) for the given integer</span>
+<span class="sd">    Return the correct ordinal ending(st,nd,rd,th) for the given integer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">th</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_th</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">th</span></div>
@@ -1542,7 +1548,7 @@
 <span class="sd">    </span>
 <span class="sd">    Measure elapsed CPU and wall clock time between pairs of calls with</span>
 <span class="sd">    matching &#39;name&#39; parameter. Calls to &#39;system_timer&#39; must be properly</span>
-<span class="sd">    nested (i.e. start and stop from different pairs can&#39;t overlap), and</span>
+<span class="sd">    nested(i.e. start and stop from different pairs can&#39;t overlap), and</span>
 <span class="sd">    maximum depth of calls is set by the &#39;TIMER_STACK&#39; parameter.</span>
 <span class="sd">    </span>
 <span class="sd">    &gt;   call system_timer(name)  start the clock</span>
@@ -1609,7 +1615,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    val : int</span>
 <span class="sd">    </span>
-<span class="sd">    Map from descriptive verbosity names (&#39;NORMAL&#39;, &#39;VERBOSE&#39; etc.) to numbers</span>
+<span class="sd">    Map from descriptive verbosity names(&#39;NORMAL&#39;, &#39;VERBOSE&#39; etc.) to numbers</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">_quippy</span><span class="o">.</span><span class="n">f90wrap_verbosity_of_str</span><span class="p">(</span><span class="nb">str</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">val</span></div>
@@ -2196,7 +2202,7 @@
 <span class="sd">      _inoutput_print_char_array</span>
 <span class="sd">    </span>
 <span class="sd">    Overloaded interface for printing. With the</span>
-<span class="sd">    &#39;this&#39; parameter omitted output goes to the default mainlog (&#39;stdout&#39;). The</span>
+<span class="sd">    &#39;this&#39; parameter omitted output goes to the default mainlog(&#39;stdout&#39;). The</span>
 <span class="sd">    &#39;verbosity&#39; parameter controls whether the object is actually printed;</span>
 <span class="sd">    if the verbosity is greater than that currently at the top of the</span>
 <span class="sd">    verbosity stack then output is suppressed. Possible verbosity levels</span>

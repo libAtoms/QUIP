@@ -96,7 +96,6 @@ Contents
    install.rst
    Tutorials/index.rst
    quippy.rst
-   visualisation.rst
 
 
 Indices and tables

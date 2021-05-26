@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Low-level system routines &mdash; quippy e07c62a+ documentation</title>
+  <title>Low-level system routines &mdash; quippy e8cc4da+ documentation</title>
   
 
   
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                e07c62a+
+                e8cc4da+
               </div>
             
           
@@ -109,7 +109,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="visualisation.html">Visualisation Tools</a></li>
 </ul>
 
             
@@ -217,7 +216,7 @@
 <p>Defined at System.fpp lines 137-2769</p>
 <p>The system module contains low-level routines for I/O, timing, random
 number generation etc. The Inoutput type is used to abstract both
-formatted and unformatted (i.e. binary) I/O.</p>
+formatted and unformatted(i.e. binary) I/O.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="quippy.system_module.InOutput">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">quippy.system_module.</span></span><span class="sig-name descname"><span class="pre">InOutput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inoutput</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/system_module.html#InOutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.system_module.InOutput" title="Permalink to this definition">¶</a></dt>
@@ -393,8 +392,8 @@ _reada_int_dim1</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>inoutput_read_line</strong><span class="classifier">str</span></dt><dd></dd>
-<dt>Read a line of text from a file (up to a line break, or 1024 characters).</dt><dd></dd>
-<dt>This can then be parsed by the calling routine (using ‘parse_line’ for example)</dt><dd></dd>
+<dt>Read a line of text from a file(up to a line break, or 1024 characters).</dt><dd></dd>
+<dt>This can then be parsed by the calling routine(using ‘parse_line’ for example)</dt><dd></dd>
 <dt>Optionally, a status is returned which is:</dt><dd></dd>
 <dt>egin{itemize}</dt><dd></dd>
 <dt>item $&lt;0$ if the end of the file is reached</dt><dd></dd>
@@ -581,6 +580,13 @@ _reada_int_dim1</p>
 <dt><strong>this</strong><span class="classifier">Stack</span></dt><dd></dd>
 <dt><strong>verbosity</strong><span class="classifier">int</span></dt><dd></dd>
 <dt><strong>out</strong><span class="classifier">Inoutput</span></dt><dd></dd>
+<dt><strong>Overloaded interface for printing. With the</strong></dt><dd></dd>
+<dt><strong>‘this’ parameter omitted output goes to the default mainlog(‘stdout’). The</strong></dt><dd></dd>
+<dt><strong>‘verbosity’ parameter controls whether the object is actually printed;</strong></dt><dd></dd>
+<dt><strong>if the verbosity is greater than that currently at the top of the</strong></dt><dd></dd>
+<dt><strong>verbosity stack then output is suppressed. Possible verbosity levels</strong></dt><dd></dd>
+<dt><strong>range from ‘ERROR’ through ‘NORMAL’, ‘VERBOSE’, ‘NERD’ and ‘ANALYSIS’.</strong></dt><dd></dd>
+<dt><strong>Other user-defined types define the Print interface in the same way.</strong></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -1381,7 +1387,7 @@ _inoutput_print_char_array</p>
 </dd>
 </dl>
 <p>Overloaded interface for printing. With the
-‘this’ parameter omitted output goes to the default mainlog (‘stdout’). The
+‘this’ parameter omitted output goes to the default mainlog(‘stdout’). The
 ‘verbosity’ parameter controls whether the object is actually printed;
 if the verbosity is greater than that currently at the top of the
 verbosity stack then output is suppressed. Possible verbosity levels
@@ -1582,7 +1588,7 @@ Other user-defined types define the Print interface in the same way.</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>num_fields</strong><span class="classifier">int</span></dt><dd></dd>
 <dt>split a string at separators, making sure not to break up bits that</dt><dd></dd>
-<dt>are in quotes (possibly matching opening and closing quotes), and</dt><dd></dd>
+<dt>are in quotes(possibly matching opening and closing quotes), and</dt><dd></dd>
 <dt>also strip one level of quotes off, sort of like a shell would when</dt><dd></dd>
 <dt>tokenizing</dt><dd></dd>
 </dl>
@@ -1724,15 +1730,15 @@ _string_to_logical1d</p>
 </dd>
 <dt><strong>seed</strong><span class="classifier">int</span></dt><dd><p>Seed for the random number generator.</p>
 </dd>
-<dt><strong>mpi_all_inoutput</strong><span class="classifier">bool</span></dt><dd><p>Print on all MPI nodes (false by default)</p>
+<dt><strong>mpi_all_inoutput</strong><span class="classifier">bool</span></dt><dd><p>Print on all MPI nodes(false by default)</p>
 </dd>
 <dt><strong>common_seed</strong><span class="classifier">bool</span></dt><dd></dd>
 <dt><strong>enable_timing</strong><span class="classifier">bool</span></dt><dd><p>Enable system_timer() calls</p>
 </dd>
-<dt><strong>quippy_running</strong><span class="classifier">bool</span></dt><dd><p>.true. if running under quippy (Python interface)</p>
+<dt><strong>quippy_running</strong><span class="classifier">bool</span></dt><dd><p>.true. if running under quippy(Python interface)</p>
 </dd>
 <dt><strong>mainlog_file</strong><span class="classifier">str</span></dt><dd></dd>
-<dt><strong>mainlog_unit</strong><span class="classifier">int</span></dt><dd><p>If ‘common_seed’ is true (default), random seed will be the same for each
+<dt><strong>mainlog_unit</strong><span class="classifier">int</span></dt><dd><p>If ‘common_seed’ is true(default), random seed will be the same for each
 MPI process.</p>
 </dd>
 <dt><strong>Must be called at the start of all programs. Initialises MPI if present,</strong></dt><dd></dd>
@@ -1794,7 +1800,7 @@ MPI process.</p>
 <dt><strong>do_print</strong><span class="classifier">bool</span></dt><dd></dd>
 <dt><strong>Measure elapsed CPU and wall clock time between pairs of calls with</strong></dt><dd></dd>
 <dt><strong>matching ‘name’ parameter. Calls to ‘system_timer’ must be properly</strong></dt><dd></dd>
-<dt><strong>nested (i.e. start and stop from different pairs can’t overlap), and</strong></dt><dd></dd>
+<dt><strong>nested(i.e. start and stop from different pairs can’t overlap), and</strong></dt><dd></dd>
 <dt><strong>maximum depth of calls is set by the ‘TIMER_STACK’ parameter.</strong></dt><dd></dd>
 <dt><strong>&gt;   call system_timer(name)  start the clock</strong></dt><dd></dd>
 <dt><strong>&gt;   …                      do something</strong></dt><dd></dd>
@@ -1820,7 +1826,7 @@ MPI process.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>th</strong><span class="classifier">str</span></dt><dd></dd>
-<dt>Return the correct ordinal ending (st,nd,rd,th) for the given integer</dt><dd></dd>
+<dt>Return the correct ordinal ending(st,nd,rd,th) for the given integer</dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -1839,7 +1845,7 @@ MPI process.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>val</strong><span class="classifier">int</span></dt><dd></dd>
-<dt>Map from descriptive verbosity names (‘NORMAL’, ‘VERBOSE’ etc.) to numbers</dt><dd></dd>
+<dt>Map from descriptive verbosity names(‘NORMAL’, ‘VERBOSE’ etc.) to numbers</dt><dd></dd>
 </dl>
 </dd>
 </dl>
