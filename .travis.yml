@@ -66,8 +66,6 @@ jobs:
           pandoc
 
         - pip install
-          f90wrap
-          ase
           docutils==0.14
           sphinx
           sphinx-rtd-theme
@@ -78,16 +76,10 @@ jobs:
         # needed to nbconvert ipynb files and to process the rst files
         - pip install 'nbconvert[execute]' 'ipython'
 
-        # quippy is working, install it
-        - make &> /dev/null
-        - make install-quippy &> /dev/null
+        - pip list
 
-        # Install atomeye from src
-        - export QUIP_ROOT=`pwd`
-        - git clone https://github.com/jameskermode/AtomEye.git src/AtomEye
-        - cd src/AtomEye/Python
-        - python setup.py install
-        - cd ../../..
+        # quippy is working, install it
+        - make install-quippy &> /dev/null
 
       script:
         - cd doc
