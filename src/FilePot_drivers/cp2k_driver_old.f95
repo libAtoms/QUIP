@@ -100,7 +100,7 @@ module cp2k_driver_module
                                      distance_min_image, &
                                      read_line, parse_line, &
                                      assignment(=), atoms_n_neighbours, remove_bond, &
-				     assign_pointer, print_xyz, atoms_neighbour, is_nearest_neighbour
+                                     assign_pointer, print_xyz, atoms_neighbour, is_nearest_neighbour
   use clusters_module,         only: bfs_step,&
                                      construct_hysteretic_region, &
                                      !select_hysteretic_quantum_region, &
@@ -126,8 +126,8 @@ module cp2k_driver_module
                                      parse_string, read_line, &
                                      operator(//), &
                                      ERROR, PRINT_SILENT, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, PRINT_ANALYSIS, &
-				     verbosity_push_decrement, verbosity_pop, current_verbosity, &
-				     mainlog
+                                     verbosity_push_decrement, verbosity_pop, current_verbosity, &
+                                     mainlog
   use table_module,            only: table, initialise, finalise, &
                                      append, allocate, delete, &
                                      int_part, TABLE_STRING_LENGTH, print
@@ -351,9 +351,9 @@ contains
 
 ! whole numbers => to use wavefunction extrapolation later
     QM_maxdist = 0._dp
-    QM_maxdist(1) = maxval(at%pos(1,fitlist%int(1,1:fitlist%N))) - minval(at%pos(1,fitlist%int(1,1:fitlist%N))) 
-    QM_maxdist(2) = maxval(at%pos(2,fitlist%int(1,1:fitlist%N))) - minval(at%pos(2,fitlist%int(1,1:fitlist%N))) 
-    QM_maxdist(3) = maxval(at%pos(3,fitlist%int(1,1:fitlist%N))) - minval(at%pos(3,fitlist%int(1,1:fitlist%N))) 
+    QM_maxdist(1) = maxval(at%pos(1,fitlist%int(1,1:fitlist%N))) - minval(at%pos(1,fitlist%int(1,1:fitlist%N)))
+    QM_maxdist(2) = maxval(at%pos(2,fitlist%int(1,1:fitlist%N))) - minval(at%pos(2,fitlist%int(1,1:fitlist%N)))
+    QM_maxdist(3) = maxval(at%pos(3,fitlist%int(1,1:fitlist%N))) - minval(at%pos(3,fitlist%int(1,1:fitlist%N)))
 !    do i=1,fitlist%N
 !      do j=i+1,fitlist%N
 !         QM_maxdist(1) = max(QM_maxdist(1),distance_min_image(at,(/at%pos(1,i),0._dp,0._dp/),(/at%pos(1,j),0._dp,0._dp/)))
@@ -416,7 +416,7 @@ contains
           endif
        else
           this%qmmm%reuse_wfn = .false.
-          call print('could not find QM_list_changed in the atoms object. reuse_wfn? '//this%qmmm%reuse_wfn) 
+          call print('could not find QM_list_changed in the atoms object. reuse_wfn? '//this%qmmm%reuse_wfn)
        endif
        if (this%qmmm%reuse_wfn) then
           this%dft%scf_guess = 'RESTART'
@@ -839,13 +839,13 @@ contains
     end if
 
     select case(trim(psf_print_str))
-      case('CP2K_PRINT_AND_SAVE') 
+      case('CP2K_PRINT_AND_SAVE')
         PSF_print = CP2K_PRINT_AND_SAVE
-      case('NO_PSF') 
+      case('NO_PSF')
         PSF_print = NO_PSF
-      case('DRIVER_PRINT_AND_SAVE') 
+      case('DRIVER_PRINT_AND_SAVE')
         PSF_print = DRIVER_PRINT_AND_SAVE
-      case('USE_EXISTING_PSF') 
+      case('USE_EXISTING_PSF')
         PSF_print = USE_EXISTING_PSF
       case default
         call system_abort("go_cp2k got psf_print_str='"//trim(psf_print_str)//"'" // &
@@ -853,7 +853,7 @@ contains
     end select
 
     select case(trim(run_type_str))
-      case('MM') 
+      case('MM')
         run_type = MM_RUN
       case('QS')
         run_type = QS_RUN
@@ -924,28 +924,28 @@ contains
 
       call system_command('egrep "FORCE_EVAL.* QS " '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
       if (status == 0) then ! QS or QMMM run
-	call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
-	if (status == 0) then
-	  call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
-	  converged = .false.
-	else
-	  call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
-	  if (status == 0) then
-	    converged = .true.
-	  else
-	    call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",PRINT_ALWAYS)
-	    converged = .false.
-	  endif
-	end if
+        call system_command('grep "FAILED to converge" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+        if (status == 0) then
+          call print("WARNING: cp2k_driver failed to converge, trying again",PRINT_ALWAYS)
+          converged = .false.
+        else
+          call system_command('grep "SCF run converged" '//trim(param%wenv%working_directory)//'/cp2k_output.out',status=status)
+          if (status == 0) then
+            converged = .true.
+          else
+            call print("WARNING: cp2k_driver couldn't find definitive sign of convergence or failure to converge in output file, trying again",PRINT_ALWAYS)
+            converged = .false.
+          endif
+        end if
       else ! MM run
-	converged = .true.
+        converged = .true.
       endif
 
      ! Save Wfn if needed
       if (any(run_type.eq.(/QS_RUN,QMMM_RUN_CORE,QMMM_RUN_EXTENDED/))) then
   !       inquire(file=trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn',exist=ex)
   !       if (ex) &
-	  call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn '//trim(param%wenv%wfn_file))
+          call system_command('cp '//trim(param%wenv%working_directory)//'/'//trim(param%global%project)//'-RESTART.wfn '//trim(param%wenv%wfn_file))
       endif
 
     end do
@@ -958,7 +958,7 @@ contains
     call read_cp2k_forces(CP2K_forces,CP2K_energy,param,my_atoms,run_type=run_type)
     if (maxval(abs(CP2K_forces)) > max_force_warning) then
       call print("WARNING: CP2K_forces maximum component " // maxval(abs(CP2K_forces)) // " at " // maxloc(abs(CP2K_forces)) // &
-		 " exceeds max_force_warning="//max_force_warning, PRINT_ALWAYS)
+                 " exceeds max_force_warning="//max_force_warning, PRINT_ALWAYS)
     endif
 
     if (present(energy)) energy = CP2K_energy
@@ -983,7 +983,7 @@ contains
     if (clean_up_files) &
       call system_command('rm -rf '//trim(param%wenv%working_directory),status=status)
 
-    call finalise(param)    
+    call finalise(param)
 
     call print('CP2K finished. Go back to main program.')
     call system_timer('go_cp2k_end')
@@ -1005,7 +1005,7 @@ contains
     integer,     intent(in)  :: qmflag
     type(Table), intent(out) :: qmlist
     character(len=*), optional, intent(in) :: int_property
-  
+
     integer              :: i
     integer              :: qm_flag_index
 
@@ -1036,7 +1036,7 @@ contains
     type(Table), intent(out) :: qmlist
     logical, intent(in) :: do_recursive
     character(len=*), optional, intent(in) :: int_property
-  
+
     integer              :: i
     integer              :: qm_flag_index
     logical              :: my_do_recursive
@@ -1077,7 +1077,7 @@ contains
     integer,     intent(in)  :: qmflags(:)
     type(Table), intent(out) :: qmlist
     character(len=*), optional, intent(in) :: int_property
-  
+
     integer              :: i
     integer              :: qm_flag_index
 
@@ -1105,7 +1105,7 @@ contains
 
     type(Atoms), intent(in)      :: my_atoms
     character(len=*), intent(in) :: prop
-  
+
     integer,dimension(3) :: pos_indices
     integer              :: prop_index
 
@@ -1225,7 +1225,7 @@ call print('Added '//count(my_atoms%data%int(qm_flag_index,1:my_atoms%N).eq.1)//
 
     bonds  = 0
     bonds2 = 0
-    
+
     do i=1,at%N
        if (associated(at%connect%neighbour1(i)%t)) bonds  = bonds  + at%connect%neighbour1(i)%t%N
        if (associated(at%connect%neighbour2(i)%t)) bonds2 = bonds2 + at%connect%neighbour2(i)%t%N
@@ -1365,7 +1365,7 @@ type(InOutput) :: exyz
                                      PSF_print
     logical, optional, intent(in) :: have_silica_potential
 
-    type(Inoutput)                   :: input_file 
+    type(Inoutput)                   :: input_file
     integer,allocatable,dimension(:) :: list   !in order to separate QM atom indices for H and O
     integer                          :: i,j,counter
     type(Table)                      :: qm_list_check
@@ -1648,8 +1648,8 @@ logical :: constrain_all_HSI
 !!!!!!***********
 !       call print('Writing QM/MM links...')
 
-!	 if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
-!	   call system_abort("potential_calc failed to assing pointer for cut_bonds pointer")
+!         if (.not. assign_pointer(at, 'cut_bonds', cut_bonds_p)) &
+!           call system_abort("potential_calc failed to assing pointer for cut_bonds pointer")
        if (assign_pointer(my_atoms,'cut_bonds',cut_bonds_p)) then
           call initialise(cut_bonds,2,0,0,0,0)
           do i_inner=1,my_atoms%N
@@ -1690,14 +1690,14 @@ logical :: constrain_all_HSI
              !call print('      &END MOVE_MM_CHARGE',file=input_file)
              call print('    &END LINK',file=input_file)
           enddo
-	 call finalise(cut_bonds)
+         call finalise(cut_bonds)
        endif
 !!!!!!***********
 
        call print('    ECOUPL '//trim(param%qmmm%ecoupl),file=input_file) !QMMM electrostatic coupling, can be NONE,COULOMB,GAUSS,S-WAVE
-     
+
 !       call print('Writing decoupling section...')
-     
+
        call print('    &PERIODIC',file=input_file)
 !       call print('#      GMAX 1.',file=input_file)
 !       call print('#      REPLICA -1',file=input_file)
@@ -1741,7 +1741,7 @@ logical :: constrain_all_HSI
           call print('    &END MM_KIND',file=input_file)
        endif
        call print('#    otherwise use default: 0.800',file=input_file)
-     
+
 !       call print('Writing QM list...')
        allocate(list(qm_list%N))
        list=int_part(qm_list,1)
@@ -1763,15 +1763,15 @@ logical :: constrain_all_HSI
 
        if (size(list).ne.counter) call system_abort('cp2k_write_input: Number of QM list atoms '//size(list)// &
                                                     ' differs from the written atom numbers '//counter)
-     
+
        deallocate(list)
-     
+
        call print('  &END QMMM',file=input_file)
     endif
 
 !    call print(' ...lattice parameters...')
     call print('  &SUBSYS',file=input_file)
-  
+
     call print('    &CELL',file=input_file)
     call print('      A '//round(my_atoms%lattice(1,1),6)//' '//round(my_atoms%lattice(2,1),6)//' '//round(my_atoms%lattice(3,1),6),file=input_file)
     call print('      B '//round(my_atoms%lattice(1,2),6)//' '//round(my_atoms%lattice(2,2),6)//' '//round(my_atoms%lattice(3,2),6),file=input_file)
@@ -1897,7 +1897,7 @@ endif
 
     call print('  &END SUBSYS',file=input_file)
     call print('&END FORCE_EVAL',file=input_file)
-     
+
 !    call print(' ...any other internal variables...')
 
     call print('&GLOBAL',file=input_file)
@@ -1942,7 +1942,7 @@ endif
     call print('    &END PRINT',file=input_file)
     call print('  &END MD',file=input_file)
     call print('&END MOTION',file=input_file)
-  
+
     call finalise(input_file)
 
   end subroutine write_cp2k_input_file
@@ -1965,7 +1965,7 @@ endif
     type(Atoms),                        intent(in)  :: my_atoms
     integer,                            intent(in)  :: run_type
     logical, optional,                  intent(in)  :: verbose
- 
+
     integer :: i,j,num_atoms,m,status
     type(Inoutput) :: force_file
     logical :: my_verbose
@@ -2188,7 +2188,7 @@ integer :: i_inner, i_outer
     combined_forces(1:3,1:my_atoms%N) = mm_forces(1:3,1:my_atoms%N)
     combined_forces(1:3,int_part(core,1)) = qmmm_forces(1:3,int_part(core,1))
     do i_atom=1,my_atoms%N
-       if (any(int_part(fitlist,1).eq.i_atom)) combined_forces(1:3,i_atom) = combined_forces(1:3,i_atom) - ElementMass(my_atoms%Z(i_atom)) * force_corr 
+       if (any(int_part(fitlist,1).eq.i_atom)) combined_forces(1:3,i_atom) = combined_forces(1:3,i_atom) - ElementMass(my_atoms%Z(i_atom)) * force_corr
     enddo
 
     call print('')
@@ -2202,7 +2202,7 @@ integer :: i_inner, i_outer
     call verbosity_pop()
     call print('Sum of the combined forces: '//sum(combined_forces(1,1:my_atoms%N))//' '//sum(combined_forces(2,1:my_atoms%N))//' '//sum(combined_forces(3,1:my_atoms%N)))
 
-    
+
   end subroutine QUIP_combine_forces
 
   !% Abrupt force mixing. The fitlist includes the core and buffer atoms.
@@ -2242,7 +2242,7 @@ integer :: i_inner, i_outer
 !    call verbosity_pop()
     call print('Sum of the combined forces: '//sum(combined_forces(1,1:my_atoms%N))//' '//sum(combined_forces(2,1:my_atoms%N))//' '//sum(combined_forces(3,1:my_atoms%N)))
 
-    
+
   end subroutine abrupt_force_mixing
 
   !% Calculates the force on the $i$th atom due to an external potential that has
@@ -2316,9 +2316,9 @@ integer :: i_inner, i_outer
 !    force_corr = force_corr / mass_corr
 !
 !    do i_atom=1,my_atoms%N
-!       if (any(int_part(qmlist,1).eq.i_atom)) combined_forces(1:3,i_atom) = qmmm_forces(1:3,i_atom) - ElementMass(my_atoms%Z(i_atom)) * force_corr 
+!       if (any(int_part(qmlist,1).eq.i_atom)) combined_forces(1:3,i_atom) = qmmm_forces(1:3,i_atom) - ElementMass(my_atoms%Z(i_atom)) * force_corr
 !    enddo
-!    
+!
 !  end subroutine combine_forces
 
   !% Energy conversion from hartree (used by CP2K) to eV.
@@ -2390,7 +2390,7 @@ integer :: i_inner, i_outer
      else
         feq = .true.
      end if
-     
+
    end function real_feq2
 
    !% Matrix floating point logical comparison used by read_convert_back_pos,
@@ -2402,9 +2402,9 @@ integer :: i_inner, i_outer
 
      integer::j
      logical::feq
-     
+
      call check_size('Matrix2',matrix2,shape(matrix1),'Matrix_FEQ')
-     
+
      feq =.true.
      do j=1,size(matrix1)
            if (.not.real_feq2(matrix1(j),matrix2(j))) then
@@ -2412,7 +2412,7 @@ integer :: i_inner, i_outer
               return
            end if
      end do
-     
+
    end function matrix_feq2
 
   !!!!! ============================================================================================ !!!!!

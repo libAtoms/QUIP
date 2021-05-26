@@ -29,14 +29,14 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X  IPModel_SW_VP  module 
-!X 
-!%  Danny potential J ChemPhys 127, 204704(2007) for SiO_2. 
-!%  
-!%  Only the case of fourfold coordinated silcon and twofold coordinated
-!%  is considered. (-->Fixed charges).    
+!X  IPModel_SW_VP  module
+!X
+!%  Danny potential J ChemPhys 127, 204704(2007) for SiO_2.
 !%
-!%  The IPModel_SW_VP object contains all the parameters read 
+!%  Only the case of fourfold coordinated silcon and twofold coordinated
+!%  is considered. (-->Fixed charges).
+!%
+!%  The IPModel_SW_VP object contains all the parameters read
 !%  from an 'SW_VP_params' XML stanza.
 !X
 !X  Contribution from Anke Butenuth
@@ -65,12 +65,12 @@ include 'IPModel_interface.h'
 
 public :: IPModel_SW_VP
 type IPModel_SW_VP
-  integer :: n_types = 0         !% Number of atomic types 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types} 
+  integer :: n_types = 0         !% Number of atomic types
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}
 
   real(dp) :: cutoff = 0.0_dp
 
-  
+
   real(dp), allocatable :: a(:,:), AA(:,:), BB(:,:), p(:,:), q(:,:), sigma(:,:), eps2(:,:), C_0(:,:), C_1(:,:), b(:,:), D_SiO(:,:), C_OOprime(:,:), D_OOprime(:,:) !% IP parameters
   real(dp), allocatable :: lambda(:,:,:), d1(:,:,:), d2(:,:,:), gamma1(:,:,:), gamma2(:,:,:), eps3(:,:,:), costheta0(:,:,:) !% IP parameters
 
@@ -152,7 +152,7 @@ subroutine IPModel_SW_VP_Finalise(this)
 end subroutine IPModel_SW_VP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator. It computes energy, forces and virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -160,8 +160,8 @@ end subroutine IPModel_SW_VP_Finalise
 subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_SW_VP), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -169,18 +169,18 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ki, k
-  real(dp) :: drij(3), drij_mag, drik(3), drik_mag, drij_dot_drik 
+  real(dp) :: drij(3), drij_mag, drik(3), drik_mag, drij_dot_drik
   real(dp) :: w_f
 
   integer ti, tj, tk
 
-  real(dp) :: drij_dri(3), drij_drj(3), drik_dri(3), drik_drk(3) 
-  real(dp) :: dcos_ijk_dri(3), dcos_ijk_drj(3), dcos_ijk_drk(3) 
-  real(dp) :: virial_i(3,3) 
+  real(dp) :: drij_dri(3), drij_drj(3), drik_dri(3), drik_drk(3)
+  real(dp) :: dcos_ijk_dri(3), dcos_ijk_drj(3), dcos_ijk_drk(3)
+  real(dp) :: virial_i(3,3)
 
-  real(dp) :: de, de_dr, de_drij, de_drik, de_dcos_ijk 
+  real(dp) :: de, de_dr, de_drij, de_drik, de_dcos_ijk
   real(dp) :: cur_cutoff
- 
+
 
   integer :: n_neigh_i
 
@@ -204,7 +204,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_SW_VP_Calc', error)
      f = 0.0_dp
   end if
@@ -256,7 +256,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 
 !$omp do
 #endif
-  do i=1, at%N 
+  do i=1, at%N
    if (present(mpi)) then
        if (mpi%active) then
          if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
@@ -267,121 +267,121 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
        if(.not. atom_mask_pointer(i)) cycle
     endif
 
-    ti = get_type(this%type_of_atomic_num, at%Z(i)) 
+    ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANALYSIS)
-    cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))   
+    cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
     n_neigh_i = n_neighbours(at, i)
 
 
-    do ji=1, n_neigh_i 
-      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
-      
+    do ji=1, n_neigh_i
+      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff)
+
       if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
          if(.not. atom_mask_pointer(j)) cycle
       endif
 
-      if (j <= 0) cycle  
-      if (drij_mag .feq. 0.0_dp) cycle   
+      if (j <= 0) cycle
+      if (drij_mag .feq. 0.0_dp) cycle
 
       tj = get_type(this%type_of_atomic_num, at%Z(j))
-      
-      if (drij_mag/this%sigma(ti,tj)  > this%a(ti,tj)) cycle 
-      
+
+      if (drij_mag/this%sigma(ti,tj)  > this%a(ti,tj)) cycle
+
 
       if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i j " // i // " " // j, PRINT_ANALYSIS)
 
       if (associated(w_e)) then
-	w_f = 0.5_dp*(w_e(i)+w_e(j))  ! 
+        w_f = 0.5_dp*(w_e(i)+w_e(j))  !
       else
-	w_f = 1.0_dp
+        w_f = 1.0_dp
       endif
 
       if (present(e) .or. present(local_e)) then
-	! factor of 0.5 because SW_VP definition goes over each pair only once
-	
+        ! factor of 0.5 because SW_VP definition goes over each pair only once
+
         ! select functional form of pair potentials depending on species : oxygen -oxygen
-        if ((ti .eq. 2) .and. (tj  .eq. 2)) then  ! 
+        if ((ti .eq. 2) .and. (tj  .eq. 2)) then  !
           de = 0.5_dp*this%eps2(ti,tj)*f2OO(this, drij_mag, ti, tj)
 
         elseif ((ti .eq. 2) .and. (tj .eq. 3)) then  ! Oxygen Silicon
-          de = 0.5_dp*this%eps2(ti,tj)*f2SiO(this, drij_mag, ti, tj) 
-       
- 
-        elseif ((ti .eq. 3) .and. (tj .eq.2 )) then ! Calls the Silicon-Oxygen function again  
+          de = 0.5_dp*this%eps2(ti,tj)*f2SiO(this, drij_mag, ti, tj)
+
+
+        elseif ((ti .eq. 3) .and. (tj .eq.2 )) then ! Calls the Silicon-Oxygen function again
           de = 0.5_dp*this%eps2(ti,tj)*f2SiO(this, drij_mag, ti, tj)
 
         elseif ((ti .eq. 3) .and. (tj .eq. 3)) then ! Silicon -Silicon
-          de = 0.5_dp*this%eps2(ti,tj)*f2SiSi(this, drij_mag, ti, tj)  
-       
-        else 
+          de = 0.5_dp*this%eps2(ti,tj)*f2SiSi(this, drij_mag, ti, tj)
+
+        else
           de= 0.0_dp
         endif
-       
 
-	
+
+
         if (present(local_e)) then
 #ifdef _OPENMP
-	  private_local_e(i) = private_local_e(i) + de
+          private_local_e(i) = private_local_e(i) + de
 #else
-	  local_e(i) = local_e(i) + de 
+          local_e(i) = local_e(i) + de
 #endif
-	endif
-	if (present(e)) then
+        endif
+        if (present(e)) then
 #ifdef _OPENMP
-	  private_e = private_e + de*w_f
+          private_e = private_e + de*w_f
 #else
-	  e = e + de*w_f 
+          e = e + de*w_f
 #endif
-	endif
+        endif
       endif
 
       if (present(f) .or. present(virial) .or. present(local_virial)) then
 
-        
-        !select pair potentials depending on species : oxygen-oxygen
-        if ((ti .eq. 2) .and. (tj .eq. 2)) then  
-        de_dr = 0.5_dp*this%eps2(ti,tj)*df2OO_dr(this, drij_mag, ti, tj) 
-        
-        elseif ((ti .eq. 3) .and. (tj .eq. 2)) then  ! oxygen-silicon
-        de_dr = 0.5_dp*this%eps2(ti,tj)* df2SiO_dr(this, drij_mag, ti, tj) 
 
-        elseif ((ti.eq. 2) .and. (tj .eq. 3 )) then ! Calls the silicon-oxygen function again  
+        !select pair potentials depending on species : oxygen-oxygen
+        if ((ti .eq. 2) .and. (tj .eq. 2)) then
+        de_dr = 0.5_dp*this%eps2(ti,tj)*df2OO_dr(this, drij_mag, ti, tj)
+
+        elseif ((ti .eq. 3) .and. (tj .eq. 2)) then  ! oxygen-silicon
+        de_dr = 0.5_dp*this%eps2(ti,tj)* df2SiO_dr(this, drij_mag, ti, tj)
+
+        elseif ((ti.eq. 2) .and. (tj .eq. 3 )) then ! Calls the silicon-oxygen function again
         de_dr = 0.5_dp*this%eps2(ti,tj)* df2SiO_dr(this, drij_mag, ti, tj)
 
         elseif ((ti .eq. 3 ) .and. (tj .eq. 3)) then ! silicon-silicon
-        de_dr = 0.5_dp*this%eps2(ti,tj)*df2SiSi_dr(this, drij_mag, ti, tj) 
-        else 
-        de_dr = 0.0_dp  
+        de_dr = 0.5_dp*this%eps2(ti,tj)*df2SiSi_dr(this, drij_mag, ti, tj)
+        else
+        de_dr = 0.0_dp
         endif
-        
-       
 
- 
-	if (present(f)) then
+
+
+
+        if (present(f)) then
 #ifdef _OPENMP
-	  private_f(:,i) = private_f(:,i) + de_dr*w_f*drij
-	  private_f(:,j) = private_f(:,j) - de_dr*w_f*drij
+          private_f(:,i) = private_f(:,i) + de_dr*w_f*drij
+          private_f(:,j) = private_f(:,j) - de_dr*w_f*drij
 #else
-	  f(:,i) = f(:,i) + de_dr*w_f*drij 
-	  f(:,j) = f(:,j) - de_dr*w_f*drij 
+          f(:,i) = f(:,i) + de_dr*w_f*drij
+          f(:,j) = f(:,j) - de_dr*w_f*drij
 #endif
-	endif
+        endif
 
-        if(present(virial) .or. present(local_virial)) virial_i = de_dr*w_f*(drij .outer. drij)*drij_mag 
+        if(present(virial) .or. present(local_virial)) virial_i = de_dr*w_f*(drij .outer. drij)*drij_mag
 
 
 
-	if (present(virial)) then
+        if (present(virial)) then
 #ifdef _OPENMP
-	  private_virial = private_virial - virial_i
+          private_virial = private_virial - virial_i
 #else
-	  virial = virial - virial_i
+          virial = virial - virial_i
 #endif
-	endif
+        endif
         if (present(local_virial)) then
 #ifdef _OPENMP
-           private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i, (/9/)) 
+           private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i, (/9/))
 #else
            local_virial(:,i) = local_virial(:,i) - reshape(virial_i, (/9/))
 #endif
@@ -390,17 +390,17 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
       endif
 
       if (associated(w_e)) then
-	w_f = w_e(i)
+        w_f = w_e(i)
       else
-	w_f = 1.0_dp
+        w_f = 1.0_dp
       endif
       enddo !  closes j loop
-      enddo !  closes i loop 
-      
+      enddo !  closes i loop
+
       ! New loop for three body terms, because (see parameters/ip.params.SW_VP.xml) cutoff for three body terms is in SiSiO case larger then the  SiSi cutoff
 
       !$omp do
-      do i=1, at%N 
+      do i=1, at%N
 
         if (present(mpi)) then
            if (mpi%active) then
@@ -412,103 +412,103 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
            if(.not. atom_mask_pointer(i)) cycle
         endif
 
-    ti = get_type(this%type_of_atomic_num, at%Z(i)) ! 
+    ti = get_type(this%type_of_atomic_num, at%Z(i)) !
 
 
    ! if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_VP_Calc i " // i // " " // n_neighbours(at,i), PRINT_ANALYSIS)
-    cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:)) 
+    cur_cutoff = maxval(this%a(ti,:)*this%sigma(ti,:))
     n_neigh_i = n_neighbours(at, i)
 
 
-      do ji=1, n_neigh_i 
-      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff) 
+      do ji=1, n_neigh_i
+      j = neighbour(at, i, ji, drij_mag, cosines = drij, max_dist = cur_cutoff)
 
       if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
          if(.not. atom_mask_pointer(j)) cycle
       endif
 
-      if (j <= 0) cycle  
-      if (drij_mag .feq. 0.0_dp) cycle 
+      if (j <= 0) cycle
+      if (drij_mag .feq. 0.0_dp) cycle
 
-      tj = get_type(this%type_of_atomic_num, at%Z(j)) 
+      tj = get_type(this%type_of_atomic_num, at%Z(j))
 
-    
-        
-      do ki=1, n_neigh_i 
-         
-	if (ki <= ji) cycle  
-	
-        k = neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff) 
+
+
+      do ki=1, n_neigh_i
+
+        if (ki <= ji) cycle
+
+        k = neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
 
         if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
            if(.not. atom_mask_pointer(k)) cycle
         endif
 
-	if (k <= 0) cycle
-	if (drik_mag .feq. 0.0_dp) cycle 
+        if (k <= 0) cycle
+        if (drik_mag .feq. 0.0_dp) cycle
 
-	tk = get_type(this%type_of_atomic_num, at%Z(k))
-        if (drik_mag > this%d2(ti, tj, tk)) cycle 
+        tk = get_type(this%type_of_atomic_num, at%Z(k))
+        if (drik_mag > this%d2(ti, tj, tk)) cycle
         if (drij_mag > this%d1(ti, tj, tk)) cycle
 
-	drij_dot_drik = sum(drij*drik) 
-	if (present(e) .or. present(local_e)) then
-	  de = this%eps3(ti,tj,tk)*f3(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk) 
-        
-      
-	  if (present(local_e)) then
+        drij_dot_drik = sum(drij*drik)
+        if (present(e) .or. present(local_e)) then
+          de = this%eps3(ti,tj,tk)*f3(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk)
+
+
+          if (present(local_e)) then
 #ifdef _OPENMP
-	    private_local_e(i) = private_local_e(i) + de
+            private_local_e(i) = private_local_e(i) + de
 #else
-	    local_e(i) = local_e(i) + de
+            local_e(i) = local_e(i) + de
 #endif
-	  endif
-	  if (present(e)) then
+          endif
+          if (present(e)) then
 #ifdef _OPENMP
-	    private_e = private_e + de*w_f 
+            private_e = private_e + de*w_f
 #else
-	    e = e + de*w_f 
+            e = e + de*w_f
 #endif
-	  endif
-	endif
-	if (present(f) .or. present(virial)) then
-	  call df3_dr(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)  
-	  drij_dri = drij 
-	  drij_drj = -drij !grad.|vec(r_i) -vec(r_j)|= -( vec(r_i) -vec(r_j))/|vec(r_i) -vec(r_j)| = -drij 
-	  drik_dri = drik
-	  drik_drk = -drik
+          endif
+        endif
+        if (present(f) .or. present(virial)) then
+          call df3_dr(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)
+          drij_dri = drij
+          drij_drj = -drij !grad.|vec(r_i) -vec(r_j)|= -( vec(r_i) -vec(r_j))/|vec(r_i) -vec(r_j)| = -drij
+          drik_dri = drik
+          drik_drk = -drik
 
 ! dcos_ijk = drij_dot_drik
 ! (ri_x - rj_x)*(ri_x - rk_x) + (ri_y - rj_y)*(ri_y-rk_y) / (rij rik)
 !
 ! d/dri
-! 
+!
 ! ((rij rik)(rij_x + rik_x) - (rij . rik)(rij rik_x / rik + rik rij_x/rij)) / (rij rik)^2
-! 
+!
 ! rij rik ( rij_x + rik_x) -  (rij.rik)(rij rik_x / rik + rik rij_x/rij)
 ! ---------------------------------------------------------------------
 !                       rij^2 rik^2
-!                       
+!
 ! rij_x + rik_x     cos_ijk (rij rik_x / rik + rik rij_x /rij)
 ! -------------  - ------------------------------------------
 ! rij rik                    rij rik
-! 
+!
 ! rij_x + rik_x
 ! ------------- - cos_ijk (rik_x / rik^2 + rij_x / rij^2)
 !    rij rik
-!    
-!    
+!
+!
 ! rhatij_x/rik + rhatik_x/rij - cos_ijk(rhatik_x/rik + rhatij_x/rij)
-! 
-! 
+!
+!
 ! d/drj
-! 
+!
 ! ((rij rik)(-rik_x) - (rij.rik)(rik (-rij_x)/rij)) / (rij rik)^2
-! 
+!
 !  -rik_x     (rij.rik) ( rik rij_x/rij)
 ! -------  + ---------------------------
 ! rij rik           rij^2 rik^2
-! 
+!
 ! -rhatik_x/rij + cos_ijk rhatij_x/rij
 !
 ! d/drij
@@ -519,7 +519,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 ! ---------------------------------------------
 !                    (rij rik)^2
 !
-! rik_x      (rij.rik) rij_x 
+! rik_x      (rij.rik) rij_x
 ! ------   - ---------------
 ! rij rik    rij^3 rik
 !
@@ -531,53 +531,53 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 ! --------   -  ------------------
 !   rij                 rij
 
-	  dcos_ijk_dri = drij/drik_mag + drik/drij_mag - drij_dot_drik * (drik/drik_mag + drij/drij_mag) 
-	  dcos_ijk_drj = -drik/drij_mag + drij_dot_drik * drij/drij_mag 
-	  dcos_ijk_drk = -drij/drik_mag + drij_dot_drik * drik/drik_mag 
+          dcos_ijk_dri = drij/drik_mag + drik/drij_mag - drij_dot_drik * (drik/drik_mag + drij/drij_mag)
+          dcos_ijk_drj = -drik/drij_mag + drij_dot_drik * drij/drij_mag
+          dcos_ijk_drk = -drij/drik_mag + drij_dot_drik * drik/drik_mag
 
 
 
 
-	  if (present(f)) then
+          if (present(f)) then
 #ifdef _OPENMP
-	    private_f(:,i) = private_f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
-						       de_dcos_ijk * dcos_ijk_dri(:))
-	    private_f(:,j) = private_f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
-	    private_f(:,k) = private_f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
+            private_f(:,i) = private_f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
+                                                       de_dcos_ijk * dcos_ijk_dri(:))
+            private_f(:,j) = private_f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
+            private_f(:,k) = private_f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:))
 #else
-	    f(:,i) = f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
-						       de_dcos_ijk * dcos_ijk_dri(:)) 
-	    f(:,j) = f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))  
-	    f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
+            f(:,i) = f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
+                                                       de_dcos_ijk * dcos_ijk_dri(:))
+            f(:,j) = f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
+            f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:))
 #endif
-	  end if
+          end if
 
           if( present(virial) .or. present(local_virial) ) virial_i = &
               w_f*this%eps3(ti,tj,tk)*( &
-	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
-	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
-	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) ) 
+              de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
+              de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
+              de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
 
-	  if (present(virial)) then
+          if (present(virial)) then
 #ifdef _OPENMP
-	    private_virial = private_virial - virial_i
+            private_virial = private_virial - virial_i
 #else
-	    virial = virial - virial_i
+            virial = virial - virial_i
 #endif
-	  end if
-	  if (present(local_virial)) then
+          end if
+          if (present(local_virial)) then
 #ifdef _OPENMP
-	    private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
+            private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
 #else
-	    local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
+            local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 #endif
-	  end if
-	endif
+          end if
+        endif
 
-      end do 
+      end do
 
-    end do 
-  end do 
+    end do
+  end do
 
 #ifdef _OPENMP
 !$omp critical
@@ -586,7 +586,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
   if (present(local_e)) local_e = local_e + private_local_e
   if (present(virial)) virial = virial + private_virial
   if (present(local_virial)) local_virial = local_virial + private_local_virial
-!$omp end critical 
+!$omp end critical
 
   if(allocated(private_f)) deallocate(private_f)
   if(allocated(private_local_e)) deallocate(private_local_e)
@@ -596,7 +596,7 @@ subroutine IPModel_SW_VP_Calc(this, at, e, local_e, f, virial, local_virial, arg
 #endif
 
   if (present(mpi)) then
-     if (present(e)) e = sum(mpi, e) 
+     if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial)
@@ -608,7 +608,7 @@ end subroutine IPModel_SW_VP_Calc
 
 
 
-function f3(this, rij_i, rik_i, cos_ijk, ti, tj, tk) 
+function f3(this, rij_i, rik_i, cos_ijk, ti, tj, tk)
   type(IPModel_SW_VP), intent(in) :: this
   real(dp), intent(in) :: rij_i, rik_i, cos_ijk
   integer, intent(in) :: ti, tj, tk
@@ -617,28 +617,28 @@ function f3(this, rij_i, rik_i, cos_ijk, ti, tj, tk)
   real(dp) :: rij, rik
   !We give all cosines as parameters from xml file
 
-  rij = rij_i 
-  rik = rik_i 
+  rij = rij_i
+  rik = rik_i
 
-  if (rij_i >= this%d1(ti,tj,tk) .or. rik_i >= this%d2(ti,tj,tk)) then 
+  if (rij_i >= this%d1(ti,tj,tk) .or. rik_i >= this%d2(ti,tj,tk)) then
      f3 = 0.0_dp
     return
   endif
-  
+
   f3 = this%lambda(ti,tj,tk)*exp( this%gamma1(ti,tj,tk)/(rij-this%d1(ti,tj,tk)) + this%gamma2(ti,tj,tk)/(rik-this%d2(ti,tj,tk)) )* &
      (cos_ijk - this%costheta0(ti,tj,tk))**2
 
- 
+
 
 end function f3
 
-subroutine df3_dr(this, rij_i, rik_i, cos_ijk, ti, tj, tk, de_drij, de_drik, de_dcos_ijk) 
+subroutine df3_dr(this, rij_i, rik_i, cos_ijk, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)
   type(IPModel_SW_VP), intent(in) :: this
   real(dp), intent(in) :: rij_i, rik_i, cos_ijk
   integer, intent(in) :: ti, tj, tk
   real(dp), intent(out) :: de_drij, de_drik, de_dcos_ijk
 
-  real(dp) :: rij, rik 
+  real(dp) :: rij, rik
   real(dp) :: expf, cosf
 
 
@@ -650,15 +650,15 @@ subroutine df3_dr(this, rij_i, rik_i, cos_ijk, ti, tj, tk, de_drij, de_drik, de_
     de_drik = 0.0_dp
     de_dcos_ijk = 0.0_dp
     return
-  endif 
+  endif
 
-  
-  expf = this%lambda(ti,tj,tk)*exp(this%gamma1(ti,tj,tk)/(rij - this%d1(ti,tj,tk)) + this%gamma2(ti,tj,tk)/(rik - this%d2(ti,tj,tk))) 
-  cosf = (cos_ijk -this%costheta0(ti,tj,tk)) 
 
-  de_drij = -expf * this%gamma1(ti,tj,tk)/(rij-this%d1(ti,tj,tk))**2 * cosf**2    
-  de_drik = -expf * this%gamma2(ti,tj,tk)/(rik-this%d2(ti,tj,tk))**2 * cosf**2    
-  de_dcos_ijk = expf * 2.0_dp * cosf  
+  expf = this%lambda(ti,tj,tk)*exp(this%gamma1(ti,tj,tk)/(rij - this%d1(ti,tj,tk)) + this%gamma2(ti,tj,tk)/(rik - this%d2(ti,tj,tk)))
+  cosf = (cos_ijk -this%costheta0(ti,tj,tk))
+
+  de_drij = -expf * this%gamma1(ti,tj,tk)/(rij-this%d1(ti,tj,tk))**2 * cosf**2
+  de_drik = -expf * this%gamma2(ti,tj,tk)/(rik-this%d2(ti,tj,tk))**2 * cosf**2
+  de_dcos_ijk = expf * 2.0_dp * cosf
 
 
 
@@ -674,11 +674,11 @@ end subroutine df3_dr
 
 
 
-function f2SiSi(this, ri, ti, tj) 
+function f2SiSi(this, ri, ti, tj)
   type(IPModel_SW_VP), intent(in) :: this
   real(dp), intent(in) :: ri
   integer, intent(in) :: ti, tj
-  
+
   real(dp) :: f2SiSi
 
 
@@ -689,14 +689,14 @@ function f2SiSi(this, ri, ti, tj)
 
 !  f2SiSi = this%AA(ti,tj)*(1.0_dp+3.2_dp*qi*qj)*faqj*faqi*(this%BB(ti,tj) * r**(-this%p(ti,tj)) - r**(-this%q(ti,tj))) * exp(1.0_dp/(r-this%a(ti,tj)))
 ! for now, fixed coordination. If Si is fourfold coordinated, in Si0_2 is faq(Si) = 0.
-! 
+!
 ! Potential has to be modified if one wants Si-Si interactions as well
- 
+
   f2SiSi = 0.0_dp
 
 end function f2SiSi
 
-function df2SiSi_dr(this, ri, ti, tj) 
+function df2SiSi_dr(this, ri, ti, tj)
   type(IPModel_SW_VP), intent(in) :: this
   real(dp), intent(in) :: ri
   integer, intent(in) :: ti, tj
@@ -720,7 +720,7 @@ function df2SiSi_dr(this, ri, ti, tj)
 
    df2SiSi_dr = 0.0_dp
 
-end function df2SiSi_dr 
+end function df2SiSi_dr
 
 
 function f2SiO(this, r, ti, tj)
@@ -728,17 +728,17 @@ function f2SiO(this, r, ti, tj)
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
   real(dp) :: f2SiO
-   
+
   real(dp) :: expf
   real(dp) :: f2SiO_at_cutoff, df2SiO_dr_at_cutoff
 
 ! Cutoff sigma*a for longrange non-coulombic terms
-  
+
   if (r >= (this%sigma(ti,tj)*this%a(ti,tj))) then
     f2SiO = 0.0_dp
     return
   endif
- 
+
 
 
   expf = exp(-r/this%a(ti,tj))
@@ -746,7 +746,7 @@ function f2SiO(this, r, ti, tj)
   df2SiO_dr_at_cutoff= -9.0_dp*(this%C_0(ti, tj)-this%C_1(ti,tj)*1.6_dp)*(this%sigma(ti,tj)*this%a(ti,tj)) **(-10.0_dp) &
                          + 4.0_dp*this%D_SiO(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj)) **(-5.0_dp)* exp(-this%sigma(ti,tj)) &
                          + this%D_SiO(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj) )**(-4.0_dp)*exp(-this%sigma(ti,tj))/this%a(ti,tj)
-  
+
 
 
   f2SiO = (this%C_0(ti,tj)-this%C_1(ti,tj)*1.6_dp)*r**(-9.0_dp) - this%D_SiO(ti,tj)*r**(-4.0_dp)*expf  - f2SiO_at_cutoff - (r - this%sigma(ti,tj)*this%a(ti,tj))*df2SiO_dr_at_cutoff
@@ -764,7 +764,7 @@ function df2SiO_dr(this, r, ti, tj)
   real(dp) :: df2SiO_dr
   real(dp) :: expf
   real(dp) :: df2SiO_dr_at_cutoff
-    
+
   if (r >= (this%sigma(ti,tj)*this%a(ti,tj))) then
     df2SiO_dr = 0.0_dp
     return
@@ -801,13 +801,13 @@ function f2OO(this, r, ti, tj)
 
   expf = exp(-r/this%a(ti,tj))
   f2OO_at_cutoff= (this%C_OOprime(ti, tj))*(this%sigma(ti,tj)*this%a(ti,tj))**(-7.0_dp) - this%D_OOprime(ti, tj)*(this%sigma(ti,tj)*this%a(ti,tj))**(-4.0_dp)*exp(-this%sigma(ti,tj))
- ! Cutoff is at r = sigma*a, thus can be altered via parameter list 
+ ! Cutoff is at r = sigma*a, thus can be altered via parameter list
   df2OO_dr_at_cutoff=  -7.0_dp*(this%C_OOprime(ti,tj))*(this%sigma(ti,tj)*this%a(ti,tj) )**(-8.0_dp) + 4.0_dp*this%D_OOprime(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj) )**(-5.0_dp)* exp(-this%sigma(ti,tj)) &
                        +  this%D_OOprime(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj) )**(-4.0_dp)*exp(-this%sigma(ti,tj))/this%a(ti,tj)
 
   f2OO = (this%C_OOprime(ti, tj))*r**(-7.0_dp) - this%D_OOprime(ti, tj)*r**(-4.0_dp)*expf  - f2OO_at_cutoff &
         - (r - this%sigma(ti,tj)*this%a(ti,tj))*df2OO_dr_at_cutoff
- 
+
 
 end function f2OO
 
@@ -816,10 +816,10 @@ function df2OO_dr(this, r, ti, tj)
   type(IPModel_SW_VP), intent(in) :: this
   real(dp), intent(in) :: r
   integer, intent(in) :: ti, tj
-  real(dp) :: df2OO_dr, df2OO_dr_at_cutoff 
+  real(dp) :: df2OO_dr, df2OO_dr_at_cutoff
 
   real(dp) :: expf
- 
+
   if (r >= (this%sigma(ti,tj)*this%a(ti,tj))) then
    df2OO_dr = 0.0_dp
     return
@@ -831,7 +831,7 @@ function df2OO_dr(this, r, ti, tj)
   df2OO_dr_at_cutoff = -7.0_dp*(this%C_OOprime(ti,tj))*(this%sigma(ti,tj)*this%a(ti,tj) )**(-8.0_dp) + 4.0_dp*this%D_OOprime(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj) )**(-5.0_dp)* exp(-this%sigma(ti,tj)) &
                        +  this%D_OOprime(ti,tj)*(this%sigma(ti,tj)*this%a(ti,tj) )**(-4.0_dp)*exp(-this%sigma(ti,tj))/this%a(ti,tj)
 
-  df2OO_dr = -7.0_dp*(this%C_OOprime(ti,tj))*r**(-8.0_dp) + 4.0_dp*this%D_OOprime(ti,tj)*r**(-5.0_dp)*expf +  this%D_OOprime(ti,tj)*r**(-4.0_dp)*expf/this%a(ti,tj)- df2OO_dr_at_cutoff 
+  df2OO_dr = -7.0_dp*(this%C_OOprime(ti,tj))*r**(-8.0_dp) + 4.0_dp*this%D_OOprime(ti,tj)*r**(-5.0_dp)*expf +  this%D_OOprime(ti,tj)*r**(-4.0_dp)*expf/this%a(ti,tj)- df2OO_dr_at_cutoff
 
 
 
@@ -846,10 +846,10 @@ end function df2OO_dr
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for the input file.
-!%  
+!%
 !%> <SW_VP_potential>
 !%>  <Potential label="SW_VP_Potential" init_args="Sum init_args_pot1={IP SW_VP} init_args_pot2={IP Coulomb}"/>
 !%>
@@ -913,7 +913,7 @@ end function df2OO_dr
 !%>        lambda="0.350" gamma1="1" gamma2="1" d1="2.6" d2="2.6" costheta0="-0.333" eps="14.39" />
 !%>  <!--In original paper, the c=14,j=14,k=8 term is listed, hence d2 and d1 and gamma1 and gamma2 are interchanged  -->
 !%>  <per_triplet_data atnum_c="14" atnum_j="8" atnum_k="14"
-!%>        lambda="3.164" gamma1="4.06" gamma2="0.52" d1="3.981" d2="2.933"  costheta0="-0.333" eps="14.39" /> 
+!%>        lambda="3.164" gamma1="4.06" gamma2="0.52" d1="3.981" d2="2.933"  costheta0="-0.333" eps="14.39" />
 !%>  <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
 !%>        lambda="3.164" gamma1="2.51" gamma2="2.51" d1="3.771" d2="3.771" costheta0="-0.333"  eps="14.39" />
 !%>  </SW_VP_params>
@@ -926,9 +926,9 @@ end function df2OO_dr
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -940,7 +940,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (parse_in_ip) &
       call system_abort("IPModel_startElement_handler entered SW_VP_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
 
-    if (parse_matched_label) then 
+    if (parse_matched_label) then
        call print("SW_VP_params startElement_handler bailing because we already matched our label", PRINT_NERD)
        return ! we already found an exact match for this label
     end if
@@ -956,7 +956,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_matched_label = .true.
         parse_in_ip = .true.
       else ! no match
-	call print("SW_VP_params startElement_handler got label didn't match", PRINT_NERD)
+        call print("SW_VP_params startElement_handler got label didn't match", PRINT_NERD)
         parse_in_ip = .false.
       endif
     else ! no label passed in
@@ -966,7 +966,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call print("SW_VP_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
+        call print("SW_VP_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
         call finalise(parse_ip)
       endif
 
@@ -990,7 +990,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       allocate(parse_ip%D_SiO(parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%C_OOprime(parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%D_OOprime(parse_ip%n_types,parse_ip%n_types))
-      
+
       allocate(parse_ip%lambda(parse_ip%n_types,parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%gamma1(parse_ip%n_types,parse_ip%n_types,parse_ip%n_types))
       allocate(parse_ip%gamma2(parse_ip%n_types,parse_ip%n_types,parse_ip%n_types))
@@ -1066,7 +1066,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "D_OOprime", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find D_OOprime")
     read (value, *) parse_ip%D_OOprime(ti,tj)
-    
+
     if (ti /= tj) then
       parse_ip%AA(tj,ti) = parse_ip%AA(ti,tj)
       parse_ip%BB(tj,ti) = parse_ip%BB(ti,tj)
@@ -1091,7 +1091,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) Zi
     call QUIP_FoX_get_value(attributes, "atnum_j", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find atnum_j")
-    read (value, *) Zj            
+    read (value, *) Zj
     call QUIP_FoX_get_value(attributes, "atnum_k", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find atnum_k")
     read (value, *) Zk
@@ -1111,13 +1111,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) parse_ip%gamma2(ti,tj,tk)
     call QUIP_FoX_get_value(attributes, "d1", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find d1")
-    read (value, *) parse_ip%d1(ti,tj,tk)  
+    read (value, *) parse_ip%d1(ti,tj,tk)
     call QUIP_FoX_get_value(attributes, "d2", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find d2")
-    read (value, *) parse_ip%d2(ti,tj,tk) 
+    read (value, *) parse_ip%d2(ti,tj,tk)
     call QUIP_FoX_get_value(attributes, "costheta0", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find costheta0")
-    read (value, *) parse_ip%costheta0(ti,tj,tk)  
+    read (value, *) parse_ip%costheta0(ti,tj,tk)
     call QUIP_FoX_get_value(attributes, "eps", value, status)
     if (status /= 0) call system_abort ("IPModel_SW_VP_read_params_xml cannot find eps")
     read (value, *) parse_ip%eps3(ti,tj,tk)
@@ -1128,7 +1128,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%gamma1(ti,tk,tj) = parse_ip%gamma2(ti,tj,tk)     ! ti is central atom for tj /=tk, the legs change and hence gamma1 and gamma2 interchange
       parse_ip%gamma2(ti,tk,tj) = parse_ip%gamma1(ti,tj,tk)     !
       parse_ip%d1(ti,tk,tj) = parse_ip%d2(ti,tj,tk)             !  ti is central atom for tj /=tk, the legs change and hence d1 and d2 interchange
-      parse_ip%d2(ti,tk,tj) = parse_ip%d1(ti,tj,tk)             ! 
+      parse_ip%d2(ti,tk,tj) = parse_ip%d1(ti,tj,tk)             !
       parse_ip%eps3(ti,tk,tj) = parse_ip%eps3(ti,tj,tk)
       parse_ip%costheta0(ti,tk,tj) = parse_ip%costheta0(ti,tj,tk)
     endif
@@ -1137,9 +1137,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'SW_VP_params') then
@@ -1178,7 +1178,7 @@ subroutine IPModel_SW_VP_read_params_xml(this, param_str)
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X printing
 !% Printing of SW_VP parameters: number of different types, cutoff radius, atomic numbers, ect.
 !X
@@ -1199,15 +1199,15 @@ subroutine IPModel_SW_VP_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_SW_VP : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) // &
-	" " // this%atomic_num(tj), file=file)
+        " " // this%atomic_num(tj), file=file)
       call Print ("IPModel_SW_VP : pair " // this%AA(ti,tj) // " " // this%BB(ti,tj) // " " // this%p(ti,tj) // " " // &
-	this%q(ti,tj) // " " // this%a(ti,tj), file=file)
+        this%q(ti,tj) // " " // this%a(ti,tj), file=file)
       call Print ("IPModel_SW_VP :      " // this%sigma(ti,tj) // " " // this%eps2(ti,tj), file=file)
       do tk=1, this%n_types
-	call Print ("IPModel_SW_VP : triplet interaction ti tj " // ti // " " // tj // " " // tk // &
-	  " Zi Zj Zk " // this%atomic_num(ti) // " " // this%atomic_num(tj) // " " // this%atomic_num(tk), file=file)
-	call Print ("IPModel_SW_VP : triplet " // this%lambda(ti,tj,tk) // " " // this%gamma1(ti,tj,tk) // " " // &
-	  this%eps3(ti,tj,tk), file=file)
+        call Print ("IPModel_SW_VP : triplet interaction ti tj " // ti // " " // tj // " " // tk // &
+          " Zi Zj Zk " // this%atomic_num(ti) // " " // this%atomic_num(tj) // " " // this%atomic_num(tk), file=file)
+        call Print ("IPModel_SW_VP : triplet " // this%lambda(ti,tj,tk) // " " // this%gamma1(ti,tj,tk) // " " // &
+          this%eps3(ti,tj,tk), file=file)
       end do
     end do
     call verbosity_pop()

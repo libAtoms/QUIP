@@ -45,7 +45,7 @@
 
   recursive subroutine Potential_EVB_Finalise(this)
     type(Potential_EVB), intent(inout) :: this
-    
+
     nullify(this%pot1)
 
     this%mm_args_str = ""
@@ -215,7 +215,7 @@
     if (len_trim(calc_energy) == 0) then
       use_calc_energy="energy"
       do while (has_key(at%params, trim(use_calc_energy)))
-	 use_calc_energy = "T"//trim(use_calc_energy)
+         use_calc_energy = "T"//trim(use_calc_energy)
       end do
     endif
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
@@ -241,7 +241,7 @@ call print("EVB1 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
     if (len_trim(calc_energy) == 0) then
       use_calc_energy="energy"
       do while (has_key(at%params, trim(use_calc_energy)))
-	 use_calc_energy = "T"//trim(use_calc_energy)
+         use_calc_energy = "T"//trim(use_calc_energy)
       end do
     endif
     extra_calc_args=trim(extra_calc_args)//" energy="//trim(use_calc_energy)
@@ -269,11 +269,11 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
        call print("EVB no coupling", PRINT_VERBOSE)
        !take the E, F of the resonance state with the smaller E
        if (my_e_1 < my_e_2) then
-	  if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_1)
-	  if (len_trim(calc_force) > 0) at_force_ptr = my_f_1
+          if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_1)
+          if (len_trim(calc_force) > 0) at_force_ptr = my_f_1
        else
-	  if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_2)
-	  if (len_trim(calc_force) > 0) at_force_ptr = my_f_2
+          if (len_trim(calc_energy) > 0) call set_param_value(at, trim(calc_energy), my_e_2)
+          if (len_trim(calc_force) > 0) at_force_ptr = my_f_2
        endif
        if (len_trim(calc_EVB_gap) > 0) then
           gap=my_e_1-my_e_2
@@ -320,20 +320,20 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
           !e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * abs(rab))
           !Letif's modification (the original is too strong and sucks the two Cl atoms together)
           e_offdiag = offdiagonal_A12 * exp(-offdiagonal_mu12 * (rab - offdiagonal_r0) - offdiagonal_mu12_square * (rab - offdiagonal_r0)**2._dp)
-	  call print("EVB e_offidag " // e_offdiag, PRINT_VERBOSE)
+          call print("EVB e_offidag " // e_offdiag, PRINT_VERBOSE)
        endif
 
        !energy
        term1 =  sqrt((my_e_1 - my_e_2)**2._dp + 4._dp*e_offdiag**2)
        if (len_trim(calc_energy) > 0) then
           e = 0.5_dp * (my_e_1 + my_e_2) - 0.5_dp * term1
-	  call set_param_value(at, trim(calc_energy), e)
-	  call print("EVB coupled energy " // e, PRINT_VERBOSE)
+          call set_param_value(at, trim(calc_energy), e)
+          call print("EVB coupled energy " // e, PRINT_VERBOSE)
        endif
        if (len_trim(calc_EVB_gap) > 0) then
           gap=my_e_1-my_e_2
-	  call set_param_value(at, trim(calc_EVB_gap), gap)
-	  call print("EVB gap " // gap, PRINT_VERBOSE)
+          call set_param_value(at, trim(calc_EVB_gap), gap)
+          call print("EVB gap " // gap, PRINT_VERBOSE)
        endif
 
        !force
@@ -356,12 +356,12 @@ call print("EVB2 ARGS_STR "//trim(mm_args_str)//" "//trim(extra_calc_args))
           !force
           at_force_ptr = 0.5_dp * (my_f_1 + my_f_2) - &
               0.5_dp * ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) - 4.0_dp*e_offdiag*de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2)
-	  if (len_trim(calc_EVB_gap) > 0) then
-	    call add_property(at, trim(calc_EVB_gap)//"_force", 0.0_dp, n_cols=3, ptr2=dgap_dr_ptr, error=error)
-	    PASS_ERROR(error)
+          if (len_trim(calc_EVB_gap) > 0) then
+            call add_property(at, trim(calc_EVB_gap)//"_force", 0.0_dp, n_cols=3, ptr2=dgap_dr_ptr, error=error)
+            PASS_ERROR(error)
             dgap_dr_ptr = my_f_1 - my_f_2
-	    !dgap_dr_ptr = ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) - 4.0_dp*e_offdiag*de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2)
-	  endif
+            !dgap_dr_ptr = ((my_e_1 - my_e_2)*(my_f_1 - my_f_2) - 4.0_dp*e_offdiag*de_offdiag_dr) / sqrt((my_e_1 - my_e_2)**2.0_dp + 4._dp*e_offdiag**2)
+          endif
        endif
     endif
 

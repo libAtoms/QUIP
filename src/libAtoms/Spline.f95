@@ -30,7 +30,7 @@
 
 !X
 !X  Spline module
-!X  
+!X
 !%  Defines derived type for a spline, and associated functions.
 !%  Code partially based on Numerical Recipes.
 !X
@@ -43,7 +43,7 @@ module spline_module
   implicit none
   private
   SAVE
-  
+
   public :: spline, initialise, finalise, print, min_knot, max_knot, spline_value, spline_deriv
 
 
@@ -54,7 +54,7 @@ module spline_module
      real(dp), allocatable, dimension(:) ::y2       !% Second derivative
      real(dp)                            ::yp1,ypn  !% Endpoint derivatives
      ! whether y2 has been initialised or not
-     logical                             ::y2_initialised = .false. 
+     logical                             ::y2_initialised = .false.
      logical                             :: initialised = .false.
   end type Spline
 
@@ -65,7 +65,7 @@ module spline_module
   interface finalise
      module procedure spline_finalise
   end interface
-  
+
   interface print
      module procedure spline_print
   end interface
@@ -116,7 +116,7 @@ contains
   !X
   !X spline_finalise(this)
   !X
-  !% Deallocates a spline 
+  !% Deallocates a spline
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -174,7 +174,7 @@ contains
 
     if(this%ypn > 0.99e30_dp)then
        ! natural spline with zero second derivative at last point
-       qn = 0.0_dp 
+       qn = 0.0_dp
        un = 0.0_dp
     else
        qn = 0.5_dp
@@ -234,9 +234,9 @@ contains
 
        do  while(khi-klo > 1)
           k = (khi+klo)/2
-          if(this%x(k) > x) then 
+          if(this%x(k) > x) then
              khi = k
-          else 
+          else
              klo = k
           end if
        end do
@@ -285,9 +285,9 @@ contains
 
        do  while(khi-klo > 1)
           k = (khi+klo)/2
-          if(this%x(k) > x) then 
+          if(this%x(k) > x) then
              khi = k
-          else 
+          else
              klo = k
           end if
        end do
@@ -321,7 +321,7 @@ contains
 
      do i=1, total_n
         int_x(i) = x0+real(i-1,dp)*(x-x0)/real(total_n-1,dp)
-	int_y(i) = spline_value(this, int_x(i))
+        int_y(i) = spline_value(this, int_x(i))
      end do
 
      y_int = TrapezoidIntegral(int_x, int_y)
@@ -335,7 +335,7 @@ contains
   !X spline_compute_matrices(this)
   !X
   !% The y2 of the spline can also be computed using
-  !% linear algebra. Following Numerical Recipes, 
+  !% linear algebra. Following Numerical Recipes,
   !%
   !% \begin{displaymath}
   !% A Y'' = BY + C
@@ -382,7 +382,7 @@ contains
     C(1) = this%yp1
     C(n) = this%ypn
 
-    ! Set the matrix elements corresponds to the 
+    ! Set the matrix elements corresponds to the
     ! equations 3.3.7 of page 118 in Numerical Recipes
 
     do I=2,n-1

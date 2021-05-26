@@ -29,11 +29,11 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_SW  module 
+!X IPModel_SW  module
 !X
 !% Module for the Stillinger and Weber potential for silicon
 !% (Ref. Phys. Rev. B {\bf 31},  5262, (1984)).
-!% The IPModel_SW object contains all the parameters read 
+!% The IPModel_SW object contains all the parameters read
 !% from an 'SW_params' XML stanza.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -61,8 +61,8 @@ include 'IPModel_interface.h'
 
 public :: IPModel_SW
 type IPModel_SW
-  integer :: n_types = 0         !% Number of atomic types 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types} 
+  integer :: n_types = 0         !% Number of atomic types
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}
 
   real(dp) :: cutoff = 0.0_dp
 
@@ -136,7 +136,7 @@ subroutine IPModel_SW_Finalise(this)
 end subroutine IPModel_SW_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator. It computes energy, forces and virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -144,8 +144,8 @@ end subroutine IPModel_SW_Finalise
 subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_SW), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -190,7 +190,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_SW_Calc', error)
      f = 0.0_dp
   end if
@@ -252,7 +252,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -283,51 +283,51 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if (current_verbosity() >= PRINT_ANALYSIS) call print ("IPModel_SW_Calc i j " // i // " " // j, PRINT_ANALYSIS)
 
       if (associated(w_e)) then
-	w_f = 0.5_dp*(w_e(i)+w_e(j))
+        w_f = 0.5_dp*(w_e(i)+w_e(j))
       else
-	w_f = 1.0_dp
+        w_f = 1.0_dp
       endif
 
       if (present(e) .or. present(local_e)) then
-	! factor of 0.5 because SW definition goes over each pair only once
-	de = 0.5_dp*this%eps2(ti,tj)*f2(this, drij_mag, ti, tj)
-	if (present(local_e)) then
+        ! factor of 0.5 because SW definition goes over each pair only once
+        de = 0.5_dp*this%eps2(ti,tj)*f2(this, drij_mag, ti, tj)
+        if (present(local_e)) then
 #ifdef _OPENMP
-	  private_local_e(i) = private_local_e(i) + de
+          private_local_e(i) = private_local_e(i) + de
 #else
-	  local_e(i) = local_e(i) + de
+          local_e(i) = local_e(i) + de
 #endif
-	endif
-	if (present(e)) then
+        endif
+        if (present(e)) then
 #ifdef _OPENMP
-	  private_e = private_e + de*w_f
+          private_e = private_e + de*w_f
 #else
-	  e = e + de*w_f
+          e = e + de*w_f
 #endif
-	endif
+        endif
       endif
 
       if (present(f) .or. present(virial) .or. present(local_virial)) then
-	de_dr = 0.5_dp*this%eps2(ti,tj)*df2_dr(this, drij_mag, ti, tj)
-	if (present(f)) then
+        de_dr = 0.5_dp*this%eps2(ti,tj)*df2_dr(this, drij_mag, ti, tj)
+        if (present(f)) then
 #ifdef _OPENMP
-	  private_f(:,i) = private_f(:,i) + de_dr*w_f*drij
-	  private_f(:,j) = private_f(:,j) - de_dr*w_f*drij
+          private_f(:,i) = private_f(:,i) + de_dr*w_f*drij
+          private_f(:,j) = private_f(:,j) - de_dr*w_f*drij
 #else
-	  f(:,i) = f(:,i) + de_dr*w_f*drij
-	  f(:,j) = f(:,j) - de_dr*w_f*drij
+          f(:,i) = f(:,i) + de_dr*w_f*drij
+          f(:,j) = f(:,j) - de_dr*w_f*drij
 #endif
-	endif
+        endif
 
         if(present(virial) .or. present(local_virial)) virial_i = de_dr*w_f*(drij .outer. drij)*drij_mag
 
-	if (present(virial)) then
+        if (present(virial)) then
 #ifdef _OPENMP
-	  private_virial = private_virial - virial_i
+          private_virial = private_virial - virial_i
 #else
-	  virial = virial - virial_i
+          virial = virial - virial_i
 #endif
-	endif
+        endif
         if (present(local_virial)) then
 #ifdef _OPENMP
            private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i, (/9/))
@@ -339,84 +339,84 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       endif
 
       if (associated(w_e)) then
-	w_f = w_e(i)
+        w_f = w_e(i)
       else
-	w_f = 1.0_dp
+        w_f = 1.0_dp
       endif
 
       do ki=1, n_neigh_i
-	if (ki <= ji) cycle
-	k = neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
+        if (ki <= ji) cycle
+        k = neighbour(at, i, ki, drik_mag, cosines = drik, max_dist=cur_cutoff)
 
         if(associated(atom_mask_pointer) .and. atom_mask_exclude_all) then
            if(.not. atom_mask_pointer(k)) cycle
         endif
 
-	if (k <= 0) cycle
-	if (drik_mag .feq. 0.0_dp) cycle
+        if (k <= 0) cycle
+        if (drik_mag .feq. 0.0_dp) cycle
 
         if (do_rescale_r) drik_mag = drik_mag*r_scale
 
-	tk = get_type(this%type_of_atomic_num, at%Z(k))
+        tk = get_type(this%type_of_atomic_num, at%Z(k))
 
         if (drik_mag/this%sigma(ti,tk) > this%a(ti,tk)) cycle
 
-	drij_dot_drik = sum(drij*drik)
-	if (present(e) .or. present(local_e)) then
-	  de = this%eps3(ti,tj,tk)*f3(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk)
-	  if (present(local_e)) then
+        drij_dot_drik = sum(drij*drik)
+        if (present(e) .or. present(local_e)) then
+          de = this%eps3(ti,tj,tk)*f3(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk)
+          if (present(local_e)) then
 #ifdef _OPENMP
-	    private_local_e(i) = private_local_e(i) + de
+            private_local_e(i) = private_local_e(i) + de
 #else
-	    local_e(i) = local_e(i) + de
+            local_e(i) = local_e(i) + de
 #endif
-	  endif
-	  if (present(e)) then
+          endif
+          if (present(e)) then
 #ifdef _OPENMP
-	    private_e = private_e + de*w_f
+            private_e = private_e + de*w_f
 #else
-	    e = e + de*w_f
+            e = e + de*w_f
 #endif
-	  endif
-	endif
-	if (present(f) .or. present(virial) .or. present(local_virial)) then
-	  call df3_dr(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)
-	  drij_dri = drij
-	  drij_drj = -drij
-	  drik_dri = drik
-	  drik_drk = -drik
+          endif
+        endif
+        if (present(f) .or. present(virial) .or. present(local_virial)) then
+          call df3_dr(this, drij_mag, drik_mag, drij_dot_drik, ti, tj, tk, de_drij, de_drik, de_dcos_ijk)
+          drij_dri = drij
+          drij_drj = -drij
+          drik_dri = drik
+          drik_drk = -drik
 
 ! dcos_ijk = drij_dot_drik
 ! (ri_x - rj_x)*(ri_x - rk_x) + (ri_y - rj_y)*(ri_y-rk_y) / (rij rik)
 !
 ! d/dri
-! 
+!
 ! ((rij rik)(rij_x + rik_x) - (rij . rik)(rij rik_x / rik + rik rij_x/rij)) / (rij rik)^2
-! 
+!
 ! rij rik ( rij_x + rik_x) -  (rij.rik)(rij rik_x / rik + rik rij_x/rij)
 ! ---------------------------------------------------------------------
 !                       rij^2 rik^2
-!                       
+!
 ! rij_x + rik_x     cos_ijk (rij rik_x / rik + rik rij_x /rij)
 ! -------------  - ------------------------------------------
 ! rij rik                    rij rik
-! 
+!
 ! rij_x + rik_x
 ! ------------- - cos_ijk (rik_x / rik^2 + rij_x / rij^2)
 !    rij rik
-!    
-!    
+!
+!
 ! rhatij_x/rik + rhatik_x/rij - cos_ijk(rhatik_x/rik + rhatij_x/rij)
-! 
-! 
+!
+!
 ! d/drj
-! 
+!
 ! ((rij rik)(-rik_x) - (rij.rik)(rik (-rij_x)/rij)) / (rij rik)^2
-! 
+!
 !  -rik_x     (rij.rik) ( rik rij_x/rij)
 ! -------  + ---------------------------
 ! rij rik           rij^2 rik^2
-! 
+!
 ! -rhatik_x/rij + cos_ijk rhatij_x/rij
 !
 ! d/drij
@@ -427,7 +427,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 ! ---------------------------------------------
 !                    (rij rik)^2
 !
-! rik_x      (rij.rik) rij_x 
+! rik_x      (rij.rik) rij_x
 ! ------   - ---------------
 ! rij rik    rij^3 rik
 !
@@ -439,29 +439,29 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 ! --------   -  ------------------
 !   rij                 rij
 
-	  dcos_ijk_dri = drij/drik_mag + drik/drij_mag - drij_dot_drik * (drik/drik_mag + drij/drij_mag)
-	  dcos_ijk_drj = -drik/drij_mag + drij_dot_drik * drij/drij_mag
-	  dcos_ijk_drk = -drij/drik_mag + drij_dot_drik * drik/drik_mag
+          dcos_ijk_dri = drij/drik_mag + drik/drij_mag - drij_dot_drik * (drik/drik_mag + drij/drij_mag)
+          dcos_ijk_drj = -drik/drij_mag + drij_dot_drik * drij/drij_mag
+          dcos_ijk_drk = -drij/drik_mag + drij_dot_drik * drik/drik_mag
 
-	  if (present(f)) then
+          if (present(f)) then
 #ifdef _OPENMP
-	    private_f(:,i) = private_f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
-						       de_dcos_ijk * dcos_ijk_dri(:))
-	    private_f(:,j) = private_f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
-	    private_f(:,k) = private_f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
+            private_f(:,i) = private_f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
+                                                       de_dcos_ijk * dcos_ijk_dri(:))
+            private_f(:,j) = private_f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
+            private_f(:,k) = private_f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:))
 #else
-	    f(:,i) = f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
-						       de_dcos_ijk * dcos_ijk_dri(:))
-	    f(:,j) = f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
-	    f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:)) 
+            f(:,i) = f(:,i) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_dri(:) + de_drik*drik_dri(:) + &
+                                                       de_dcos_ijk * dcos_ijk_dri(:))
+            f(:,j) = f(:,j) + w_f*this%eps3(ti,tj,tk)*(de_drij*drij_drj(:) + de_dcos_ijk*dcos_ijk_drj(:))
+            f(:,k) = f(:,k) + w_f*this%eps3(ti,tj,tk)*(de_drik*drik_drk(:) + de_dcos_ijk*dcos_ijk_drk(:))
 #endif
-	  end if
+          end if
 
           if( present(virial) .or. present(local_virial) ) then
              virial_i = w_f*this%eps3(ti,tj,tk)*( &
-	      de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
-	      de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
-	      de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
+              de_drij*(drij .outer. drij)*drij_mag + de_drik*(drik .outer. drik)*drik_mag + &
+              de_dcos_ijk * ((drik .outer. drij) - drij_dot_drik * (drij .outer. drij)) + &
+              de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
 
              virial_j = w_f*this%eps3(ti,tj,tk)*( &
                 de_drij*(drij .outer. drij)*drij_mag + &
@@ -472,25 +472,25 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
                 de_dcos_ijk * ((drij .outer. drik) - drij_dot_drik * (drik .outer. drik)) )
           endif
 
-	  if (present(virial)) then
+          if (present(virial)) then
 #ifdef _OPENMP
-	    private_virial = private_virial - virial_i
+            private_virial = private_virial - virial_i
 #else
-	    virial = virial - virial_i
+            virial = virial - virial_i
 #endif
-	  end if
-	  if (present(local_virial)) then
+          end if
+          if (present(local_virial)) then
 #ifdef _OPENMP
-	    !private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
-	    private_local_virial(:,j) = private_local_virial(:,j) - reshape(virial_j,(/9/))
-	    private_local_virial(:,k) = private_local_virial(:,k) - reshape(virial_k,(/9/))
+            !private_local_virial(:,i) = private_local_virial(:,i) - reshape(virial_i,(/9/))
+            private_local_virial(:,j) = private_local_virial(:,j) - reshape(virial_j,(/9/))
+            private_local_virial(:,k) = private_local_virial(:,k) - reshape(virial_k,(/9/))
 #else
-	    !local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
-	    local_virial(:,j) = local_virial(:,j) - reshape(virial_j,(/9/))
-	    local_virial(:,k) = local_virial(:,k) - reshape(virial_k,(/9/))
+            !local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
+            local_virial(:,j) = local_virial(:,j) - reshape(virial_j,(/9/))
+            local_virial(:,k) = local_virial(:,k) - reshape(virial_k,(/9/))
 #endif
-	  end if
-	endif
+          end if
+        endif
 
       end do ! ki
 
@@ -504,7 +504,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if (present(local_e)) local_e = local_e + private_local_e
   if (present(virial)) virial = virial + private_virial
   if (present(local_virial)) local_virial = local_virial + private_local_virial
-!$omp end critical 
+!$omp end critical
 
   if(allocated(private_f)) deallocate(private_f)
   if(allocated(private_local_e)) deallocate(private_local_e)
@@ -514,7 +514,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 #endif
 
   if (present(mpi)) then
-     if (present(e)) e = sum(mpi, e) 
+     if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
      if (present(virial)) call sum_in_place(mpi, virial)
@@ -531,7 +531,7 @@ subroutine IPModel_SW_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      if (present(f)) f = f*E_scale
      if (present(virial)) virial=virial*E_scale
      if (present(local_virial)) local_virial=local_virial*E_scale
-  end if  
+  end if
 
   atom_mask_pointer => null()
 
@@ -641,7 +641,7 @@ function df2_dr(this, ri, ti, tj)
 end function df2_dr
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for the input file.
 !% First the general parameters and pair terms:
@@ -661,7 +661,7 @@ end function df2_dr
 !%>       lambda="21.0" gamma="1.20" eps="2.1675" />
 !%> <per_triplet_data atnum_c="1"  atnum_j="14" atnum_k="14"
 !%>       lambda="21.0" gamma="1.20" eps="2.1675" />
-!%> 
+!%>
 !%> <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="1"
 !%>       lambda="21.0" gamma="1.20" eps="2.1675" />
 !%> <per_triplet_data atnum_c="14" atnum_j="1"  atnum_k="14"
@@ -669,14 +669,14 @@ end function df2_dr
 !%> <per_triplet_data atnum_c="14" atnum_j="14" atnum_k="14"
 !%>       lambda="21.0" gamma="1.20" eps="2.1675" />
 !%> </SW_params>
-!% 
+!%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -688,7 +688,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (parse_in_ip) &
       call system_abort("IPModel_startElement_handler entered SW_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
 
-    if (parse_matched_label) then 
+    if (parse_matched_label) then
        call print("SW_params startElement_handler bailing because we already matched our label", PRINT_NERD)
        return ! we already found an exact match for this label
     end if
@@ -704,7 +704,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_matched_label = .true.
         parse_in_ip = .true.
       else ! no match
-	call print("SW_params startElement_handler got label didn't match", PRINT_NERD)
+        call print("SW_params startElement_handler got label didn't match", PRINT_NERD)
         parse_in_ip = .false.
       endif
     else ! no label passed in
@@ -714,7 +714,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call print("SW_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
+        call print("SW_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
         call finalise(parse_ip)
       endif
 
@@ -839,9 +839,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'SW_params') then
@@ -880,7 +880,7 @@ end subroutine
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X printing
 !% Printing of SW parameters: number of different types, cutoff radius, atomic numbers, ect.
 !X
@@ -901,15 +901,15 @@ subroutine IPModel_SW_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_SW : pair interaction ti tj " // ti // " " // tj // " Zi Zj " // this%atomic_num(ti) // &
-	" " // this%atomic_num(tj), file=file)
+        " " // this%atomic_num(tj), file=file)
       call Print ("IPModel_SW : pair " // this%AA(ti,tj) // " " // this%BB(ti,tj) // " " // this%p(ti,tj) // " " // &
-	this%q(ti,tj) // " " // this%a(ti,tj), file=file)
+        this%q(ti,tj) // " " // this%a(ti,tj), file=file)
       call Print ("IPModel_SW :      " // this%sigma(ti,tj) // " " // this%eps2(ti,tj), file=file)
       do tk=1, this%n_types
-	call Print ("IPModel_SW : triplet interaction ti tj " // ti // " " // tj // " " // tk // &
-	  " Zi Zj Zk " // this%atomic_num(ti) // " " // this%atomic_num(tj) // " " // this%atomic_num(tk), file=file)
-	call Print ("IPModel_SW : triplet " // this%lambda(ti,tj,tk) // " " // this%gamma(ti,tj,tk) // " " // &
-	  this%eps3(ti,tj,tk), file=file)
+        call Print ("IPModel_SW : triplet interaction ti tj " // ti // " " // tj // " " // tk // &
+          " Zi Zj Zk " // this%atomic_num(ti) // " " // this%atomic_num(tj) // " " // this%atomic_num(tk), file=file)
+        call Print ("IPModel_SW : triplet " // this%lambda(ti,tj,tk) // " " // this%gamma(ti,tj,tk) // " " // &
+          this%eps3(ti,tj,tk), file=file)
       end do
     end do
     call verbosity_pop()

@@ -62,7 +62,7 @@ module Atoms_types_module
   public :: DD_WRAP_TO_CELL, DD_WRAP_TO_DOMAIN
 
   integer, parameter  :: DD_WRAP_TO_CELL    = 1   !% All particles, including ghosts, are wrapped into the cell
-  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2   !% Particles are wrapped into the domain, ghost particles are 
+  integer, parameter  :: DD_WRAP_TO_DOMAIN  = 2   !% Particles are wrapped into the domain, ghost particles are
                                                   !% located next to the domain.
 
   public :: Table_pointer
@@ -76,14 +76,14 @@ module Atoms_types_module
      !%
      !% We do not use a minimum image convention, rather, collect all the images of a neigbouring atoms
      !% that fall within the neighbour cutoff. The different images are made distinct in the connection list
-     !% by having different 'shift' vectors associated with them. 
+     !% by having different 'shift' vectors associated with them.
      !%
      !% To save storage, the 'neighbour1' table contains all information about the connection
-     !% but is only filled in for $i <= j$. 'neighbour2' is just a list of those of $i$'s neighbours 
+     !% but is only filled in for $i <= j$. 'neighbour2' is just a list of those of $i$'s neighbours
      !% with $i > j$ together with an index into the 'neighbour1' table of atom $j$.
      !%
-     !% In normal use (i.e. outside this module) you don\'t need direct access to the tables 
-     !% so you should use the interface functions 'atoms_n_neighbours' and 'atoms_neighbour' which 
+     !% In normal use (i.e. outside this module) you don\'t need direct access to the tables
+     !% so you should use the interface functions 'atoms_n_neighbours' and 'atoms_neighbour' which
      !% hide the distiction between the cases $i <= j$ and $i > j$.
      !%
      !% :class:`Table` :attr:`neighbour1` (i): $i \le j$ for all $j$ in table, ``intsize=4``, ``realsize=1``
@@ -95,7 +95,7 @@ module Atoms_types_module
      !%> +----------+----------+----------+----------+
      !%> |    j     | shift_a  | shift_b  | shift_c  |
      !%> +----------+----------+----------+----------+
-     !%      
+     !%
      !% 'connect%neighbour1(i)%real'
      !%
      !%> +----------+
@@ -113,7 +113,7 @@ module Atoms_types_module
      !%> +----------+----------+
      !%> |    j     |    n     |
      !%> +----------+----------+
-     !%      
+     !%
      !% :class:`Table` :attr:`cell` (i,j,k) with ``intsize = 1``, ``realsize = 0``
      !%
      !% 'connect%cell(i,j,k)2%int'
@@ -137,7 +137,7 @@ module Atoms_types_module
 
      integer                                    :: N = -1  !% no. of atoms at last calc_connect
 
-     type(table_pointer), allocatable, dimension(:)     :: neighbour1 !% Neighbour information for pairs $i <= j$. 
+     type(table_pointer), allocatable, dimension(:)     :: neighbour1 !% Neighbour information for pairs $i <= j$.
                                                               !% Contains full details of $j$, $r_{ij}$ and shift.
      type(table_pointer), allocatable, dimension(:)     :: neighbour2 !% Neighbour information for pairs $i > j$.
                                                               !% Simply contains $j$ and a reference to $j$'s
@@ -189,7 +189,7 @@ module Atoms_types_module
 
      type(Dictionary)           :: atoms_properties     !% Fields to communicate if for particles
      type(Dictionary)           :: ghost_properties     !% Fields to communicate for ghosts
-     type(Dictionary)           :: reverse_properties   !% Back-communication after force computations     
+     type(Dictionary)           :: reverse_properties   !% Back-communication after force computations
 
      logical, allocatable       :: atoms_mask(:)
      logical, allocatable       :: ghost_mask(:)
@@ -216,7 +216,7 @@ module Atoms_types_module
      integer                    :: n_recv_g_tot   !% Statistics: Number of total ghosts received
      integer                    :: nit_p          !% Statistics: Number of particle send events
      integer                    :: nit_g          !% Statistics: Number of ghost send events
-     
+
   endtype DomainDecomposition
 
 
@@ -225,12 +225,12 @@ module Atoms_types_module
      !% Representation of an atomic configuration and its associated properties
      !%
      !% An atoms object contains atomic numbers, all dynamical variables
-     !% and connectivity information for all the atoms in the simulation cell. 
+     !% and connectivity information for all the atoms in the simulation cell.
      !% It is initialised like this:
-     !%> 	  call initialise(MyAtoms,N,lattice)
+     !%>           call initialise(MyAtoms,N,lattice)
      !% where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
      !% matrix of lattice vectors given as column vectors, so that 'lattice(:,i)' is the i-th lattice vector.
-     !% 
+     !%
      !% Atoms also contains a Connection object, which stores distance information about
      !% the atom neghbours after 'calc_connect' has been called. Rather than using a minimum
      !% image convention, all neighbours are stored up to a radius of 'cutoff', including images
@@ -247,7 +247,7 @@ module Atoms_types_module
      real(dp)                              :: cutoff = -1.0_dp !% Cutoff distance for neighbour calculations. Default -1.0 (unset).
      real(dp)                              :: cutoff_skin = 0.0_dp !% If set, increase cutoff by this amount to reduce calc_connect() frequency
      logical                               :: pot_should_do_nn = .false., pot_needs_new_connect = .false., pot_needs_new_dists = .false.
-     real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL 
+     real(dp)                              :: nneightol = DEFAULT_NNEIGHTOL
                                               !% Count as nearest neighbour if sum of covalent radii
                                               !% times 'this%nneightol' greater than distance between atoms.
                                               !% Used in cluster carving.
@@ -266,11 +266,11 @@ module Atoms_types_module
      !% i.e. $\mathbf{a}$ = 'lattice(:,1)', $\mathbf{b}$ = 'lattice(:,2)' and
      !% $\mathbf{c}$ 'lattice(:,3)'.
 
-     !  ( | | | | | | )          ( (1,1) (1,2) (1,3) ) 
+     !  ( | | | | | | )          ( (1,1) (1,2) (1,3) )
      ! (  | | | | | |  )        (                     )
      ! (  |a| |b| |c|  )    =   (  (2,1) (2,2) (2,3)  )
      ! (  | | | | | |  )        (                     )
-     !  ( | | | | | | )          ( (3,1) (3,2) (3,3) ) 
+     !  ( | | | | | | )          ( (3,1) (3,2) (3,3) )
      logical :: is_orthorhombic, is_periodic(3)
 
 
@@ -299,15 +299,15 @@ module Atoms_types_module
                                     !%  * ``avgpos`` $(3,N)$ array  of time-averaged atomic positions.
                                     !%  * ``oldpos`` $(3,N)$ array  of positions of atoms at previous time step.
                                     !%  * ``avg_ke`` Time-averaged atomic kinetic energy
-                                    !% 
+                                    !%
                                     !% Custom properties are most conveniently accessed by assign a pointer to
                                     !% them with the :meth:`assign_pointer` routines.
-                                    !% 
+                                    !%
                                     !% From Python, each property is automatically visible as a
                                     !% array attribute of the :class:`Atoms` object,
                                     !% for example the atomic positions are stored in a real vector
                                     !% property called `pos`, and can be accessed as ``at.pos``.
-                                    !% 
+                                    !%
                                     !% Properties can be added with the :meth:`add_property` method and
                                     !% removed with :meth:`remove_property`.
 
@@ -321,15 +321,15 @@ module Atoms_types_module
 
      integer, pointer, dimension(:)    :: move_mask => null()  !% Atoms with 'move_mask' set to false are fixed
      integer, pointer, dimension(:)    :: damp_mask => null()  !% Damping is only applied to those atoms with
-                                                              !% 'damp_mask' set to 1. 
+                                                              !% 'damp_mask' set to 1.
                                                               !% By default this is set to 1 for all atoms.
 
-     integer, pointer, dimension(:)    :: thermostat_region => null() !% Which thermostat is applied to each atoms. 
+     integer, pointer, dimension(:)    :: thermostat_region => null() !% Which thermostat is applied to each atoms.
                                                               !% By default this is set to 1 for all atoms.
 
      integer,  pointer, dimension(:,:) :: travel => null()  !% Travel across periodic conditions. Actually $(3,N)$ array.
                                                             !% See 'map_into_cell' below.
-     real(dp), pointer, dimension(:,:) :: pos    => null()  !% $(3,N)$ array of atomic positions, in $\mathrm{AA}$. 
+     real(dp), pointer, dimension(:,:) :: pos    => null()  !% $(3,N)$ array of atomic positions, in $\mathrm{AA}$.
                                                             !% Position of atom $i$ is 'pos(:,i)'
      real(dp), pointer, dimension(:)   :: mass   => null()  !% Atomic masses, dimension is actually $(N)$
 
@@ -347,9 +347,9 @@ module Atoms_types_module
   end type Atoms
 
 
-  !% Add a per-atom property to this atoms object, as extra entry with columns of 
-  !% integers, reals, logical, or strings in the 'properties' dictionary. For example, 
-  !% this interface is used by the DynamicalSystems module to create the 'velo', 'acc', 
+  !% Add a per-atom property to this atoms object, as extra entry with columns of
+  !% integers, reals, logical, or strings in the 'properties' dictionary. For example,
+  !% this interface is used by the DynamicalSystems module to create the 'velo', 'acc',
   !% etc. properties.
   !% Optionally, a pointer to the new property is returned.
   public :: add_property
@@ -358,7 +358,7 @@ module Atoms_types_module
      module procedure atoms_add_property_real, atoms_add_property_real_a
      module procedure atoms_add_property_str, atoms_add_property_str_2da
      module procedure atoms_add_property_str_a
-     module procedure atoms_add_property_logical, atoms_add_property_logical_a 
+     module procedure atoms_add_property_logical, atoms_add_property_logical_a
      module procedure atoms_add_property_int_2Da
      module procedure atoms_add_property_real_2Da
   end interface
@@ -401,7 +401,7 @@ module Atoms_types_module
      module procedure atoms_assign_prop_ptr_logical
   end interface
 
-  
+
   !% Copy an atom to a different index
   public :: copy_entry
   interface copy_entry
@@ -443,7 +443,7 @@ module Atoms_types_module
   public :: atoms_repoint, atoms_sort, bond_length, distance, diff, realpos, distance_min_image, diff_min_image
 
 contains
-  
+
   !% OMIT
   ! Initialise pointers for convenient access to special columns of this%properties
   subroutine atoms_repoint(this)
@@ -771,9 +771,9 @@ contains
 
        if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
           RAISE_ERROR("atoms_add_property_int: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     if (use_n_cols == 1) then
        call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
@@ -812,7 +812,7 @@ contains
 
        if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
           RAISE_ERROR("atoms_add_property_int_a: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
 
     if (use_n_cols == 1) then
@@ -825,7 +825,7 @@ contains
        call add_array(this%properties, name, tmp_value, (/n_cols, this%Nbuffer/), ptr2, overwrite)
        deallocate(tmp_value)
     end if
-   
+
     call atoms_repoint(this)
   end subroutine atoms_add_property_int_a
 
@@ -858,9 +858,9 @@ contains
 
        if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
           RAISE_ERROR("atoms_add_property_real: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     if (use_n_cols == 1 .and. .not. present(ptr2)) then
        call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
@@ -882,7 +882,7 @@ contains
     integer, intent(out), optional :: error
 
     integer :: use_n_cols, i
-    real(dp), allocatable, dimension(:,:) :: tmp_value    
+    real(dp), allocatable, dimension(:,:) :: tmp_value
 
     INIT_ERROR(error)
     use_n_cols = optional_default(1, n_cols)
@@ -904,9 +904,9 @@ contains
 
        if (use_n_cols /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
           RAISE_ERROR("atoms_add_property_real_a: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     if (use_n_cols == 1 .and. .not. present(ptr2)) then
        call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
     else
@@ -946,9 +946,9 @@ contains
 
        if (size(value,1) /= 1 .and. this%properties%entries(i)%type /= T_INTEGER_A2) then
           RAISE_ERROR("atoms_add_property_int_2Da: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     if (size(value,2) /= this%Nbuffer) then
        RAISE_ERROR('atoms_add_property_int_2Da: size(value,2)='//size(value,2)//' != this%Nbuffer ='//this%Nbuffer, error)
     end if
@@ -984,9 +984,9 @@ contains
 
        if (size(value,1) /= 1 .and. this%properties%entries(i)%type /= T_REAL_A2) then
           RAISE_ERROR("atoms_add_property_real_2Da: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     if (size(value,2) /= this%Nbuffer) then
        RAISE_ERROR('atoms_add_property_real_2Da: size(value,2)='//size(value,2)//' != this%Nbuffer ='//this%Nbuffer, error)
     end if
@@ -1014,9 +1014,9 @@ contains
     if (i /= -1) then
        if (this%properties%entries(i)%type /= T_CHAR_A) then
           RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     ! temporary hack - string length fixed to TABLE_STRING_LENGTH
     if (len(value) /= TABLE_STRING_LENGTH) then
        RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH but got "//len(value), error)
@@ -1048,9 +1048,9 @@ contains
     if (i /= -1) then
        if (this%properties%entries(i)%type /= T_CHAR_A) then
           RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     ! temporary hack - string length fixed to TABLE_STRING_LENGTH
     if (size(value,1) /= TABLE_STRING_LENGTH) then
        RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
@@ -1083,9 +1083,9 @@ contains
     if (i /= -1) then
        if (this%properties%entries(i)%type /= T_CHAR_A) then
           RAISE_ERROR("atoms_add_property_str: incompatible property "//trim(name)//" already present", error)
-       end if       
+       end if
     end if
-    
+
     ! temporary hack - string length fixed to TABLE_STRING_LENGTH
     if (len(value(1)) /= TABLE_STRING_LENGTH) then
        RAISE_ERROR("atoms_add_property_str: string properties much have string length TABLE_STRING_LENGTH", error)
@@ -1122,9 +1122,9 @@ contains
           RAISE_ERROR("atoms_add_property_logical: incompatible property "//trim(name)//" already present", error)
        end if
     end if
-    
+
     call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
-    
+
     call atoms_repoint(this)
   end subroutine atoms_add_property_logical
 
@@ -1152,7 +1152,7 @@ contains
           RAISE_ERROR("atoms_add_property_logical_a: incompatible property "//trim(name)//" already present", error)
        end if
     end if
-    
+
     call add_array(this%properties, name, value, this%Nbuffer, ptr, overwrite)
 
     call atoms_repoint(this)
@@ -1225,7 +1225,7 @@ contains
     character(len=*), intent(in) :: name
     integer, pointer :: ptr(:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1241,7 +1241,7 @@ contains
     character(len=*), intent(in) :: name
     integer, pointer :: ptr(:,:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1257,7 +1257,7 @@ contains
     character(len=*), intent(in) :: name
     real(dp), pointer :: ptr(:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1273,7 +1273,7 @@ contains
     character(len=*), intent(in) :: name
     real(dp), pointer :: ptr(:,:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1289,7 +1289,7 @@ contains
     character(len=*), intent(in) :: name
     character(1), pointer :: ptr(:,:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1305,7 +1305,7 @@ contains
     character(len=*), intent(in) :: name
     logical, pointer :: ptr(:)
     integer, intent(out), optional :: error
-    
+
     logical :: res
 
     INIT_ERROR(error)
@@ -1359,64 +1359,64 @@ contains
        select case (this%properties%entries(i)%type)
 
        case(T_INTEGER_A)
-	  if (my_swap) then
-	     t_i = this%properties%entries(i)%i_a(dst)
-	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
-	     this%properties%entries(i)%i_a(src) = t_i
-	  else
-	     this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
-	  endif
+          if (my_swap) then
+             t_i = this%properties%entries(i)%i_a(dst)
+             this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+             this%properties%entries(i)%i_a(src) = t_i
+          else
+             this%properties%entries(i)%i_a(dst) = this%properties%entries(i)%i_a(src)
+          endif
 
        case(T_REAL_A)
-	  if (my_swap) then
-	     t_r = this%properties%entries(i)%r_a(dst)
-	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
-	     this%properties%entries(i)%r_a(src) = t_r
-	  else
-	     this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
-	  endif
+          if (my_swap) then
+             t_r = this%properties%entries(i)%r_a(dst)
+             this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+             this%properties%entries(i)%r_a(src) = t_r
+          else
+             this%properties%entries(i)%r_a(dst) = this%properties%entries(i)%r_a(src)
+          endif
 
        case(T_LOGICAL_A)
-	  if (my_swap) then
-	     t_l = this%properties%entries(i)%l_a(dst)
-	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
-	     this%properties%entries(i)%l_a(src) = t_l
-	  else
-	     this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
-	  endif
+          if (my_swap) then
+             t_l = this%properties%entries(i)%l_a(dst)
+             this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+             this%properties%entries(i)%l_a(src) = t_l
+          else
+             this%properties%entries(i)%l_a(dst) = this%properties%entries(i)%l_a(src)
+          endif
 
        case(T_INTEGER_A2)
-	  if (my_swap) then
-	     allocate(t_i_a(size(this%properties%entries(i)%i_a2,1)))
-	     t_i_a = this%properties%entries(i)%i_a2(:,dst)
-	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
-	     this%properties%entries(i)%i_a2(:,src) = t_i_a
-	     deallocate(t_i_a)
-	  else
-	     this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
-	  endif
+          if (my_swap) then
+             allocate(t_i_a(size(this%properties%entries(i)%i_a2,1)))
+             t_i_a = this%properties%entries(i)%i_a2(:,dst)
+             this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+             this%properties%entries(i)%i_a2(:,src) = t_i_a
+             deallocate(t_i_a)
+          else
+             this%properties%entries(i)%i_a2(:,dst) = this%properties%entries(i)%i_a2(:,src)
+          endif
 
        case(T_REAL_A2)
-	  if (my_swap) then
-	     allocate(t_r_a(size(this%properties%entries(i)%r_a2,1)))
-	     t_r_a = this%properties%entries(i)%r_a2(:,dst)
-	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
-	     this%properties%entries(i)%r_a2(:,src) = t_r_a
-	     deallocate(t_r_a)
-	  else
-	     this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
-	  endif
+          if (my_swap) then
+             allocate(t_r_a(size(this%properties%entries(i)%r_a2,1)))
+             t_r_a = this%properties%entries(i)%r_a2(:,dst)
+             this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+             this%properties%entries(i)%r_a2(:,src) = t_r_a
+             deallocate(t_r_a)
+          else
+             this%properties%entries(i)%r_a2(:,dst) = this%properties%entries(i)%r_a2(:,src)
+          endif
 
        case(T_CHAR_A)
-	  if (my_swap) then
-	     allocate(t_c(size(this%properties%entries(i)%s_a,1)))
-	     t_c = this%properties%entries(i)%s_a(:,dst)
-	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
-	     this%properties%entries(i)%s_a(:,src) = t_c
-	     deallocate(t_c)
-	  else
-	     this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
-	  endif
+          if (my_swap) then
+             allocate(t_c(size(this%properties%entries(i)%s_a,1)))
+             t_c = this%properties%entries(i)%s_a(:,dst)
+             this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+             this%properties%entries(i)%s_a(:,src) = t_c
+             deallocate(t_c)
+          else
+             this%properties%entries(i)%s_a(:,dst) = this%properties%entries(i)%s_a(:,src)
+          endif
 
        case default
           RAISE_ERROR('atoms_copy_entry: bad property type '//this%properties%entries(i)%type//' key='//this%properties%keys(i), error)
@@ -1443,36 +1443,36 @@ contains
 
     if (.not. assign_pointer(this, prop1, i_p1)) then
        if (.not. assign_pointer(this, prop1, r_p1)) then
-	  RAISE_ERROR("atoms_sort can't find 1st integer or real property '" // prop1 //"'", error)
+          RAISE_ERROR("atoms_sort can't find 1st integer or real property '" // prop1 //"'", error)
        endif
     endif
     if (present(prop2)) then
        if (.not. assign_pointer(this, prop2, i_p2)) then
-	  if (.not. assign_pointer(this, prop2, r_p2)) then
-	     RAISE_ERROR("atoms_sort can't find 2nd integer or real property '" // prop2 //"'", error)
-	  endif
+          if (.not. assign_pointer(this, prop2, r_p2)) then
+             RAISE_ERROR("atoms_sort can't find 2nd integer or real property '" // prop2 //"'", error)
+          endif
        endif
     endif
     if (present(prop3)) then
        if (.not. assign_pointer(this, prop3, i_p3)) then
-	  if (.not. assign_pointer(this, prop3, r_p3)) then
-	     RAISE_ERROR("atoms_sort can't find 3rd integer or real property '" // prop3 //"'", error)
-	  endif
+          if (.not. assign_pointer(this, prop3, r_p3)) then
+             RAISE_ERROR("atoms_sort can't find 3rd integer or real property '" // prop3 //"'", error)
+          endif
        endif
     endif
 
     do cur_place=1, this%N-1
        smallest_i_a = cur_place
        do i_a = cur_place+1, this%N
-	  is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, i_p3=i_p3, r_p3=r_p3, error=error)
-	  PASS_ERROR(error)
-	  if (is_lt) then
-	     smallest_i_a = i_a
-	  endif
+          is_lt = arrays_lt(i_a, smallest_i_a, i_p1=i_p1, r_p1=r_p1, i_p2=i_p2, r_p2=r_p2, i_p3=i_p3, r_p3=r_p3, error=error)
+          PASS_ERROR(error)
+          if (is_lt) then
+             smallest_i_a = i_a
+          endif
        end do
        if (smallest_i_a /= cur_place) then
-	  call copy_entry(this, cur_place, smallest_i_a, swap=.true., error=error)
-	  PASS_ERROR(error)
+          call copy_entry(this, cur_place, smallest_i_a, swap=.true., error=error)
+          PASS_ERROR(error)
        endif
     end do
   end subroutine atoms_sort
@@ -1520,10 +1520,10 @@ contains
 
    do n=1,3
       if ((lattice_coord(n) < -0.5_dp) .or. (lattice_coord(n) >= 0.5_dp)) then
-	 k = floor(lattice_coord(n)+0.5_dp)
-	 lattice_coord(n) = lattice_coord(n) - k
-	 if (present(shift)) shift(n) = -k
-	 my_mapped = .true.
+         k = floor(lattice_coord(n)+0.5_dp)
+         lattice_coord(n) = lattice_coord(n) - k
+         if (present(shift)) shift(n) = -k
+         my_mapped = .true.
       end if
    end do
 
@@ -1539,7 +1539,7 @@ contains
   function lattice_cell_volume(lattice)
     real(dp), intent(in) :: lattice(3,3)
     real(dp)                :: lattice_Cell_Volume
- 
+
     real(dp), dimension(3)  :: a, b, c
 
     a = lattice(:,1)
@@ -1570,10 +1570,10 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !  diff_min_image interface
-  !  
+  !
   !  return relative vector from one position to another, adhering to PBC
   !  and minimum image conventions
-  ! 
+  !
   !  Flavours are: atom-atom, vector-atom, atom-vector, vector-vector
   !
   !  All are accessible using the 'diff_min_image' interface
@@ -1686,7 +1686,7 @@ contains
   !
   ! distance_min_image interface
   !
-  ! Actual distance computing routines. 
+  ! Actual distance computing routines.
   !
   ! The real work is done in the function that computes the distance
   ! of two general vector positions.  when atomic indices are

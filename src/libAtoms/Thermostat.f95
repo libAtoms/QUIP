@@ -32,11 +32,11 @@
 !X  Thermostat module
 !X
 !% This module contains the implementations for all the thermostats available
-!% in libAtoms: Langevin, Nose-Hoover and Nose-Hoover-Langevin. 
+!% in libAtoms: Langevin, Nose-Hoover and Nose-Hoover-Langevin.
 !% Each thermostat has its own section in the 'thermostat_pre_vel1-4' subroutines,
 !% which interleave the usual velocity verlet steps.
 !%
-!% All Langevin variants with $Q > 0$ are open Langevin, from Jones \& Leimkuhler 
+!% All Langevin variants with $Q > 0$ are open Langevin, from Jones \& Leimkuhler
 !% preprint ``Adaptive Stochastic Methods for Nonequilibrium Sampling"
 !%
 !% Langevin steps for THERMOSTAT_ALL_PURPOSE use Ornstein-Uhlenbeck steps as
@@ -58,16 +58,16 @@ module thermostat_module
   public :: thermostat, initialise, finalise, print, add_thermostat, remove_thermostat, add_thermostats, update_thermostat, &
        set_degrees_of_freedom, nose_hoover_mass, thermostat_array_assignment
   public :: THERMOSTAT_NONE, &
-	    THERMOSTAT_LANGEVIN, &
-	    THERMOSTAT_NOSE_HOOVER, &
-	    THERMOSTAT_NOSE_HOOVER_LANGEVIN, &
-	    THERMOSTAT_LANGEVIN_NPT, &
-	    THERMOSTAT_LANGEVIN_PR, &
-	    THERMOSTAT_NPH_ANDERSEN, &
-	    THERMOSTAT_NPH_PR, &
-	    THERMOSTAT_LANGEVIN_OU, &
-	    THERMOSTAT_LANGEVIN_NPT_NB, &
-	    THERMOSTAT_ALL_PURPOSE
+            THERMOSTAT_LANGEVIN, &
+            THERMOSTAT_NOSE_HOOVER, &
+            THERMOSTAT_NOSE_HOOVER_LANGEVIN, &
+            THERMOSTAT_LANGEVIN_NPT, &
+            THERMOSTAT_LANGEVIN_PR, &
+            THERMOSTAT_NPH_ANDERSEN, &
+            THERMOSTAT_NPH_PR, &
+            THERMOSTAT_LANGEVIN_OU, &
+            THERMOSTAT_LANGEVIN_NPT_NB, &
+            THERMOSTAT_ALL_PURPOSE
   public :: MIN_TEMP
 
   public :: thermostat_pre_vel1, thermostat_post_vel1_pre_pos, thermostat_post_pos_pre_calc, thermostat_post_calc_pre_vel2, thermostat_post_vel2
@@ -87,14 +87,14 @@ module thermostat_module
                         THERMOSTAT_NPH_ANDERSEN         = 6, &
                         THERMOSTAT_NPH_PR               = 7, &
                         THERMOSTAT_LANGEVIN_OU          = 8, &
-			THERMOSTAT_LANGEVIN_NPT_NB      = 9, &
-			THERMOSTAT_ALL_PURPOSE          = 10
+                        THERMOSTAT_LANGEVIN_NPT_NB      = 9, &
+                        THERMOSTAT_ALL_PURPOSE          = 10
 
   !% Nose-Hoover thermostat ---
   !% Hoover, W.G., \emph{Phys. Rev.}, {\bfseries A31}, 1695 (1985)
-  
+
   !% Langevin thermostat - fluctuation/dissipation ---
-  !% Quigley, D. and Probert, M.I.J., \emph{J. Chem. Phys.}, 
+  !% Quigley, D. and Probert, M.I.J., \emph{J. Chem. Phys.},
   !% {\bfseries 120} 11432
 
   !% Nose-Hoover-Langevin thermostat --- me!
@@ -113,7 +113,7 @@ module thermostat_module
      real(dp) :: eta   = 0.0_dp   !% $\eta$ variable in Nose-Hoover
      real(dp), allocatable :: chi_a(:)  !% $\chi$ variable in Leimkuhler's notation for Nose-Hoover
      real(dp), allocatable :: xi_a(:)  !% $\xi$ variable in Leimkuhler's notation for Nose-Hoover-Langevin
-     real(dp) :: p_eta = 0.0_dp   !% $p_\eta$ variable in Nose-Hoover and Nose-Hoover-Langevin 
+     real(dp) :: p_eta = 0.0_dp   !% $p_\eta$ variable in Nose-Hoover and Nose-Hoover-Langevin
      real(dp) :: f_eta = 0.0_dp   !% The force on the Nose-Hoover(-Langevin) conjugate momentum
      real(dp) :: Q     = 0.0_dp   !% Thermostat mass in Nose-Hoover and Nose-Hoover-Langevin
      real(dp) :: NHL_mu    = 0.0_dp   !% Thermostat mass in all-purpose NHL
@@ -228,7 +228,7 @@ contains
 
     select case(this%type)
 
-    case(THERMOSTAT_NONE) 
+    case(THERMOSTAT_NONE)
 
        this%T = 0.0_dp
        this%gamma = 0.0_dp
@@ -236,7 +236,7 @@ contains
 
     case(THERMOSTAT_LANGEVIN)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_LANGEVIN does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_LANGEVIN does not implement massive flag")
        endif
 
        if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin thermostat')
@@ -247,18 +247,18 @@ contains
 
     case(THERMOSTAT_NOSE_HOOVER)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_NOSE_HOOVER does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_NOSE_HOOVER does not implement massive flag")
        endif
 
        if (.not.present(Q)) call system_abort('thermostat initialise: Q is required for Nose-Hoover thermostat')
        if (Q <= 0.0_dp) call system_abort('thermostat initialise: Q must be > 0')
-       this%T = T      
+       this%T = T
        this%gamma = 0.0_dp
        this%Q = Q
 
     case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_NOSE_HOOVER_LANGEVIN does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_NOSE_HOOVER_LANGEVIN does not implement massive flag")
        endif
 
        if (.not.present(gamma)) &
@@ -266,13 +266,13 @@ contains
        if (gamma < 0.0_dp) call system_abort('thermostat initialise: gamma must be >= 0')
        if (.not.present(Q)) call system_abort('thermostat initialise: Q is required for Nose-Hoover-Langevin thermostat')
        if (Q <= 0.0_dp) call system_abort('thermostat initialise: Q must be > 0')
-       this%T = T       
+       this%T = T
        this%gamma = gamma
        this%Q = Q
 
     case(THERMOSTAT_LANGEVIN_NPT)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_LANGEVIN_NPT does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_LANGEVIN_NPT does not implement massive flag")
        endif
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not.present(W_p) .or. .not.present(volume_0) ) &
@@ -288,7 +288,7 @@ contains
 
     case(THERMOSTAT_LANGEVIN_PR)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_LANGEVIN_PR does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_LANGEVIN_PR does not implement massive flag")
        endif
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
@@ -303,7 +303,7 @@ contains
 
     case(THERMOSTAT_NPH_ANDERSEN)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_NPH_ANDERSEN does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_NPH_ANDERSEN does not implement massive flag")
        endif
 
        if (.not.present(W_p) .or. .not.present(p) .or. .not.present(volume_0) .or. .not.present(gamma_p) ) &
@@ -318,7 +318,7 @@ contains
 
     case(THERMOSTAT_NPH_PR)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_NPH_PR does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_NPH_PR does not implement massive flag")
        endif
 
        if (.not.present(p) .or. .not.present(W_p) .or. .not.present(gamma_p) ) &
@@ -332,7 +332,7 @@ contains
 
     case(THERMOSTAT_LANGEVIN_OU)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_LANGEVIN_OU does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_LANGEVIN_OU does not implement massive flag")
        endif
 
        if (.not.present(gamma)) call system_abort('thermostat initialise: gamma is required for Langevin OU thermostat')
@@ -343,7 +343,7 @@ contains
 
     case(THERMOSTAT_LANGEVIN_NPT_NB)
        if (present(massive)) then
-	 if (massive) call system_abort("THERMOSTAT_LANGEVIN_NPT_NB does not implement massive flag")
+         if (massive) call system_abort("THERMOSTAT_LANGEVIN_NPT_NB does not implement massive flag")
        endif
 
        if (.not.present(gamma) .or. .not.present(p) .or. .not.present(gamma_p) .or. .not. present(W_p) ) &
@@ -374,11 +374,11 @@ contains
 
     type(thermostat), intent(inout) :: this
 
-    this%type  = THERMOSTAT_NONE  
+    this%type  = THERMOSTAT_NONE
     this%gamma = 0.0_dp
     this%NHL_gamma = 0.0_dp
     this%eta   = 0.0_dp
-    this%p_eta = 0.0_dp 
+    this%p_eta = 0.0_dp
     this%f_eta = 0.0_dp
     this%Q     = 0.0_dp
     this%NHL_mu = 0.0_dp
@@ -397,7 +397,7 @@ contains
     this%lattice_f = 0.0_dp
     this%lattice_f2 = 0.0_dp
     this%massive = .false.
-    
+
   end subroutine thermostat_finalise
 
   subroutine thermostat_assignment(to,from)
@@ -405,10 +405,10 @@ contains
     type(thermostat), intent(out) :: to
     type(thermostat), intent(in)  :: from
 
-    to%type  = from%type      
-    to%gamma = from%gamma 
-    to%NHL_gamma = from%NHL_gamma 
-    to%eta   = from%eta   
+    to%type  = from%type
+    to%gamma = from%gamma
+    to%NHL_gamma = from%NHL_gamma
+    to%eta   = from%eta
     if (allocated(from%chi_a)) then
        if (allocated(to%chi_a)) deallocate(to%chi_a)
        allocate(to%chi_a(size(from%chi_a)))
@@ -423,12 +423,12 @@ contains
     else
       if (allocated(to%xi_a)) deallocate(to%xi_a)
     endif
-    to%p_eta = from%p_eta 
-    to%Q     = from%Q     
+    to%p_eta = from%p_eta
+    to%Q     = from%Q
     to%NHL_mu     = from%NHL_mu
-    to%T     = from%T     
+    to%T     = from%T
     to%Ndof  = from%Ndof
-    to%work  = from%work  
+    to%work  = from%work
     to%p     = from%p
     to%gamma_p = from%gamma_p
     to%W_p = from%W_p
@@ -449,7 +449,7 @@ contains
   subroutine thermostat_array_assignment(to, from)
     type(thermostat), allocatable, intent(inout) :: to(:)
     type(thermostat), allocatable, intent(in) :: from(:)
-    
+
     integer :: u(1), l(1), i
 
     if (allocated(to)) deallocate(to)
@@ -468,7 +468,7 @@ contains
     type(thermostat), allocatable, intent(inout) :: this(:)
 
     integer :: i, ua(1), la(1), u, l
-    
+
     if (allocated(this)) then
        ua = ubound(this); u = ua(1)
        la = lbound(this); l = la(1)
@@ -492,16 +492,16 @@ contains
 
     la = lbound(this); l=la(1)
     ua = ubound(this); u=ua(1)
-    
+
     if (index < l .or. index > u) &
          call system_abort('index '//index//' outside of range '//l//' <= index <= '//u)
-         
+
     allocate(temp(l:u))
     do i = l,u
        temp(i) = this(i)
     end do
     call finalise(this)
-    
+
     allocate(this(l:u-1))
     do i = l,u
        if (i == index) cycle
@@ -541,7 +541,7 @@ contains
        l=1
        u=0
     end if
-    
+
     allocate(this(l:u+1))
 
     if (allocated(temp)) then
@@ -582,7 +582,7 @@ contains
        l=1
        u=0
     end if
-    
+
     allocate(this(l:u+n))
 
     if (allocated(temp)) then
@@ -594,33 +594,33 @@ contains
 
     do i=1, n
       if (present(T_a)) then
-	 if (present(Q_a)) then
-	    if (present(gamma_a)) then
-	       call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i),Q=Q_a(i))
-	    else
-	       call initialise(this(u+i),type,T=T_a(i),Q=Q_a(i))
-	    endif
-	 else ! no Q_a
-	    if (present(gamma_a)) then
-	       call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i))
-	    else
-	       call initialise(this(u+i),type,T=T_a(i))
-	    endif
-	 endif
+         if (present(Q_a)) then
+            if (present(gamma_a)) then
+               call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i),Q=Q_a(i))
+            else
+               call initialise(this(u+i),type,T=T_a(i),Q=Q_a(i))
+            endif
+         else ! no Q_a
+            if (present(gamma_a)) then
+               call initialise(this(u+i),type,T=T_a(i),gamma=gamma_a(i))
+            else
+               call initialise(this(u+i),type,T=T_a(i))
+            endif
+         endif
       else ! no T_A
-	 if (present(Q_a)) then
-	    if (present(gamma_a)) then
-	       call initialise(this(u+i),type,gamma=gamma_a(i),Q=Q_a(i))
-	    else
-	       call initialise(this(u+i),type,Q=Q_a(i))
-	    endif
-	 else ! no Q_aa
-	    if (present(gamma_a)) then
-	       call initialise(this(u+i),type,gamma=gamma_a(i))
-	    else
-	       call initialise(this(u+i),type)
-	    endif
-	 endif
+         if (present(Q_a)) then
+            if (present(gamma_a)) then
+               call initialise(this(u+i),type,gamma=gamma_a(i),Q=Q_a(i))
+            else
+               call initialise(this(u+i),type,Q=Q_a(i))
+            endif
+         else ! no Q_aa
+            if (present(gamma_a)) then
+               call initialise(this(u+i),type,gamma=gamma_a(i))
+            else
+               call initialise(this(u+i),type)
+            endif
+         endif
       endif
     end do
 
@@ -658,7 +658,7 @@ contains
 
     case(THERMOSTAT_LANGEVIN)
        call print('Langevin, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
+            round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
     case(THERMOSTAT_NOSE_HOOVER)
        call print('Nose-Hoover, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
@@ -668,15 +668,15 @@ contains
        call print('Nose-Hoover-Langevin, T = '//round(this%T,2)//' K, Q = '//round(this%Q,5)//&
             ' eV fs^2, gamma = '//round(this%gamma,5)//' fs^-1, eta = '//round(this%eta,5)//&
             ' , p_eta = '//round(this%p_eta,5)//' eV fs, work = '//round(this%work,5)//' eV, Ndof = ' // round(this%Ndof,1),file=file)
-       
+
     case(THERMOSTAT_LANGEVIN_NPT)
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
     case(THERMOSTAT_LANGEVIN_PR)
        call print('Langevin PR, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au',file=file)
 
     case(THERMOSTAT_NPH_ANDERSEN)
@@ -687,33 +687,33 @@ contains
 
     case(THERMOSTAT_LANGEVIN_OU)
        call print('Langevin OU, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-	    round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
+            round(this%eta,5)//' (#), work = '//round(this%work,5)//' eV, Ndof = '// round(this%Ndof,1),file=file)
 
     case(THERMOSTAT_LANGEVIN_NPT_NB)
        call print('Langevin NPT, T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, eta = '//&
-	    round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
+            round(this%eta,5)//' (#), work = '// round(this%work,5)//' eV, p = '//round(this%p,5)//' eV/A^3, gamma_p = '// &
             round(this%gamma_p,5)//' fs^-1, W_p = '//round(this%W_p,5)//' au, Ndof = ' // round(this%Ndof,1),file=file)
 
     case(THERMOSTAT_ALL_PURPOSE)
        if (this%massive) then
-	  call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, chi = '//&
-	       'too many to list (#), xi = too many to list (#), Ndof = ' // round(this%Ndof,1),file=file)
+          call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, chi = '//&
+               'too many to list (#), xi = too many to list (#), Ndof = ' // round(this%Ndof,1),file=file)
        else
-	  if (.not. allocated(this%chi_a)) then
-	     call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, NHL_mu = '//round(this%NHL_mu,5)//' eV fs^2, '//&
-		'NHL_gamma = '//round(this%NHL_gamma,5)//' fs^-1, chi = '//round(0.0_dp,5)//' (#), xi = '//round(0.0_dp,5)//' Ndof = ' // round(this%Ndof,1),file=file)
-	  else
-	     call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, NHL_mu = '//round(this%NHL_mu,5)//' eV fs^2, '//&
-		'NHL_gamma = '//round(this%NHL_gamma,5)//' fs^-1, chi = '//round(this%chi_a(1),5)//' (#), xi = '//round(this%xi_a(1),5)//' Ndof = ' // round(this%Ndof,1),file=file)
-	  endif
+          if (.not. allocated(this%chi_a)) then
+             call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, NHL_mu = '//round(this%NHL_mu,5)//' eV fs^2, '//&
+                'NHL_gamma = '//round(this%NHL_gamma,5)//' fs^-1, chi = '//round(0.0_dp,5)//' (#), xi = '//round(0.0_dp,5)//' Ndof = ' // round(this%Ndof,1),file=file)
+          else
+             call print('All-purpose adaptive-Langevin , T = '//round(this%T,2)//' K, gamma = '//round(this%gamma,5)//' fs^-1, Q = '//round(this%Q,5)//' eV fs^2, NHL_mu = '//round(this%NHL_mu,5)//' eV fs^2, '//&
+                'NHL_gamma = '//round(this%NHL_gamma,5)//' fs^-1, chi = '//round(this%chi_a(1),5)//' (#), xi = '//round(this%xi_a(1),5)//' Ndof = ' // round(this%Ndof,1),file=file)
+          endif
        endif
 
     end select
-    
+
   end subroutine thermostat_print
 
   subroutine thermostats_print(this,file)
-    
+
     type(thermostat), allocatable, intent(in) :: this(:)
     type(inoutput), optional,      intent(in) :: file
 
@@ -768,7 +768,7 @@ contains
     Q = nose_hoover_mass_real(real(Ndof,dp),T,tau)
 
   end function nose_hoover_mass_int
-    
+
   pure function nose_hoover_mass_real(Ndof,T,tau) result(Q)
 
     real(dp), intent(in) :: Ndof, T, tau
@@ -786,7 +786,7 @@ contains
   !X
   !X THERMOSTAT ROUTINES
   !X
-  !X These routines interleave the usual velocity Verlet steps and should modify 
+  !X These routines interleave the usual velocity Verlet steps and should modify
   !X the velocities and accelerations as required:
   !X
   !X advance_verlet1
@@ -810,7 +810,7 @@ contains
   !X atomic property and the value it must have.
   !X
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  
+
   subroutine thermostat_pre_vel1(this,at,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
@@ -830,7 +830,7 @@ contains
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat_pre_vel1: cannot find property '//property)
     end if
- 
+
     select case(this%type)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -839,16 +839,16 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_LANGEVIN)
-              
+
        !Decay the velocity for dt/2. The random force will have been added to acc during the
        !previous timestep.
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        decay = exp(-0.5_dp*(this%gamma+this%eta)*dt)
@@ -858,9 +858,9 @@ contains
        end do
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -869,37 +869,37 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_NOSE_HOOVER)
-       
+
        !Propagate eta for dt (this saves doing it twice, for dt/2)
        if (this%Q > 0.0_dp) then
-	 this%eta = this%eta + this%p_eta*dt/this%Q
+         this%eta = this%eta + this%p_eta*dt/this%Q
        else
-	 this%eta = 0.0_dp
+         this%eta = 0.0_dp
        endif
 
        !Decay the velocities using p_eta for dt/2. Also, accumulate the (pre-decay)
        !kinetic energy (x2) and use to integrate the 'work' value
        K = 0.0_dp
        if (this%Q > 0.0_dp) then
-	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+         decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        else
-	 decay = 1.0_dp
+         decay = 1.0_dp
        endif
 
-!       dvelo = 0.0_dp
-!       ntherm = 0
+       ! dvelo = 0.0_dp
+       ! ntherm = 0
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
           K = K + at%mass(i)*normsq(at%velo(:,i))
-!	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
-!	  ntherm = ntherm + 1
+          ! dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
+          ! ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
        end do
-!       call print("Thermostat " // value //" thermostat_pre_vel1 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
+       ! call print("Thermostat " // value //" thermostat_pre_vel1 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Propagate the work for dt/2
        if (this%Q > 0.0_dp) then
-	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+         this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
        endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -908,22 +908,22 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
-       
+
        !Decay p_eta for dt/2 and propagate it for dt/2
        this%p_eta = this%p_eta*exp(-0.5_dp*this%gamma*dt) + 0.5_dp*this%f_eta*dt
        !Propagate eta for dt (this saves doing it twice, for dt/2)
        if (this%Q > 0.0_dp) then
-	 this%eta = this%eta + this%p_eta*dt/this%Q
+         this%eta = this%eta + this%p_eta*dt/this%Q
        else
-	 this%eta = 0.0_dp
+         this%eta = 0.0_dp
        endif
 
        !Decay the velocities using p_eta for dt/2 and accumulate Ek (as in NH) for
        !work integration
        if (this%Q > 0.0_dp) then
-	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+         decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        else
-	 decay = 1.0_dp
+         decay = 1.0_dp
        endif
        K = 0.0_dp
 
@@ -935,7 +935,7 @@ contains
 
        !Propagate work
        if (this%Q > 0.0_dp) then
-	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+         this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
        endif
 
        ! advance_verlet1 will do conservative + random force parts of v half step
@@ -946,7 +946,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_LANGEVIN_NPT)
-              
+
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
 
@@ -965,11 +965,11 @@ contains
        !previous timestep.
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        decay = exp(-0.5_dp*dt*((this%gamma+this%eta)+(1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
@@ -981,9 +981,9 @@ contains
        !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -992,7 +992,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_LANGEVIN_PR)
-              
+
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
        & simulation, but virial has not been passed')
 
@@ -1007,13 +1007,13 @@ contains
        this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
-       
+
        !Decay the velocity for dt/2. The random force will have been added to acc during the
        !previous timestep.
 
@@ -1030,9 +1030,9 @@ contains
        !at%pos = at%pos*exp(this%epsilon_vp * dt) ????
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1041,7 +1041,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_NPH_ANDERSEN)
-              
+
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: THERMOSTAT_NPH &
        & simulation, but virial has not been passed')
 
@@ -1071,7 +1071,7 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_NPH_PR)
-              
+
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: THERMOSTAT_NPH &
        & simulation, but virial has not been passed')
 
@@ -1084,8 +1084,8 @@ contains
 
        this%lattice_f = ke_virial + virial - this%p*volume_p*matrix_one + trace(ke_virial)*matrix_one/this%Ndof
        this%lattice_v = this%lattice_v + 0.5_dp*dt*this%lattice_f / this%W_p
-       
-       !Decay the velocity for dt/2. 
+
+       !Decay the velocity for dt/2.
 
        decay_matrix = -0.5_dp*dt*( this%lattice_v + trace(this%lattice_v)*matrix_one/this%Ndof )
        decay_matrix = ( decay_matrix + transpose(decay_matrix) ) / 2.0_dp ! Making sure the matrix is exactly symmetric
@@ -1104,22 +1104,22 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_LANGEVIN_OU)
-              
+
        !Decay the velocity for dt/2 by eta (aka chi)
 
        if (this%eta /= 0.0_dp) then
-	  decay = exp(-0.5_dp*this%eta*dt)
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.5_dp*this%eta*dt)
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
     case(THERMOSTAT_LANGEVIN_NPT_NB)
        if( .not. present(virial) ) call system_abort('thermostat_pre_vel1: NPT &
-	  simulation, but virial has not been passed')
+          simulation, but virial has not been passed')
 
-       ! half step epsilon_v, drag and force (from last step) parts 
+       ! half step epsilon_v, drag and force (from last step) parts
        this%epsilon_v = this%epsilon_v*exp(-0.5_dp*dt*this%gamma_p)
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_p
 
@@ -1129,11 +1129,11 @@ contains
 
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        ! half step Langevin drag part of v
@@ -1145,9 +1145,9 @@ contains
 
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
 
 
@@ -1157,7 +1157,7 @@ contains
        at%pos = at%pos*exp(0.5_dp*dt*this%epsilon_v)
 
     case(THERMOSTAT_ALL_PURPOSE)
-       !TIME_PROPAG_TEX 10 before first Verlet velocity step (thermostat\_pre\_vel1) 
+       !TIME_PROPAG_TEX 10 before first Verlet velocity step (thermostat\_pre\_vel1)
        !TIME_PROPAG_TEX 10
        !TIME_PROPAG_TEX 10 $\chi$ Nose Hoover extended DOF (also part of open Langevin)
        !TIME_PROPAG_TEX 10
@@ -1182,115 +1182,115 @@ contains
        if (this%gamma > 0.0_dp .or. (this%NHL_gamma > 0.0_dp .and. this%NHL_mu > 0.0_dp)) call system_resync_rng()
 
        if (.not. allocated(this%chi_a)) then
-	  if (this%massive) then
-	    allocate(this%chi_a(count(prop_ptr == value)))
-	    allocate(this%xi_a(count(prop_ptr == value)))
-	  else
-	    allocate(this%chi_a(1))
-	    allocate(this%xi_a(1))
-	  endif
-	  this%chi_a = 0.0_dp
-	  this%xi_a = 0.0_dp
+          if (this%massive) then
+            allocate(this%chi_a(count(prop_ptr == value)))
+            allocate(this%xi_a(count(prop_ptr == value)))
+          else
+            allocate(this%chi_a(1))
+            allocate(this%xi_a(1))
+          endif
+          this%chi_a = 0.0_dp
+          this%xi_a = 0.0_dp
        endif
 
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
-     
+
        if (this%gamma > 0.0_dp) then
-	  ! Do the Ornstein-Uhlenbeck half step
-	  decay=exp(-0.5_dp*this%gamma*dt)
-	  rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
-	     at%velo(:,i) = decay*at%velo(:,i) + OU_dv
-	  end do
-       end if 
+          ! Do the Ornstein-Uhlenbeck half step
+          decay=exp(-0.5_dp*this%gamma*dt)
+          rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
+             at%velo(:,i) = decay*at%velo(:,i) + OU_dv
+          end do
+       end if
 
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
        if (this%Q > 0.0_dp .or. this%NHL_mu > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
-		if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
-		if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
-	     end do
-	  else
-	     delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	     if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
-	     if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
+                if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
+                if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
+             end do
+          else
+             delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+             if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
+             if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
+          endif
        else
-	  this%chi_a = 0.0_dp
-	  this%xi_a = 0.0_dp
+          this%chi_a = 0.0_dp
+          this%xi_a = 0.0_dp
        endif
 
        ! quarter step drag part of v
        if (this%massive) then
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        else
-	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
        ! Langevin half step for xi (if doing NHL)
        if (this%NHL_mu > 0.0_dp .and. this%NHL_gamma > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		this%xi_a(i) = this%xi_a(i)*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
-	     end do
-	  else
-	     this%xi_a = this%xi_a*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                this%xi_a(i) = this%xi_a(i)*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
+             end do
+          else
+             this%xi_a = this%xi_a*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
+          endif
        endif
 
        ! quarter step drag part of v
        if (this%massive) then
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        else
-	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
        if (this%Q > 0.0_dp .or. this%NHL_mu > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
-		if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
-		if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
-	     end do
-	  else
-	     delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	     if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
-	     if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
+                if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
+                if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
+             end do
+          else
+             delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+             if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
+             if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
+          endif
        endif
 
     end select
 
   end subroutine thermostat_pre_vel1
-  
+
   subroutine thermostat_post_vel1_pre_pos(this,at,dt,property,value)
 
     type(thermostat), intent(inout) :: this
@@ -1300,11 +1300,11 @@ contains
     integer,          intent(in)    :: value
 
     integer, pointer, dimension(:) :: prop_ptr
-    
+
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat_post_vel1_pre_pos: cannot find property '//property)
     end if
-    
+
     select case(this%type)
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1314,7 +1314,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     !case(THERMOSTAT_LANGEVIN)
-       
+
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
@@ -1334,7 +1334,7 @@ contains
        !X NOSE-HOOVER-THERMOSTAT_LANGEVIN
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-       
+
     !case(THERMOSTAT_NOSE_HOOVER_LANGEVIN)
 
 
@@ -1368,7 +1368,7 @@ contains
   end subroutine thermostat_post_pos_pre_calc
 
   subroutine thermostat_post_calc_pre_vel2(this,at,dt,property,value)
-    
+
     type(thermostat), intent(inout) :: this
     type(atoms),      intent(inout) :: at
     real(dp),         intent(in)    :: dt
@@ -1393,7 +1393,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     case(THERMOSTAT_LANGEVIN,THERMOSTAT_LANGEVIN_NPT,THERMOSTAT_LANGEVIN_PR,THERMOSTAT_LANGEVIN_NPT_NB)
-     
+
        ! Add the random acceleration
        R = 2.0_dp*this%gamma*BOLTZMANN_K*this%T/dt
 
@@ -1428,7 +1428,7 @@ contains
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     !case(THERMOSTAT_NOSE_HOOVER_LANGEVIN) nothing to be done
-       
+
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1437,18 +1437,18 @@ contains
        !X
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     case(THERMOSTAT_LANGEVIN_OU)
-              
+
        ! propagate eta (a.k.a. chi) for a full step
 
        if (this%Q > 0.0_dp) then
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + dt*2.0_dp*delta_K/this%Q
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + dt*2.0_dp*delta_K/this%Q
        endif
 
     end select
 
   end subroutine thermostat_post_calc_pre_vel2
-  
+
   subroutine thermostat_post_vel2(this,at,dt,property,value,virial)
 
     type(thermostat), intent(inout) :: this
@@ -1469,7 +1469,7 @@ contains
     if (.not. assign_pointer(at,property,prop_ptr)) then
        call system_abort('thermostat_post_vel2: cannot find property '//property)
     end if
-    
+
     select case(this%type)
 
 
@@ -1481,11 +1481,11 @@ contains
     case(THERMOSTAT_LANGEVIN)
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        !Decay the velocities for dt/2 again
@@ -1496,11 +1496,11 @@ contains
        end do
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
-       
+
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
        !X
        !X NOSE-HOOVER
@@ -1511,21 +1511,21 @@ contains
        !Decay the velocities again using p_eta for dt/2, and accumulate the (post-decay)
        !kinetic energy (x2) to integrate the 'work' value.
        if (this%Q > 0.0_dp) then
-	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+         decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        else
-	 decay = 1.0_dp
+         decay = 1.0_dp
        endif
        K = 0.0_dp
-!       dvelo = 0.0_dp
-!       ntherm = 0
+       ! dvelo = 0.0_dp
+       ! ntherm = 0
        do i=1, at%N
           if (prop_ptr(i) /= value) cycle
-!	  dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
-!	  ntherm = ntherm + 1
+          ! dvelo = dvelo + norm(at%velo(:,i))*abs(1.0_dp-decay)
+          ! ntherm = ntherm + 1
           at%velo(:,i) = at%velo(:,i)*decay
           K = K + at%mass(i)*normsq(at%velo(:,i))
        end do
-!       call print("Thermostat " // value //" thermostat_post_vel2 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
+       ! call print("Thermostat " // value //" thermostat_post_vel2 N-H <delta vel>"//(dvelo/real(ntherm,dp)))
 
        !Calculate new f_eta...
        this%f_eta = 0.0_dp
@@ -1539,7 +1539,7 @@ contains
 
        !Propagate the work for dt/2
        if (this%Q > 0.0_dp) then
-	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+         this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
        endif
 
        !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1551,12 +1551,12 @@ contains
        ! Random numbers may have been used at different rates on different MPI processes:
        ! we must resync the random number if we want the same numbers on each process.
        call system_resync_rng()
-       
+
        !Decay the velocities again using p_eta for dt/2, and accumulate Ek for work integration
        if (this%Q > 0.0_dp) then
-	 decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
+         decay = exp(-0.5_dp*this%p_eta*dt/this%Q)
        else
-	 decay = 1.0_dp
+         decay = 1.0_dp
        endif
        K = 0.0_dp
        do i = 1, at%N
@@ -1567,7 +1567,7 @@ contains
 
        !Propagate work
        if (this%Q > 0.0_dp) then
-	 this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
+         this%work = this%work + 0.5_dp*this%p_eta*K*dt/this%Q
        endif
 
        !Calculate new f_eta...
@@ -1577,7 +1577,7 @@ contains
            if (prop_ptr(i) == value) this%f_eta = this%f_eta + at%mass(i)*normsq(at%velo(:,i))
         end do
        this%f_eta = this%f_eta - this%Ndof*BOLTZMANN_K*this%T
-       !Stochastic part: 
+       !Stochastic part:
        this%f_eta = this%f_eta + sqrt(2.0_dp*this%gamma*this%Q*BOLTZMANN_K*this%T/dt)*ran_normal()
 
        !Propagate p_eta for dt/2 then decay it for dt/2
@@ -1590,11 +1590,11 @@ contains
 
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        !Decay the velocities for dt/2 again Langevin part
@@ -1606,11 +1606,11 @@ contains
 
        ! Leimkuhler+Jones adaptive Langevin
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
-       
+
 
        !Decay the velocities for dt/2 again barostat part
        decay = exp(-0.5_dp*dt*((1.0_dp + 3.0_dp/this%Ndof)*this%epsilon_v))
@@ -1622,7 +1622,7 @@ contains
        volume_p = cell_volume(at)
        f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
        this%epsilon_f = (trace(virial)+sum(at%mass*sum(at%velo**2,dim=1))-3.0_dp*volume_p*this%p) + &
-	  3.0_dp/this%Ndof*sum(at%mass*sum(at%velo**2,dim=1)) + f_cell
+          3.0_dp/this%Ndof*sum(at%mass*sum(at%velo**2,dim=1)) + f_cell
        this%epsilon_f = this%epsilon_f + f_cell
        this%epsilon_v = this%epsilon_v + 0.5_dp*dt*this%epsilon_f/this%W_p
 
@@ -1640,11 +1640,11 @@ contains
        f_cell = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        !Decay the velocities for dt/2 again
@@ -1655,11 +1655,11 @@ contains
        end do
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
-       
+
        volume_p = cell_volume(at)
        this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
        & - 3.0_dp * volume_p * this%p + f_cell
@@ -1680,11 +1680,11 @@ contains
        & simulation, but virial has not been passed')
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        else
-	  this%eta = 0.0_dp
+          this%eta = 0.0_dp
        endif
 
        !Decay the velocities for dt/2 again
@@ -1699,11 +1699,11 @@ contains
        end do
 
        if (this%Q > 0.0_dp) then
-	  ! propagate eta (Jones and Leimkuhler chi) dt/4
-	  delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	  this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
+          ! propagate eta (Jones and Leimkuhler chi) dt/4
+          delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+          this%eta = this%eta + 0.5_dp*dt*delta_K/this%Q
        endif
-       
+
        do i = 1, 3
           do j = 1, 3
              random_lattice(j,i) = sqrt(2.0_dp*BOLTZMANN_K*this%T*this%gamma_p*this%W_p/dt)*ran_normal()
@@ -1733,12 +1733,12 @@ contains
           if (prop_ptr(i) /= value) cycle
           at%velo(:,i) = at%velo(:,i)*decay
        end do
-       
+
        volume_p = cell_volume(at)
        this%epsilon_f = (1.0_dp + 3.0_dp/this%Ndof)*sum(at%mass*sum(at%velo**2,dim=1)) + trace(virial) &
        & - 3.0_dp * volume_p * this%p
 
-       this%epsilon_v = ( this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p ) 
+       this%epsilon_v = ( this%epsilon_v + 0.5_dp * dt * this%epsilon_f / this%W_p )
 
        this%epsilon_r = this%epsilon_r + 0.5_dp*this%epsilon_v*dt
        volume_p = exp(3.0_dp*this%epsilon_r)*this%volume_0
@@ -1781,11 +1781,11 @@ contains
 
        !Decay the velocities for dt/2 again by eta (aka chi)
        if (this%eta /= 0.0_dp) then
-	  decay = exp(-0.5_dp*this%eta*dt)
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.5_dp*this%eta*dt)
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
        !Decay the velocities for dt with gamma
@@ -1817,91 +1817,91 @@ contains
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
        if (this%Q > 0.0_dp .or. this%NHL_mu > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
-		if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
-		if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
-	     end do
-	  else
-	     delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	     if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
-	     if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
+                if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
+                if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
+             end do
+          else
+             delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+             if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
+             if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
+          endif
        else
-	  this%chi_a = 0.0_dp
-	  this%xi_a = 0.0_dp
+          this%chi_a = 0.0_dp
+          this%xi_a = 0.0_dp
        endif
 
        ! quarter step drag part of v
        if (this%massive) then
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        else
-	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
        ! Langevin half step for xi (if doing NHL)
        if (this%NHL_mu > 0.0_dp .and. this%NHL_gamma > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		this%xi_a(i) = this%xi_a(i)*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
-	     end do
-	  else
-	     this%xi_a = this%xi_a*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                this%xi_a(i) = this%xi_a(i)*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
+             end do
+          else
+             this%xi_a = this%xi_a*exp(-0.5_dp*dt*this%NHL_gamma) + sqrt(BOLTZMANN_K*this%T*(1.0_dp-exp(-dt*this%NHL_gamma))/this%NHL_mu)*ran_normal()
+          endif
        endif
 
        ! quarter step drag part of v
        if (this%massive) then
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             decay = exp(-0.25_dp*dt*(this%chi_a(i)+this%xi_a(i)))
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        else
-	  decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     at%velo(:,i) = at%velo(:,i)*decay
-	  end do
+          decay = exp(-0.25_dp*dt*(this%chi_a(1)+this%xi_a(1)))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             at%velo(:,i) = at%velo(:,i)*decay
+          end do
        endif
 
        ! Leimkuhler+Jones adaptive Langevin
        ! propagate chi and xi dt/4
        if (this%Q > 0.0_dp .or. this%NHL_mu > 0.0_dp) then
-	  if (this%massive) then
-	     do i = 1, at%N
-		if (prop_ptr(i) /= value) cycle
-		delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
-		if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
-		if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
-	     end do
-	  else
-	     delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
-	     if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
-	     if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
-	  endif
+          if (this%massive) then
+             do i = 1, at%N
+                if (prop_ptr(i) /= value) cycle
+                delta_K = open_Langevin_delta_K(1, at%mass(i:i), at%velo(1:3,i:i), 3.0_dp, this%T, prop_ptr(i:i), value)
+                if (this%Q > 0.0_dp) this%chi_a(i) = this%chi_a(i) + 0.5_dp*dt*delta_K/this%Q
+                if (this%NHL_mu > 0.0_dp) this%xi_a(i) = this%xi_a(i) + 0.5_dp*dt*delta_K/this%NHL_mu
+             end do
+          else
+             delta_K = open_Langevin_delta_K(at%N, at%mass, at%velo, this%Ndof, this%T, prop_ptr, value)
+             if (this%Q > 0.0_dp) this%chi_a = this%chi_a + 0.5_dp*dt*delta_K/this%Q
+             if (this%NHL_mu > 0.0_dp) this%xi_a = this%xi_a + 0.5_dp*dt*delta_K/this%NHL_mu
+          endif
        endif
 
        if (this%gamma > 0.0_dp) then
-	  ! Do the Ornstein-Uhlenbeck half step
-	  decay=exp(-0.5_dp*this%gamma*dt)
-	  rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
-	  do i = 1, at%N
-	     if (prop_ptr(i) /= value) cycle
-	     OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
-	     at%velo(:,i) = decay*at%velo(:,i) + OU_dv
-	  end do
+          ! Do the Ornstein-Uhlenbeck half step
+          decay=exp(-0.5_dp*this%gamma*dt)
+          rv_mag = sqrt(BOLTZMANN_K*this%T*(1.0_dp-decay**2))
+          do i = 1, at%N
+             if (prop_ptr(i) /= value) cycle
+             OU_dv = rv_mag/sqrt(at%mass(i))*ran_normal3()
+             at%velo(:,i) = decay*at%velo(:,i) + OU_dv
+          end do
        end if
 
     end select
@@ -1921,7 +1921,7 @@ contains
 
        delta_K = 0.0_dp
        do i = 1, N
-	  if (prop_ptr(i) == value) delta_K = delta_K + mass(i)*normsq(velo(:,i))
+          if (prop_ptr(i) == value) delta_K = delta_K + mass(i)*normsq(velo(:,i))
        end do
        delta_K = 0.5_dp*(delta_K - Ndof*BOLTZMANN_K*T)
    end function open_Langevin_delta_K

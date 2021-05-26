@@ -164,36 +164,36 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
       call sort_array(sorted_Zs)
       call uniq(sorted_Zs, uniq_Zs)
       if (len_trim(Z_order) > 0) then
-	 read(unit=Z_order, fmt=*) line, uniq_Zs
+         read(unit=Z_order, fmt=*) line, uniq_Zs
       endif
 
       line = ""
       do i=1, size(uniq_Zs)
-	 line=trim(line)//" "//ElementName(uniq_Zs(i))
+         line=trim(line)//" "//ElementName(uniq_Zs(i))
       end do
       call print(trim(line), file=io, verbosity=PRINT_ALWAYS)
 
       line = ""
       do i=1, size(uniq_Zs)
-	 line=trim(line)//" "//count(at%Z == uniq_Zs(i))
+         line=trim(line)//" "//count(at%Z == uniq_Zs(i))
       end do
 
       call print(trim(line), file=io, verbosity=PRINT_ALWAYS)
 
       if (cartesian) then
-	 call print("Cartesian")
-	 do i=1, size(uniq_Zs)
-	    do j=1, at%N
-	       if (at%Z(j) == uniq_Zs(i)) call print(at%pos(:,j), file=io, verbosity=PRINT_ALWAYS)
-	    end do
-	 end do
+         call print("Cartesian")
+         do i=1, size(uniq_Zs)
+            do j=1, at%N
+               if (at%Z(j) == uniq_Zs(i)) call print(at%pos(:,j), file=io, verbosity=PRINT_ALWAYS)
+            end do
+         end do
       else
-	 call print("Direct")
-	 do i=1, size(uniq_Zs)
-	    do j=1, at%N
-	       if (at%Z(j) == uniq_Zs(i)) call print(matmul(new_lattice_inv,at%pos(:,j)), file=io, verbosity=PRINT_ALWAYS)
-	    end do
-	 end do
+         call print("Direct")
+         do i=1, size(uniq_Zs)
+            do j=1, at%N
+               if (at%Z(j) == uniq_Zs(i)) call print(matmul(new_lattice_inv,at%pos(:,j)), file=io, verbosity=PRINT_ALWAYS)
+            end do
+         end do
       endif
 
       deallocate(uniq_Zs)
@@ -201,10 +201,10 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
       line=ElementName(at%Z(1))
       n_species = 1
       do i=2, at%N
-	 if (at%Z(i) /= at%Z(i-1)) then
-	    line=trim(line)//" "//ElementName(at%Z(i))
-	    n_species = n_species + 1
-	 endif
+         if (at%Z(i) /= at%Z(i-1)) then
+            line=trim(line)//" "//ElementName(at%Z(i))
+            n_species = n_species + 1
+         endif
       end do
       call print(trim(line), file=io, verbosity=PRINT_ALWAYS)
 
@@ -212,23 +212,23 @@ subroutine write_vasp(at, filename, fix_order, cartesian)
       i_species = 1
       Ns(i_species) = 1
       do i=2, at%N
-	 if (at%Z(i) /= at%Z(i-1)) then
-	    i_species = i_species + 1
-	 endif
-	 Ns(i_species) = Ns(i_species) + 1
+         if (at%Z(i) /= at%Z(i-1)) then
+            i_species = i_species + 1
+         endif
+         Ns(i_species) = Ns(i_species) + 1
       end do
       call print(Ns(1:n_species), file=io, verbosity=PRINT_ALWAYS)
 
       if (cartesian) then
-	 call print("Cartesian")
-	 do i=1, at%N
-	    call print(at%pos(:,i), file=io, verbosity=PRINT_ALWAYS)
-	 end do
+         call print("Cartesian")
+         do i=1, at%N
+            call print(at%pos(:,i), file=io, verbosity=PRINT_ALWAYS)
+         end do
       else
-	 call print("Direct")
-	 do i=1, at%N
-	    call print(matmul(new_lattice_inv,at%pos(:,i)), file=io, verbosity=PRINT_ALWAYS)
-	 end do
+         call print("Direct")
+         do i=1, at%N
+            call print(matmul(new_lattice_inv,at%pos(:,i)), file=io, verbosity=PRINT_ALWAYS)
+         end do
       endif
    end if
 
@@ -260,26 +260,26 @@ subroutine read_vasp(at, filename)
    lattice = lattice * lattice_scale
    ! species line is optional
    line=read_line(io)
-   call split_string_simple(line, species, n_species, " 	")
+   call split_string_simple(line, species, n_species, "         ")
    read(unit=species(1), fmt=*, iostat=status) Ns(1)
    if (status == 0) then ! it's a number
       read(unit=line, fmt=*) Ns(1:n_species)
       do i=1, n_species
-	 species_Zs(i) = i
+         species_Zs(i) = i
       end do
    else ! actually species
       line=read_line(io)
       read(unit=line, fmt=*) Ns(1:n_species)
       do i=1, n_species
-	 species_Zs(i) = atomic_number(species(i))
+         species_Zs(i) = atomic_number(species(i))
       end do
    endif
    Z_order='S '//species_Zs(1:n_species)
    line=read_line(io)
    if (line(1:1) == 'S') line=read_line(io)
-   if (line(1:1) == 'c' .or. line(1:1) == 'C') then 
+   if (line(1:1) == 'c' .or. line(1:1) == 'C') then
       cartesian = .true.
-   else if (line(1:1) == 'd' .or. line(1:1) == 'D') then 
+   else if (line(1:1) == 'd' .or. line(1:1) == 'D') then
       cartesian = .false.
    else
       call system_abort ("confused by cartesian/direct line of '"//trim(line)//"'")

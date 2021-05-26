@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_FC4 module  
+!X IPModel_FC4 module
 !X
 !% Module for the Fourth-order force-constant potential, described in
 !% Esfarjani, Chen and Stokes, Phys. Rev. B {\bf 84} 085204 (2011)
@@ -80,7 +80,7 @@ type IPModel_FC4
   type(Atoms) :: ideal_struct
   integer, pointer :: ideal_struct_prim_index(:)
   integer, pointer :: ideal_struct_cell_offset(:,:)
- 
+
   character(len=STRING_LENGTH) :: atom_shl_file
   type(Atoms) :: atom_shl
   integer, pointer :: atom_shl_prim_index(:)
@@ -187,19 +187,19 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
        this%iatomterm_2(2,this%nfc2),   &
        this%ixyzterm_2(2,this%nfc2),    &
        this%fcs_2(this%nfc2),           &
-       this%ampterm_2(this%nfc2))       
+       this%ampterm_2(this%nfc2))
 
   allocate(this%igroup_3(this%nfc3),    &
        this%iatomterm_3(3,this%nfc3),   &
        this%ixyzterm_3(3,this%nfc3),    &
        this%fcs_3(this%nfc3),           &
-       this%ampterm_3(this%nfc3))       
+       this%ampterm_3(this%nfc3))
 
   allocate(this%igroup_4(this%nfc4),    &
        this%iatomterm_4(4,this%nfc4),   &
        this%ixyzterm_4(4,this%nfc4),    &
        this%fcs_4(this%nfc4),           &
-       this%ampterm_4(this%nfc4))       
+       this%ampterm_4(this%nfc4))
 
   this%sc_min = minval(this%ideal_struct_cell_offset,2)
   this%sc_max = maxval(this%ideal_struct_cell_offset,2)
@@ -221,10 +221,10 @@ subroutine IPModel_FC4_Initialise_str(this, args_str, param_str)
        call system_abort("IPModel_FC4 requires 'prim_index' field in atom_shl file")
   if (.not.assign_pointer(this%atom_shl, "cell_offset", this%atom_shl_cell_offset)) &
        call system_abort("IPModel_FC4 requires 'cell_offset' field in atom_shl file")
- 
+
   !
   ! Read the force constants
-  ! 
+  !
   call read_fcs(2, this%nfc2, trim(this%fc2_file), this%igroup_2, this%iatomterm_2, this%ixyzterm_2, this%fcs_2, this%ampterm_2)
   if (this%nfc3.gt.0) call read_fcs(3, this%nfc3, trim(this%fc3_file), this%igroup_3, this%iatomterm_3, this%ixyzterm_3, this%fcs_3, this%ampterm_3)
   if (this%nfc4.gt.0) call read_fcs(4, this%nfc4, trim(this%fc4_file), this%igroup_4, this%iatomterm_4, this%ixyzterm_4, this%fcs_4, this%ampterm_4)
@@ -264,7 +264,7 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
    type(IPModel_FC4), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -305,7 +305,7 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
       call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_FC4_Calc', error)
       local_virial = 0.0_dp
    endif
-   
+
    if (present(args_str)) then
       if (len_trim(args_str) > 0) then
          n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
@@ -372,7 +372,7 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
             flux = flux + r_ij(:) * phi * displacement(alpha,ia) * velo(beta,ja) / 2
          end if
          if (present(local_virial).or.present(virial)) then
-            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df 
+            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df
          end if
       end do
 
@@ -402,9 +402,9 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
             flux = flux + r_ij(:) * phi * displacement(alpha,ia) * displacement(gamma,ka) * velo(beta,ja) / 3
          end if
          if (present(local_virial).or.present(virial)) then
-            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df 
+            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df
          end if
-      end do      
+      end do
 
       !
       ! fourth order
@@ -436,13 +436,13 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
 !           local_flux(:,ia) = local_flux(:,ia) + r_ij * phi * displacement(alpha,ia) * displacement(gamma,ka) * displacement(delta,la) * velo(beta,ja) / 8
             flux = flux + r_ij(:) * phi * displacement(alpha,ia) * displacement(gamma,ka) * displacement(delta,la) * velo(beta,ja) / 8
          end if
-         !if (present(local_virial).or.present(virial)) then 
-            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df 
+         !if (present(local_virial).or.present(virial)) then
+            local_virial_sq(alpha,:,ia) = local_virial_sq(alpha,:,ia) + at%pos(:,ia) * df
             !local_virial_sq(alpha,:,ja) = local_virial_sq(alpha,:,ja) + at%pos(:,ia) * df / 4
             !local_virial_sq(alpha,:,ka) = local_virial_sq(alpha,:,ka) + at%pos(:,ia) * df / 4
             !local_virial_sq(alpha,:,la) = local_virial_sq(alpha,:,la) + at%pos(:,ia) * df / 4
          !end if
-      end do      
+      end do
    end do
 
    if (present(local_virial)) local_virial = reshape(local_virial_sq, (/ 9, at%N /))
@@ -466,7 +466,7 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
    end if
 
 
-  if (do_flux) then 
+  if (do_flux) then
      if (present(mpi)) call sum_in_place(mpi, flux)
 !    local_flux = local_flux / cell_volume(at)
 !    flux = sum(local_flux,2)
@@ -477,14 +477,14 @@ subroutine IPModel_FC4_Calc(this, at, e, local_e, f, virial, local_virial, args_
 end subroutine IPModel_FC4_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -503,10 +503,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -514,21 +514,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in FC4_params")
+        call system_abort("Can't find n_types in FC4_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%cutoff
+        read (value, *) parse_ip%cutoff
       else
-	call system_abort("Can't find cutoff in FC4_params")
+        call system_abort("Can't find cutoff in FC4_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'nfc2', value, status)
@@ -542,7 +542,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%nfc2_indep
       else
          parse_ip%nfc2_indep = parse_ip%nfc2
-      endif 
+      endif
 
       call QUIP_FoX_get_value(attributes, 'nfc3', value, status)
       if (status == 0) then
@@ -555,7 +555,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%nfc3_indep
       else
          parse_ip%nfc3_indep = parse_ip%nfc3
-      endif 
+      endif
 
       call QUIP_FoX_get_value(attributes, 'nfc4', value, status)
       if (status == 0) then
@@ -568,7 +568,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
          read (value, *) parse_ip%nfc4_indep
       else
          parse_ip%nfc4_indep = parse_ip%nfc4
-      endif 
+      endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       parse_ip%atomic_num = 0
@@ -630,9 +630,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'FC4_params') then
@@ -695,7 +695,7 @@ function parse_extra_calcs(args_str, extra_calcs_list) result(n_extra_calcs)
 
   character(len=STRING_LENGTH) :: extra_calcs_str
   type(Dictionary) :: params
-  
+
   n_extra_calcs = 0
   call initialise(params)
   call param_register(params, "extra_calcs", "", extra_calcs_str, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -720,7 +720,7 @@ end function parse_extra_calcs
 
 !   integer t,i ! ,mx
 !   character(len=999) line
-  
+
 !   integer, parameter :: iunit = 1111
 !   open(unit=iunit, file=file)
 
@@ -746,7 +746,7 @@ subroutine read_fcs(rank, nfc, file, igroup, iatomterm, ixyzterm, ampterm, fcs)
 
   integer t,i,r ! ,mx
   character(len=999) line
-  
+
   integer, parameter :: iunit = 1111
 
   open(unit=iunit, file=file)
@@ -789,7 +789,7 @@ function findatom_sc(this, tau, n, at)
   namelist/NMLDEBUG/tau,n,prim_cell,inv_prim_cell,tau_sc_idx,tau_prim,tau_frac,tau_frac_remap,prim_cell_pos,wrap,nwrap
 
 ! Common case: just see if it is in the array
-  if (all(n.ge.this%sc_min.and.n.le.this%sc_max)) then 
+  if (all(n.ge.this%sc_min.and.n.le.this%sc_max)) then
      findatom_sc = this%findatom_sc_array(tau,n(1),n(2),n(3))
      if (findatom_sc.ge.0) return
   end if
@@ -799,10 +799,10 @@ function findatom_sc(this, tau, n, at)
   ! the primitive cell
   prim_cell = this%ideal_struct%lattice
   inv_prim_cell = this%ideal_struct%g
-  
+
   tau_sc_idx = this%findatom_sc_array(tau,0,0,0)
   tau_prim = this%ideal_struct%pos(:,tau_sc_idx)
-  
+
   ! express the primitive cell we asked for as a fractional
   ! coordinates of the simulation box.
   tau_frac = matmul(this%inv_superlattice, matmul(prim_cell, n) + tau_prim)
@@ -811,14 +811,14 @@ function findatom_sc(this, tau, n, at)
   tau_frac_remap = modulo(tau_frac, 1.0_dp)
 
   prim_cell_pos = matmul(this%superlattice, tau_frac_remap) - tau_prim
-  
+
   ! find the offset of the primitive cell this location coresponds to
   wrap = matmul(inv_prim_cell, prim_cell_pos)
   if (any(abs(modulo(wrap+0.5_dp,1.0_dp)-0.5_dp).gt.1D-6)) then
      write (*,'(2(3F18.12,x))') modulo(wrap,1.0_dp), wrap
      call system_abort("Findatom_sc: got fractional box!")
   endif
-       
+
   nwrap = nint(wrap)
 
   findatom_sc = this%findatom_sc_array(tau,nwrap(1),nwrap(2),nwrap(3))
@@ -826,7 +826,7 @@ function findatom_sc(this, tau, n, at)
   ! express in terms of primitive cell coords
 
   if (findatom_sc < 0) then
-     write (*,nml=NMLDEBUG) 
+     write (*,nml=NMLDEBUG)
      call system_abort("Findatom_sc: requested atom tau=" // tau &
           // ", n=" // n // " does not exist in the supercell")
   end if

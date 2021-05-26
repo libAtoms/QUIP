@@ -246,25 +246,25 @@ program density_1d
        write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(xyzfilename), ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
        call read(cxyzfile, structure_in, frame=frame_count-1-last_file_frame_n, error=error)
        if (error == ERROR_NONE) then
-	 skip_frame = .false.
-	 if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
-	   if (get_value(structure_in%params,"Time",cur_time)) then
-	     if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
-		 (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
-	   else
-	     call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
-	   endif
-	 endif
-	 if (.not. skip_frame) then
-	   call new_entry(structure_ll, structure)
-	   call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
-	 else
-	   write (mainlog%unit,'(a,$)') " skip"
-	 endif
-	 frame_count = frame_count + decimation
+         skip_frame = .false.
+         if (min_time > 0.0_dp .or. max_time > 0.0_dp) then
+           if (get_value(structure_in%params,"Time",cur_time)) then
+             if ((min_time >= 0.0_dp .and. cur_time < min_time) .or. &
+                 (max_time >= 0.0_dp .and. cur_time > max_time)) skip_frame = .true.
+           else
+             call system_abort("ERROR: min_time="//min_time//" > 0 but Time field wasn't found in config " // frame_count)
+           endif
+         endif
+         if (.not. skip_frame) then
+           call new_entry(structure_ll, structure)
+           call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
+         else
+           write (mainlog%unit,'(a,$)') " skip"
+         endif
+         frame_count = frame_count + decimation
        else
-	 call clear_error(error)
-	 status = 1
+         call clear_error(error)
+         status = 1
        endif
      end do
      last_file_frame_n = frame_count - 1
@@ -297,36 +297,36 @@ program density_1d
 
         if (prop) call list_matching_prop(structure,atom_table,trim(prop_name),prop_val)
 
-	call wipe(distances)
+        call wipe(distances)
 
-	num_atoms = 0
+        num_atoms = 0
 
-	hist = 0.0_dp
-	do j = 1, structure%N
+        hist = 0.0_dp
+        do j = 1, structure%N
 
-	   !Count the atoms
-	   if (list) then
-	      if (find(atom_table,j)/=0) num_atoms = num_atoms + 1
-	   else
-	      if (structure%Z(j) == Zb) num_atoms = num_atoms + 1
-	   end if
+           !Count the atoms
+           if (list) then
+              if (find(atom_table,j)/=0) num_atoms = num_atoms + 1
+           else
+              if (structure%Z(j) == Zb) num_atoms = num_atoms + 1
+           end if
 
-	   !Do we have a "Mask" atom? Cycle if not
-	   if (list) then
-	      if (find(atom_table,j)==0) cycle
-	   else
-	      if (structure%Z(j) /= Zb) cycle
-	   end if
+           !Do we have a "Mask" atom? Cycle if not
+           if (list) then
+              if (find(atom_table,j)==0) cycle
+           else
+              if (structure%Z(j) /= Zb) cycle
+           end if
 
-	   d = distance_min_image(structure,j,(/0._dp,0._dp,0._dp/))
-	   if (d < l_cutoff+3.0*Gaussian_sigma) then
+           d = distance_min_image(structure,j,(/0._dp,0._dp,0._dp/))
+           if (d < l_cutoff+3.0*Gaussian_sigma) then
 #ifdef DEBUG
-	      call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
+              call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
 #endif
-	      !Add this distance to the list
-	      call accum_histogram(hist, d, 0.0_dp, l_cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
-	   end if
-	end do
+              !Add this distance to the list
+              call accum_histogram(hist, d, 0.0_dp, l_cutoff, num_bins, Gaussian_smoothing, Gaussian_sigma)
+           end if
+        end do
 
 
         frames_processed = frames_processed + 1
@@ -431,7 +431,7 @@ program density_1d
        !Try to read another frame
        structure_ll_entry => structure_ll_entry%next
        frame_count = frame_count + decimation
-  
+
     end do
 
     frame_count = frame_count - decimation

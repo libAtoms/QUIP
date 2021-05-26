@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X ScaLAPACK module 
+!X ScaLAPACK module
 !X
 !% Module wrapping ScaLAPACK routines
 !X
@@ -178,7 +178,7 @@ subroutine Matrix_ScaLAPACK_Info_Initialise(this, N_R, N_C, NB_R, NB_C, scalapac
     if (scalapack_obj%active) then
       this%ScaLAPACK_obj = scalapack_obj
       call init_matrix_desc(this%ScaLAPACK_obj, this%N_R, this%N_C, this%NB_R, this%NB_C, &
-	this%desc, this%l_N_R, this%l_N_C)
+        this%desc, this%l_N_R, this%l_N_C)
     endif
   else
     this%l_N_R = this%N_R
@@ -355,9 +355,9 @@ subroutine calc_n_proc_rows_cols(n_procs, n_proc_rows, n_proc_cols)
     n_proc_cols_t = n_procs/n_proc_rows_t
 
     if (n_proc_rows_t*n_proc_cols_t .eq. n_procs) then
-	n_proc_rows = n_proc_rows_t
-	n_proc_cols = n_proc_cols_t
-	exit
+        n_proc_rows = n_proc_rows_t
+        n_proc_cols = n_proc_cols_t
+        exit
     endif
   end do
 #else
@@ -593,26 +593,26 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonalise_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -698,26 +698,26 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -812,26 +812,26 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_gen_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-	  call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
-	  do i=1, this%N_R
-	      call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
-	  end do
+          call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
+          do i=1, this%N_R
+              call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
+          end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -927,26 +927,26 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_gen_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -1000,8 +1000,8 @@ subroutine ScaLAPACK_Matrix_d_print(this, data, file)
     do l_j=1, this%l_N_C
       call coords_local_to_global(this, l_i, l_j, g_i, g_j)
       lines((l_i-1)*this%l_N_C + l_j) = &
-	"ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
-	// " " // data(l_i,l_j)
+        "ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
+        // " " // data(l_i,l_j)
     end do
     end do
   else
@@ -1031,8 +1031,8 @@ subroutine ScaLAPACK_Matrix_z_print(this, data, file)
     do l_j=1, this%l_N_C
       call coords_local_to_global(this, l_i, l_j, g_i, g_j)
       lines((l_i-1)*this%l_N_C + l_j) = &
-	"ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
-	// " " // data(l_i,l_j)
+        "ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
+        // " " // data(l_i,l_j)
     end do
     end do
   else
@@ -1056,7 +1056,7 @@ subroutine ScaLAPACK_matrix_product_sub_ddd(c_scalapack, c_data, a_scalapack, a_
   real(dp), intent(in) :: b_data(:,:)
   logical, intent(in), optional :: a_transpose, b_transpose, a_conjugate, b_conjugate
 
-#ifdef SCALAPACK 
+#ifdef SCALAPACK
 
   logical a_transp, b_transp, a_conjg, b_conjg
   character a_op, b_op
@@ -1142,7 +1142,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_ddd(this_scalapack, this
   real(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   real(dp), intent(in) :: a_data(:,:)
-  real(dp), intent(in) :: diag(:) 
+  real(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j
@@ -1163,7 +1163,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_zzd(this_scalapack, this
   complex(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   complex(dp), intent(in) :: a_data(:,:)
-  real(dp), intent(in) :: diag(:) 
+  real(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j
@@ -1184,7 +1184,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_zzz(this_scalapack, this
   complex(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   complex(dp), intent(in) :: a_data(:,:)
-  complex(dp), intent(in) :: diag(:) 
+  complex(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j

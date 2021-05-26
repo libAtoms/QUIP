@@ -37,7 +37,7 @@ use fox_wxml
 
 implicit none
 
-contains 
+contains
 
 subroutine do_dftb_params_to_xml(fname)
   character(len=*), intent(in) :: fname
@@ -93,23 +93,23 @@ subroutine do_dftb_params_to_xml(fname)
   do ti=1, n_types
     select case(max_l(ti))
       case (1)
-	n_orbs(ti) = 1
-	n_orb_sets(ti) = 1
-	orb_set_type(ti,1) = ORB_S
+        n_orbs(ti) = 1
+        n_orb_sets(ti) = 1
+        orb_set_type(ti,1) = ORB_S
       case (2)
-	n_orbs(ti) = 4
-	n_orb_sets(ti) = 2
-	orb_set_type(ti,1) = ORB_S
-	orb_set_type(ti,2) = ORB_P
+        n_orbs(ti) = 4
+        n_orb_sets(ti) = 2
+        orb_set_type(ti,1) = ORB_S
+        orb_set_type(ti,2) = ORB_P
       case (3)
-	n_orbs(ti) = 9
-	n_orb_sets(ti) = 3
-	orb_set_type(ti,1) = ORB_S
-	orb_set_type(ti,2) = ORB_P
-	orb_set_type(ti,3) = ORB_D
+        n_orbs(ti) = 9
+        n_orb_sets(ti) = 3
+        orb_set_type(ti,1) = ORB_S
+        orb_set_type(ti,2) = ORB_P
+        orb_set_type(ti,3) = ORB_D
       case default
-	write (line, '("Confused by max_l ",2I4)') max_l(i), ti
-	call system_abort(line)
+        write (line, '("Confused by max_l ",2I4)') max_l(i), ti
+        call system_abort(line)
     end select
   end do
 
@@ -135,7 +135,7 @@ subroutine do_dftb_params_to_xml(fname)
     if (ti == tj) then
       read (20,*) self_fields
       do li=1, max_l(ti)
-	E(li,ti) = self_fields(4-li)
+        E(li,ti) = self_fields(4-li)
       end do
       E_spin(ti) = self_fields(4)
       U(ti) = self_fields(5)
@@ -176,41 +176,41 @@ subroutine do_dftb_params_to_xml(fname)
     endif
     do li=1, SK_npts(ti,tj)
       read (20, *) H_vals(li, SK_DDS, ti, tj), &
-		   H_vals(li, SK_DDP, ti, tj), &
-		   H_vals(li, SK_DDD, ti, tj), &
-		   H_vals(li, SK_PDS, ti, tj), &
-		   H_vals(li, SK_PDP, ti, tj), &
-		   H_vals(li, SK_PPS, ti, tj), &
-		   H_vals(li, SK_PPP, ti, tj), &
-		   H_vals(li, SK_SDS, ti, tj), &
-		   H_vals(li, SK_SPS, ti, tj), &
-		   H_vals(li, SK_SSS, ti, tj), &
+                   H_vals(li, SK_DDP, ti, tj), &
+                   H_vals(li, SK_DDD, ti, tj), &
+                   H_vals(li, SK_PDS, ti, tj), &
+                   H_vals(li, SK_PDP, ti, tj), &
+                   H_vals(li, SK_PPS, ti, tj), &
+                   H_vals(li, SK_PPP, ti, tj), &
+                   H_vals(li, SK_SDS, ti, tj), &
+                   H_vals(li, SK_SPS, ti, tj), &
+                   H_vals(li, SK_SSS, ti, tj), &
                    S_vals(li, SK_DDS, ti, tj), &
-		   S_vals(li, SK_DDP, ti, tj), &
-		   S_vals(li, SK_DDD, ti, tj), &
-		   S_vals(li, SK_PDS, ti, tj), &
-		   S_vals(li, SK_PDP, ti, tj), &
-		   S_vals(li, SK_PPS, ti, tj), &
-		   S_vals(li, SK_PPP, ti, tj), &
-		   S_vals(li, SK_SDS, ti, tj), &
-		   S_vals(li, SK_SPS, ti, tj), &
-		   S_vals(li, SK_SSS, ti, tj)
+                   S_vals(li, SK_DDP, ti, tj), &
+                   S_vals(li, SK_DDD, ti, tj), &
+                   S_vals(li, SK_PDS, ti, tj), &
+                   S_vals(li, SK_PDP, ti, tj), &
+                   S_vals(li, SK_PPS, ti, tj), &
+                   S_vals(li, SK_PPP, ti, tj), &
+                   S_vals(li, SK_SDS, ti, tj), &
+                   S_vals(li, SK_SPS, ti, tj), &
+                   S_vals(li, SK_SSS, ti, tj)
       SK_r(li,ti,tj) = (li-1)*SK_dr(ti,tj)
     end do
     H_vals(SK_npts(ti,tj)+1,1:10,ti,tj) = 0.0D0
     S_vals(SK_npts(ti,tj)+1,1:10,ti,tj) = 0.0D0
     SK_r(SK_npts(ti,tj)+1,ti,tj) = SK_npts(ti,tj)*SK_dr(ti,tj)
 
-    do while (line /= 'Spline') 
+    do while (line /= 'Spline')
       read (20,*) line
     end do
     read (20,*) line ! npts, maxr
     read (20,*) Vrep_Efkt(1:3,ti,tj)
     do li=1, Vrep_npts(ti,tj)
       if (li == Vrep_npts(ti,tj)) then
-	read(20,*) Vrep_r_in(li,1:2, ti,tj), Vrep_coeff(li,1:6,ti,tj)
+        read(20,*) Vrep_r_in(li,1:2, ti,tj), Vrep_coeff(li,1:6,ti,tj)
       else
-	read(20,*) Vrep_r_in(li,1:2, ti,tj), Vrep_coeff(li,1:4,ti,tj)
+        read(20,*) Vrep_r_in(li,1:2, ti,tj), Vrep_coeff(li,1:4,ti,tj)
       endif
     end do
   end do
@@ -288,12 +288,12 @@ implicit none
       call xml_AddAttribute(xf,"n_elecs", "" // n_elecs(i))
       call xml_AddAttribute(xf,"n_orb_sets", "" // n_orb_sets(i))
       call xml_NewElement(xf,"orb_set_type")
-	! call xml_AddArray(xf, orb_set_type(i,1:n_orb_sets(i)), '(i0,1x)')
-	call xml_AddCharacters(xf, "" //  orb_set_type(i,1:n_orb_sets(i)))
+        ! call xml_AddArray(xf, orb_set_type(i,1:n_orb_sets(i)), '(i0,1x)')
+        call xml_AddCharacters(xf, "" //  orb_set_type(i,1:n_orb_sets(i)))
       call xml_EndElement(xf,"orb_set_type")
       call xml_NewElement(xf,"E")
-	! call xml_AddArray(xf, E(1:n_orb_sets(i),i), '(f30.20,1x)')
-	call xml_AddCharacters(xf, "" // E(1:n_orb_sets(i),i))
+        ! call xml_AddArray(xf, E(1:n_orb_sets(i),i), '(f30.20,1x)')
+        call xml_AddCharacters(xf, "" // E(1:n_orb_sets(i),i))
       call xml_EndElement(xf,"E")
     call xml_EndElement(xf,"per_type_data")
   end do
@@ -310,56 +310,56 @@ print *, "doing per pair data ", i, j
       call xml_AddAttribute(xf,"Vrep_npts", "" // Vrep_npts(i,j))
 print *, "done attributes"
       call xml_NewElement(xf,"H_spline")
-	do k=1, SK_npts(i,j)
-	  call xml_NewElement(xf,"point")
-	    mainlog%default_real_precision=3
-	    call xml_AddAttribute(xf,"r", "" // SK_r(k,i,j))
-	    ! call xml_AddArray(xf,H_vals(k,:,i,j), '(f20.10,1x)')
-	    mainlog%default_real_precision=8
-	    n_non_zero = 1
-	    do l=size(H_vals,2), 1, -1
-	      if (H_vals(k,l,i,j) /= 0.0) then
-		n_non_zero = l
-		exit
-	      endif
-	    end do
-	    call xml_AddCharacters(xf, "" // H_vals(k,1:n_non_zero,i,j))
-	    mainlog%default_real_precision=16
-	  call xml_EndElement(xf,"point")
-	end do
+        do k=1, SK_npts(i,j)
+          call xml_NewElement(xf,"point")
+            mainlog%default_real_precision=3
+            call xml_AddAttribute(xf,"r", "" // SK_r(k,i,j))
+            ! call xml_AddArray(xf,H_vals(k,:,i,j), '(f20.10,1x)')
+            mainlog%default_real_precision=8
+            n_non_zero = 1
+            do l=size(H_vals,2), 1, -1
+              if (H_vals(k,l,i,j) /= 0.0) then
+                n_non_zero = l
+                exit
+              endif
+            end do
+            call xml_AddCharacters(xf, "" // H_vals(k,1:n_non_zero,i,j))
+            mainlog%default_real_precision=16
+          call xml_EndElement(xf,"point")
+        end do
       call xml_EndElement(xf,"H_spline")
 print *, "done H_spline"
       call xml_NewElement(xf,"S_spline")
-	do k=1, SK_npts(i,j)
-	  call xml_NewElement(xf,"point")
-	    mainlog%default_real_precision=3
-	    call xml_AddAttribute(xf,"r","" // SK_r(k,i,j))
-	    mainlog%default_real_precision=8
-	    ! call xml_AddArray(xf,S_vals(k,:,i,j), '(f20.10,1x)')
-	    n_non_zero = 1
-	    do l=size(S_vals,2), 1, -1
-	      if (S_vals(k,l,i,j) /= 0.0) then
-		n_non_zero = l
-		exit
-	      endif
-	    end do
-	    call xml_AddCharacters(xf, "" // S_vals(k,1:n_non_zero,i,j))
-	    mainlog%default_real_precision=16
-	  call xml_EndElement(xf,"point")
-	end do
+        do k=1, SK_npts(i,j)
+          call xml_NewElement(xf,"point")
+            mainlog%default_real_precision=3
+            call xml_AddAttribute(xf,"r","" // SK_r(k,i,j))
+            mainlog%default_real_precision=8
+            ! call xml_AddArray(xf,S_vals(k,:,i,j), '(f20.10,1x)')
+            n_non_zero = 1
+            do l=size(S_vals,2), 1, -1
+              if (S_vals(k,l,i,j) /= 0.0) then
+                n_non_zero = l
+                exit
+              endif
+            end do
+            call xml_AddCharacters(xf, "" // S_vals(k,1:n_non_zero,i,j))
+            mainlog%default_real_precision=16
+          call xml_EndElement(xf,"point")
+        end do
       call xml_EndElement(xf,"S_spline")
 print *, "done S_spline"
       call xml_NewElement(xf,"Vrep_spline")
-	do k=1, Vrep_npts(i,j)
-	  call xml_NewElement(xf,"point")
-	    mainlog%default_real_precision=3
-	    call xml_AddAttribute(xf,"r", "" // Vrep_r(k,i,j))
-	    mainlog%default_real_precision=8
-	    ! call xml_AddArray(xf,Vrep_vals(k:k,i,j), '(f20.10,1x)')
-	    call xml_AddCharacters(xf, "" // Vrep_vals(k:k,i,j))
-	    mainlog%default_real_precision=16
-	  call xml_EndElement(xf,"point")
-	end do
+        do k=1, Vrep_npts(i,j)
+          call xml_NewElement(xf,"point")
+            mainlog%default_real_precision=3
+            call xml_AddAttribute(xf,"r", "" // Vrep_r(k,i,j))
+            mainlog%default_real_precision=8
+            ! call xml_AddArray(xf,Vrep_vals(k:k,i,j), '(f20.10,1x)')
+            call xml_AddCharacters(xf, "" // Vrep_vals(k:k,i,j))
+            mainlog%default_real_precision=16
+          call xml_EndElement(xf,"point")
+        end do
       call xml_EndElement(xf,"Vrep_spline")
 print *, "done Vrep_spline"
     call xml_EndElement(xf,"per_pair_data")

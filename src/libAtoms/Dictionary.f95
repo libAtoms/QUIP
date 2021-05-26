@@ -361,9 +361,9 @@ contains
     call initialise(es)
     do i=1,this%N
       if (i < this%N) then
-	call concat(es, string(this%keys(i))//":")
+        call concat(es, string(this%keys(i))//":")
       else
-	call concat(es, string(this%keys(i)))
+        call concat(es, string(this%keys(i)))
       endif
     end do
     call print(es, verbosity=verbosity, file=file)
@@ -2595,8 +2595,8 @@ contains
 #ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
        allocate(t_keys(size(this%keys)))
        do i=1,size(this%entries)
-	  t_entries(i) = this%entries(i)
-	  t_keys(i) = this%keys(i)
+          t_entries(i) = this%entries(i)
+          t_keys(i) = this%keys(i)
        end do
 #else
        t_entries = this%entries
@@ -2613,8 +2613,8 @@ contains
 
 #ifdef ALLOCATABLE_COMPONENT_MANUAL_COPY
        do i=1, size(t_entries)
-	  this%entries(i) = t_entries(i)
-	  this%keys(i) = t_keys(i)
+          this%entries(i) = t_entries(i)
+          this%keys(i) = t_keys(i)
        end do
 #else
        this%entries(1:this%N) = t_entries(1:this%N)
@@ -2725,47 +2725,47 @@ contains
           RAISE_ERROR('dictionary_subset_es: key '//string(keys(j))//' not in dictionary', error)
        end if
        if (my_out_no_initialise) then
-	  io = lookup_entry_i(out, string(keys(j)), case_sensitive)
-	  if (io >= 1) then
-	     if (this%entries(i)%type /= out%entries(io)%type) then
-		RAISE_ERROR('entry type for key '//string(keys(i))//' does not match in this, out', error)
-	     endif
-	     select case(this%entries(i)%type)
-	     case(T_INTEGER_A)
-		if (any(shape(this%entries(i)%i_a) /= shape(out%entries(io)%i_a))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_REAL_A)
-		if (any(shape(this%entries(i)%r_a) /= shape(out%entries(io)%r_a))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_COMPLEX_A)
-		if (any(shape(this%entries(i)%c_a) /= shape(out%entries(io)%c_a))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_LOGICAL_A)
-		if (any(shape(this%entries(i)%l_a) /= shape(out%entries(io)%l_a))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_CHAR_A)
-		if (any(shape(this%entries(i)%s_a) /= shape(out%entries(io)%s_a))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_INTEGER_A2)
-		if (any(shape(this%entries(i)%i_a2) /= shape(out%entries(io)%i_a2))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_REAL_A2)
-		if (any(shape(this%entries(i)%r_a2) /= shape(out%entries(io)%r_a2))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     case(T_DATA)
-		if (any(shape(this%entries(i)%d) /= shape(out%entries(io)%d))) then
-		   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
-		endif
-	     end select
-	     call remove_entry(out, io)
-	  endif ! io >= 1
+          io = lookup_entry_i(out, string(keys(j)), case_sensitive)
+          if (io >= 1) then
+             if (this%entries(i)%type /= out%entries(io)%type) then
+                RAISE_ERROR('entry type for key '//string(keys(i))//' does not match in this, out', error)
+             endif
+             select case(this%entries(i)%type)
+             case(T_INTEGER_A)
+                if (any(shape(this%entries(i)%i_a) /= shape(out%entries(io)%i_a))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_REAL_A)
+                if (any(shape(this%entries(i)%r_a) /= shape(out%entries(io)%r_a))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_COMPLEX_A)
+                if (any(shape(this%entries(i)%c_a) /= shape(out%entries(io)%c_a))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_LOGICAL_A)
+                if (any(shape(this%entries(i)%l_a) /= shape(out%entries(io)%l_a))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_CHAR_A)
+                if (any(shape(this%entries(i)%s_a) /= shape(out%entries(io)%s_a))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_INTEGER_A2)
+                if (any(shape(this%entries(i)%i_a2) /= shape(out%entries(io)%i_a2))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_REAL_A2)
+                if (any(shape(this%entries(i)%r_a2) /= shape(out%entries(io)%r_a2))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             case(T_DATA)
+                if (any(shape(this%entries(i)%d) /= shape(out%entries(io)%d))) then
+                   RAISE_ERROR('entry size for key '//string(keys(i))//' does not match in this, out', error)
+                endif
+             end select
+             call remove_entry(out, io)
+          endif ! io >= 1
        endif ! my_out_no_initialise
 
        select case(this%entries(i)%type)

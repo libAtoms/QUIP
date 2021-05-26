@@ -65,7 +65,7 @@ public :: TBModel_NRL_TB
 type TBModel_NRL_TB
   integer :: n_types = 0, n_mag = 0
   logical :: is_orthogonal = .true., is_magnetic = .false., has_pair_repulsion = .false., &
-	     overlap_zero_limit = .true., force_harrison_signs = .false., has_short_ranged_splines = .false.
+             overlap_zero_limit = .true., force_harrison_signs = .false., has_short_ranged_splines = .false.
   character(len=STRING_LENGTH) label
 
   real(dp) :: cutoff = 0.0_dp
@@ -209,9 +209,9 @@ subroutine TBM_characters_handler(in)
 end subroutine TBM_characters_handler
 
 subroutine TBM_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -358,7 +358,7 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     parse_tbm%type_of_atomic_num(:) = 0
     do ii=1, parse_tbm%n_types
       if (parse_tbm%atomic_num(ii) > 0) &
-	parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ii)) = ii
+        parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ii)) = ii
     end do
 
     parse_cur_type_i = ti
@@ -411,9 +411,9 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
 end subroutine TBM_startElement_handler
 
 subroutine TBM_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   character(len=10240) :: val
   real(dp) :: abcd_v(32), coeff_v(160)
@@ -428,86 +428,86 @@ subroutine TBM_endElement_handler(URI, localname, name)
     elseif (name == 'abcd') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	   read (val, *) abcd_v(1:32)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
-	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(25:28)
-	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(29:32)
-	else ! no f orbitals
-	   read (val, *) abcd_v(1:24)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
-	endif
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+           read (val, *) abcd_v(1:32)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
+           parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(25:28)
+           parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(29:32)
+        else ! no f orbitals
+           read (val, *) abcd_v(1:24)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(5:8)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(13:16)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(17:20)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,2) = abcd_v(21:24)
+        endif
       else
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	   read (val, *) abcd_v(1:16)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
-	   parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(13:16)
-	else ! no f orbitals
-	   read (val, *) abcd_v(1:12)
-	   parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
-	   parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
-	   parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
-	endif
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+           read (val, *) abcd_v(1:16)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+           parse_tbm%abcd(1:4,4,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(13:16)
+        else ! no f orbitals
+           read (val, *) abcd_v(1:12)
+           parse_tbm%abcd(1:4,1,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(1:4)
+           parse_tbm%abcd(1:4,2,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(5:8)
+           parse_tbm%abcd(1:4,3,parse_cur_type_i,parse_cur_type_j,1) = abcd_v(9:12)
+        endif
       endif
     elseif (name == 'H_coeff') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	  read (val, *) coeff_v(1:160)
-	else ! no f orbitals
-	  read (val, *) coeff_v(1:80)
-	  coeff_v(81:160) = 0.0_dp
-	endif
-	do k=1, 20
-	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
-	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
-	end do
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+          read (val, *) coeff_v(1:160)
+        else ! no f orbitals
+          read (val, *) coeff_v(1:80)
+          coeff_v(81:160) = 0.0_dp
+        endif
+        do k=1, 20
+          parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
+          parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
+        end do
       else
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	  read (val, *) coeff_v(1:80)
-	else ! no f orbitals
-	  read (val, *) coeff_v(1:40)
-	  coeff_v(41:80) = 0.0_dp
-	endif
-	do k=1, 20
-	  parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
-	end do
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+          read (val, *) coeff_v(1:80)
+        else ! no f orbitals
+          read (val, *) coeff_v(1:40)
+          coeff_v(41:80) = 0.0_dp
+        endif
+        do k=1, 20
+          parse_tbm%H_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
+        end do
       endif
     elseif (name == 'S_coeff') then
       val = string(parse_cur_data)
       if (parse_tbm%is_magnetic) then
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	  read (val, *) coeff_v(1:160)
-	else ! no f orbitals
-	  read (val, *) coeff_v(1:80)
-	  coeff_v(81:160) = 0.0_dp
-	endif
-	do k=1, 20
-	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
-	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
-	end do
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+          read (val, *) coeff_v(1:160)
+        else ! no f orbitals
+          read (val, *) coeff_v(1:80)
+          coeff_v(81:160) = 0.0_dp
+        endif
+        do k=1, 20
+          parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(8*(k-1)+1:8*(k-1)+4)
+          parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,2) = coeff_v(8*(k-1)+5:8*(k-1)+8)
+        end do
       else
-	if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
-	  read (val, *) coeff_v(1:80)
-	else ! no f orbitals
-	  read (val, *) coeff_v(1:40)
-	  coeff_v(41:80) = 0.0_dp
-	endif
-	do k=1, 20
-	  parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
-	end do
+        if (parse_tbm%n_orb_sets(parse_cur_type_i) == 4) then ! f orbitals
+          read (val, *) coeff_v(1:80)
+        else ! no f orbitals
+          read (val, *) coeff_v(1:40)
+          coeff_v(41:80) = 0.0_dp
+        endif
+        do k=1, 20
+          parse_tbm%S_coeff(1:4,k,parse_cur_type_i,parse_cur_type_j,1) = coeff_v(4*(k-1)+1:4*(k-1)+4)
+        end do
       endif
     endif
   endif
@@ -620,30 +620,30 @@ subroutine TBModel_NRL_TB_Print(this,file)
       call Print ("TBModel_NRL_TB: types " //  i // " " //  j, file=file)
       call Print ('TBModel_NRL_TB: r_cut screen_l ' // this%r_cut(i,j) // " " //  this%screen_l(i,j), file=file)
       if (this%has_pair_repulsion) then
-	call Print ('TBModel_NRL_TB: pair_rep inner outer ' // this%pair_rep_inner(i,j) // " " // this%pair_rep_outer(i,j), file=file)
+        call Print ('TBModel_NRL_TB: pair_rep inner outer ' // this%pair_rep_inner(i,j) // " " // this%pair_rep_outer(i,j), file=file)
       endif
       if (this%has_short_ranged_splines) then
         call Print ('TBModel_NRL_TB: r_min_spline sigma_spline ' // this%r_min_spline(i,j) // " " // this%sigma_spline(i,j), file=file)
       endif
       do i_mag=1, this%n_mag
-	if (this%is_magnetic .and. i_mag == 1) call print("TBModel_NRL_TB: spin up")
-	if (this%is_magnetic .and. i_mag == 2) call print("TBModel_NRL_TB: spin down")
-	if (i == j) then
-	  call Print ('TBModel_NRL_TB: lambda_sq ' // this%lambda_sq(i,i_mag), file=file)
-	endif
-	call Print ('TBModel_NRL_TB: a_s b_s c_s d_s ' // this%abcd(ABCD_A:ABCD_D,SPDF_S,i,j,i_mag), file=file)
-	call Print ('TBModel_NRL_TB: a_p b_p c_p d_p ' // this%abcd(ABCD_A:ABCD_D,SPDF_P,i,j,i_mag), file=file)
-	call Print ('TBModel_NRL_TB: a_d b_d c_d d_d ' // this%abcd(ABCD_A:ABCD_D,SPDF_D,i,j,i_mag), file=file)
-	if (max_spdf >= SPDF_F) &
-	   call Print ('TBModel_NRL_TB: a_f b_f c_f d_f ' // this%abcd(ABCD_A:ABCD_D,SPDF_F,i,j,i_mag), file=file)
+        if (this%is_magnetic .and. i_mag == 1) call print("TBModel_NRL_TB: spin up")
+        if (this%is_magnetic .and. i_mag == 2) call print("TBModel_NRL_TB: spin down")
+        if (i == j) then
+          call Print ('TBModel_NRL_TB: lambda_sq ' // this%lambda_sq(i,i_mag), file=file)
+        endif
+        call Print ('TBModel_NRL_TB: a_s b_s c_s d_s ' // this%abcd(ABCD_A:ABCD_D,SPDF_S,i,j,i_mag), file=file)
+        call Print ('TBModel_NRL_TB: a_p b_p c_p d_p ' // this%abcd(ABCD_A:ABCD_D,SPDF_P,i,j,i_mag), file=file)
+        call Print ('TBModel_NRL_TB: a_d b_d c_d d_d ' // this%abcd(ABCD_A:ABCD_D,SPDF_D,i,j,i_mag), file=file)
+        if (max_spdf >= SPDF_F) &
+           call Print ('TBModel_NRL_TB: a_f b_f c_f d_f ' // this%abcd(ABCD_A:ABCD_D,SPDF_F,i,j,i_mag), file=file)
 
-	do ii=1, n_sk_use
-	  call Print ('TBModel_NRL_TB: H e f fb g_sq ' // ii // " " //  this%H_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
-	end do
+        do ii=1, n_sk_use
+          call Print ('TBModel_NRL_TB: H e f fb g_sq ' // ii // " " //  this%H_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
+        end do
 
-	do ii=1, n_sk_use
-	  call Print ('TBModel_NRL_TB: S e f fb g_sq ' // ii // " " //  this%S_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
-	end do
+        do ii=1, n_sk_use
+          call Print ('TBModel_NRL_TB: S e f fb g_sq ' // ii // " " //  this%S_coeff(MC_E:MC_G_SQ,ii,i,j,i_mag), file=file)
+        end do
       end do ! i_mag
 
     end do
@@ -734,20 +734,20 @@ subroutine TBModel_NRL_TB_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_
       SK_frad_H = 0.0_dp
       SK_frad_S = 0.0_dp
       call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	SK_frad_H, SK_frad_S, i_mag)
+        SK_frad_H, SK_frad_S, i_mag)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
-	b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	  is, js, SK_frad_H)
+        b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+          is, js, SK_frad_H)
 
-	if (this%is_orthogonal) then
-	  b_S(i,j) = 0.0_dp
-	else
-	  b_S(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	    is, js, SK_frad_S)
-	endif
+        if (this%is_orthogonal) then
+          b_S(i,j) = 0.0_dp
+        else
+          b_S(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+            is, js, SK_frad_S)
+        endif
 
-	j = j + 1
+        j = j + 1
       end do
       end do
       i = i + 1
@@ -772,8 +772,8 @@ subroutine TBModel_NRL_TB_get_dHS_masks(this, at, at_ind, d_mask, od_mask)
       d_mask = .false.
       d_mask(at_ind) = .true.
       do ji=1, n_neighbours(at, at_ind)
-	j = neighbour(at, at_ind, ji)
-	d_mask(j) = .true.
+        j = neighbour(at, at_ind, ji)
+        d_mask(j) = .true.
       end do
     endif
   endif
@@ -833,7 +833,7 @@ function TBModel_NRL_TB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
 
   b_dH = 0.0_dp
   b_dS = 0.0_dp
-  
+
   if (dv_mag .feq. 0.0_dp) then ! on-site
     i = 1
     do i_set = 1, this%n_orb_sets(ti)
@@ -854,31 +854,31 @@ function TBModel_NRL_TB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
       j = 1
       do j_set=1, this%n_orb_sets(tj)
       call radial_functions(this, ti, tj, dv_mag, &
-	this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	SK_frad_H, SK_frad_S, i_mag)
+        this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+        SK_frad_H, SK_frad_S, i_mag)
       call dradial_functions(this, ti, tj, dv_mag, &
-	this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	SK_dfrad_H, SK_dfrad_S, i_mag)
+        this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+        SK_dfrad_H, SK_dfrad_S, i_mag)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
-	if (at_ind > 0) then
-	  virial_outerprod_fac = 1.0_dp
-	else
-	  virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
-	endif
-	b_dH(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
-	  this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	  is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
+        if (at_ind > 0) then
+          virial_outerprod_fac = 1.0_dp
+        else
+          virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
+        endif
+        b_dH(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
+          this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+          is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
 
-	if (this%is_orthogonal) then
-	  b_dS(i,j,:) = 0.0_dp
-	else
-	  b_dS(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
-	    this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	    is, js, SK_frad_S, SK_dfrad_S)*virial_outerprod_fac
-	endif
+        if (this%is_orthogonal) then
+          b_dS(i,j,:) = 0.0_dp
+        else
+          b_dS(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
+            this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+            is, js, SK_frad_S, SK_dfrad_S)*virial_outerprod_fac
+        endif
 
-	j = j + 1
+        j = j + 1
       end do
       end do
       i = i + 1
@@ -888,7 +888,7 @@ function TBModel_NRL_TB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
     if (at_ind == at_j) then
       b_dH = -b_dH
       if (.not. this%is_orthogonal) then
-	b_dS = -b_dS
+        b_dS = -b_dS
       endif
     endif
 
@@ -1284,8 +1284,8 @@ recursive function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag) result(
 
   u_i_mag = optional_default(1, i_mag)
 
-  SKd = calc_SK_poly_deriv(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist) 
-  SK = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist) 
+  SKd = calc_SK_poly_deriv(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist)
+  SK = calc_SK_poly(this%H_coeff(1:4,SK_type, ti, tj,u_i_mag),  dist)
   co = NRLTB_cutoff_function(this,  dist, ti, tj)
   cod = NRLTB_cutoff_function_d(this,  dist, ti, tj)
 
@@ -1298,7 +1298,7 @@ recursive function calc_SK_coeff_H_d(this, SK_type, ti, tj, dist, i_mag) result(
       calc_SK_coeff_H_d_result = 0.0_dp
     else
       H_0 = calc_SK_coeff_H(this, SK_type, ti, tj, R_min, i_mag)
-      H_0_d = calc_SK_coeff_H_d(this, SK_type, ti, tj, R_min, i_mag) 
+      H_0_d = calc_SK_coeff_H_d(this, SK_type, ti, tj, R_min, i_mag)
       H_0_dd = calc_SK_coeff_H_dd(this, SK_type, ti, tj, R_min, i_mag)
 
       calc_SK_coeff_H_d_result = short_ranged_spline_d(H_0, H_0_d, H_0_dd, sigma, dist-R_min+sigma)
@@ -1425,7 +1425,7 @@ recursive function calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, dist, ti_
       calc_SK_coeff_S_d_zero_limit_result = 0.0_dp
     else
       S_0 = calc_SK_coeff_S_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
-      S_0_d = calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag) 
+      S_0_d = calc_SK_coeff_S_d_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
       S_0_dd = calc_SK_coeff_S_dd_zero_limit(this, SK_type, ti, tj, R_min, ti_eq_tj, orb_ti_eq_orb_tj, i_mag)
       calc_SK_coeff_S_d_zero_limit_result = short_ranged_spline_d(S_0, S_0_d, S_0_dd, sigma, dist-R_min+sigma)
     endif
@@ -1485,7 +1485,7 @@ function calc_SK_poly(coeff, dist)
   real(dp), intent(in) :: dist
   real(dp) :: calc_SK_poly
 
-  calc_SK_poly = (coeff(MC_E) + dist*(coeff(MC_F) + coeff(MC_FB)*dist))*exp(-coeff(MC_G_SQ)*dist) 
+  calc_SK_poly = (coeff(MC_E) + dist*(coeff(MC_F) + coeff(MC_FB)*dist))*exp(-coeff(MC_G_SQ)*dist)
 end function calc_SK_poly
 
 function calc_SK_poly_deriv(coeff, dist)
@@ -1690,11 +1690,11 @@ function donsite_function(this, at, at_i, orb_set_type, at_ind, i_mag)
   donsite_function = 0.0_dp
   do tj=1, this%n_types
     donsite_function(1) = donsite_function(1) + donsite_poly(this%abcd(1:4,orb_set_type,tj,ti,u_i_mag), &
-						     density(tj), density_d(tj,1))
+                                                     density(tj), density_d(tj,1))
     donsite_function(2) = donsite_function(2) + donsite_poly(this%abcd(1:4,orb_set_type,tj,ti,u_i_mag), &
-						     density(tj), density_d(tj,2))
+                                                     density(tj), density_d(tj,2))
     donsite_function(3) = donsite_function(3) + donsite_poly(this%abcd(1:4,orb_set_type,tj,ti,u_i_mag), &
-						     density(tj), density_d(tj,3))
+                                                     density(tj), density_d(tj,3))
   end do
 
 end function donsite_function
@@ -1741,7 +1741,7 @@ function short_ranged_spline_d(H_0, H_0_d, H_0_dd, sigma, u)
 
   short_ranged_spline_d = 3.0_dp*(sigma*H_0_d - 1.0_dp/3.0_dp*sigma**2*H_0_dd)*u**2/sigma**3 + &
     4.0_dp*(-0.5_dp*sigma*H_0_d + 0.25_dp*sigma**2*H_0_dd)*u**3/sigma**4
-  
+
 
 end function short_ranged_spline_d
 
@@ -1848,7 +1848,7 @@ function NRLTB_cutoff_func_smooth(this, r, ti, tj)
   R_MAX = this%r_cut(ti,tj)
   R_MIN = R_MAX - abs(this%screen_l(ti,tj))
 
-  if (r .lt. R_MIN) then 
+  if (r .lt. R_MIN) then
     NRLTB_cutoff_func_smooth = 1.0_dp
   else if (r .gt. R_MAX) then
     NRLTB_cutoff_func_smooth = 0.0_dp
@@ -1878,7 +1878,7 @@ function NRLTB_cutoff_func_smooth_d(this, r, ti, tj)
   R_MAX = this%r_cut(ti,tj)
   R_MIN = R_MAX - abs(this%screen_l(ti,tj))
 
-  if (r .lt. R_MIN) then 
+  if (r .lt. R_MIN) then
     NRLTB_cutoff_func_smooth_d = 0.0_dp
   else if (r .gt. R_MAX) then
     NRLTB_cutoff_func_smooth_d = 0.0_dp

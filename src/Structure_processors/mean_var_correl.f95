@@ -56,19 +56,19 @@ subroutine calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, cor
       allocate(data_correl(min(n_bins, correlation_max_lag+1), n_data))
       data_correl = 0.0_dp
       if (correlation_subtract_mean) then
-	do i_lag=0, min(n_bins-1, correlation_max_lag)
-	  do i=1, n_bins-i_lag
-	    data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:)-data_mean(:))*(data(i+i_lag,:)-data_mean(:))
-	  end do
-	  data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
-	end do
+        do i_lag=0, min(n_bins-1, correlation_max_lag)
+          do i=1, n_bins-i_lag
+            data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:)-data_mean(:))*(data(i+i_lag,:)-data_mean(:))
+          end do
+          data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
+        end do
       else
-	do i_lag=0, min(n_bins-1, correlation_max_lag)
-	  do i=1, n_bins-i_lag
-	    data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:))*(data(i+i_lag,:))
-	  end do
-	  data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
-	end do
+        do i_lag=0, min(n_bins-1, correlation_max_lag)
+          do i=1, n_bins-i_lag
+            data_correl(i_lag+1, :) = data_correl(i_lag+1, :) + (data(i,:))*(data(i+i_lag,:))
+          end do
+          data_correl(i_lag+1, :) = data_correl(i_lag+1, :) / real(n_bins-i_lag, dp)
+        end do
       endif
     else ! over bins false
       allocate(data_mean(size(data,1)))
@@ -76,19 +76,19 @@ subroutine calc_correl(data, n_bins, n_data, over_bins, correlation_max_lag, cor
       allocate(data_correl(n_bins, min(correlation_max_lag+1,n_data)))
       data_correl = 0.0_dp
       if (correlation_subtract_mean) then
-	do i_lag=0, min(n_data-1, correlation_max_lag)
-	  do i=1, n_data-i_lag
-	    data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i)-data_mean(:))*(data(:,i+i_lag)-data_mean(:))
-	  end do
-	  data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
-	end do
+        do i_lag=0, min(n_data-1, correlation_max_lag)
+          do i=1, n_data-i_lag
+            data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i)-data_mean(:))*(data(:,i+i_lag)-data_mean(:))
+          end do
+          data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
+        end do
       else
-	do i_lag=0, min(n_data-1, correlation_max_lag)
-	  do i=1, n_data-i_lag
-	    data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i))*(data(:,i+i_lag))
-	  end do
-	  data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
-	end do
+        do i_lag=0, min(n_data-1, correlation_max_lag)
+          do i=1, n_data-i_lag
+            data_correl(:, i_lag+1) = data_correl(:, i_lag+1) + (data(:,i))*(data(:,i+i_lag))
+          end do
+          data_correl(:, i_lag+1) = data_correl(:, i_lag+1) / real(n_data-i_lag, dp)
+        end do
       endif
     endif
     deallocate(data_mean)
@@ -107,28 +107,28 @@ subroutine calc_correlation_var_effective_N(data_correl, over_bins, correlation_
    if (over_bins) then
      if (correlation_var_effective_N_long_lag+1 < size(data_correl,1)) then
        do i=1, size(data_correl,2)
-	 correl_0 = data_correl(1, i)
-	 correl_mean = sum(data_correl(correlation_var_effective_N_long_lag+1:,i)) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp)
-	 correl_std_dev = sqrt( sum((data_correl(correlation_var_effective_N_long_lag+1:,i)-correl_mean)**2) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp) )
-	 if (correl_std_dev > 1.0e-8_dp) then
-	   effective_N(i) = (correl_0/correl_std_dev)**2
-	 else
-	   effective_N(i) = -1
-	 endif
+         correl_0 = data_correl(1, i)
+         correl_mean = sum(data_correl(correlation_var_effective_N_long_lag+1:,i)) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp)
+         correl_std_dev = sqrt( sum((data_correl(correlation_var_effective_N_long_lag+1:,i)-correl_mean)**2) / real(size(data_correl,1)-correlation_var_effective_N_long_lag, dp) )
+         if (correl_std_dev > 1.0e-8_dp) then
+           effective_N(i) = (correl_0/correl_std_dev)**2
+         else
+           effective_N(i) = -1
+         endif
        end do
      endif ! long_lag short enough
    else ! over_bins false
      if (correlation_var_effective_N_long_lag+1 < size(data_correl,2)) then
        do i=1, size(data_correl,1)
-	 correl_0 = data_correl(i, 1)
-	 correl_mean = sum(data_correl(i,correlation_var_effective_N_long_lag+1:)) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp)
-	 correl_std_dev = sqrt( sum((data_correl(i,correlation_var_effective_N_long_lag+1:)-correl_mean)**2) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp) )
-	 if (correl_std_dev > 1.0e-8_dp) then
-	   effective_N(i) = (correl_0/correl_std_dev)**2
-	 else
-	   effective_N(i) = -1
-	 endif
-	 call print(" i " // i // " correl_0 " // correl_0 // " mean " // correl_mean // " std_dev " // correl_std_dev // " eff_N " // effective_N(i), verbosity=PRINT_VERBOSE)
+         correl_0 = data_correl(i, 1)
+         correl_mean = sum(data_correl(i,correlation_var_effective_N_long_lag+1:)) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp)
+         correl_std_dev = sqrt( sum((data_correl(i,correlation_var_effective_N_long_lag+1:)-correl_mean)**2) / real(size(data_correl,2)-correlation_var_effective_N_long_lag, dp) )
+         if (correl_std_dev > 1.0e-8_dp) then
+           effective_N(i) = (correl_0/correl_std_dev)**2
+         else
+           effective_N(i) = -1
+         endif
+         call print(" i " // i // " correl_0 " // correl_0 // " mean " // correl_mean // " std_dev " // correl_std_dev // " eff_N " // effective_N(i), verbosity=PRINT_VERBOSE)
        end do
      endif ! long_lag short enough
    endif  ! over_bins
@@ -181,7 +181,7 @@ function calc_c_hat(data, k) result(c_hat)
 
    c_hat = ( cross_covar/N_minus_k - sum_0*sum_k/N_minus_k**2 ) / &
            ( sqrt(sum_sq_0 - (sum_0**2)/N_minus_k)* &
-	     sqrt(sum_sq_k - (sum_k**2)/N_minus_k) / (N_minus_k-1.0_dp) )
+             sqrt(sum_sq_k - (sum_k**2)/N_minus_k) / (N_minus_k-1.0_dp) )
 end function
 
 ! effective N_ind samples from summed ac, a la Kerl
@@ -201,8 +201,8 @@ subroutine calc_sliding_window_effective_N(data, over_bins, max_k, effective_N)
    if (over_bins) then
     do i=1, size(data,2)
       do k=1, max_k
-	 c_hat(k) = calc_c_hat(data(:,i),k)
-	 call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
+         c_hat(k) = calc_c_hat(data(:,i),k)
+         call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
       end do
       two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
       effective_N(i) = real(size(data,1),dp)/two_tau_int
@@ -211,8 +211,8 @@ subroutine calc_sliding_window_effective_N(data, over_bins, max_k, effective_N)
    else ! over_bins false
     do i=1, size(data,1)
       do k=1, max_k
-	 c_hat(k) = calc_c_hat(data(i,:),k)
-	 call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
+         c_hat(k) = calc_c_hat(data(i,:),k)
+         call print("c_hat " // k // " " // c_hat(k)//" "//(1.0_dp+2.0_dp*sum(c_hat(1:k))), verbosity=PRINT_VERBOSE)
       end do
       two_tau_int = 1.0_dp + 2.0_dp*sum(c_hat)
       effective_N(i) = real(size(data,2),dp)/two_tau_int
@@ -235,53 +235,53 @@ subroutine calc_binning_effective_N(data, over_bins, effective_N)
 
    if (over_bins) then
       do i=1, size(data,2)
-	 N = size(data,1)
-	 err_est=0.0_dp
-	 best_err_est = -1.0_dp
-	 bin_size_d = 1
-	 do while (bin_size_d > 0 .and. bin_size_d <= N/5)
-	    bin_size = bin_size_d
+         N = size(data,1)
+         err_est=0.0_dp
+         best_err_est = -1.0_dp
+         bin_size_d = 1
+         do while (bin_size_d > 0 .and. bin_size_d <= N/5)
+            bin_size = bin_size_d
 
-	    prev_err_est = err_est
-	    err_est = binned_err_estimator(data(:,i),bin_size)
+            prev_err_est = err_est
+            err_est = binned_err_estimator(data(:,i),bin_size)
 
-	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
-	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
-	    bin_size_d = bin_size_d * 2
-	 end do
+            if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
+            call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
+            bin_size_d = bin_size_d * 2
+         end do
          call print("", verbosity=PRINT_VERBOSE)
 
-	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
+         if (best_err_est < 0.0_dp) best_err_est = prev_err_est
 
-	 mean = sum(data(:,i))/real(N,dp)
-	 means_variance_1 = sum((data(:,i)-mean)**2)/real(N,dp)
-	 effective_N(i) = means_variance_1/best_err_est**2
-	 if (effective_N(i) > N) effective_N(i) = N
+         mean = sum(data(:,i))/real(N,dp)
+         means_variance_1 = sum((data(:,i)-mean)**2)/real(N,dp)
+         effective_N(i) = means_variance_1/best_err_est**2
+         if (effective_N(i) > N) effective_N(i) = N
       end do
    else
       do i=1, size(data,1)
-	 N = size(data,2)
-	 err_est=0.0_dp
-	 best_err_est = -1.0_dp
-	 bin_size_d = 1
-	 do while (bin_size_d > 0 .and. bin_size_d <= N/5)
-	    bin_size = bin_size_d
+         N = size(data,2)
+         err_est=0.0_dp
+         best_err_est = -1.0_dp
+         bin_size_d = 1
+         do while (bin_size_d > 0 .and. bin_size_d <= N/5)
+            bin_size = bin_size_d
 
-	    prev_err_est = err_est
-	    err_est = binned_err_estimator(data(i,:),bin_size)
+            prev_err_est = err_est
+            err_est = binned_err_estimator(data(i,:),bin_size)
 
-	    if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
-	    call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
-	    bin_size_d = bin_size_d * 2
-	 end do
+            if (err_est < prev_err_est .and. abs(err_est-prev_err_est)/(0.5_dp*(err_est+prev_err_est)) < 0.1_dp) best_err_est = err_est
+            call print("binning_effective_N " // bin_size//" "//err_est, verbosity=PRINT_VERBOSE)
+            bin_size_d = bin_size_d * 2
+         end do
          call print("", verbosity=PRINT_VERBOSE)
 
-	 if (best_err_est < 0.0_dp) best_err_est = prev_err_est
+         if (best_err_est < 0.0_dp) best_err_est = prev_err_est
 
-	 mean = sum(data(i,:))/real(N,dp)
-	 means_variance_1 = sum((data(i,:)-mean)**2)/real(N,dp)
-	 effective_N(i) = means_variance_1/best_err_est**2
-	 if (effective_N(i) > N) effective_N(i) = N
+         mean = sum(data(i,:))/real(N,dp)
+         means_variance_1 = sum((data(i,:)-mean)**2)/real(N,dp)
+         effective_N(i) = means_variance_1/best_err_est**2
+         if (effective_N(i) > N) effective_N(i) = N
       end do
    end if
 end subroutine
@@ -539,7 +539,7 @@ implicit none
       do i=1, sz
         data_var(i) = sum((data(:,i)-data_mean(i))**2)/size(data,reduction_index)
       end do
-    else 
+    else
       if (n_weights > 0) then
           do i=1, sz
             data_var(i) = sum(weights(:)*(data(i,:)-data_mean(i))**2)/sum(weights)
@@ -562,7 +562,7 @@ implicit none
         data_3_mom(i) = sum((data(:,i)-data_mean(i))**3)/size(data,reduction_index)
         data_4_mom(i) = sum((data(:,i)-data_mean(i))**4)/size(data,reduction_index)
       end do
-    else 
+    else
       if (n_weights > 0) then
           do i=1, sz
             data_3_mom(i) = sum(weights(:)*(data(i,:)-data_mean(i))**3)/sum(weights)
@@ -585,32 +585,32 @@ implicit none
     if (do_correl) then
       call print("# correl", file=outfile)
       if (over_bins) then
-	n_correl_print = n_data
+        n_correl_print = n_data
       else
-	n_correl_print = min(n_data, correlation_max_lag+1)
+        n_correl_print = min(n_data, correlation_max_lag+1)
       endif
       do i=1, n_correl_print
-	call print(""//data_correl(:,i), file=outfile)
+        call print(""//data_correl(:,i), file=outfile)
       end do
     endif
 
     if (do_correlation_var_effective_N) then
       allocate(correlation_var_effective_N(sz))
       call calc_correlation_var_effective_N(data_correl, over_bins, correlation_var_effective_N_long_lag, correlation_var_effective_N)
-    endif 
+    endif
     if (do_summed_ac_effective_N) then
       allocate(summed_ac_effective_N(sz))
       call calc_summed_ac_effective_N(size(data,reduction_index), data_correl, over_bins, summed_ac_effective_N_max_lag, summed_ac_effective_N)
-    endif 
+    endif
   endif ! do_correl or do_effective_N
   if (do_sliding_window_effective_N) then
     allocate(sliding_window_effective_N(sz))
     call calc_sliding_window_effective_N(data, over_bins, sliding_window_effective_N_max_k, sliding_window_effective_N)
-  endif 
+  endif
   if (do_binning_effective_N) then
     allocate(binning_effective_N(sz))
     call calc_binning_effective_N(data, over_bins, binning_effective_N)
-  endif 
+  endif
 
   ! data(n_bins, n_data)
   if (do_exp_smoothing) then
@@ -619,7 +619,7 @@ implicit none
     else
       myline="# bin_label value"
       if (exp_smoothing_bin_i <= 0 .or. exp_smoothing_bin_i > n_bins) then
-	 call system_abort("exp_smoothing_bin_i out of range "//exp_smoothing_bin_i)
+         call system_abort("exp_smoothing_bin_i out of range "//exp_smoothing_bin_i)
       endif
     endif
     call print(trim(myline), file=outfile)
@@ -630,12 +630,12 @@ implicit none
        smooth_data_v(1:n_bins) = data(1:n_bins, 1)
        call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
        do i=2, n_data
-	 if (exp_smoothing_time > 0.0_dp) then
-	    smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
-	 else
-	    smooth_data_v(1:n_bins) = data(1:n_bins, i)
-	 endif
-	 call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
+         if (exp_smoothing_time > 0.0_dp) then
+            smooth_data_v(1:n_bins) = (1.0_dp - 1.0_dp/exp_smoothing_time)*smooth_data_v(1:n_bins) + 1.0_dp/exp_smoothing_time*data(1:n_bins, i)
+         else
+            smooth_data_v(1:n_bins) = data(1:n_bins, i)
+         endif
+         call print(trim(bin_labels(exp_smoothing_bin_i))//" "//smooth_data_v(exp_smoothing_bin_i), file=outfile)
        end do
     endif
   end if ! do_exp_smoothing
@@ -666,32 +666,32 @@ implicit none
       if (do_var) myline = trim(myline) //" " // data_var(i)//" "//size(data,reduction_index)
       if (do_bimod) myline = trim(myline) //" " // data_bimod(i)
       if (do_correlation_var_effective_N) then
-	if (correlation_var_effective_N(i) > 0) then
-	  myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // (size(data,reduction_index)/correlation_var_effective_N(i))
-	else
-	  myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // 0
-	endif
+        if (correlation_var_effective_N(i) > 0) then
+          myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // (size(data,reduction_index)/correlation_var_effective_N(i))
+        else
+          myline = trim(myline) // " " // correlation_var_effective_N(i) // " " // 0
+        endif
       endif
       if (do_summed_ac_effective_N) then
-	if (summed_ac_effective_N(i) > 0) then
-	  myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // (size(data,reduction_index)/summed_ac_effective_N(i))
-	else
-	  myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // 0
-	endif
+        if (summed_ac_effective_N(i) > 0) then
+          myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // (size(data,reduction_index)/summed_ac_effective_N(i))
+        else
+          myline = trim(myline) // " " // summed_ac_effective_N(i) // " " // 0
+        endif
       endif
       if (do_sliding_window_effective_N) then
-	if (sliding_window_effective_N(i) > 0) then
-	  myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // (size(data,reduction_index)/sliding_window_effective_N(i))
-	else
-	  myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // 0
-	endif
+        if (sliding_window_effective_N(i) > 0) then
+          myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // (size(data,reduction_index)/sliding_window_effective_N(i))
+        else
+          myline = trim(myline) // " " // sliding_window_effective_N(i) // " " // 0
+        endif
       endif
       if (do_binning_effective_N) then
-	if (binning_effective_N(i) > 0) then
-	  myline = trim(myline) // " " // binning_effective_N(i) // " " // (size(data,reduction_index)/binning_effective_N(i))
-	else
-	  myline = trim(myline) // " " // binning_effective_N(i) // " " // 0
-	endif
+        if (binning_effective_N(i) > 0) then
+          myline = trim(myline) // " " // binning_effective_N(i) // " " // (size(data,reduction_index)/binning_effective_N(i))
+        else
+          myline = trim(myline) // " " // binning_effective_N(i) // " " // 0
+        endif
       endif
       call print(trim(myline), file=outfile)
     end do
@@ -707,37 +707,37 @@ implicit none
     data_histogram = 0.0_dp
     do i=1, sz
       if (histogram_max_v > histogram_min_v) then
-	 histogram_cur_min_v = histogram_min_v
-	 histogram_cur_max_v = histogram_max_v
+         histogram_cur_min_v = histogram_min_v
+         histogram_cur_max_v = histogram_max_v
       else
-	 if (over_bins) then
-	   histogram_cur_min_v = minval(data(:,i))
-	   histogram_cur_max_v = maxval(data(:,i))
-	 else
-	   histogram_cur_min_v = minval(data(i,:))
-	   histogram_cur_max_v = maxval(data(i,:))
-	 endif
-	 histogram_extra_width = (histogram_cur_max_v-histogram_cur_min_v)*histogram_extra_width
-	 histogram_cur_min_v = histogram_cur_min_v - histogram_extra_width
-	 histogram_cur_max_v = histogram_cur_max_v + histogram_extra_width
+         if (over_bins) then
+           histogram_cur_min_v = minval(data(:,i))
+           histogram_cur_max_v = maxval(data(:,i))
+         else
+           histogram_cur_min_v = minval(data(i,:))
+           histogram_cur_max_v = maxval(data(i,:))
+         endif
+         histogram_extra_width = (histogram_cur_max_v-histogram_cur_min_v)*histogram_extra_width
+         histogram_cur_min_v = histogram_cur_min_v - histogram_extra_width
+         histogram_cur_max_v = histogram_cur_max_v + histogram_extra_width
       endif
       histogram_bin_width = (histogram_cur_max_v-histogram_cur_min_v)/histogram_n_bins
       if (histogram_bin_width == 0.0_dp) histogram_bin_width = 1.0e-8_dp
       do bin_i=1, histogram_n_bins
-	data_histogram(1, bin_i, i) = histogram_cur_min_v+(real(bin_i,dp)-0.5_dp)*histogram_bin_width
+        data_histogram(1, bin_i, i) = histogram_cur_min_v+(real(bin_i,dp)-0.5_dp)*histogram_bin_width
       end do
       do j=1, r_sz
-	if (over_bins) then
-	  bin_i = (data(j,i) - histogram_cur_min_v)/histogram_bin_width+1
-	else
-	  bin_i = (data(i,j) - histogram_cur_min_v)/histogram_bin_width+1
-	endif
-	if (bin_i >= 1 .and. bin_i <= histogram_n_bins) then
-	  data_histogram(2,bin_i,i) = data_histogram(2,bin_i,i) + 1.0_dp
-	  if (do_histogram_effective_N) then
-	     data_histogram_data(bin_i, j, i) = 1
-	  endif
-	endif
+        if (over_bins) then
+          bin_i = (data(j,i) - histogram_cur_min_v)/histogram_bin_width+1
+        else
+          bin_i = (data(i,j) - histogram_cur_min_v)/histogram_bin_width+1
+        endif
+        if (bin_i >= 1 .and. bin_i <= histogram_n_bins) then
+          data_histogram(2,bin_i,i) = data_histogram(2,bin_i,i) + 1.0_dp
+          if (do_histogram_effective_N) then
+             data_histogram_data(bin_i, j, i) = 1
+          endif
+        endif
       end do ! r_sz
     end do ! i
     data_histogram(2,:,:) = data_histogram(2,:,:)/real(r_sz, dp)
@@ -748,20 +748,20 @@ implicit none
     if (do_histogram_effective_N) then
       allocate(histogram_effective_N(histogram_n_bins,sz))
       do i=1, sz
-	 call calc_correl(data_histogram_data(:,:,i), histogram_n_bins, n_data, .false., correlation_max_lag, .true., data_histogram_correl)
-	 if (do_histogram_correl) then
-	    do bin_i=1, histogram_n_bins
-	       call print("# data_histogram_correl i="//i // " bin=" // bin_i)
-	       do j=1, size(data_histogram_correl,2)
-		  call print(data_histogram_correl(bin_i,j))
-	       end do
-	       call print("")
-	       call print("")
-	    end do
-	 endif
-	 mainlog%prefix="EFF_N value_i="//i
-	 call calc_correlation_var_effective_N(data_histogram_correl, .false., correlation_var_effective_N_long_lag, histogram_effective_N(:,i))
-	 mainlog%prefix=""
+         call calc_correl(data_histogram_data(:,:,i), histogram_n_bins, n_data, .false., correlation_max_lag, .true., data_histogram_correl)
+         if (do_histogram_correl) then
+            do bin_i=1, histogram_n_bins
+               call print("# data_histogram_correl i="//i // " bin=" // bin_i)
+               do j=1, size(data_histogram_correl,2)
+                  call print(data_histogram_correl(bin_i,j))
+               end do
+               call print("")
+               call print("")
+            end do
+         endif
+         mainlog%prefix="EFF_N value_i="//i
+         call calc_correlation_var_effective_N(data_histogram_correl, .false., correlation_var_effective_N_long_lag, histogram_effective_N(:,i))
+         mainlog%prefix=""
       end do
     endif
 
@@ -773,17 +773,17 @@ implicit none
 
     do i=1, sz
       if (over_bins) then
-	myline = "#"
+        myline = "#"
       else
-	myline = "# "//trim(bin_labels(i))
+        myline = "# "//trim(bin_labels(i))
       endif
       call print(trim(myline), file=outfile)
       do bin_i=1, histogram_n_bins
-	if (do_histogram_effective_N) then
-	   call print(data_histogram(:,bin_i,i)//" "//histogram_effective_N(bin_i,i), file=outfile)
-	else
-	   call print(data_histogram(:,bin_i,i), file=outfile)
-	endif
+        if (do_histogram_effective_N) then
+           call print(data_histogram(:,bin_i,i)//" "//histogram_effective_N(bin_i,i), file=outfile)
+        else
+           call print(data_histogram(:,bin_i,i), file=outfile)
+        endif
       end do
       call print("", file=outfile)
       call print("", file=outfile)

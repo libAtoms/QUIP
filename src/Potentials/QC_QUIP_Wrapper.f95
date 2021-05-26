@@ -66,7 +66,7 @@ contains
     character(len=*), intent(in)  :: str1,str2
     real(dp),     intent(in) :: real1,real2
     character(len=*), intent(out) :: strout
-    
+
     strout = trim(str1)//real1//trim(str2)//real2
   end subroutine MakeLine
 
@@ -144,13 +144,13 @@ contains
     n_present = count ( (/present(lat), present(Z), present(pos)  /) )
     if (n_present == 3) then
       if (.not. matching_array_sizes(Z, pos = pos)) then
-	call system_abort("Mismatched array sizes in QC_QUIP_initialise_hybrid")
+        call system_abort("Mismatched array sizes in QC_QUIP_initialise_hybrid")
       endif
 call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it", PRINT_ALWAYS)
 !      call initialise(bulk, size(Z), lat)
 !      bulk%Z = Z
 !      bulk%pos = pos
-!      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk) 
+!      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk)
 !      call finalise(bulk)
 call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_pot1="//trim(str_qm), mpi_obj=mpi_glob)
     else if (n_present == 0) then
@@ -181,12 +181,12 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     type(table) :: qm_table
 
     if (.not. matching_array_sizes(Z, pos, w, local_e, f, N)) then
-	call system_abort("Mismatched array sizes in QC_QUIP_calc_hybrid")
+        call system_abort("Mismatched array sizes in QC_QUIP_calc_hybrid")
     endif
 
     if (buffer_region_width > 0 .and. pot%is_oniom) &
       call system_abort("Don't do buffer_region_width = " // buffer_region_width // &
-			 " > 0 with ONIOM")
+                         " > 0 with ONIOM")
 
     call qc_setup_atoms(at, N, Lz, pos, Z)
 
@@ -204,7 +204,7 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     call wipe(qm_table)
     do i=1, size(qm_list)
       if (qm_list(i) > at%N) call system_abort("QC_QUIP_calc_hybrid got qm_list("//i//")=" &
-							      // qm_list(i) // " > at%N="//at%N)
+                                                              // qm_list(i) // " > at%N="//at%N)
       if (qm_list(i) > 0) call append(qm_table, (/ qm_list(i), 0, 0, 0 /) )
     end do
 
@@ -217,14 +217,14 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
 
     if (pot%is_oniom) then
       call calc(pot, at, args_str="local_energy force calc_weights" // &
-	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width, error=err)
+        " core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width, error=err)
     else
       call calc(pot, at, args_str="local_energy force calc_weights" // &
-	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width // &
-	" solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0", error=err)
+        " core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width // &
+        " solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0", error=err)
     endif
 
-  end subroutine QC_QUIP_calc_hybrid 
+  end subroutine QC_QUIP_calc_hybrid
 #endif
 
   function matching_array_sizes(Z, pos, w, local_e, f, N)
@@ -242,26 +242,26 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     if (present(N)) N = my_N
     if (present(pos)) then
       if (3 /= size(pos,1) .or. my_N /= size(pos,2)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes=.false.
+        return
       endif
     endif
     if (present(w)) then
       if (my_N /= size(w)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes=.false.
+        return
       endif
     endif
     if (present(local_e)) then
       if (my_N /= size(local_e)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes=.false.
+        return
       endif
     endif
     if (present(f)) then
       if (3 /= size(f,1) .or. my_N /= size(f,2)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes=.false.
+        return
       endif
     endif
 

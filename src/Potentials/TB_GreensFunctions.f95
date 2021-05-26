@@ -218,7 +218,7 @@ subroutine GreensFunctions_init_mpi(this, mpi_obj)
     if (mod(i,this%mpi_global%n_procs) == t) then
       local_N_G = local_N_G + 1
       local_index(local_N_G) = i+1
-    end if	
+    end if
   end do
 
   if (local_N_G  == 0) then
@@ -458,10 +458,10 @@ subroutine GreensFunctions_calc_mod_dm_from_Gs(this, w_e, w_n, do_const_N)
       az = 2.0_dp*az
     endif
 
-    ! const mu 
-    !    F = Re d/dr sum_i Tr [ H a_i (z_i S-H)^-1 W ] 
+    ! const mu
+    !    F = Re d/dr sum_i Tr [ H a_i (z_i S-H)^-1 W ]
     !      pull Re and sum in
-    !      = d/dr Tr [ H Re sum_i a_i (z_i S - H)^-1 W ] 
+    !      = d/dr Tr [ H Re sum_i a_i (z_i S - H)^-1 W ]
     !      chain rule
     !      = Tr [ dH/dr Re sum_i a_i G_i W ] + Tr [ H Re sum_i a_i -G_i (z_i dS/dr - dH/dr) G_i W ]
     !      expand
@@ -487,8 +487,8 @@ subroutine GreensFunctions_calc_mod_dm_from_Gs(this, w_e, w_n, do_const_N)
     if (.not. this%tbsys%tbmodel%is_orthogonal) then
       call scaled_accum(this%mod_dm_S, az, GWE_H_G) ! Tr H dG/dr W = Tr H G dS/dr G W = Tr dS/dr G W H G
       if (const_N) then
-	call scaled_accum(this%mod_dm_S, a*chempot, GWN) ! Tr dS/dr G W contribution to mu N
-	call scaled_accum(this%mod_dm_S, -az*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dS/dr G W = Tr dS/dr G W S G
+        call scaled_accum(this%mod_dm_S, a*chempot, GWN) ! Tr dS/dr G W contribution to mu N
+        call scaled_accum(this%mod_dm_S, -az*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dS/dr G W = Tr dS/dr G W S G
       endif
     endif
 !$omp end critical
@@ -508,16 +508,16 @@ subroutine GreensFunctions_calc_mod_dm_from_Gs(this, w_e, w_n, do_const_N)
       call scaled_accum(this%mod_dm_H, -a, GWE_H_G) ! Tr H dG/dr W = Tr H G dH/dr G W = Tr dH/dr G W H G
 
       if (const_N) then
-	call scaled_accum(this%mod_dm_H, a*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dH/dr G W = Tr dH/dr G W S G
+        call scaled_accum(this%mod_dm_H, a*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dH/dr G W = Tr dH/dr G W S G
       endif
 
       if (.not. this%tbsys%tbmodel%is_orthogonal) then
 
-	call scaled_accum(this%mod_dm_S, az, GWE_H_G) ! Tr H dG/dr W = Tr H G dS/dr G W = Tr dS/dr G W H G
-	if (const_N) then
-	  call scaled_accum(this%mod_dm_S, a*chempot, GWN) ! Tr dS/dr G W contribution to mu N
-	  call scaled_accum(this%mod_dm_S, -az*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dS/dr G W = Tr dS/dr G W S G
-	endif
+        call scaled_accum(this%mod_dm_S, az, GWE_H_G) ! Tr H dG/dr W = Tr H G dS/dr G W = Tr dS/dr G W H G
+        if (const_N) then
+          call scaled_accum(this%mod_dm_S, a*chempot, GWN) ! Tr dS/dr G W contribution to mu N
+          call scaled_accum(this%mod_dm_S, -az*chempot, GWN_S_G) ! Tr S dG/dr W = Tr S G dS/dr G W = Tr dS/dr G W S G
+        endif
       endif
 !$omp end critical
 

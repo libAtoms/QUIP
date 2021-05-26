@@ -505,8 +505,8 @@ subroutine analysis_read(this, prev, args_str)
   end select
 
   if (count ( (/ this%density_radial, this%density_grid, this%KE_density_radial, this%rdfd, this%xrd, this%adfd, &
-		 this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
-		 this%water_orientation_silica /) ) /= 1) &
+                 this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
+                 this%water_orientation_silica /) ) /= 1) &
     call system_abort("Specified "//(/ this%density_radial, this%density_grid, this%KE_density_radial, &
       this%rdfd, this%xrd, this%adfd, this%KEdf_radial, this%propdf_radial, this%geometry, this%density_axial_silica, this%num_hbond_silica, &
       this%water_orientation_silica /)// &
@@ -593,11 +593,11 @@ subroutine do_analyses(a, time, frame, at)
 
       if (a(i_a)%density_radial) then !density_radial
         call reallocate_data(a(i_a)%density_radial_histograms, a(i_a)%n_configs, a(i_a)%density_radial_n_bins)
-	if (a(i_a)%density_radial_center_at > 0) then
-	  use_radial_center = at%pos(:,a(i_a)%density_radial_center_at)
-	else
-	  use_radial_center = a(i_a)%density_radial_center
-	endif
+        if (a(i_a)%density_radial_center_at > 0) then
+          use_radial_center = at%pos(:,a(i_a)%density_radial_center_at)
+        else
+          use_radial_center = a(i_a)%density_radial_center
+        endif
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%density_radial_pos(a(i_a)%density_radial_n_bins))
           call density_sample_radial_mesh_Gaussians(a(i_a)%density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
@@ -631,11 +631,11 @@ subroutine do_analyses(a, time, frame, at)
         endif
       else if (a(i_a)%KE_density_radial) then ! KE_density_radial
         call reallocate_data(a(i_a)%KE_density_radial_histograms, a(i_a)%n_configs, a(i_a)%KE_density_radial_n_bins)
-	if (a(i_a)%KE_density_radial_center_at > 0) then
-	  use_radial_center = at%pos(:,a(i_a)%KE_density_radial_center_at)
-	else
-	  use_radial_center = a(i_a)%KE_density_radial_center
-	endif
+        if (a(i_a)%KE_density_radial_center_at > 0) then
+          use_radial_center = at%pos(:,a(i_a)%KE_density_radial_center_at)
+        else
+          use_radial_center = a(i_a)%KE_density_radial_center
+        endif
         if (a(i_a)%n_configs == 1) then
           allocate(a(i_a)%KE_density_radial_pos(a(i_a)%KE_density_radial_n_bins))
           call density_sample_radial_mesh_Gaussians(a(i_a)%KE_density_radial_histograms(:,a(i_a)%n_configs), at, center_pos=use_radial_center, &
@@ -680,53 +680,53 @@ subroutine do_analyses(a, time, frame, at)
           allocate(a(i_a)%adfd_angle_bin_pos(a(i_a)%adfd_n_angle_bins))
           allocate(a(i_a)%adfd_zone_pos(a(i_a)%adfd_n_zones))
           call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
-	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
+            a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
             a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
             a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, a(i_a)%adfd_dist_bin_rc2, &
             a(i_a)%adfd_angle_bin_pos, a(i_a)%adfd_dist_bin_pos, a(i_a)%adfd_zone_pos)
         else
           call adfd_calc(a(i_a)%adfds(:,:,:,a(i_a)%n_configs), at, a(i_a)%adfd_zone_center, &
-	    a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
+            a(i_a)%adfd_n_angle_bins, a(i_a)%adfd_dist_bin_width, a(i_a)%adfd_n_dist_bins, &
             a(i_a)%adfd_zone_width, a(i_a)%adfd_n_zones, &
             a(i_a)%adfd_center_mask_str, a(i_a)%adfd_neighbour_1_mask_str, a(i_a)%adfd_neighbour_1_max_dist, a(i_a)%adfd_neighbour_2_mask_str, a(i_a)%adfd_dist_bin_rc2)
         endif
       else if (a(i_a)%KEdf_radial) then
-	call reallocate_data(a(i_a)%KEdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%KEdf_radial_n_bins, a(i_a)%KEdf_radial_n_zones /) )
-	if (a(i_a)%KEdf_radial_zone_center_at > 0) then
-	  use_radial_center = at%pos(:,a(i_a)%KEdf_radial_zone_center_at)
-	else
-	  use_radial_center = a(i_a)%KEdf_radial_zone_center
-	endif
-	if (a(i_a)%n_configs == 1) then
-	  allocate(a(i_a)%KEdf_radial_bin_pos(a(i_a)%KEdf_radial_n_bins))
-	  allocate(a(i_a)%KEdf_radial_zone_pos(a(i_a)%KEdf_radial_n_zones))
-	  call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
-	    use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
-	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE', a(i_a)%KEdf_radial_bin_pos, a(i_a)%KEdf_radial_zone_pos)
-	else
-	  call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
-	    use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
-	    a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE')
-	endif
+        call reallocate_data(a(i_a)%KEdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%KEdf_radial_n_bins, a(i_a)%KEdf_radial_n_zones /) )
+        if (a(i_a)%KEdf_radial_zone_center_at > 0) then
+          use_radial_center = at%pos(:,a(i_a)%KEdf_radial_zone_center_at)
+        else
+          use_radial_center = a(i_a)%KEdf_radial_zone_center
+        endif
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%KEdf_radial_bin_pos(a(i_a)%KEdf_radial_n_bins))
+          allocate(a(i_a)%KEdf_radial_zone_pos(a(i_a)%KEdf_radial_n_zones))
+          call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
+            use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
+            a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE', a(i_a)%KEdf_radial_bin_pos, a(i_a)%KEdf_radial_zone_pos)
+        else
+          call propdf_radial_calc(a(i_a)%KEdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%KEdf_radial_bin_width, a(i_a)%KEdf_radial_n_bins, &
+            use_radial_center, a(i_a)%KEdf_radial_zone_width, A(i_a)%KEdf_radial_n_zones, &
+            a(i_a)%KEdf_radial_gaussian_sigma, a(i_a)%KEdf_radial_mask_str, 'KE')
+        endif
       else if (a(i_a)%propdf_radial) then
-	call reallocate_data(a(i_a)%propdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%propdf_radial_n_bins, a(i_a)%propdf_radial_n_zones /) )
-	if (a(i_a)%propdf_radial_zone_center_at > 0) then
-	  use_radial_center = at%pos(:,a(i_a)%propdf_radial_zone_center_at)
-	else
-	  use_radial_center = a(i_a)%propdf_radial_zone_center
-	endif
-	if (a(i_a)%n_configs == 1) then
-	  allocate(a(i_a)%propdf_radial_bin_pos(a(i_a)%propdf_radial_n_bins))
-	  allocate(a(i_a)%propdf_radial_zone_pos(a(i_a)%propdf_radial_n_zones))
-	  call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
-	    use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
-	    a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, A(i_a)%propdf_radial_property, &
-	    a(i_a)%propdf_radial_bin_pos, a(i_a)%propdf_radial_zone_pos)
-	else
-	  call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
-	    use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
-	    a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, a(i_a)%propdf_radial_property)
-	endif
+        call reallocate_data(a(i_a)%propdf_radial_histograms, a(i_a)%n_configs, (/ a(i_a)%propdf_radial_n_bins, a(i_a)%propdf_radial_n_zones /) )
+        if (a(i_a)%propdf_radial_zone_center_at > 0) then
+          use_radial_center = at%pos(:,a(i_a)%propdf_radial_zone_center_at)
+        else
+          use_radial_center = a(i_a)%propdf_radial_zone_center
+        endif
+        if (a(i_a)%n_configs == 1) then
+          allocate(a(i_a)%propdf_radial_bin_pos(a(i_a)%propdf_radial_n_bins))
+          allocate(a(i_a)%propdf_radial_zone_pos(a(i_a)%propdf_radial_n_zones))
+          call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
+            use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
+            a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, A(i_a)%propdf_radial_property, &
+            a(i_a)%propdf_radial_bin_pos, a(i_a)%propdf_radial_zone_pos)
+        else
+          call propdf_radial_calc(a(i_a)%propdf_radial_histograms(:,:,a(i_a)%n_configs), at, a(i_a)%propdf_radial_bin_width, a(i_a)%propdf_radial_n_bins, &
+            use_radial_center, a(i_a)%propdf_radial_zone_width, A(i_a)%propdf_radial_n_zones, &
+            a(i_a)%propdf_radial_gaussian_sigma, a(i_a)%propdf_radial_mask_str, a(i_a)%propdf_radial_property)
+        endif
       else if (a(i_a)%geometry) then !geometry
         call reallocate_data(a(i_a)%geometry_histograms, a(i_a)%n_configs, a(i_a)%geometry_params%N)
         if (a(i_a)%n_configs == 1) then
@@ -803,7 +803,7 @@ subroutine do_analyses(a, time, frame, at)
             angle_bin_w=a(i_a)%water_orientation_angle_bin_w, &
             use_dipole_rather_than_angle_bisector=a(i_a)%water_orientation_use_dipole)
         endif
-      else 
+      else
         call system_abort("do_analyses: no type of analysis set for " // i_a)
       endif
     end if ! do this analysis
@@ -926,20 +926,20 @@ subroutine print_analyses(a)
           endif
         end do
         end do
-	allocate(integrated_rdfds(a(i_a)%rdfd_n_bins,a(i_a)%rdfd_n_zones))
-	integrated_rdfds = 0.0_dp
+        allocate(integrated_rdfds(a(i_a)%rdfd_n_bins,a(i_a)%rdfd_n_zones))
+        integrated_rdfds = 0.0_dp
         do i=1, a(i_a)%n_configs
-	  integrated_rdfds = 0.0_dp
-	  do i1=1, a(i_a)%rdfd_n_zones
-	    do i2=2, a(i_a)%rdfd_n_bins
-	      integrated_rdfds(i2,i1) = integrated_rdfds(i2-1,i1) + &
-		(a(i_a)%rdfd_bin_pos(i2)-a(i_a)%rdfd_bin_pos(i2-1))* &
-		4.0_dp*PI*((a(i_a)%rdfd_bin_pos(i2)**2)*a(i_a)%rdfds(i2,i1,i)+(a(i_a)%rdfd_bin_pos(i2-1)**2)*a(i_a)%rdfds(i2-1,i1,i))/2.0_dp
-	    end do
-	  end do
+          integrated_rdfds = 0.0_dp
+          do i1=1, a(i_a)%rdfd_n_zones
+            do i2=2, a(i_a)%rdfd_n_bins
+              integrated_rdfds(i2,i1) = integrated_rdfds(i2-1,i1) + &
+                (a(i_a)%rdfd_bin_pos(i2)-a(i_a)%rdfd_bin_pos(i2-1))* &
+                4.0_dp*PI*((a(i_a)%rdfd_bin_pos(i2)**2)*a(i_a)%rdfds(i2,i1,i)+(a(i_a)%rdfd_bin_pos(i2-1)**2)*a(i_a)%rdfds(i2-1,i1,i))/2.0_dp
+            end do
+          end do
           call print(""//reshape(integrated_rdfds(:,:), (/ a(i_a)%rdfd_n_zones*a(i_a)%rdfd_n_bins /) ), file=outfile)
         end do
-	deallocate(integrated_rdfds)
+        deallocate(integrated_rdfds)
 
       else if (a(i_a)%xrd) then ! xrd
         call print("# xrd",file=outfile)
@@ -970,8 +970,8 @@ subroutine print_analyses(a)
         end do
 
       else if (a(i_a)%KEdf_radial) then !r-dep KE density
-	call print("# r-dependent KE density", file=outfile)
-	call print("n_bins="//a(i_a)%KEdf_radial_n_zones*a(i_a)%KEdf_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        call print("# r-dependent KE density", file=outfile)
+        call print("n_bins="//a(i_a)%KEdf_radial_n_zones*a(i_a)%KEdf_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
 
         do i1=1, a(i_a)%KEdf_radial_n_zones
         do i2=1, a(i_a)%KEdf_radial_n_bins
@@ -987,8 +987,8 @@ subroutine print_analyses(a)
         end do
 
       else if (a(i_a)%propdf_radial) then !r-dep |F| density
-	call print("# r-dependent prop density", file=outfile)
-	call print("n_bins="//a(i_a)%propdf_radial_n_zones*a(i_a)%propdf_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
+        call print("# r-dependent prop density", file=outfile)
+        call print("n_bins="//a(i_a)%propdf_radial_n_zones*a(i_a)%propdf_radial_n_bins//" n_data="//a(i_a)%n_configs, file=outfile)
 
         do i1=1, a(i_a)%propdf_radial_n_zones
         do i2=1, a(i_a)%propdf_radial_n_bins
@@ -1051,20 +1051,20 @@ subroutine print_analyses(a)
           end do
         end do
         !integrated histograms
-	allocate(a(i_a)%integrated_num_hbond_histograms(a(i_a)%num_hbond_n_bins,a(i_a)%num_hbond_n_type))
-	a(i_a)%integrated_num_hbond_histograms = 0.0_dp
+        allocate(a(i_a)%integrated_num_hbond_histograms(a(i_a)%num_hbond_n_bins,a(i_a)%num_hbond_n_type))
+        a(i_a)%integrated_num_hbond_histograms = 0.0_dp
         do i=1, a(i_a)%n_configs
-	  a(i_a)%integrated_num_hbond_histograms = 0.0_dp
-	  do i1=1, a(i_a)%num_hbond_n_type
-	    do i2=2, a(i_a)%num_hbond_n_bins
-	      a(i_a)%integrated_num_hbond_histograms(i2,i1) = a(i_a)%integrated_num_hbond_histograms(i2-1,i1) + &
-		(a(i_a)%num_hbond_bin_pos(i2)-a(i_a)%num_hbond_bin_pos(i2-1))* &
-		4.0_dp*PI*((a(i_a)%num_hbond_bin_pos(i2)**2)*a(i_a)%num_hbond_histograms(i2,i1,i)+(a(i_a)%num_hbond_bin_pos(i2-1)**2)*a(i_a)%num_hbond_histograms(i2-1,i1,i))/2.0_dp
-	    end do
-	  end do
+          a(i_a)%integrated_num_hbond_histograms = 0.0_dp
+          do i1=1, a(i_a)%num_hbond_n_type
+            do i2=2, a(i_a)%num_hbond_n_bins
+              a(i_a)%integrated_num_hbond_histograms(i2,i1) = a(i_a)%integrated_num_hbond_histograms(i2-1,i1) + &
+                (a(i_a)%num_hbond_bin_pos(i2)-a(i_a)%num_hbond_bin_pos(i2-1))* &
+                4.0_dp*PI*((a(i_a)%num_hbond_bin_pos(i2)**2)*a(i_a)%num_hbond_histograms(i2,i1,i)+(a(i_a)%num_hbond_bin_pos(i2-1)**2)*a(i_a)%num_hbond_histograms(i2-1,i1,i))/2.0_dp
+            end do
+          end do
           call print(""//reshape(a(i_a)%integrated_num_hbond_histograms(:,:), (/ a(i_a)%num_hbond_n_type*a(i_a)%num_hbond_n_bins /) ), file=outfile)
         end do
-	deallocate(a(i_a)%integrated_num_hbond_histograms)
+        deallocate(a(i_a)%integrated_num_hbond_histograms)
 
       else if (a(i_a)%water_orientation_silica) then !water_orientation_silica
         !header
@@ -1207,7 +1207,7 @@ end subroutine reallocate_data_1d
 subroutine reallocate_data_2d(data, n, n_bins)
   real(dp), allocatable, intent(inout) :: data(:,:,:)
   integer, intent(in) :: n, n_bins(2)
- 
+
   integer :: new_size
   real(dp), allocatable :: t_data(:,:,:)
 
@@ -1385,9 +1385,9 @@ implicit none
         more_files = .true.
       endif
       if (infile%n_frame > 0) then
-	raw_frame_count = (decimation-1)-(infile%n_frame-1-raw_frame_count)
+        raw_frame_count = (decimation-1)-(infile%n_frame-1-raw_frame_count)
       else
-	raw_frame_count = decimation-1
+        raw_frame_count = decimation-1
       endif
     endif
     write (mainlog%unit,'(a)') " "

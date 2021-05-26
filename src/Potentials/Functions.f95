@@ -30,11 +30,11 @@
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
-!X Functions Module 
+!X Functions Module
 !X
 !% The Functions Module contains useful subroutines and functions
 !% to compute the Fermi occupation $n(E)$ of given energy levels,
-!% and error functions. 
+!% and error functions.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -98,9 +98,9 @@ implicit none
     double precision x
 
     if (x .lt. 0.0D0) then
-	erf = -gammp_half(x*x)
+        erf = -gammp_half(x*x)
     else
-	erf = gammp_half(x*x)
+        erf = gammp_half(x*x)
     end if
 
 end function
@@ -118,9 +118,9 @@ implicit none
     double precision x
 
     if (x .lt. 0.0D0) then
-	erfc = 1.0D0 + gammp_half(x*x)
+        erfc = 1.0D0 + gammp_half(x*x)
     else
-	erfc = gammq_half(x*x)
+        erfc = gammq_half(x*x)
     end if
 end function
 
@@ -129,7 +129,7 @@ end function
 !| returns incomplete gamma p function of (0.5,x)
 !|
 !|I double precision x: argument
-!| 
+!|
 !| Noam Bernstein 9/12/2001
 
 double precision function gammp_half(x)
@@ -140,7 +140,7 @@ implicit none
     parameter ( Gamma_half = 1.77245385090552D0 )
 
     gammp_half = 2.0D0/Gamma_half * sqrt(x) * p_F0(x)
-    
+
 end function
 
 !| double precision function gammq_half
@@ -148,7 +148,7 @@ end function
 !| returns incomplete gamma q function (complement of gamma p) of (0.5,x)
 !|
 !|I double precision x: argument
-!| 
+!|
 !| Noam Bernstein 9/12/2001
 
 double precision function gammq_half(x)
@@ -159,11 +159,11 @@ implicit none
     parameter ( Gamma_half = 1.77245385090552D0 )
 
     if (x .ne. 0) then
-	gammq_half = 2.0D0/Gamma_half * sqrt(x) * p_F0C(x)
+        gammq_half = 2.0D0/Gamma_half * sqrt(x) * p_F0C(x)
     else
-	gammq_half = 1.0D0
+        gammq_half = 1.0D0
     end if
-    
+
 end function
 
 !| double precision function p_F0(x)
@@ -241,76 +241,76 @@ implicit none
     double precision RT, POL1, RECT1, DT
 
     IF (NPTS.GT.MX) THEN
-	PRINT *,'FFFMT3: MX MUST BE AT LEAST: ',NPTS
-	stop
+        PRINT *,'FFFMT3: MX MUST BE AT LEAST: ',NPTS
+        stop
     END IF
     IF (FIRST) THEN
-	! ONEOVER3 = 1.0D0/3.0D0
-	FACT = 1.0D0
-	DO I = 1,5
-	    ONEOVRI(I) = 1.0D0/I
-	    FACT = FACT*ONEOVRI(I)
-	END DO
-	FIRST = .FALSE.
-	EPS = 1.0D-12
-	DO I = 1,10
-	    F(I,1) = 1.0D0/(2*I-1)
-	END DO
-	T = 0.0D0
-	DO L = 2,1601
-	    T = (1.0D-2)*(L-1)
-	    X = 2*T
-	    DEN = 39.0D0
-	    TERM = 1.0D0/DEN
-	    SUM = TERM
-	    !DO 130 I = 2,100
-	    DO I = 2,100
-		DEN = DEN+2.0D0
-		TERM = TERM*X/DEN
-		SUM = SUM+TERM
-		Q = TERM/SUM
-		! IF (Q-EPS)  140,140,130
-		if (Q .le. EPS) exit
-	    END DO
-	    ! 130   CONTINUE
-	    ! 140   EX = EXP(-T)
-	    EX = EXP(-T)
-	    G(20) = EX*SUM
-	    !
-	    !  USE DOWNWARD RECURSION
-	    !
-	    DO I = 1,19
-		K = 21-I
-		KK = K-1
-		G(KK) = (X*G(K)+EX)/(2*KK-1)
-	    END DO
-	    DO I = 1,10
-		F(I,L) = G(I)
-	    END DO
-	END DO
-	DO L = 1,1601
-	    F(5,L) = F(5,L)/2.0D0
-	    F(6,L) = F(6,L)/6.0D0
-	END DO
+        ! ONEOVER3 = 1.0D0/3.0D0
+        FACT = 1.0D0
+        DO I = 1,5
+            ONEOVRI(I) = 1.0D0/I
+            FACT = FACT*ONEOVRI(I)
+        END DO
+        FIRST = .FALSE.
+        EPS = 1.0D-12
+        DO I = 1,10
+            F(I,1) = 1.0D0/(2*I-1)
+        END DO
+        T = 0.0D0
+        DO L = 2,1601
+            T = (1.0D-2)*(L-1)
+            X = 2*T
+            DEN = 39.0D0
+            TERM = 1.0D0/DEN
+            SUM = TERM
+            !DO 130 I = 2,100
+            DO I = 2,100
+                DEN = DEN+2.0D0
+                TERM = TERM*X/DEN
+                SUM = SUM+TERM
+                Q = TERM/SUM
+                ! IF (Q-EPS)  140,140,130
+                if (Q .le. EPS) exit
+            END DO
+            ! 130   CONTINUE
+            ! 140   EX = EXP(-T)
+            EX = EXP(-T)
+            G(20) = EX*SUM
+            !
+            !  USE DOWNWARD RECURSION
+            !
+            DO I = 1,19
+                K = 21-I
+                KK = K-1
+                G(KK) = (X*G(K)+EX)/(2*KK-1)
+            END DO
+            DO I = 1,10
+                F(I,L) = G(I)
+            END DO
+        END DO
+        DO L = 1,1601
+            F(5,L) = F(5,L)/2.0D0
+            F(6,L) = F(6,L)/6.0D0
+        END DO
     END IF
     !
     DO IPTS = 1,NPTS
-	IF (XX(IPTS) .GT. 16.0D0) THEN
-	    POL1 =  -EXP(-XX(IPTS))
-	    RT = SQRT(XX(IPTS))*ROOTPI
-	    RECT1 = 0.5D0/XX(IPTS)
-	    S1(IPTS,1) = RECT1*(RT+POL1)
-	    S1(IPTS,2) = RECT1*(S1(IPTS,1)+POL1)
-	    S1(IPTS,3) = RECT1*(3*S1(IPTS,2)+POL1)
-	ELSE
-	    IT = INT(100*XX(IPTS)+1.5D0)
-	    POL1 = EXP(-XX(IPTS))
-	    RECT1 = 2*XX(IPTS)
-	    DT = (1.0D-2)*(IT-1)-XX(IPTS)
-	    S1(IPTS,3) = F(3,IT)+DT*(F(4,IT)+DT*(F(5,IT)+DT*F(6,IT)))
-	    S1(IPTS,2) = (S1(IPTS,3)*RECT1+POL1)*ONEOVER3
-	    S1(IPTS,1) = (S1(IPTS,2)*RECT1+POL1)
-	END IF
+        IF (XX(IPTS) .GT. 16.0D0) THEN
+            POL1 =  -EXP(-XX(IPTS))
+            RT = SQRT(XX(IPTS))*ROOTPI
+            RECT1 = 0.5D0/XX(IPTS)
+            S1(IPTS,1) = RECT1*(RT+POL1)
+            S1(IPTS,2) = RECT1*(S1(IPTS,1)+POL1)
+            S1(IPTS,3) = RECT1*(3*S1(IPTS,2)+POL1)
+        ELSE
+            IT = INT(100*XX(IPTS)+1.5D0)
+            POL1 = EXP(-XX(IPTS))
+            RECT1 = 2*XX(IPTS)
+            DT = (1.0D-2)*(IT-1)-XX(IPTS)
+            S1(IPTS,3) = F(3,IT)+DT*(F(4,IT)+DT*(F(5,IT)+DT*F(6,IT)))
+            S1(IPTS,2) = (S1(IPTS,3)*RECT1+POL1)*ONEOVER3
+            S1(IPTS,1) = (S1(IPTS,2)*RECT1+POL1)
+        END IF
     END DO
     RETURN
 end subroutine
@@ -346,80 +346,80 @@ implicit none
     double precision RT, POL1, RECT1, DT
 
     IF (NPTS.GT.MX) THEN
-	PRINT *,'FFFMT3: MX MUST BE AT LEAST: ',NPTS
-	stop
+        PRINT *,'FFFMT3: MX MUST BE AT LEAST: ',NPTS
+        stop
     END IF
     IF (FIRST) THEN
-	! ONEOVER3 = 1.0D0/3.0D0
-	FACT = 1.0D0
-	DO I = 1,5
-	    ONEOVRI(I) = 1.0D0/I
-	    FACT = FACT*ONEOVRI(I)
-	END DO
-	FIRST = .FALSE.
-	EPS = 1.0D-12
-	DO I = 1,10
-	    F(I,1) = 1.0D0/(2*I-1)
-	END DO
-	T = 0.0D0
-	DO L = 2,1601
-	    T = (1.0D-2)*(L-1)
-	    X = 2*T
-	    DEN = 39.0D0
-	    TERM = 1.0D0/DEN
-	    SUM = TERM
-	    !DO 130 I = 2,100
-	    DO I = 2,100
-		DEN = DEN+2.0D0
-		TERM = TERM*X/DEN
-		SUM = SUM+TERM
-		Q = TERM/SUM
-		! IF (Q-EPS)  140,140,130
-		if (Q .le. EPS) exit
-	    END DO
-	    ! 130   CONTINUE
-	    ! 140   EX = EXP(-T)
-	    EX = EXP(-T)
-	    G(20) = EX*SUM
-	    !
-	    !  USE DOWNWARD RECURSION
-	    !
-	    DO I = 1,19
-		K = 21-I
-		KK = K-1
-		G(KK) = (X*G(K)+EX)/(2*KK-1)
-	    END DO
-	    DO I = 1,10
-		F(I,L) = G(I)
-	    END DO
-	END DO
-	DO L = 1,1601
-	    F(5,L) = F(5,L)/2.0D0
-	    F(6,L) = F(6,L)/6.0D0
-	END DO
+        ! ONEOVER3 = 1.0D0/3.0D0
+        FACT = 1.0D0
+        DO I = 1,5
+            ONEOVRI(I) = 1.0D0/I
+            FACT = FACT*ONEOVRI(I)
+        END DO
+        FIRST = .FALSE.
+        EPS = 1.0D-12
+        DO I = 1,10
+            F(I,1) = 1.0D0/(2*I-1)
+        END DO
+        T = 0.0D0
+        DO L = 2,1601
+            T = (1.0D-2)*(L-1)
+            X = 2*T
+            DEN = 39.0D0
+            TERM = 1.0D0/DEN
+            SUM = TERM
+            !DO 130 I = 2,100
+            DO I = 2,100
+                DEN = DEN+2.0D0
+                TERM = TERM*X/DEN
+                SUM = SUM+TERM
+                Q = TERM/SUM
+                ! IF (Q-EPS)  140,140,130
+                if (Q .le. EPS) exit
+            END DO
+            ! 130   CONTINUE
+            ! 140   EX = EXP(-T)
+            EX = EXP(-T)
+            G(20) = EX*SUM
+            !
+            !  USE DOWNWARD RECURSION
+            !
+            DO I = 1,19
+                K = 21-I
+                KK = K-1
+                G(KK) = (X*G(K)+EX)/(2*KK-1)
+            END DO
+            DO I = 1,10
+                F(I,L) = G(I)
+            END DO
+        END DO
+        DO L = 1,1601
+            F(5,L) = F(5,L)/2.0D0
+            F(6,L) = F(6,L)/6.0D0
+        END DO
     END IF
     !
     DO IPTS = 1,NPTS
-	IF (XX(IPTS) .GT. 16.0D0) THEN
-	    POL1 =  -EXP(-XX(IPTS))
-	    RT = SQRT(XX(IPTS))*ROOTPI
-	    RECT1 = 0.5D0/XX(IPTS)
-	    !! S1(IPTS,1) = RECT1*(RT+POL1)
-	    ! for computing the complement of F0
-	    S1(IPTS,1) = -RECT1*POL1
-	    ! S1(IPTS,2) = RECT1*(S1(IPTS,1)+POL1)
-	    ! S1(IPTS,3) = RECT1*(3*S1(IPTS,2)+POL1)
-	ELSE
-	    IT = INT(100*XX(IPTS)+1.5D0)
-	    POL1 = EXP(-XX(IPTS))
-	    RECT1 = 2*XX(IPTS)
-	    DT = (1.0D-2)*(IT-1)-XX(IPTS)
-	    S1(IPTS,3) = F(3,IT)+DT*(F(4,IT)+DT*(F(5,IT)+DT*F(6,IT)))
-	    S1(IPTS,2) = (S1(IPTS,3)*RECT1+POL1)*ONEOVER3
-	    S1(IPTS,1) = (S1(IPTS,2)*RECT1+POL1)
-	    ! for computing the complement of F0
-	    S1(IPTS,1) = ROOTPI/(2.0D0*sqrt(XX(IPTS))) - S1(IPTS,1)
-	END IF
+        IF (XX(IPTS) .GT. 16.0D0) THEN
+            POL1 =  -EXP(-XX(IPTS))
+            RT = SQRT(XX(IPTS))*ROOTPI
+            RECT1 = 0.5D0/XX(IPTS)
+            !! S1(IPTS,1) = RECT1*(RT+POL1)
+            ! for computing the complement of F0
+            S1(IPTS,1) = -RECT1*POL1
+            ! S1(IPTS,2) = RECT1*(S1(IPTS,1)+POL1)
+            ! S1(IPTS,3) = RECT1*(3*S1(IPTS,2)+POL1)
+        ELSE
+            IT = INT(100*XX(IPTS)+1.5D0)
+            POL1 = EXP(-XX(IPTS))
+            RECT1 = 2*XX(IPTS)
+            DT = (1.0D-2)*(IT-1)-XX(IPTS)
+            S1(IPTS,3) = F(3,IT)+DT*(F(4,IT)+DT*(F(5,IT)+DT*F(6,IT)))
+            S1(IPTS,2) = (S1(IPTS,3)*RECT1+POL1)*ONEOVER3
+            S1(IPTS,1) = (S1(IPTS,2)*RECT1+POL1)
+            ! for computing the complement of F0
+            S1(IPTS,1) = ROOTPI/(2.0D0*sqrt(XX(IPTS))) - S1(IPTS,1)
+        END IF
     END DO
     RETURN
 end subroutine

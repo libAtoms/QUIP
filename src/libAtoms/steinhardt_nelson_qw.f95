@@ -50,7 +50,7 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,min_cutoff,cutoff_transition_width,ma
       call set_cutoff(this,my_cutoff)
       call calc_connect(this)
    endif
-   
+
    if(my_do_q) call add_property(this, 'q'//l, 0.0_dp, ptr=ql)
    if(my_do_w) call add_property(this, 'w'//l, 0.0_dp, ptr=wl)
 
@@ -77,23 +77,23 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,min_cutoff,cutoff_transition_width,ma
       spherical_c = CPLX_ZERO
 
       do n = 1, n_neighbours(this,i)
-	 j = neighbour(this,i,n,diff=diff_ij,distance=r_ij)
+         j = neighbour(this,i,n,diff=diff_ij,distance=r_ij)
 
-	 if(r_ij > my_cutoff) cycle
-	 if(r_ij < my_min_cutoff) cycle
+         if(r_ij > my_cutoff) cycle
+         if(r_ij < my_min_cutoff) cycle
 
          if(present(mask_neighbour)) then
             if( .not. mask_neighbour(j) ) cycle
          endif
 
-	 if(do_smooth_cutoff) then
-	    f_cut = coordination_function(r_ij,my_cutoff,my_cutoff_transition_width)
-	 endif
-	 n_bonds = n_bonds + f_cut
+         if(do_smooth_cutoff) then
+            f_cut = coordination_function(r_ij,my_cutoff,my_cutoff_transition_width)
+         endif
+         n_bonds = n_bonds + f_cut
 
-	 do m = -l, l
-	    spherical_c(m) = spherical_c(m) + SphericalYCartesian(l,m,diff_ij) * f_cut
-	 enddo
+         do m = -l, l
+            spherical_c(m) = spherical_c(m) + SphericalYCartesian(l,m,diff_ij) * f_cut
+         enddo
 
       enddo
 
@@ -107,15 +107,15 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,min_cutoff,cutoff_transition_width,ma
       if(my_do_q) ql(i) = sqrt( dot_product(spherical_c,spherical_c) * 4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
 
       if(my_do_w) then
-	 wl(i) = 0.0_dp
-	 do m1 = -l, l
-	    do m2 = -l, l
-	       m3 = -m1-m2
-	       if( m3 >= -l .and. m3 <= l ) wl(i) = wl(i) + spherical_c(m1) * spherical_c(m2) * spherical_c(m3) * wigner3j(l,m1,l,m2,l,m3)
-	    enddo
-	 enddo
-	 
-	 wl(i) = wl(i) / sqrt( dot_product(spherical_c,spherical_c)**3 )
+         wl(i) = 0.0_dp
+         do m1 = -l, l
+            do m2 = -l, l
+               m3 = -m1-m2
+               if( m3 >= -l .and. m3 <= l ) wl(i) = wl(i) + spherical_c(m1) * spherical_c(m2) * spherical_c(m3) * wigner3j(l,m1,l,m2,l,m3)
+            enddo
+         enddo
+
+         wl(i) = wl(i) / sqrt( dot_product(spherical_c,spherical_c)**3 )
       endif
 
    enddo
@@ -129,12 +129,12 @@ subroutine calc_qw(this,l,do_q,do_w,cutoff,min_cutoff,cutoff_transition_width,ma
    if(my_do_w) then
       wl_crystal = 0.0_dp
       do m1 = -l, l
-	 do m2 = -l, l
-	    m3 = -m1-m2
-	    if( m3 >= -l .and. m3 <= l ) wl_crystal = wl_crystal + spherical_c_crystal(m1) * spherical_c_crystal(m2) * spherical_c_crystal(m3) * wigner3j(l,m1,l,m2,l,m3)
-	 enddo
+         do m2 = -l, l
+            m3 = -m1-m2
+            if( m3 >= -l .and. m3 <= l ) wl_crystal = wl_crystal + spherical_c_crystal(m1) * spherical_c_crystal(m2) * spherical_c_crystal(m3) * wigner3j(l,m1,l,m2,l,m3)
+         enddo
       enddo
-      
+
       wl_crystal = wl_crystal / sqrt( dot_product(spherical_c_crystal(:),spherical_c_crystal(:))**3 )
       call set_value(this%params, "w"//l//"_global",wl_crystal)
    endif
@@ -194,29 +194,29 @@ subroutine calc_qw_grad(this,grad_ind,l,do_q,do_w,cutoff,cutoff_transition_width
       if(r_ij > my_cutoff) cycle
 
       if(do_smooth_cutoff) then
-	 f_cut = coordination_function(r_ij,my_cutoff,my_cutoff_transition_width)
-	 df_cut(:) = -dcoordination_function(r_ij,my_cutoff,my_cutoff_transition_width)*diff_ij/r_ij
+         f_cut = coordination_function(r_ij,my_cutoff,my_cutoff_transition_width)
+         df_cut(:) = -dcoordination_function(r_ij,my_cutoff,my_cutoff_transition_width)*diff_ij/r_ij
       endif
       n_bonds = n_bonds + f_cut
       dn_bonds(:,i) = dn_bonds(:,i) + df_cut(:)
       dn_bonds(:,j) = dn_bonds(:,j) - df_cut(:)
 
       do m = -l, l
-	 spherical_c(m) = spherical_c(m) + SphericalYCartesian(l,m,diff_ij) * f_cut
-	 dspherical_c(:,m,i) = dspherical_c(:,m,i) - GradSphericalYCartesian(l,m,diff_ij) * f_cut + &
-						     SphericalYCartesian(l,m,diff_ij)*df_cut
-	 dspherical_c(:,m,j) = dspherical_c(:,m,j) + GradSphericalYCartesian(l,m,diff_ij) * f_cut - &
-						     SphericalYCartesian(l,m,diff_ij)*df_cut
+         spherical_c(m) = spherical_c(m) + SphericalYCartesian(l,m,diff_ij) * f_cut
+         dspherical_c(:,m,i) = dspherical_c(:,m,i) - GradSphericalYCartesian(l,m,diff_ij) * f_cut + &
+                                                     SphericalYCartesian(l,m,diff_ij)*df_cut
+         dspherical_c(:,m,j) = dspherical_c(:,m,j) + GradSphericalYCartesian(l,m,diff_ij) * f_cut - &
+                                                     SphericalYCartesian(l,m,diff_ij)*df_cut
       enddo
    enddo
 
    if(n_bonds > 0.0_dp) then
       do m=-l,l
-	 dspherical_c(:,m,i) = ((n_bonds*dspherical_c(:,m,i))-(spherical_c(m)*dn_bonds(:,i))) / (n_bonds**2)
-	 do n = 1, n_neighbours(this,i)
-	    j = neighbour(this,i,n)
-	    dspherical_c(:,m,j) = ((n_bonds*dspherical_c(:,m,j))-(spherical_c(m)*dn_bonds(:,j))) / (n_bonds**2)
-	 end do
+         dspherical_c(:,m,i) = ((n_bonds*dspherical_c(:,m,i))-(spherical_c(m)*dn_bonds(:,i))) / (n_bonds**2)
+         do n = 1, n_neighbours(this,i)
+            j = neighbour(this,i,n)
+            dspherical_c(:,m,j) = ((n_bonds*dspherical_c(:,m,j))-(spherical_c(m)*dn_bonds(:,j))) / (n_bonds**2)
+         end do
       end do
       spherical_c(:) = spherical_c(:) / n_bonds
    end if
@@ -224,11 +224,11 @@ subroutine calc_qw_grad(this,grad_ind,l,do_q,do_w,cutoff,cutoff_transition_width
    if(my_do_q) then
       ql = sqrt( dot_product(spherical_c(:),spherical_c(:)) * 4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
       do m=-l,l
-	 ql_grad(:,i) = ql_grad(:,i) + (1.0_dp/ql)*spherical_c(m)*conjg(dspherical_c(:,m,i)) * (4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
-	 do n = 1, n_neighbours(this,i)
-	    j = neighbour(this,i,n)
-	    ql_grad(:,j) = ql_grad(:,j) + (1.0_dp/ql)*spherical_c(m)*conjg(dspherical_c(:,m,j)) * (4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
-	 end do
+         ql_grad(:,i) = ql_grad(:,i) + (1.0_dp/ql)*spherical_c(m)*conjg(dspherical_c(:,m,i)) * (4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
+         do n = 1, n_neighbours(this,i)
+            j = neighbour(this,i,n)
+            ql_grad(:,j) = ql_grad(:,j) + (1.0_dp/ql)*spherical_c(m)*conjg(dspherical_c(:,m,j)) * (4.0_dp * PI / (2.0_dp * l + 1.0_dp) )
+         end do
       end do
    endif
 

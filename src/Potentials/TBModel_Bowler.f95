@@ -203,9 +203,9 @@ subroutine TBModel_Bowler_Finalise(this)
 end subroutine TBModel_Bowler_Finalise
 
 subroutine TBM_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   character(len=1024) :: value
@@ -310,7 +310,7 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     parse_tbm%type_of_atomic_num(:) = 0
     do ti=1, parse_tbm%n_types
       if (parse_Tbm%atomic_num(ti) > 0) &
-	parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ti)) = ti
+        parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ti)) = ti
     end do
 
     parse_cur_type = parse_cur_type + 1
@@ -393,9 +393,9 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
 end subroutine TBM_startElement_handler
 
 subroutine TBM_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (name == 'Bowler_params') then
     parse_in_tbm = .false.
@@ -748,12 +748,12 @@ subroutine TBModel_Bowler_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_
       j = 1
       do j_set=1, this%n_orb_sets(tj)
       call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	is, js, SK_frad_H)
+        is, js, SK_frad_H)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
-	b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	  is, js, SK_frad_H)
-	j = j + 1
+        b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+          is, js, SK_frad_H)
+        j = j + 1
       end do
       end do
       i = i + 1
@@ -827,13 +827,13 @@ function TBModel_Bowler_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_
     do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
       if (at_ind > 0) then
-	virial_outerprod_fac = 1.0_dp
+        virial_outerprod_fac = 1.0_dp
       else
-	virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
+        virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
       end if
       b_dH(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
-	this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
+        this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+        is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
       j = j + 1
     end do
     end do
@@ -925,7 +925,7 @@ function TBModel_Bowler_H_dist_func(this, dist, ti, tj)
   if (dist <= this%cutoff) then
     if (dist <= this%tailx0) then
       TBModel_Bowler_H_dist_func = TBModel_Bowler_dist_scaling(dist, &
-	this%r0(ti,tj), this%n(ti,tj), this%rc(ti, tj), this%nc(ti, tj))
+        this%r0(ti,tj), this%n(ti,tj), this%rc(ti, tj), this%nc(ti, tj))
     else
       TBModel_Bowler_H_dist_func = spline_value(this%H_tail_spline(ti,tj), dist)
     endif
@@ -943,7 +943,7 @@ function TBModel_Bowler_H_dist_func_deriv(this, dist, ti, tj)
   if (dist <= this%cutoff) then
     if (dist <= this%tailx0) then
       TBModel_Bowler_H_dist_func_deriv = TBModel_Bowler_dist_scaling_deriv(dist, &
-	this%r0(ti,tj), this%n(ti,tj), this%rc(ti, tj), this%nc(ti, tj))
+        this%r0(ti,tj), this%n(ti,tj), this%rc(ti, tj), this%nc(ti, tj))
     else
       TBModel_Bowler_H_dist_func_deriv = spline_deriv(this%H_tail_spline(ti,tj), dist)
     endif
@@ -961,7 +961,7 @@ function TBModel_Bowler_Vrep_dist_func(this, dist, ti, tj)
   if (dist <= this%cutoff) then
     if (dist <= this%tailx0) then
       TBModel_Bowler_Vrep_dist_func = TBModel_Bowler_dist_scaling(dist, &
-	this%r0(ti,tj), this%m(ti,tj), this%dc(ti, tj), this%mc(ti, tj))
+        this%r0(ti,tj), this%m(ti,tj), this%dc(ti, tj), this%mc(ti, tj))
     else
       TBModel_Bowler_Vrep_dist_func = spline_value(this%Vrep_tail_spline(ti,tj), dist)
     endif
@@ -979,7 +979,7 @@ function TBModel_Bowler_Vrep_dist_func_deriv(this, dist, ti, tj)
   if (dist <= this%cutoff) then
     if (dist <= this%tailx0) then
       TBModel_Bowler_Vrep_dist_func_deriv = TBModel_Bowler_dist_scaling_deriv(dist, &
-	this%r0(ti,tj), this%m(ti,tj), this%dc(ti, tj), this%mc(ti, tj))
+        this%r0(ti,tj), this%m(ti,tj), this%dc(ti, tj), this%mc(ti, tj))
     else
       TBModel_Bowler_Vrep_dist_func_deriv = spline_deriv(this%Vrep_tail_spline(ti,tj), dist)
     endif
@@ -1004,7 +1004,7 @@ function TBModel_Bowler_dist_scaling_deriv(r, r0, n, rc, nc)
   tmp1 = (r0/r)**n
   tmp2 = exp(n*((r0/rc)**nc - (r/rc)**nc))
 
-  TBModel_Bowler_dist_scaling_deriv = n*tmp1/(-r)*tmp2 + tmp1*tmp2*(-n)*nc*((r/rc)**nc)/r 
+  TBModel_Bowler_dist_scaling_deriv = n*tmp1/(-r)*tmp2 + tmp1*tmp2*(-n)*nc*((r/rc)**nc)/r
 end function TBModel_Bowler_dist_scaling_deriv
 
 function onsite_function(this, ti, orb_set_type)

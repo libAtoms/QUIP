@@ -27,14 +27,14 @@ implicit none
     args_str = ""
     if (cmd_arg_count() > 2) then
       do i=3, cmd_arg_count()
-	call get_cmd_arg(i, arg)
+        call get_cmd_arg(i, arg)
         !add {} if there is space in the arg
         if (index(trim(arg)," ").ne.0) then
             index_insert = index(trim(arg),"=")
             arg(index_insert+1:len_trim(arg)+2) = "{"//arg(index_insert+1:len_trim(arg))//"}"
             call print('arg: '//trim(arg),PRINT_SILENT)
         endif
-	args_str = trim(args_str) // " " // trim(arg)
+        args_str = trim(args_str) // " " // trim(arg)
       end do
     endif
 
@@ -165,9 +165,9 @@ subroutine do_vasp_calc(at, args_str, error)
       call set_value(incar_dict, "ISIF", 0)
    else
       if (persistent) then
-	 call set_value(incar_dict, "ISIF", 3)
+         call set_value(incar_dict, "ISIF", 3)
       else
-	 call set_value(incar_dict, "ISIF", 2)
+         call set_value(incar_dict, "ISIF", 2)
       endif
    endif
 
@@ -180,10 +180,10 @@ subroutine do_vasp_calc(at, args_str, error)
       run_dir = "vasp_run_0"
       force_run_dir_i = 0
       if (.not. persistent_already_started) then
-	 call system_command("mkdir "//trim(run_dir))
-	 call initialise(persistent_io, "persistent_run_i", action=OUTPUT)
-	 call print("-1", file=persistent_io)
-	 call finalise(persistent_io)
+         call system_command("mkdir "//trim(run_dir))
+         call initialise(persistent_io, "persistent_run_i", action=OUTPUT)
+         call print("-1", file=persistent_io)
+         call finalise(persistent_io)
       endif
 
       inquire(file="persistent_n_atoms", exist=persistent_n_atoms_exist)
@@ -217,17 +217,17 @@ subroutine do_vasp_calc(at, args_str, error)
    else
       inquire(file="WAVECAR."//trim(run_suffix), exist=have_wavecar)
       if (have_wavecar) then
-	 call print("copying old WAVECAR.run_suffix to run_dir/WAVECAR", PRINT_VERBOSE)
-	 call system_command("cp WAVECAR."//trim(run_suffix)//" "//trim(run_dir)//"/WAVECAR", status=stat)
-	 if (stat /= 0) then
-	    RAISE_ERROR("do_vasp_calc copying file WAVECAR."//trim(run_suffix)//" into "//trim(run_dir), error)
-	 endif
+         call print("copying old WAVECAR.run_suffix to run_dir/WAVECAR", PRINT_VERBOSE)
+         call system_command("cp WAVECAR."//trim(run_suffix)//" "//trim(run_dir)//"/WAVECAR", status=stat)
+         if (stat /= 0) then
+            RAISE_ERROR("do_vasp_calc copying file WAVECAR."//trim(run_suffix)//" into "//trim(run_dir), error)
+         endif
       endif
       if (force_constant_basis) then
-	 ! 3 is faster, but not tested
-	 call set_value(incar_dict, "ISTART", 2)
+         ! 3 is faster, but not tested
+         call set_value(incar_dict, "ISTART", 2)
       else
-	 call set_value(incar_dict, "ISTART", 1)
+         call set_value(incar_dict, "ISTART", 1)
       endif
    endif
 
@@ -287,11 +287,11 @@ subroutine do_vasp_calc(at, args_str, error)
 
       ! write KPOINTS if needed
       if (trim(kpoints_file) /= "_NONE_") then
-	 call print("writing KPOINTS", PRINT_VERBOSE)
-	 call system_command("cp "//trim(kpoints_file)//" "//trim(run_dir)//"/KPOINTS", status=stat)
-	 if (stat /= 0) then
-	    RAISE_ERROR("do_vasp_calc copying kpoints_file "//trim(kpoints_file)//" into "//trim(run_dir), error)
-	 endif
+         call print("writing KPOINTS", PRINT_VERBOSE)
+         call system_command("cp "//trim(kpoints_file)//" "//trim(run_dir)//"/KPOINTS", status=stat)
+         if (stat /= 0) then
+            RAISE_ERROR("do_vasp_calc copying kpoints_file "//trim(kpoints_file)//" into "//trim(run_dir), error)
+         endif
       endif
    endif
 
@@ -305,51 +305,51 @@ subroutine do_vasp_calc(at, args_str, error)
    if (persistent) then ! restart VASP if needed, write to REFTRAJCAR if needed, initiate calc
       call system_timer('vasp_filepot/start_restart')
       if (mod(persistent_run_i, persistent_restart_interval) == 0 .or. at%n /= persistent_n_atoms) then ! start or restart VASP
-	 call print("starting or restarting VASP", PRINT_VERBOSE)
-	 if (persistent_already_started) then ! tell currently running vasp to quit
-	    call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
-	    call print("0", file=persistent_io)
-	    call finalise(persistent_io)
-	    call initialise(persistent_io, trim(run_dir)//"/REFTRAJ_READY", action=OUTPUT)
-	    call print("-", file=persistent_io)
-	    call finalise(persistent_io)
-	    ! wait for signal that it's finished
-	    call system_command("echo 'before wait'; ps auxw | egrep 'vasp|mpi'")
-	    call wait_for_file_to_exist(trim(run_dir)//"/vasp.done", max_wait_time=600.0_dp, error=error)
-	    call system_command("echo 'after wait'; ls -l "//trim(run_dir))
-	    call system_command("echo 'after wait'; ps auxw | egrep 'vasp|mpi'")
-	    PASS_ERROR(error)
-	    ! clean up
-	    call unlink(trim(run_dir)//"/vasp.done")
-	    call system_command("cd "//trim(run_dir)//"; rm -f REFTRAJCAR REFTRAJ_READY OUTCAR CONTCAR OSZICAR")
-	    call system_command("cat vasp.stdout."//run_dir_i//" >> vasp.stdout")
-	 endif
-	 ! start vasp in background
-	 call          print("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &")
-	 call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &", status=stat)
-	 if (stat /= 0) then
-	    RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
-	 endif
-	 persistent_already_started = .true.
+         call print("starting or restarting VASP", PRINT_VERBOSE)
+         if (persistent_already_started) then ! tell currently running vasp to quit
+            call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
+            call print("0", file=persistent_io)
+            call finalise(persistent_io)
+            call initialise(persistent_io, trim(run_dir)//"/REFTRAJ_READY", action=OUTPUT)
+            call print("-", file=persistent_io)
+            call finalise(persistent_io)
+            ! wait for signal that it's finished
+            call system_command("echo 'before wait'; ps auxw | egrep 'vasp|mpi'")
+            call wait_for_file_to_exist(trim(run_dir)//"/vasp.done", max_wait_time=600.0_dp, error=error)
+            call system_command("echo 'after wait'; ls -l "//trim(run_dir))
+            call system_command("echo 'after wait'; ps auxw | egrep 'vasp|mpi'")
+            PASS_ERROR(error)
+            ! clean up
+            call unlink(trim(run_dir)//"/vasp.done")
+            call system_command("cd "//trim(run_dir)//"; rm -f REFTRAJCAR REFTRAJ_READY OUTCAR CONTCAR OSZICAR")
+            call system_command("cat vasp.stdout."//run_dir_i//" >> vasp.stdout")
+         endif
+         ! start vasp in background
+         call          print("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &")
+         call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//"("//'\"'//trim(vasp_path)//'\"'//" > ../vasp.stdout."//run_dir_i//"; echo done > vasp.done )"//'"'//" 2>&1 &", status=stat)
+         if (stat /= 0) then
+            RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
+         endif
+         persistent_already_started = .true.
       endif
       call system_timer('vasp_filepot/start_restart')
       call system_timer('vasp_filepot/write_reftrajcar')
       if (mod(persistent_run_i,persistent_restart_interval) /= 0 .and. at%n == persistent_n_atoms) then ! need to write current coords to REFTRAJCAR
-	 call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
-	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
-	 call print(at%N, file=persistent_io)
-	 call fix_lattice(at)
-	 call print(at%lattice(1,:), file=persistent_io)
-	 call print(at%lattice(2,:), file=persistent_io)
-	 call print(at%lattice(3,:), file=persistent_io)
-	 do i=1, at%N
-	    call print(matmul(at%g, at%pos(:,i)), file=persistent_io)
-	 end do
-	 call finalise(persistent_io)
-	 call print("touching REFTRAJ_READY", PRINT_VERBOSE)
-	 call initialise(persistent_io, trim(run_dir)//"/REFTRAJ_READY", action=OUTPUT)
-	 call print("-", file=persistent_io)
-	 call finalise(persistent_io)
+         call print("writing current coords to REFTRAJCAR", PRINT_VERBOSE)
+         call initialise(persistent_io, trim(run_dir)//"/REFTRAJCAR", action=OUTPUT)
+         call print(at%N, file=persistent_io)
+         call fix_lattice(at)
+         call print(at%lattice(1,:), file=persistent_io)
+         call print(at%lattice(2,:), file=persistent_io)
+         call print(at%lattice(3,:), file=persistent_io)
+         do i=1, at%N
+            call print(matmul(at%g, at%pos(:,i)), file=persistent_io)
+         end do
+         call finalise(persistent_io)
+         call print("touching REFTRAJ_READY", PRINT_VERBOSE)
+         call initialise(persistent_io, trim(run_dir)//"/REFTRAJ_READY", action=OUTPUT)
+         call print("-", file=persistent_io)
+         call finalise(persistent_io)
       endif
       call system_timer('vasp_filepot/write_reftrajcar')
       call system_timer('vasp_filepot/wait_reftraj_step_done')
@@ -364,7 +364,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1")
       call system_command("cd "//trim(run_dir)//"; bash -c "//'"'//trim(vasp_path)//'"'//" > ../vasp.stdout."//run_dir_i//" 2>&1", status=stat)
       if (stat /= 0) then
-	 RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
+         RAISE_ERROR("error running "//trim(vasp_path)//", status="//stat, error)
       endif
       call system_command("cat vasp.stdout."//run_dir_i//" >> vasp.stdout")
       call system_timer('vasp_filepot/run_vasp')
@@ -395,7 +395,7 @@ subroutine do_vasp_calc(at, args_str, error)
    if (.not. converged) then
       call print("WARNING: failed to find sign of convergence in OUTCAR", verbosity=PRINT_ALWAYS)
       if (.not. ignore_convergence) then
-	 RAISE_ERROR("failed to find sign of convergence in OUTCAR", error)
+         RAISE_ERROR("failed to find sign of convergence in OUTCAR", error)
       endif
    endif
 
@@ -404,7 +404,7 @@ subroutine do_vasp_calc(at, args_str, error)
       call print("copying run_dir/WAVECAR to WAVECAR.run_suffix", PRINT_VERBOSE)
       call system_command("cp "//trim(run_dir)//"/WAVECAR WAVECAR."//trim(run_suffix), status=stat)
       if (stat /= 0) then
-	 RAISE_ERROR("do_vasp_calc copying file "//trim(run_dir)//"WAVECAR into ./"//trim(run_dir)//"WAVECAR."//trim(run_suffix), error)
+         RAISE_ERROR("do_vasp_calc copying file "//trim(run_dir)//"WAVECAR into ./"//trim(run_dir)//"WAVECAR."//trim(run_suffix), error)
       endif
    endif
 
@@ -460,7 +460,7 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, nelect_of_elem, error)
    do Z_i=1, size(uniq_Z)
       if (uniq_Z(Z_i) == 0) exit
       if (len_trim(potcar_files_a(uniq_Z(Z_i))) == 0) then
-	 RAISE_ERROR("write_vasp_potcar could not find a potcar for Z="//uniq_Z(Z_i), error)
+         RAISE_ERROR("write_vasp_potcar could not find a potcar for Z="//uniq_Z(Z_i), error)
       endif
       call system_command("cat "//trim(potcar_files_a(uniq_Z(Z_i)))//" >> "//trim(run_dir)//"/POTCAR")
       call system_command("(echo -n '"//uniq_Z(Z_i)//" '; cat "//trim(potcar_files_a(uniq_Z(Z_i)))//" | fgrep ZVAL | sed -e 's/.*ZVAL[ ]*=[ ]*//' -e 's/ .*//') >> nelect_summary")
@@ -472,10 +472,10 @@ subroutine write_vasp_potcar(at, run_dir, potcar_files, nelect_of_elem, error)
       line = read_line(io, stat)
       read (unit=line, fmt=*) t_Z, t_nelect
       if (t_Z <= 0 .or. t_Z > size(nelect_of_elem)) then
-	 RAISE_ERROR("write_vasp_potcar got value out of range reading nelect_summary value t_Z="//t_Z, error)
+         RAISE_ERROR("write_vasp_potcar got value out of range reading nelect_summary value t_Z="//t_Z, error)
       endif
       if (t_Z /= uniq_Z(Z_i)) then
-	 RAISE_ERROR("write_vasp_potcar got mismatch reading nelect_summary value t_Z="//t_Z//" uniq_Z("//Z_i//")="//uniq_Z(Z_i), error)
+         RAISE_ERROR("write_vasp_potcar got mismatch reading nelect_summary value t_Z="//t_Z//" uniq_Z("//Z_i//")="//uniq_Z(Z_i), error)
       endif
       nelect_of_elem(t_Z) = t_nelect
    end do
@@ -565,8 +565,8 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
 
    if (do_calc_force) then
       if (.not. assign_pointer(at, "force", force_p)) then
-	 call add_property(at, "force", 0.0_dp, n_cols=3, ptr2=force_p, error=error)
-	 PASS_ERROR(error)
+         call add_property(at, "force", 0.0_dp, n_cols=3, ptr2=force_p, error=error)
+         PASS_ERROR(error)
       endif
    endif
 
@@ -579,57 +579,57 @@ subroutine read_vasp_output(run_dir, do_calc_energy, do_calc_force, do_calc_viri
    do while (stat == 0)
       line = read_line(outcar_io, stat)
       if (do_calc_energy) then
-	 if (index(trim(line),"free  energy") > 0) then ! found energy
-	    call split_string_simple(trim(line), fields, n_fields, " ", error=error)
-	    PASS_ERROR(error)
-	    if (n_fields /= 6) then
-	       RAISE_ERROR("read_vasp_output confused by energy line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
-	    endif
-	    if (fields(6) /= "eV") then
-	       RAISE_ERROR("read_vasp_output confused by units energy line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
-	    endif
-	    read(unit=fields(5),fmt=*) energy
-	    call set_param_value(at, 'energy', energy)
-	 endif
+         if (index(trim(line),"free  energy") > 0) then ! found energy
+            call split_string_simple(trim(line), fields, n_fields, " ", error=error)
+            PASS_ERROR(error)
+            if (n_fields /= 6) then
+               RAISE_ERROR("read_vasp_output confused by energy line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
+            endif
+            if (fields(6) /= "eV") then
+               RAISE_ERROR("read_vasp_output confused by units energy line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
+            endif
+            read(unit=fields(5),fmt=*) energy
+            call set_param_value(at, 'energy', energy)
+         endif
       endif
       if (do_calc_force) then
-	 if (force_start_line_i > 0 .and. line_i >= force_start_line_i .and. line_i <= force_start_line_i+at%N-1) then
-	    read(unit=line,fmt=*) t_pos, force_p(:,line_i-force_start_line_i+1)
-	 else
-	    if (index(trim(line),"TOTAL-FORCE") > 0) then ! found force
-	       call split_string_simple(trim(line), fields, n_fields, " ", error=error)
-	       if (fields(3) /= "(eV/Angst)") then
-		  RAISE_ERROR("read_vasp_output confused by units force header line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
-	       endif
-	       force_start_line_i = line_i+2
-	    endif
-	 endif
+         if (force_start_line_i > 0 .and. line_i >= force_start_line_i .and. line_i <= force_start_line_i+at%N-1) then
+            read(unit=line,fmt=*) t_pos, force_p(:,line_i-force_start_line_i+1)
+         else
+            if (index(trim(line),"TOTAL-FORCE") > 0) then ! found force
+               call split_string_simple(trim(line), fields, n_fields, " ", error=error)
+               if (fields(3) /= "(eV/Angst)") then
+                  RAISE_ERROR("read_vasp_output confused by units force header line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
+               endif
+               force_start_line_i = line_i+2
+            endif
+         endif
       endif
       if (do_calc_virial) then
-	 if (in_virial .and. index(trim(line),"Total") > 0) then
-	    read(unit=line,fmt=*,iostat=read_err) t_s, virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
-	    if (read_err /= 0) then
-	       RAISE_ERROR ("read_vasp_output failed to read virial from line '"//trim(line)//"'", error)
-	    endif
-	    virial(2,1) = virial(1,2)
-	    virial(3,2) = virial(2,3)
-	    virial(3,1) = virial(1,3)
-	    call set_param_value(at, 'virial', virial)
+         if (in_virial .and. index(trim(line),"Total") > 0) then
+            read(unit=line,fmt=*,iostat=read_err) t_s, virial(1,1), virial(2,2), virial(3,3), virial(1,2), virial(2,3), virial(1,3)
+            if (read_err /= 0) then
+               RAISE_ERROR ("read_vasp_output failed to read virial from line '"//trim(line)//"'", error)
+            endif
+            virial(2,1) = virial(1,2)
+            virial(3,2) = virial(2,3)
+            virial(3,1) = virial(1,3)
+            call set_param_value(at, 'virial', virial)
             in_virial = .false.
-	 else
-	    if (index(trim(line),"FORCE on cell") > 0) then ! found start of virial section
-	       call split_string_simple(trim(line), fields, n_fields, " ", error=error)
-	       if (fields(9) /= "(eV):" .and. fields(9) /= "(eV/reduce") then
-		  RAISE_ERROR("read_vasp_output confused by units virial header line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
-	       endif
+         else
+            if (index(trim(line),"FORCE on cell") > 0) then ! found start of virial section
+               call split_string_simple(trim(line), fields, n_fields, " ", error=error)
+               if (fields(9) /= "(eV):" .and. fields(9) /= "(eV/reduce") then
+                  RAISE_ERROR("read_vasp_output confused by units virial header line# "//line_i//" in OUTCAR line '"//trim(line)//"'", error)
+               endif
                in_virial = .true.
-	    endif
-	 endif
+            endif
+         endif
       endif
       if (.not. converged) then
-	 if (index(trim(line),"aborting loop because EDIFF is reached") > 0) then ! found convergence of SCF
-	    converged = .true.
-	 endif
+         if (index(trim(line),"aborting loop because EDIFF is reached") > 0) then ! found convergence of SCF
+            converged = .true.
+         endif
       endif
       ! if (stat == 0) call print("GOT OUTPUT "//trim(line))
       line_i = line_i + 1
@@ -654,8 +654,8 @@ subroutine read_vasp_output_persistent(at, run_dir, do_calc_energy, do_calc_forc
 
    if (do_calc_force) then
       if (.not. assign_pointer(at, "force", force_p)) then
-	 call add_property(at, "force", 0.0_dp, n_cols=3, ptr2=force_p, error=error)
-	 PASS_ERROR(error)
+         call add_property(at, "force", 0.0_dp, n_cols=3, ptr2=force_p, error=error)
+         PASS_ERROR(error)
       endif
    endif
 
@@ -710,23 +710,23 @@ subroutine read_vasp_incar_dict(incar_dict, incar_template_file, error)
    do i=1, incar_n_lines
       comment_pos = index(trim(incar_a(i)), '#')
       if (comment_pos > 1) then
-	 incar_a(i) = incar_a(i)(1:comment_pos-1)
+         incar_a(i) = incar_a(i)(1:comment_pos-1)
       elseif (comment_pos == 1) then
-	 incar_a(i) = ""
+         incar_a(i) = ""
       endif
       comment_pos = index(trim(incar_a(i)), '!')
       if (comment_pos > 1) then
-	 incar_a(i) = incar_a(i)(1:comment_pos-1)
+         incar_a(i) = incar_a(i)(1:comment_pos-1)
       elseif (comment_pos == 1) then
-	 incar_a(i) = ""
+         incar_a(i) = ""
       endif
       call split_string(trim(incar_a(i)), ";", "''"//'""', incar_line_fields, incar_line_n_fields, .true.)
       ! loop over ';' separated fields
       do j=1, incar_line_n_fields
-	 call split_string(incar_line_fields(j), "=", "''"//'""', incar_field_fields, incar_field_n_fields, .true.)
-	 if (incar_field_n_fields > 2) then
-	    RAISE_ERROR("read_vasp_incar_dict got more than one '=' in field "//trim(incar_line_fields(j)), error)
-	 endif
+         call split_string(incar_line_fields(j), "=", "''"//'""', incar_field_fields, incar_field_n_fields, .true.)
+         if (incar_field_n_fields > 2) then
+            RAISE_ERROR("read_vasp_incar_dict got more than one '=' in field "//trim(incar_line_fields(j)), error)
+         endif
          if (.not. has_key(incar_dict, trim(adjustl(incar_field_fields(1))))) then
             ! VASP always uses first instance of a keyword, do same here
             call set_value(incar_dict, trim(adjustl(incar_field_fields(1))), trim(adjustl(incar_field_fields(2))))

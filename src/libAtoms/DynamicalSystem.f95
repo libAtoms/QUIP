@@ -37,7 +37,7 @@
 !% to selected atoms etc.
 !%
 !% In Fortran code, initialise a DynamicalSystem object like this:
-!%> 	call initialise(MyDS, MyAtoms)
+!%>         call initialise(MyDS, MyAtoms)
 !% which (shallowly) copies MyAtoms into the internal atoms structure (and so
 !% MyAtoms is not required by MyDS after this call and can be finalised). In Python,
 !% a DynamicalSystem can be initialised from an Atoms instance:
@@ -52,7 +52,7 @@
 !% both cases).
 !%
 !% DynamicalSystem has an integrator,
-!%> 	call advance_verlet(MyDS,dt,forces)
+!%>         call advance_verlet(MyDS,dt,forces)
 !% which takes a set of forces and integrates the equations of motion forward
 !% for a time 'dt'.
 !%
@@ -102,15 +102,15 @@ include 'mpif.h'
    public :: ds_add_constraint, ds_save_state, ds_restore_state
 
    public :: constrain_bondanglecos, &
-	     constrain_bondlength, &
-	     constrain_bondlength_sq, &
-	     constrain_bondlength_dev_pow, &
-	     constrain_bondlength_diff, &
-	     constrain_gap_energy, &
-	     constrain_atom_plane, &
-	     constrain_struct_factor_like_mag, &
-	     constrain_struct_factor_like_r, &
-	     constrain_struct_factor_like_i
+             constrain_bondlength, &
+             constrain_bondlength_sq, &
+             constrain_bondlength_dev_pow, &
+             constrain_bondlength_diff, &
+             constrain_gap_energy, &
+             constrain_atom_plane, &
+             constrain_struct_factor_like_mag, &
+             constrain_struct_factor_like_r, &
+             constrain_struct_factor_like_i
 
    !Different integration types. Stored in group%type. Used by advance_verlet to integrate
    !the equations of motion in different ways.
@@ -141,7 +141,7 @@ include 'mpif.h'
       real(dp)                              :: ext_energy = 0.0_dp      !% Extended energy
       real(dp)                              :: thermostat_dW = 0.0_dp   !% Increment of work done by thermostat
       real(dp)                              :: thermostat_work = 0.0_dp !% Total work done by thermostat
-      logical         			    :: initialised = .false.
+      logical                               :: initialised = .false.
 
       integer                               :: random_seed              !% RNG seed, used by 'ds_save_state' and 'ds_restore_state' only.
 
@@ -376,15 +376,15 @@ contains
 
       ! Initialize oldpos and avgpos
       if (added_avgpos) then
-	do i = 1, this%N
-	   this%atoms%avgpos(:,i) = realpos(this%atoms,i)
-	end do
+        do i = 1, this%N
+           this%atoms%avgpos(:,i) = realpos(this%atoms,i)
+        end do
       endif
       this%atoms%oldpos = this%atoms%avgpos
       if (added_avgke) then
-	do i=1, this%atoms%N
-	  this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
-	end do
+        do i=1, this%atoms%N
+          this%atoms%avg_ke(i) = 0.5_dp*this%atoms%mass(i)*normsq(this%atoms%velo(:,i))
+        end do
       endif
 
       ! Check for constraints
@@ -920,14 +920,14 @@ contains
      real(dp) :: gamma_epsilon
 
      if (tau_epsilon > 0.0_dp) then
-	gamma_epsilon = 1.0_dp/tau_epsilon
+        gamma_epsilon = 1.0_dp/tau_epsilon
      else
         gamma_epsilon = 0.0_dp
      endif
 
      call initialise(this%barostat, type=type, p_ext=p_ext, hydrostatic_strain=hydrostatic_strain, diagonal_strain=diagonal_strain, &
         finite_strain_formulation=finite_strain_formulation, cell_volume=cell_volume(this%atoms), W_epsilon=W_epsilon, &
-	Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T, W_epsilon_factor=W_epsilon_factor, thermalise=thermalise)
+        Ndof=real(this%Ndof,dp), gamma_epsilon=gamma_epsilon, T=T, W_epsilon_factor=W_epsilon_factor, thermalise=thermalise)
 
    end subroutine ds_set_barostat
 
@@ -967,8 +967,8 @@ contains
      real(dp) :: gamma_eff, NHL_gamma_eff
 
      if (.not. present(Q)) then
-	if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
-	   call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present if Q is not')
+        if (count( (/present(gamma), present(tau) /) ) /= 1 ) &
+           call system_abort('ds_add_thermostat: exactly one of gamma, tau must be present if Q is not')
      endif
 
      if (present(gamma)) then
@@ -977,9 +977,9 @@ contains
      else
        gamma_eff = 0.0_dp
        if (present(tau)) then
-	  if (tau /= 0.0_dp) then
-	    gamma_eff = 1.0_dp/tau
-	  endif
+          if (tau /= 0.0_dp) then
+            gamma_eff = 1.0_dp/tau
+          endif
        endif
      endif
 
@@ -1039,14 +1039,14 @@ contains
 
      if (present(T)) then
         allocate(use_T_a(n))
-	use_T_a = T
+        use_T_a = T
      else
         use_T_a => T_a
      endif
 
      if (present(Q)) then
         allocate(use_Q_a(n))
-	use_Q_a = Q
+        use_Q_a = Q
      else if (present(Q_a)) then
         use_Q_a => Q_a
      end if
@@ -1056,16 +1056,16 @@ contains
        gamma_eff_a = gamma
      else ! tau or tau_a
        if (present(tau)) then
-	  gamma_eff_a = 1.0_dp/tau
+          gamma_eff_a = 1.0_dp/tau
        else
-	  gamma_eff_a = 1.0_dp/tau_a
+          gamma_eff_a = 1.0_dp/tau_a
        endif
      endif
 
      if (associated(use_Q_a)) then
-	call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,use_Q_a,region_i=region_i)
+        call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,use_Q_a,region_i=region_i)
      else
-	call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,region_i=region_i)
+        call add_thermostats(this%thermostat,type,n,use_T_a,gamma_eff_a,region_i=region_i)
      endif
 
      deallocate(gamma_eff_a)
@@ -1242,16 +1242,16 @@ contains
 
      L = 0.0_dp
      do ii = 1, N
-	if (present(indices)) then
-	  i = indices(ii)
-	else
-	  i = ii
-	end if
-	if (present(origin)) then
-	  L = L + mass(i) * ((pos(:,i)-origin) .cross. velo(:,i))
-	else
-	  L = L + mass(i) * (pos(:,i) .cross. velo(:,i))
-	endif
+        if (present(indices)) then
+          i = indices(ii)
+        else
+          i = ii
+        end if
+        if (present(origin)) then
+          L = L + mass(i) * ((pos(:,i)-origin) .cross. velo(:,i))
+        else
+          L = L + mass(i) * (pos(:,i) .cross. velo(:,i))
+        endif
      end do
 
    end function arrays_angular_momentum
@@ -1300,14 +1300,14 @@ contains
      do i=1, this%N
        m = this%mass(i)
        if (present(origin)) then
-	 dr = this%pos(:,i)-origin
+         dr = this%pos(:,i)-origin
        else
-	 dr = this%pos(:,i)
+         dr = this%pos(:,i)
        endif
        do ii=1,3
        do jj=1,3
-	 if (ii == jj) MoI(ii,jj) = MoI(ii,jj) + m*normsq(dr)
-	 MoI(ii,jj) = MoI(ii,jj) - m*dr(ii)*dr(jj)
+         if (ii == jj) MoI(ii,jj) = MoI(ii,jj) + m*normsq(dr)
+         MoI(ii,jj) = MoI(ii,jj) - m*dr(ii)*dr(jj)
        end do
        end do
      end do
@@ -1344,22 +1344,22 @@ contains
 
       do_local_ke = optional_default(.false., local_ke)
       if (do_local_ke) then
-	 if (.not. assign_pointer(this, 'local_ke', local_ke_p)) then
-	    RAISE_ERROR("atoms_kinetic_energy got local_ke but no local_ke property", error)
-	 endif
-	 local_ke_p = 0.0_dp
-	 ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain), local_ke_p(1:this%Ndomain))
+         if (.not. assign_pointer(this, 'local_ke', local_ke_p)) then
+            RAISE_ERROR("atoms_kinetic_energy got local_ke but no local_ke property", error)
+         endif
+         local_ke_p = 0.0_dp
+         ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain), local_ke_p(1:this%Ndomain))
       else
-	 ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
+         ke = kinetic_energy(this%mass(1:this%Ndomain), this%velo(1:3, 1:this%Ndomain))
       endif
 
       if (present(mpi_obj)) then
          call sum_in_place(mpi_obj, ke, error=error)
          PASS_ERROR(error)
-	 if (do_local_ke) then
-	    call sum_in_place(mpi_obj, local_ke_p, error=error)
-	    PASS_ERROR(error)
-	 endif
+         if (do_local_ke) then
+            call sum_in_place(mpi_obj, local_ke_p, error=error)
+            PASS_ERROR(error)
+         endif
       endif
     end function atoms_kinetic_energy
 
@@ -1442,9 +1442,9 @@ contains
      tau = 0.0_dp
      do i=1, N
        if (present(origin)) then
-	 tau = tau + ((pos(:,i)-origin).cross.force(:,i))
+         tau = tau + ((pos(:,i)-origin).cross.force(:,i))
        else
-	 tau = tau + (pos(:,i).cross.force(:,i))
+         tau = tau + (pos(:,i).cross.force(:,i))
        endif
      end do
    end function torque
@@ -1456,14 +1456,14 @@ contains
       integer :: i
 
       if (size(temps) /= size(this%thermostat)) &
-	call system_abort("thermostat_temperatures needs a temps array to match size of this%thermostat() " //size(this%thermostat))
+        call system_abort("thermostat_temperatures needs a temps array to match size of this%thermostat() " //size(this%thermostat))
 
       temps = -1.0_dp
       if (this%thermostat(0)%type == THERMOSTAT_LANGEVIN) then
-	temps(1) = temperature(this, property='damp_mask', value=1, instantaneous=.true.)
+        temps(1) = temperature(this, property='damp_mask', value=1, instantaneous=.true.)
       endif
       do i=1, size(this%thermostat)-1
-	if (this%thermostat(i)%type /= THERMOSTAT_NONE) temps(i+1) = temperature(this, property='thermostat_region', value=i, instantaneous=.true.)
+        if (this%thermostat(i)%type /= THERMOSTAT_NONE) temps(i+1) = temperature(this, property='thermostat_region', value=i, instantaneous=.true.)
       end do
    end subroutine thermostat_temperatures
 
@@ -1506,24 +1506,24 @@ contains
             endif
          endif
 
-	temperature = 0.0_dp
-	N = 0
-	Ndof = 0.0_dp
-	do i = 1,this%atoms%Ndomain
-	   if (associated(property_p)) then
-	      if (property_p(i) == value .and. this%atoms%move_mask(i) == 1) then
-		 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
-		 N = N + 1
-		 Ndof = Ndof + degrees_of_freedom(this,i)
-	      end if
-	   else
-	      if (my_include_all .or. (this%atoms%move_mask(i) == 1)) then
-		 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
-		 N = N + 1
-		 Ndof = Ndof + degrees_of_freedom(this,i)
-	      end if
-	   end if
-	end do
+        temperature = 0.0_dp
+        N = 0
+        Ndof = 0.0_dp
+        do i = 1,this%atoms%Ndomain
+           if (associated(property_p)) then
+              if (property_p(i) == value .and. this%atoms%move_mask(i) == 1) then
+                 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
+                 N = N + 1
+                 Ndof = Ndof + degrees_of_freedom(this,i)
+              end if
+           else
+              if (my_include_all .or. (this%atoms%move_mask(i) == 1)) then
+                 temperature = temperature + this%atoms%mass(i) * normsq(this%atoms%velo(:,i))
+                 N = N + 1
+                 Ndof = Ndof + degrees_of_freedom(this,i)
+              end if
+           end if
+        end do
 
         if (present(mpi_obj)) then
            call sum_in_place(mpi_obj, temperature, error=error)
@@ -1534,9 +1534,9 @@ contains
            PASS_ERROR(error)
         endif
 
-	if (N /= 0) temperature = temperature / ( Ndof * BOLTZMANN_K )
+        if (N /= 0) temperature = temperature / ( Ndof * BOLTZMANN_K )
       else
-	temperature = this%cur_temp
+        temperature = this%cur_temp
       endif
 
     end function temperature
@@ -1578,17 +1578,17 @@ contains
 
       if ( currTemp .feq. 0.0_dp ) then
          call print('Randomizing velocities')
-	 if (my_mass_weighted) then
-	   call randomise(this%atoms%velo, 1.0_dp/sqrt(this%atoms%mass))
-	 else
-	   call randomise(this%atoms%velo, 1.0_dp)
-	 endif
+         if (my_mass_weighted) then
+           call randomise(this%atoms%velo, 1.0_dp/sqrt(this%atoms%mass))
+         else
+           call randomise(this%atoms%velo, 1.0_dp)
+         endif
          call print('Zeroing total momentum')
          call zero_momentum(this)
-	 if (my_zero_L) then
-	   call print('Zeroing angular momentum')
-	   call zero_angular_momentum(this%atoms)
-	 endif
+         if (my_zero_L) then
+           call print('Zeroing angular momentum')
+           call zero_angular_momentum(this%atoms)
+         endif
          currTemp = temperature(this, instantaneous=.true.)
       end if
 
@@ -1701,11 +1701,11 @@ contains
 
      if (angular_vel_mag .fne. 0.0_dp) then
        do i=1, this%N
-	 dr = this%pos(:,i)-CoM
-	 dr_parallel = axis*(dr.dot.axis)
-	 dr_normal = dr - dr_parallel
-	 v = angular_vel_mag*(axis .cross. dr_normal)
-	 this%velo(:,i) = this%velo(:,i) - v
+         dr = this%pos(:,i)-CoM
+         dr_parallel = axis*(dr.dot.axis)
+         dr_normal = dr - dr_parallel
+         v = angular_vel_mag*(axis .cross. dr_normal)
+         this%velo(:,i) = this%velo(:,i) - v
        end do
      end if
    end subroutine zero_angular_momentum
@@ -2491,15 +2491,15 @@ contains
 
      if (this%print_thermostat_temps) then
        if (any(region_temps >= 0.0_dp)) then
-	 call print("T "//this%t, nocr=.true., file=file)
-	 do i=0, size(region_temps)-1
-	   if (this%thermostat(i)%type /= THERMOSTAT_NONE) then
-	     call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true., file=file)
-	   else
-	     call print(" "// i // " type=NONE", nocr=.true., file=file)
-	   endif
-	 end do
-	 call print("", file=file)
+         call print("T "//this%t, nocr=.true., file=file)
+         do i=0, size(region_temps)-1
+           if (this%thermostat(i)%type /= THERMOSTAT_NONE) then
+             call print(" "// i // " " // round(this%thermostat(i)%T,2) // " " // round(region_temps(i+1),2), nocr=.true., file=file)
+           else
+             call print(" "// i // " type=NONE", nocr=.true., file=file)
+           endif
+         end do
+         call print("", file=file)
        endif
      endif
 
@@ -2541,7 +2541,7 @@ contains
       call print('| Index  |   Average Position   |      Velocity        |     Acceleration     |', PRINT_VERBOSE, file)
       call print('-------------------------------------------------------------------------------', PRINT_VERBOSE, file)
       do i = 1, this%N
-	 call print('| '//i//' |'//this%atoms%avgpos(:,i)//' |'//this%atoms%velo(:,i)//' |'//this%atoms%acc(:,i)//' |', PRINT_VERBOSE, file)
+         call print('| '//i//' |'//this%atoms%avgpos(:,i)//' |'//this%atoms%velo(:,i)//' |'//this%atoms%acc(:,i)//' |', PRINT_VERBOSE, file)
       end do
       call print('-------------------------------------------------------------------------------', PRINT_VERBOSE,file)
 
@@ -2576,7 +2576,7 @@ contains
 
      !Do nothing for i==j
      if (i==j .or. i == k .or. j == k) then
-	call print_warning('Constrain_bondanglecos: Tried to constrain bond angle cosine '//i//'--'//j//'--'//k)
+        call print_warning('Constrain_bondanglecos: Tried to constrain bond angle cosine '//i//'--'//j//'--'//k)
         return
      end if
 
@@ -2594,11 +2594,11 @@ contains
 
      !Add the constraint
      if (present(c)) then
-	use_c = c
+        use_c = c
      else
         r_ji = diff_min_image(this%atoms,j,i)
         r_jk = diff_min_image(this%atoms,j,k)
-	use_c = (r_ji .dot. r_jk)/(norm(r_ji)*norm(r_jk))
+        use_c = (r_ji .dot. r_jk)/(norm(r_ji)*norm(r_jk))
      endif
      call ds_add_constraint(this,(/i,j,k/),BONDANGLECOS_FUNC,(/use_c/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
 
@@ -2646,9 +2646,9 @@ contains
      if (present(di)) then
        ! relaxing bond length to final value
        if (di < 0.0_dp) then
-	  use_di = distance_min_image(this%atoms,i,j)
+          use_di = distance_min_image(this%atoms,i,j)
        else
-	  use_di = di
+          use_di = di
        endif
        call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,d,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
      else ! constant restraint
@@ -2736,9 +2736,9 @@ contains
      if (present(di)) then
        ! relaxing bond length to final value
        if (di < 0.0_dp) then
-	  use_di = distance_min_image(this%atoms,i,j)
+          use_di = distance_min_image(this%atoms,i,j)
        else
-	  use_di = di
+          use_di = di
        endif
        call ds_add_constraint(this,(/i,j/),BOND_FUNC,(/use_di,d,p,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
      else
@@ -2789,9 +2789,9 @@ contains
 
      !Add the constraint
      if (present(di)) then
-	call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/di,d,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+        call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/di,d,t0,tau/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
      else
-	call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d,d,0.0_dp,1.0_dp/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
+        call ds_add_constraint(this,(/i,j,k/),BOND_DIFF_FUNC,(/d,d,0.0_dp,1.0_dp/), restraint_k=restraint_k, bound=bound, tol=tol, print_summary=print_summary)
      endif
 
    end subroutine constrain_bondlength_diff
@@ -2883,8 +2883,8 @@ contains
      !Report bad atom indices
      if ( Z /= 0) then
         if (count(this%atoms%Z == Z) == 0) then
-	   call system_abort('Constrain_struct_factor_like_mag: No atoms (out of '//this%atoms%N//') with Z='//Z)
-	end if
+           call system_abort('Constrain_struct_factor_like_mag: No atoms (out of '//this%atoms%N//') with Z='//Z)
+        end if
      end if
 
      !Register the constraint function if this is the first call
@@ -2894,24 +2894,24 @@ contains
      end if
 
      if (Z == 0) then
-	allocate(atom_indices(this%atoms%n))
-	do i=1, this%atoms%N
-	    atom_indices(i) = i
-	end do
+        allocate(atom_indices(this%atoms%n))
+        do i=1, this%atoms%N
+            atom_indices(i) = i
+        end do
      else
-	allocate(atom_indices(count(this%atoms%Z == Z)))
-	ii = 0
-	do i=1, this%atoms%N
-	   if (Z == 0) then
-	      ii = ii + 1
-	      atom_indices(ii) = i
-	   else
-	      if (this%atoms%Z(i) == Z) then
-		 ii = ii + 1
-		 atom_indices(ii) = i
-	      endif
-	   endif
-	end do
+        allocate(atom_indices(count(this%atoms%Z == Z)))
+        ii = 0
+        do i=1, this%atoms%N
+           if (Z == 0) then
+              ii = ii + 1
+              atom_indices(ii) = i
+           else
+              if (this%atoms%Z(i) == Z) then
+                 ii = ii + 1
+                 atom_indices(ii) = i
+              endif
+           endif
+        end do
      endif
 
      !Add the constraint
@@ -2941,8 +2941,8 @@ contains
      !Report bad atom indices
      if ( Z /= 0) then
         if (count(this%atoms%Z == Z) == 0) then
-	   call system_abort('Constrain_struct_factor_like_r: No atoms (out of '//this%atoms%N//') with Z='//Z)
-	end if
+           call system_abort('Constrain_struct_factor_like_r: No atoms (out of '//this%atoms%N//') with Z='//Z)
+        end if
      end if
 
      !Register the constraint function if this is the first call
@@ -2952,24 +2952,24 @@ contains
      end if
 
      if (Z == 0) then
-	allocate(atom_indices(this%atoms%n))
-	do i=1, this%atoms%N
-	    atom_indices(i) = i
-	end do
+        allocate(atom_indices(this%atoms%n))
+        do i=1, this%atoms%N
+            atom_indices(i) = i
+        end do
      else
-	allocate(atom_indices(count(this%atoms%Z == Z)))
-	ii = 0
-	do i=1, this%atoms%N
-	   if (Z == 0) then
-	      ii = ii + 1
-	      atom_indices(ii) = i
-	   else
-	      if (this%atoms%Z(i) == Z) then
-		 ii = ii + 1
-		 atom_indices(ii) = i
-	      endif
-	   endif
-	end do
+        allocate(atom_indices(count(this%atoms%Z == Z)))
+        ii = 0
+        do i=1, this%atoms%N
+           if (Z == 0) then
+              ii = ii + 1
+              atom_indices(ii) = i
+           else
+              if (this%atoms%Z(i) == Z) then
+                 ii = ii + 1
+                 atom_indices(ii) = i
+              endif
+           endif
+        end do
      endif
 
      !Add the constraint
@@ -2999,8 +2999,8 @@ contains
      !Report bad atom indices
      if ( Z /= 0) then
         if (count(this%atoms%Z == Z) == 0) then
-	   call system_abort('Constrain_struct_factor_like_i: No atoms (out of '//this%atoms%N//') with Z='//Z)
-	end if
+           call system_abort('Constrain_struct_factor_like_i: No atoms (out of '//this%atoms%N//') with Z='//Z)
+        end if
      end if
 
      !Register the constraint function if this is the first call
@@ -3010,24 +3010,24 @@ contains
      end if
 
      if (Z == 0) then
-	allocate(atom_indices(this%atoms%n))
-	do i=1, this%atoms%N
-	    atom_indices(i) = i
-	end do
+        allocate(atom_indices(this%atoms%n))
+        do i=1, this%atoms%N
+            atom_indices(i) = i
+        end do
      else
-	allocate(atom_indices(count(this%atoms%Z == Z)))
-	ii = 0
-	do i=1, this%atoms%N
-	   if (Z == 0) then
-	      ii = ii + 1
-	      atom_indices(ii) = i
-	   else
-	      if (this%atoms%Z(i) == Z) then
-		 ii = ii + 1
-		 atom_indices(ii) = i
-	      endif
-	   endif
-	end do
+        allocate(atom_indices(count(this%atoms%Z == Z)))
+        ii = 0
+        do i=1, this%atoms%N
+           if (Z == 0) then
+              ii = ii + 1
+              atom_indices(ii) = i
+           else
+              if (this%atoms%Z(i) == Z) then
+                 ii = ii + 1
+                 atom_indices(ii) = i
+              endif
+           endif
+        end do
      endif
 
      !Add the constraint
@@ -3060,76 +3060,76 @@ contains
 
      if (present(restraint_k)) then ! restraint
 
-	if (.not.allocated(this%restraint)) &
-	     call system_abort('ds_add_constraint: Restraints array has not been allocated')
+        if (.not.allocated(this%restraint)) &
+             call system_abort('ds_add_constraint: Restraints array has not been allocated')
 
-	this%Nrestraints = this%Nrestraints + 1
-	new_constraint = this%Nrestraints
-	if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Restraint array size '//size(this%restraint)//' not enough space for '//this%Nrestraints//' restraints')
+        this%Nrestraints = this%Nrestraints + 1
+        new_constraint = this%Nrestraints
+        if (this%Nrestraints > size(this%restraint)) call system_abort('ds_add_constraint: Restraint array size '//size(this%restraint)//' not enough space for '//this%Nrestraints//' restraints')
         if (present(tol)) call print("ds_add_constraint: Restraints will ignore the explicitly given constraint tolerance.",PRINT_ALWAYS)
         call initialise(this%restraint(new_constraint),atoms,func,data,restraint_k,bound=bound)
-	call constraint_calculate_values_at(this%restraint(new_constraint),this%atoms,this%t)
-	this%restraint(new_constraint)%print_summary = do_print_summary
+        call constraint_calculate_values_at(this%restraint(new_constraint),this%atoms,this%t)
+        this%restraint(new_constraint)%print_summary = do_print_summary
 
      else ! constraint
 
-	if (.not.allocated(this%constraint)) &
-	     call system_abort('ds_add_constraint: Constraints array has not been allocated')
+        if (.not.allocated(this%constraint)) &
+             call system_abort('ds_add_constraint: Constraints array has not been allocated')
 
-	!First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of
-	!TYPE_ATOM they must be in a group on their own, otherwise all the other atoms will
-	!be added to the CONSTRAINED group, but never be integrated.
-	do i = 1, size(atoms)
-	   type = Atom_Type(this,atoms(i))
-	   if ((type /= TYPE_ATOM) .and. (type /= TYPE_CONSTRAINED)) then
-	      call system_abort('ds_add_constraint: Atom '//i// &
-				       ' is not a normal or constrained atom (type = '//type//')')
-	   end if
-	   if (type == TYPE_ATOM) then
-	      g1 = this%group_lookup(atoms(i))
-	      if (Group_N_Atoms(this%group(g1)) > 1) call system_abort(&
-		   'ds_add_constraint: A normal atom must be in its own group when added to a constraint')
-	   end if
-	end do
+        !First make sure the atoms are of TYPE_ATOM or TYPE_CONSTRAINED. If they are of
+        !TYPE_ATOM they must be in a group on their own, otherwise all the other atoms will
+        !be added to the CONSTRAINED group, but never be integrated.
+        do i = 1, size(atoms)
+           type = Atom_Type(this,atoms(i))
+           if ((type /= TYPE_ATOM) .and. (type /= TYPE_CONSTRAINED)) then
+              call system_abort('ds_add_constraint: Atom '//i// &
+                                       ' is not a normal or constrained atom (type = '//type//')')
+           end if
+           if (type == TYPE_ATOM) then
+              g1 = this%group_lookup(atoms(i))
+              if (Group_N_Atoms(this%group(g1)) > 1) call system_abort(&
+                   'ds_add_constraint: A normal atom must be in its own group when added to a constraint')
+           end if
+        end do
 
-	!Merge all the groups containing the atoms in this constraint
-	g1 = this%group_lookup(atoms(1))
-	call set_type(this%group(g1),TYPE_CONSTRAINED)
-	do i = 2, size(atoms)
-	   g2 = this%group_lookup(atoms(i))
+        !Merge all the groups containing the atoms in this constraint
+        g1 = this%group_lookup(atoms(1))
+        call set_type(this%group(g1),TYPE_CONSTRAINED)
+        do i = 2, size(atoms)
+           g2 = this%group_lookup(atoms(i))
 
-	   call set_type(this%group(g2),TYPE_CONSTRAINED)
-	   call merge_groups(this%group(g1),this%group(g2))
-	end do
+           call set_type(this%group(g2),TYPE_CONSTRAINED)
+           call merge_groups(this%group(g1),this%group(g2))
+        end do
 
-	!Increase the constraint counter and initialise the new constraint
-	this%Nconstraints = this%Nconstraints + 1
-	new_constraint = this%Nconstraints
-	if (this%Nconstraints > size(this%constraint)) call system_abort('ds_add_constraint: Constraint array full')
-	call initialise(this%constraint(new_constraint),atoms,func,data,tol=tol)
-	this%constraint(new_constraint)%print_summary = do_print_summary
+        !Increase the constraint counter and initialise the new constraint
+        this%Nconstraints = this%Nconstraints + 1
+        new_constraint = this%Nconstraints
+        if (this%Nconstraints > size(this%constraint)) call system_abort('ds_add_constraint: Constraint array full')
+        call initialise(this%constraint(new_constraint),atoms,func,data,tol=tol)
+        this%constraint(new_constraint)%print_summary = do_print_summary
 
-	!Update the group_lookups
-	do n = 1, Group_N_atoms(this%group(g1))
-	   i = Group_Nth_Atom(this%group(g1),n)
-	   this%group_lookup(i) = g1
-	end do
+        !Update the group_lookups
+        do n = 1, Group_N_atoms(this%group(g1))
+           i = Group_Nth_Atom(this%group(g1),n)
+           this%group_lookup(i) = g1
+        end do
 
-	!Add the constraint as an object for this group
-	call group_add_object(this%group(g1),new_constraint)
+        !Add the constraint as an object for this group
+        call group_add_object(this%group(g1),new_constraint)
 
-	!Reduce the number of degrees of freedom
-	if (do_update_Ndof) this%Ndof = this%Ndof - 1
+        !Reduce the number of degrees of freedom
+        if (do_update_Ndof) this%Ndof = this%Ndof - 1
 
-	!Call the constraint subroutine to fill in variables:
-	call constraint_calculate_values_at(this%constraint(new_constraint),this%atoms,this%t)
+        !Call the constraint subroutine to fill in variables:
+        call constraint_calculate_values_at(this%constraint(new_constraint),this%atoms,this%t)
 
-	!Give warning if they constraint is not being satisfied
-	if (abs(this%constraint(new_constraint)%C) > CONSTRAINT_WARNING_TOLERANCE) &
-	     call print_warning('ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
-	     round(this%constraint(new_constraint)%C,5))
+        !Give warning if they constraint is not being satisfied
+        if (abs(this%constraint(new_constraint)%C) > CONSTRAINT_WARNING_TOLERANCE) &
+             call print_warning('ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
+             round(this%constraint(new_constraint)%C,5))
 
-	call constraint_store_gradient(this%constraint(new_constraint))
+        call constraint_store_gradient(this%constraint(new_constraint))
      endif
 
    end subroutine ds_add_constraint
