@@ -29,7 +29,7 @@ setup(
     name='quippy-ase',
     version=version,
     maintainer='James Kermode',
-    maintainer_email='james.kermode@gmail.com>',
+    maintainer_email='james.kermode@gmail.com',
     description = 'ASE-compatible Python bindings for the QUIP and GAP codes',
     long_description=long_description,
     long_description_content_type='text/markdown',
