@@ -109,7 +109,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
         self.stress_ref = - np.array([-0.34103601, -0.36145702, -0.34640615,
                                       - 0.19375487, -0.02138795, 0.60925144]) / self.at.get_volume()
 
-        self.at.set_calculator(self.pot_calculator)
+        self.at.calc = self.pot_calculator
 
     def test_energy(self):
         self.assertAlmostEqual(self.at.get_potential_energy(), self.energy_ref)

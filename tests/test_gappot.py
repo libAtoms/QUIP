@@ -39,7 +39,7 @@ class TestCalculator_GAP_Potential(quippytest.QuippyTestCase):
         self.energy_ref = self.at_orig.info['energy']
         self.forces_ref = self.at_orig.arrays['force']
 
-        self.at.set_calculator(self.pot_calculator)
+        self.at.calc = self.pot_calculator
 
     def test_energy(self):
         self.assertAlmostEqual(self.at.get_potential_energy(), self.energy_ref, delta=1E-05)

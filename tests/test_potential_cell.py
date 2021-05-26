@@ -47,7 +47,7 @@ class Test_Potential_Cell(quippytest.QuippyTestCase):
         # for bugfix on 13 Aug 2019, tks32
         ener_quippy = []
         for at in self.at_list:
-            at.set_calculator(self.pot)
+            at.calc = self.pot
             ener_quippy.append(at.get_potential_energy())
 
         self.assertArrayAlmostEqual(ener_quippy, self.ref_energies, tol=1E-06)
