@@ -112,6 +112,7 @@ build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
+	cp ../../README.md .
 	cp ../../quippy/setup.py .
 	${PIP} install ${QUIPPY_INSTALL_OPTS} .
-	rm setup.py
+	rm setup.py README.md
