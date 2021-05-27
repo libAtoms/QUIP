@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 
 #define MSG_LEN_SIZE 8
 #define MSG_END_MARKER "done."
@@ -20,15 +20,15 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     int msg_len;
     int sent, totalsent, received, totalreceived, status;
 
-    struct sockaddr_in serv_addr; 
+    struct sockaddr_in serv_addr;
 
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("Could not create socket \n");
         return 1;
-    } 
+    }
 
-    memset(&serv_addr, 0, sizeof(serv_addr)); 
+    memset(&serv_addr, 0, sizeof(serv_addr));
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -37,7 +37,7 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     {
         printf("\n inet_pton error occured\n");
         return 1;
-    } 
+    }
 
     if((status = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
@@ -53,8 +53,8 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     while (totalsent < MSG_LEN_SIZE) {
       sent = send(sockfd, id_str+totalsent, MSG_LEN_SIZE - totalsent, 0);
       if (sent == 0) {
-	printf("socket connection broken while sending client ID\n");
-	return 1;
+        printf("socket connection broken while sending client ID\n");
+        return 1;
       }
       totalsent += sent;
     }
@@ -66,8 +66,8 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     {
       received = recv(sockfd, msg_len_buff+totalreceived, MSG_LEN_SIZE-totalreceived, 0);
       if (received == 0) {
-	printf("socket connection broken while reading length\n");
-	return 1;
+        printf("socket connection broken while reading length\n");
+        return 1;
       }
       totalreceived += received;
     }
@@ -86,8 +86,8 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     {
       received = recv(sockfd, data+totalreceived, msg_len-totalreceived, 0);
       if (received == 0) {
-	printf("socket connection broken while reading data\n");
-	return 1;
+        printf("socket connection broken while reading data\n");
+        return 1;
       }
       totalreceived += received;
     }
@@ -99,12 +99,12 @@ int quip_recv_data(char *ip, int port, int client_id, char *request_code, char *
     {
       received = recv(sockfd, marker+totalreceived, MSG_END_MARKER_SIZE-totalreceived, 0);
       if (received == 0) {
-	printf("socket connection broken while reading data\n");
-	return 1;
+        printf("socket connection broken while reading data\n");
+        return 1;
       }
       totalreceived += received;
     }
-    
+
     close(sockfd);
     return 0;
 }
@@ -149,8 +149,8 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
     while (totalsent < MSG_LEN_SIZE) {
       sent = send(sockfd, id_str+totalsent, MSG_LEN_SIZE - totalsent, 0);
       if (sent == 0) {
-	printf("socket connection broken while sending client ID\n");
-	return 1;
+        printf("socket connection broken while sending client ID\n");
+        return 1;
       }
       totalsent += sent;
     }
@@ -162,8 +162,8 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
     while (totalsent < MSG_LEN_SIZE) {
       sent = send(sockfd, id_str+totalsent, MSG_LEN_SIZE - totalsent, 0);
       if (sent == 0) {
-	printf("socket connection broken while sending data_len\n");
-	return 1;
+        printf("socket connection broken while sending data_len\n");
+        return 1;
       }
       totalsent += sent;
     }
@@ -173,8 +173,8 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
     while (totalsent < data_len) {
       sent = send(sockfd, data+totalsent, data_len - totalsent, 0);
       if (sent == 0) {
-	printf("socket connection broken while sending data\n");
-	return 1;
+        printf("socket connection broken while sending data\n");
+        return 1;
       }
       totalsent += sent;
     }
@@ -186,8 +186,8 @@ int quip_send_data(char *ip, int port, int client_id, char *request_code, char *
     {
       received = recv(sockfd, marker+totalreceived, MSG_END_MARKER_SIZE-totalreceived, 0);
       if (received == 0) {
-	printf("socket connection broken while reading data\n");
-	return 1;
+        printf("socket connection broken while reading data\n");
+        return 1;
       }
       totalreceived += received;
     }
