@@ -1,0 +1,16 @@
+# Mark unneeded whitespace
+* whitespace=blank-at-eol,blank-at-eof,cr-at-eol,space-before-tab
+
+# Mark tab indents in specific files
+*.c whitespace=tab-in-indent
+
+*.f whitespace=tab-in-indent
+*.F whitespace=tab-in-indent
+*.f77 whitespace=tab-in-indent
+*.F77 whitespace=tab-in-indent
+*.f90 whitespace=tab-in-indent
+*.F90 whitespace=tab-in-indent
+*.f95 whitespace=tab-in-indent
+*.F95 whitespace=tab-in-indent
+
+*.py whitespace=tab-in-indent
