@@ -491,7 +491,7 @@ PERIODIC XYZ
       GMAX 1.0
       NGRIDS 50 50 50
       &MULTIPOLE
-	RCUT 35
+        RCUT 35
 
         EWALD_PRECISION 1.E-8
         NGRIDS 50 50 50

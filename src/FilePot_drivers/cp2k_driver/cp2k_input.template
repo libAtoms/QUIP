@@ -50,7 +50,7 @@
         ALPHA 0.35
 #USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #USER Needs to be odd for EWALD_TYPE ewald, spme doesn't care as long as it's integer
-	GMAX ${CELL_SIZE_INT_ODD_1} ${CELL_SIZE_INT_ODD_2} ${CELL_SIZE_INT_ODD_3}
+        GMAX ${CELL_SIZE_INT_ODD_1} ${CELL_SIZE_INT_ODD_2} ${CELL_SIZE_INT_ODD_3}
       &END EWALD
     &END POISSON
     &QS
@@ -92,8 +92,8 @@
 @IF ${DO_DFT_QM_CHARGES} == 1
     &PRINT
       &MULLIKEN
-	 FILENAME qmcharges
-	 COMMON_ITERATION_LEVELS 0
+         FILENAME qmcharges
+         COMMON_ITERATION_LEVELS 0
       &END MULLIKEN
     &END PRINT
 @ENDIF
@@ -115,7 +115,7 @@
       &END SPLINE
       &CHARGE
          ATOM SIO
-	 CHARGE 2.4
+         CHARGE 2.4
       &END CHARGE
       &CHARGE
          ATOM OSB
@@ -125,26 +125,26 @@
         &BMHFT
            ATOMS OSB OSB
            A [eV] 1388.7730     # eV
-	   B 2.76               # angstrom^-1
-	   C 6.43112905         # Hartree angstrom^6
-	   D 0.0
+           B 2.76               # angstrom^-1
+           C 6.43112905         # Hartree angstrom^6
+           D 0.0
            RCUT 10.0
-	&END BMHFT
+        &END BMHFT
         &BMHFT
            ATOMS SIO OSB
            A [eV] 18003.7572     # eV
-	   B 4.87318             # angstrom^-1
-	   C 4.9006603523734675  # Hartree angstrom^6
-	   D 0.0
+           B 4.87318             # angstrom^-1
+           C 4.9006603523734675  # Hartree angstrom^6
+           D 0.0
            RCUT 10.0
-	&END BMHFT
+        &END BMHFT
         &BMHFT
            ATOMS SIO SIO
            A [eV] 0.0
-	   B 0.0
-	   C 0.0
-	   D 0.0
-	&END BMHFT
+           B 0.0
+           C 0.0
+           D 0.0
+        &END BMHFT
       &END NONBONDED
 @ENDIF
     &END FORCEFIELD
@@ -168,7 +168,7 @@
         ALPHA 0.35
 #USER GMAX: Use the full system's longest edge length in Angstrom, i.e. for a (33 A)^3 cell GMAX 33
 #USER Needs to be odd for EWALD_TYPE ewald, spme doesn't care as long as it's integer
-	GMAX ${CELL_SIZE_INT_1} ${CELL_SIZE_INT_2} ${CELL_SIZE_INT_3}
+        GMAX ${CELL_SIZE_INT_1} ${CELL_SIZE_INT_2} ${CELL_SIZE_INT_3}
       &END EWALD
     &END POISSON
   &END MM
@@ -177,7 +177,7 @@
 @INCLUDE ${QMMM_QM_KIND_FILE}
      &CELL
         ABC ${QMMM_ABC_X} ${QMMM_ABC_Y} ${QMMM_ABC_Z}
-	PERIODIC ${QMMM_PERIODIC}
+        PERIODIC ${QMMM_PERIODIC}
      &END CELL
 @ENDIF
 #    MM_POTENTIAL_FILE_NAME ../MM_POTENTIAL
@@ -237,9 +237,9 @@
         BONDLENGTH_MAX     5.0
         REORDER F
         CREATE_MOLECULES F
-	&ISOLATED_ATOMS
+        &ISOLATED_ATOMS
 @INCLUDE ${ISOLATED_ATOMS_FILE}
-	&END ISOLATED_ATOMS
+        &END ISOLATED_ATOMS
       &END GENERATE
       CHARGE_EXTENDED
       COORD_FILE_NAME ${COORD_FILE}
@@ -299,8 +299,8 @@
 @IF ${DO_STRESS} == 1
    &PRINT
       &STRESS_TENSOR
-	 FILENAME stress
-	 COMMON_ITERATION_LEVELS 0
+         FILENAME stress
+         COMMON_ITERATION_LEVELS 0
       &END STRESS_TENSOR
    &END PRINT
 @ENDIF
@@ -313,18 +313,18 @@
 &MOTION
    &PRINT
       &TRAJECTORY
-	 FORMAT ${FORCES_FORMAT}
-	 &EACH
-	    MD 1
-	 &END EACH
-	 COMMON_ITERATION_LEVELS 0
+         FORMAT ${FORCES_FORMAT}
+         &EACH
+            MD 1
+         &END EACH
+         COMMON_ITERATION_LEVELS 0
       &END TRAJECTORY
       &FORCES
-	 FORMAT ${FORCES_FORMAT}
-	 &EACH
-	    MD 1
-	 &END EACH
-	 COMMON_ITERATION_LEVELS 0
+         FORMAT ${FORCES_FORMAT}
+         &EACH
+            MD 1
+         &END EACH
+         COMMON_ITERATION_LEVELS 0
       &END FORCES
    &END PRINT
    &MD
@@ -333,11 +333,11 @@
       # for persistent connections to cp2k
 @IF ${QUIP_ENSEMBLE} == REFTRAJ
       &REFTRAJ
-	 WAIT
-	 EVAL_ENERGY_FORCES
-	 VARIABLE_VOLUME
-	 TRAJ_FILE_NAME ${PERSISTENT_TRAJ_FILE}
-	 CELL_FILE_NAME ${PERSISTENT_CELL_FILE}
+         WAIT
+         EVAL_ENERGY_FORCES
+         VARIABLE_VOLUME
+         TRAJ_FILE_NAME ${PERSISTENT_TRAJ_FILE}
+         CELL_FILE_NAME ${PERSISTENT_CELL_FILE}
       &END REFTRAJ
 @ENDIF
    &END MD

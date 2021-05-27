@@ -21,7 +21,7 @@ if ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; then
     echo crun_tcm: Server is currently down, trying to restart it...
     $CS_RSH $CS_HOST "cd $CS_HOME; ./bin/castep_server >> out.log 2>> err.log &"
     while ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; do
-	sleep 10
+        sleep 10
     done
 fi
 
@@ -34,7 +34,7 @@ $CS_RCP ${CS_BASE}.param $CS_HOST:$CS_HOME/$JOB_ID/job.param
 $CS_RCP *.usp $CS_HOST:$CS_HOME/$JOB_ID
 
 if ! $CS_RSH $CS_HOST "$CS_HOME/bin/qsubw $JOB_ID"; then
-    echo "crun_tcm: Error submitting job"; 
+    echo "crun_tcm: Error submitting job";
     exit 1
 fi
 
