@@ -30,7 +30,7 @@
 
 /* This file contains routines which use the Computational Geometry
    Algorithms Library (CGAL, http://www.cgal.org) to compute alpha
-   shapes. It is used to determine a crack front given the set of 
+   shapes. It is used to determine a crack front given the set of
    crack surface atoms. */
 
 #define _USE_MATH_DEFINES
@@ -103,8 +103,8 @@ typedef boost::transform_iterator<get_key_t, map_iterator> mapkey_iterator;
 
 
 extern "C" void c_alpha_shape_2(int *n, double x[], double y[],
-			      double *alpha, int *shape_n, int shape_list[],
-			      int *error)
+                                double *alpha, int *shape_n, int shape_list[],
+                                int *error)
 {
   INIT_ERROR;
 
@@ -117,7 +117,7 @@ extern "C" void c_alpha_shape_2(int *n, double x[], double y[],
 
   mapkey_iterator points_begin(point_map.begin(), get_key);
   mapkey_iterator points_end(point_map.end(), get_key);
-  
+
   Alpha_shape_2 A(points_begin, points_end, FT(*alpha), Alpha_shape_2::GENERAL);
 
   Arrangement_2 arr;
@@ -136,7 +136,7 @@ extern "C" void c_alpha_shape_2(int *n, double x[], double y[],
 
   Arrangement_2::Face_const_iterator fi = arr.faces_begin();
   ++fi; // skip over the unbounded face which all arrangements have
- 
+
   Arrangement_2::Ccb_halfedge_const_circulator ccb = fi->outer_ccb();
 
   // Check shape_list is big enough to store alpha shape
@@ -158,9 +158,9 @@ extern "C" void c_alpha_shape_2(int *n, double x[], double y[],
   } while (ccb != fi->outer_ccb());
 }
 
-extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[], 
-					  double *alpha, double *angle_threshold, 
-					  int *front_n, int front_list[], int *error)
+extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[],
+                                          double *alpha, double *angle_threshold,
+                                          int *front_n, int front_list[], int *error)
 {
   INIT_ERROR;
 
@@ -173,7 +173,7 @@ extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[],
 
   mapkey_iterator points_begin(point_map.begin(), get_key);
   mapkey_iterator points_end(point_map.end(), get_key);
-  
+
   Alpha_shape_2 A(points_begin, points_end, FT(*alpha), Alpha_shape_2::GENERAL);
 
   Arrangement_2 arr;
@@ -200,7 +200,7 @@ extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[],
   if (!CGAL::assign (xmax_vertex, obj)) {
     RAISE_ERROR("c_crack_front_alpha_shape: vertical line search did not hit a vertex");
   }
-    
+
   Arrangement_2::Face_const_iterator fi = arr.faces_begin();
   ++fi; // skip over the unbounded face which all arrangements have
 
@@ -212,15 +212,15 @@ extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[],
   Point p1, p2;
   std::list<int> front;
 
-  // start at xmax_edge and traverse outer CCB until angle along line 
+  // start at xmax_edge and traverse outer CCB until angle along line
   // exceeds angle_threshold
   curr = xmax_edge;
   do {
     p1 = curr->source()->point();
     p2 = curr->target()->point();
-    
+
     bearing = 180./M_PI*std::atan2(CGAL::to_double(p2.y())-CGAL::to_double(p1.y()),
-				   CGAL::to_double(p2.x())-CGAL::to_double(p1.x()));
+                                   CGAL::to_double(p2.x())-CGAL::to_double(p1.x()));
 
     front.push_back(point_map[curr->source()->point()]);
   } while (++curr != xmax_edge && bearing < *angle_threshold);
@@ -232,9 +232,9 @@ extern "C" void c_crack_front_alpha_shape(int *n, double x[], double y[],
   do {
     p1 = curr->twin()->source()->point();
     p2 = curr->twin()->target()->point();
-    
+
     bearing = 180./M_PI*std::atan2(CGAL::to_double(p2.y())-CGAL::to_double(p1.y()),
-				   CGAL::to_double(p2.x())-CGAL::to_double(p1.x()));
+                                   CGAL::to_double(p2.x())-CGAL::to_double(p1.x()));
 
     front.push_front(point_map[curr->source()->point()]);
   } while (--curr != xmax_edge && bearing > -*angle_threshold);
@@ -270,7 +270,7 @@ int main()
 
   double alpha = 100.0;
   double angle_threshold = 160.0;
-  
+
   int front_n = 100;
   int *front_list = new int[front_n];
 
@@ -280,6 +280,6 @@ int main()
   if (error == 0) {
     for (i = 0; i < front_n; i++)
       std::cout << front_list[i] << std::endl;
-  }			       
+  }
 }
 #endif

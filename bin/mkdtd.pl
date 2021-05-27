@@ -30,11 +30,11 @@
 # HJ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # Perl script to generate quip.dtd Document Type Definition
-# file, which can be used to validate an input XML file. 
+# file, which can be used to validate an input XML file.
 
 #----------------------------------------------------------------------
 
-# Attributes that match this regexp will be marked #REQUIRED rather than 
+# Attributes that match this regexp will be marked #REQUIRED rather than
 # #IMPLIED in the DTD.
 my $required_atts = qr/(n_types)/;
 
@@ -46,16 +46,16 @@ my $pcdata = qr/(point|comment|orb_set_type|E)/;
 
 # Describe nesting of tags - this is not picked up in the parsing code
 my %subelements_add = (
-		       qr/^per_pair_data$/ => ["point", "H_spline", "S_spline", "Vrep_spline"],
-		       qr/^per_type_data$/  => ["orb_set_type", "E"],
-		       qr/^H_spline$/ => ["point"],
-		       qr/^S_spline$/ => ["point"],
-		       qr/^Vrep_spline$/ => ["point"]
-		       );
+                       qr/^per_pair_data$/ => ["point", "H_spline", "S_spline", "Vrep_spline"],
+                       qr/^per_type_data$/  => ["orb_set_type", "E"],
+                       qr/^H_spline$/ => ["point"],
+                       qr/^S_spline$/ => ["point"],
+                       qr/^Vrep_spline$/ => ["point"]
+                       );
 
 my %subelements_remove = (
-			  qr/_params$/ => "point"
-			  );
+                          qr/_params$/ => "point"
+                          );
 
 
 #----------------------------------------------------------------------
@@ -90,65 +90,65 @@ foreach $ex (@extra_elements) {
 
 while (<>) {
     if (!$insub) {
-	next until (/^\W*subroutine (\w*)_startElement_handler/);
-	$insub = 1;
+        next until (/^\W*subroutine (\w*)_startElement_handler/);
+        $insub = 1;
     } else {
-	
-	if (/^\W*end subroutine (\w*)_startElement_handler/) {
-	    $gotname = 0;
-	    $insub = 0;
-	    $inentity = 0;
-	    next
-	}
 
-	if (!$inentity) {
-	    if (!$gotname) {
-		next until (($name) = ($_ =~ /name == [\'\"](.*)[\'\"]/));
-		$topname = $name;
-		push @topnames, $topname;
-		$validsubelements{$topname} = [];
-		push @{$validsubelements{$topname}}, "comment";
-	    }
-	    $inentity = 1;
-	    $elements{$name} = {} if (!defined($elements{$name}));
+        if (/^\W*end subroutine (\w*)_startElement_handler/) {
+            $gotname = 0;
+            $insub = 0;
+            $inentity = 0;
+            next
+        }
 
-	} 
+        if (!$inentity) {
+            if (!$gotname) {
+                next until (($name) = ($_ =~ /name == [\'\"](.*)[\'\"]/));
+                $topname = $name;
+                push @topnames, $topname;
+                $validsubelements{$topname} = [];
+                push @{$validsubelements{$topname}}, "comment";
+            }
+            $inentity = 1;
+            $elements{$name} = {} if (!defined($elements{$name}));
 
-	if ($inentity) {
-	    if (/name == [\'\"](.*)[\'\"]/) {
-		$name = $1;
-		$gotname = 1;
-		$inentity = 0;
-		if ($name ne $topname) { 
-		    push (@{$validsubelements{$topname}},$name); 
-		    $subnames{$name} = 1;
-		    $validsubelements{$name} = [];
-		}
-		next;
-	    }
+        }
 
-	    next until ($att) = ($_ =~ /^\W*call QUIP_FoX_get_value\(attributes,\W*[\'\"]([a-zA-Z0-9_]*)[\'\"]/);
-	    $elements{$name}{$att} = 1;
-	}
+        if ($inentity) {
+            if (/name == [\'\"](.*)[\'\"]/) {
+                $name = $1;
+                $gotname = 1;
+                $inentity = 0;
+                if ($name ne $topname) {
+                    push (@{$validsubelements{$topname}},$name);
+                    $subnames{$name} = 1;
+                    $validsubelements{$name} = [];
+                }
+                next;
+            }
+
+            next until ($att) = ($_ =~ /^\W*call QUIP_FoX_get_value\(attributes,\W*[\'\"]([a-zA-Z0-9_]*)[\'\"]/);
+            $elements{$name}{$att} = 1;
+        }
     }
 }
 
 # Add sub elements required to describe nesting
 while (($re, $subel) = each %subelements_add) {
     foreach $key (keys %validsubelements) {
-	if ($key =~ $re) {
-	    push @{$validsubelements{$key}}, @$subel;
-	}
+        if ($key =~ $re) {
+            push @{$validsubelements{$key}}, @$subel;
+        }
     }
 }
 
 # Remove subelements that shouldn't be include in top level elements
-# (those that match /_params$/). 
+# (those that match /_params$/).
 while (($re, $subel) = each %subelements_remove) {
     foreach $key (keys %validsubelements) {
-	if ($key =~ $re) {
-	    @{$validsubelements{$key}} = grep (!/$subel/, @{$validsubelements{$key}});
-	}
+        if ($key =~ $re) {
+            @{$validsubelements{$key}} = grep (!/$subel/, @{$validsubelements{$key}});
+        }
     }
 }
 
@@ -156,17 +156,17 @@ while (($re, $subel) = each %subelements_remove) {
 foreach $el (@topnames, keys %subnames) {
 
     if (defined(${validsubelements{$el}}) && @{$validsubelements{$el}}) {
-	$subelements = "(".join("|", @{$validsubelements{$el}}).")*";
+        $subelements = "(".join("|", @{$validsubelements{$el}}).")*";
     } elsif ($el =~ $pcdata) {
-	$subelements = "(#PCDATA)";
+        $subelements = "(#PCDATA)";
     } else {
-	$subelements = "EMPTY";
+        $subelements = "EMPTY";
     }
 
     print "<!ELEMENT $el $subelements>\n";
     if (%{$elements{$el}}) {
-	$attributes = join("\n  ", map({$_." CDATA ". ($_ =~ $required_atts ? "#REQUIRED" : "#IMPLIED")} (sort keys %{$elements{$el}})));
-	print "<!ATTLIST $el\n  $attributes\n>\n\n";
+        $attributes = join("\n  ", map({$_." CDATA ". ($_ =~ $required_atts ? "#REQUIRED" : "#IMPLIED")} (sort keys %{$elements{$el}})));
+        print "<!ATTLIST $el\n  $attributes\n>\n\n";
     }
 }
 

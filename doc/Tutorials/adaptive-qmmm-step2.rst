@@ -210,14 +210,14 @@ strain energy release rate, respectively. ::
 
         atoms.info['label'] = 'D'                # Label for the status line
         atoms.info['time'] = ...                 # Get simulation time
-	                                         # and convert to fs
+                                                 # and convert to fs
         atoms.info['temperature'] = ...          # Get temperature in K
         atoms.info['strain'] = ...               # Get strain
         atoms.info['G'] = ...                    # Get energy release rate,
-	                                         # and convert to J/m^2
+                                                 # and convert to J/m^2
         crack_pos = ...                          # Find crack tip as in step 1
- 	atoms.info['crack_pos_x'] = crack_pos[0]
-	atoms.info['d_crack_pos_x'] = crack_pos[0] - orig_crack_pos[0]
+        atoms.info['crack_pos_x'] = crack_pos[0]
+        atoms.info['d_crack_pos_x'] = crack_pos[0] - orig_crack_pos[0]
 
         print log_format % atoms.info
 
@@ -239,7 +239,7 @@ and to stop incrementing the strain if it has::
         # stop straining if crack has advanced more than tip_move_tol
         if not atoms.info['is_cracked'] and (crack_pos[0] - orig_crack_pos[0]) > tip_move_tol:
             atoms.info['is_cracked'] = True
-	    del atoms.constraints[atoms.constraints.index(strain_atoms)]
+            del atoms.constraints[atoms.constraints.index(strain_atoms)]
 
 The `check_if_cracked` function can now be attached to the dynamical
 system, requesting an interval of 1 step (i.e. every time) and passing the

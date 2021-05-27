@@ -31,8 +31,8 @@ cont()
     RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
 
     if [[ RUNNABLE_JOBS != 0 ]]; then
-	JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
-	run_castep_job
+        JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
+        run_castep_job
     fi
     kill -TSTP $$
 }
@@ -44,64 +44,64 @@ run_castep_job()
     cp job.param run.param
 
     if [[ -e run.check ]]; then
-	echo Resuming job $JOB_ID at `date`
-	echo continuation: default >> run.param
-	JOB_STATUS="RESUMING"
+        echo Resuming job $JOB_ID at `date`
+        echo continuation: default >> run.param
+        JOB_STATUS="RESUMING"
     else
-	echo Starting job $JOB_ID  at `date`
-	JOB_STATUS="RUNNING"
+        echo Starting job $JOB_ID  at `date`
+        JOB_STATUS="RUNNING"
     fi
 
     # If species counts of this job match previous then copy .check file to speed up calculation
     if [[ -d ../$(($JOB_ID-1)) ]]; then
-	if [[ (`$CS_HOME/bin/species_count job.cell` == \
-	    `$CS_HOME/bin/species_count ../$(($JOB_ID-1))/job.cell`) \
-	    && (-e ../$(($JOB_ID-1))/run.check) \
-	    && (! -e run.check ) ]]; then
+        if [[ (`$CS_HOME/bin/species_count job.cell` == \
+            `$CS_HOME/bin/species_count ../$(($JOB_ID-1))/job.cell`) \
+            && (-e ../$(($JOB_ID-1))/run.check) \
+            && (! -e run.check ) ]]; then
 
-	    echo Reusing check file from previous job $(($JOB_ID-1)) for job $JOB_ID
-	    echo reuse: default >> run.param
-	    cp ../$((JOB_ID-1))/run.check run.check
-	fi
+            echo Reusing check file from previous job $(($JOB_ID-1)) for job $JOB_ID
+            echo reuse: default >> run.param
+            cp ../$((JOB_ID-1))/run.check run.check
+        fi
     fi
 
     cd $CS_HOME
     awk -F'/' '{ if($1 == '$JOB_ID') { print '$JOB_ID'"/'$JOB_STATUS'/" $3} else {print}}' \
-	$Q_FILE > cs_queue.tmp
+        $Q_FILE > cs_queue.tmp
     mv cs_queue.tmp $Q_FILE
     cd $CS_HOME/$JOB_ID
-   
+
     rm -f run.*.err
     $RUN_CASTEP run
     echo Job $JOB_ID exited at `date`
     if [[ -s run.0001.err ]]; then
-	echo Error encountered while running CASTEP job $JOB_ID
-	JOB_STATUS="ERROR"
-	cd ..
+        echo Error encountered while running CASTEP job $JOB_ID
+        JOB_STATUS="ERROR"
+        cd ..
     else
-	if [[ `tail -1 run.castep | cut -d' ' -f1-2` == "Total time" ]]; then
-	    echo Job $JOB_ID completed succesfully
-	    JOB_STATUS="SUCCESS"
-	elif [[ -e killed ]]; then
-	    echo Job $JOB_ID killed.
-	    JOB_STATUS="KILLED"
-	else
-	    echo Job $JOB_ID not completed, more time needed
-	    JOB_STATUS="TIMEOUT"
-	fi
+        if [[ `tail -1 run.castep | cut -d' ' -f1-2` == "Total time" ]]; then
+            echo Job $JOB_ID completed succesfully
+            JOB_STATUS="SUCCESS"
+        elif [[ -e killed ]]; then
+            echo Job $JOB_ID killed.
+            JOB_STATUS="KILLED"
+        else
+            echo Job $JOB_ID not completed, more time needed
+            JOB_STATUS="TIMEOUT"
+        fi
     fi
     cd $CS_HOME
     awk -F'/' '{ if($1 == '$JOB_ID') { print '$JOB_ID' "/'$JOB_STATUS'/" $3} else {print}}' \
-	$Q_FILE > cs_queue.tmp
+        $Q_FILE > cs_queue.tmp
     mv cs_queue.tmp $Q_FILE
     # Notify qsubw if it's waiting for job to finish
     if [[ -e $JOB_ID/notify ]]; then
-	kill -CONT `cat $JOB_ID/notify`
+        kill -CONT `cat $JOB_ID/notify`
     fi
 
     if [[ $JOB_STATUS == "TIMEOUT" ]]; then
-	echo Ran out of time running job, terminating server now
-	exit 0
+        echo Ran out of time running job, terminating server now
+        exit 0
     fi
 }
 
@@ -142,9 +142,9 @@ while true; do
 
     RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
     while [[ $RUNNABLE_JOBS != 0 ]]; do
-	JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
-	run_castep_job
-	RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
+        JOB_ID=`awk -F'/' ' ($2 == "PENDING") { print $1; exit }' $Q_FILE`
+        run_castep_job
+        RUNNABLE_JOBS=`awk -F'/' 'BEGIN {npend=0} ($2 == "PENDING") {npend++} END {print npend}' $Q_FILE`
     done
 
 done

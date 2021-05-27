@@ -9,10 +9,10 @@ CS_ACTIVE=~/etc/cs_active
 
 for CS_HOST in `cat $CS_ACTIVE`; do
     if echo cghost: Checking host $CS_HOST; ! $CS_RSH $CS_HOST test -d $CS_HOME || \
-	(( `$CS_RSH $CS_IMAGE_HOST stat -c %Y $CS_IMAGE_HOME` > `$CS_RSH $CS_HOST stat -c %Y $CS_HOME` )) ; then
-	echo cghost: Copying CASTEP server to host $CS_HOST
-	$CS_RSH $CS_HOST test -d $CS_HOME || $CS_RSH $CS_HOST mkdir $CS_HOME
-	$CS_RCP -r $CS_IMAGE_HOST:$CS_IMAGE_HOME/bin $CS_HOST:$CS_HOME
-	$CS_RSH $CS_HOST touch $CS_HOME
+        (( `$CS_RSH $CS_IMAGE_HOST stat -c %Y $CS_IMAGE_HOME` > `$CS_RSH $CS_HOST stat -c %Y $CS_HOME` )) ; then
+        echo cghost: Copying CASTEP server to host $CS_HOST
+        $CS_RSH $CS_HOST test -d $CS_HOME || $CS_RSH $CS_HOST mkdir $CS_HOME
+        $CS_RCP -r $CS_IMAGE_HOST:$CS_IMAGE_HOME/bin $CS_HOST:$CS_HOME
+        $CS_RSH $CS_HOST touch $CS_HOME
     fi
 done

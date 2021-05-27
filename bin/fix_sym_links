@@ -11,9 +11,9 @@ for file in $(find . -type f); do
 
     # link files contain exactly one line and start with link, followed by source
     if awk 'BEGIN {link = 0} NR == 1 && $1 == "link" {link=1} END { if (link==1 && NR==1) exit 1 }' $file; then
-	continue
+        continue
     fi
-	 
+
     dir=$(dirname $file)
     target=$(basename $file)
     source=$(awk '{print $2}' $file)

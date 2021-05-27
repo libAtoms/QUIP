@@ -26,7 +26,7 @@ head -$(( $n2 - 3 )) $2 | tail -$(( $n2 - $n1 - 7 )) > t.2
 ( for f in `cat t.1 t.2 | awk '{print $1}' | sort | uniq`; do
     t1=`egrep "^ $f " t.1 | awk '{print $4}'`
     t2=`egrep "^ $f " t.2 | awk '{print $4}'`
-# echo # BOB $f $t1 $t2 
+# echo # BOB $f $t1 $t2
     if [[ -z $t1 ]]; then
       have_t1=0
     else
@@ -44,16 +44,16 @@ head -$(( $n2 - 3 )) $2 | tail -$(( $n2 - $n1 - 7 )) > t.2
 # echo JOE $have_t1 $have_t2
     if [[ $have_t1 == 1 && $have_t2 == 1 ]]; then
       if [[ $zero_t1 == 1 ]]; then
-	printf "%40s %f %f %f" $f $t1 $t2 `echo "($t2/$t1)" | bc -l`
+        printf "%40s %f %f %f" $f $t1 $t2 `echo "($t2/$t1)" | bc -l`
       else
-	printf "%40s %f %f %s" $f $t1 $t2 "N/A"
+        printf "%40s %f %f %s" $f $t1 $t2 "N/A"
       fi
     else
       if [[ $have_t1 == 1 ]]; then
-	printf "%40s %f N/A N/A" $f $t1 
+        printf "%40s %f N/A N/A" $f $t1
       fi
       if [[ $have_t2 == 1 ]]; then
-	printf "%40s N/A %f N/A" $f $t2 
+        printf "%40s N/A %f N/A" $f $t2
       fi
     fi
 #    if [[ $have_t1 == 1 && $have_t2 == 0 ]]; then
