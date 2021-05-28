@@ -1,4 +1,4 @@
-.. _step1: 
+.. _step1:
 
 Step 1: Setup of the Silicon model system
 =========================================
@@ -27,9 +27,9 @@ script named ``make_crack.py`` and add the following lines::
     from quippy.io import write
 
     from quippy.crack import (print_crack_system,
-			      G_to_strain,
-			      thin_strip_displacement_y,
-			      find_crack_tip_stress_field)
+                              G_to_strain,
+                              thin_strip_displacement_y,
+                              find_crack_tip_stress_field)
 
 Note that some routines come from `ASE` and others from `quippy`. We
 will use `ASE` for basic atomic manipulations, and `quippy` to provide
@@ -59,12 +59,12 @@ along the :math:`[01\bar{1}]` direction::
     crack_direction = (-2, 1, 1)      # Miller index of x-axis
     cleavage_plane = (1, 1, 1)        # Miller index of y-axis
     crack_front = (0, 1, -1)          # Miller index of z-axis
-    
+
     # # System 2. (110)[001]
     # crack_direction = (1,-1,0)
     # cleavage_plane = (1,1,0)
     # crack_front = (0,0,1)
-    
+
     # # System 3. (110)[1-10]
     # crack_direction = (0,0,-1)
     # cleavage_plane = (1,1,0)
@@ -73,14 +73,14 @@ along the :math:`[01\bar{1}]` direction::
 If you have time later, you can come back to this point and change to
 one of the other fracture systems. Next we need various geometric
 parameters::
-    
+
     width = 200.0*units.Ang              # Width of crack slab
     height = 100.0*units.Ang             # Height of crack slab
     vacuum = 100.0*units.Ang             # Amount of vacuum around slab
     crack_seed_length = 40.0*units.Ang   # Length of seed crack
     strain_ramp_length = 30.0*units.Ang  # Distance over which strain is ramped up
-    initial_G = 5.0*(units.J/units.m**2) # Initial energy flow to crack tip    
-    
+    initial_G = 5.0*(units.J/units.m**2) # Initial energy flow to crack tip
+
 Note the explicit unit conversion: some of this is unnecessary as we
 are using the `ase.units module
 <https://wiki.fysik.dtu.dk/ase/ase/units.html>`_ where ``Ang = eV =
@@ -112,7 +112,7 @@ Finding the equilibrium lattice constant for Si
 
 To find the Si equilibrium lattice constant `a0` with the SW potential,
 let's first build the 8-atom diamond cubic cell for silicon, with an initial
-guess at lattice constant of 5.44 A. This can be done using the 
+guess at lattice constant of 5.44 A. This can be done using the
 :func:`~ase.structure.bulk` function from the :mod:`ase.structure` module::
 
     si_bulk = ...            # Build the 8-atom diamond cubic cell for Si
@@ -169,7 +169,7 @@ is below ``fmax=1e-2``, using the :meth:`~quippy.potential.Minim.run`
 method ::
 
     minim = ...                           # Initialise the minimiser from si_bulk
-    print('Minimising bulk unit cell')    
+    print('Minimising bulk unit cell')
     minim. ...                            # Run the minimisation
 
 The lattice constant `a0` can be easily obtained from the relaxed
@@ -215,15 +215,15 @@ calculated using the :meth:`~quippy.potential.Potential.get_elastic_constants`
 method of the `mm_pot` Potential object. ::
 
     c = mm_pot. ...             # Get the 6x6 C_ij matrix
-    print('Elastic constants (GPa):')  
-    print((c / units.GPa).round(0))    
-    print('')                          
+    print('Elastic constants (GPa):')
+    print((c / units.GPa).round(0))
+    print('')
 
 Here, the :attr:`~ase.units.GPa` constant from the `ase.units module
 <https://wiki.fysik.dtu.dk/ase/ase/units.html>`_ module is used to
 convert from pressure units of eV/A\ :superscript:`3` into GPa.
 
-The Young's modulus `E` and the Poisson ratio `\nu` can now be calculated, 
+The Young's modulus `E` and the Poisson ratio `\nu` can now be calculated,
 given `c`, the `cleavage_plane` and the `crack_direction` (defined in the
 :ref:`parameters section <parameters>` above), using the functions
 :func:`~quippy.elasticity.youngs_modulus` and
@@ -231,9 +231,9 @@ given `c`, the `cleavage_plane` and the `crack_direction` (defined in the
 :mod:`quippy.elasticity` module. ::
 
     E = ...                                              # Get E
-    print('Young\'s modulus %.1f GPa' % (E / units.GPa)) 
+    print('Young\'s modulus %.1f GPa' % (E / units.GPa))
     nu = ...                                             # Get nu
-    print('Poisson ratio % .3f\n' % nu)                  
+    print('Poisson ratio % .3f\n' % nu)
 
 As a check, for the :math:`(111)[01\bar{1}]` crack system, you
 should get a Young's modulus of 142.8 GPa and a Poisson ratio of
@@ -253,19 +253,19 @@ system can be printed using the following command::
     print_crack_system(crack_direction, cleavage_plane, crack_front)
 
 The new unit slab can be obtained using the
-:func:`ase.lattice.cubic.Diamond <lattice.cubic.Diamond>` 
+:func:`ase.lattice.cubic.Diamond <lattice.cubic.Diamond>`
 from the :mod:`ase.lattice <lattice>` module, which is used as follows::
 
     unit_slab = Diamond(directions=[crack_direction,
-				    cleavage_plane,
-				    crack_front],
-			size=(1, 1, 1),
-			symbol='Si',
-			pbc=True,
-			latticeconstant=a0)
+                                    cleavage_plane,
+                                    crack_front],
+                        size=(1, 1, 1),
+                        symbol='Si',
+                        pbc=True,
+                        latticeconstant=a0)
     print('Unit slab with %d atoms per unit cell:' % len(unit_slab))
     print(unit_slab.cell)
-    print('')                
+    print('')
 
 You can visualise the new cell with ``view(unit_slab)`` (type this at
 the `ipython` prompt after running the script as it is so far, don't
@@ -292,7 +292,7 @@ the Cartesian coordinates of the atoms, and
 :meth:`~ase.atoms.Atoms.get_scaled_positions` are necessary to ensure
 all the atoms are mapped back inside the unit cell before we open
 up a surface. This is the result of applying the shift (do another
-``view(unit_slab)`` to update your AtomEye viewer). 
+``view(unit_slab)`` to update your AtomEye viewer).
 
 .. image:: unit_slab_shifted.png
    :align: center
@@ -311,7 +311,7 @@ or ``axis=1`` for the `y`-axis, etc.). The amount of vacuum you add is
 not critical, but could be taken from the `vacuum` parameter in the
 :ref:`parameters section <parameters>` above::
 
-    surface = unit_slab.copy() 
+    surface = unit_slab.copy()
     surface. ...               # Add vacuum along y axis
 
 You should get a surface unit cell which looks something like this:
@@ -321,7 +321,7 @@ You should get a surface unit cell which looks something like this:
    :width: 400
 
 Here, the atoms have been coloured by coordination by pressing the `k`
-key. The green atoms on the surfaces are three-fold coordinated. 
+key. The green atoms on the surfaces are three-fold coordinated.
 
 Now that we have both the bulk unit slab and the surface unit cell,
 the surface energy `gamma` for the cleavage plane can be calculated
@@ -362,13 +362,13 @@ Replicating the unit cell to form a slab supercell
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now, we have all the ingredients needed to build the full crack slab
-system and to apply the requested strain field. 
+system and to apply the requested strain field.
 
-We start by building the full slab system. First, we need to find the number 
-of `unit_slab` cells along `x` and `y` that approximately match `width` and 
-`height` (see :ref:`parameters section <parameters>`). 
-Note that the python function :py:func:`int` can be used to 
-convert a floating point number into an integer, truncating towards zero:: 
+We start by building the full slab system. First, we need to find the number
+of `unit_slab` cells along `x` and `y` that approximately match `width` and
+`height` (see :ref:`parameters section <parameters>`).
+Note that the python function :py:func:`int` can be used to
+convert a floating point number into an integer, truncating towards zero::
 
     nx = ...    # Find number of unit_slab cells along x
     ny = ...    # Find number of unit_slab cells along y
@@ -376,15 +376,15 @@ convert a floating point number into an integer, truncating towards zero::
 To make sure that the slab is centered on a bond along the `y` direction,
 the number of units cell in this direction, `ny`,  must be even::
 
-    if ny % 2 == 1:  
-        ny += 1      
+    if ny % 2 == 1:
+        ny += 1
 
-The crack supercell is now simply obtained by replicating `unit_slab` 
+The crack supercell is now simply obtained by replicating `unit_slab`
 :math:`nx \times ny \times 1` times along the three axes::
 
     crack_slab = unit_slab * (nx, ny, 1)
 
-As we did before for the `surface` system, `vacuum` has to be introduced along 
+As we did before for the `surface` system, `vacuum` has to be introduced along
 the `x` and `y` axes (*Hint:* use the :meth:`~ase.atoms.Atoms.center`
 method twice) ::
 
@@ -404,11 +404,11 @@ measure the strain::
                   crack_slab.positions[:, 0].min())
     orig_height = (crack_slab.positions[:, 1].max() -
                    crack_slab.positions[:, 1].min())
-    
+
     print(('Made slab with %d atoms, original width and height: %.1f x %.1f A^2' %
            (len(crack_slab), orig_width, orig_height)))
 
-The original `y` coordinates of the top and bottom of the slab and the 
+The original `y` coordinates of the top and bottom of the slab and the
 original `x` coordinates of the left and right surfaces are also saved::
 
     top = crack_slab.positions[:, 1].max()
@@ -440,7 +440,7 @@ this, we initialise a `fixed_mask` array that is `True` for each atom
 whose position needs to be fixed, and `False` otherwise::
 
     fixed_mask = ((abs(crack_slab.positions[:, 1] - top) < 1.0) |
-                  (abs(crack_slab.positions[:, 1] - bottom) < 1.0)) 
+                  (abs(crack_slab.positions[:, 1] - bottom) < 1.0))
 
 Note that the ``|`` operator is shorthand for a logical 'or'
 operation. After re-running the latest version of your script and
@@ -463,7 +463,7 @@ then attach the constraint to `crack_slab` using
 
     const = ...            # Initialise the constraint
     crack_slab. ...        # Attach the constraint to crack_slab
-    print('Fixed %d atoms\n' % fixed_mask.sum()) 
+    print('Fixed %d atoms\n' % fixed_mask.sum())
 
 To create the crack seed, we now apply the initial strain ramp. First,
 we need to convert the chosen energy release rate `initial_G` into a
@@ -535,7 +535,7 @@ Saving the output file
 
 Finally, we can save all the calculated materials properties inside the
 `crack_slab` :class:`~ase.atoms.Atoms` object, before writing it to disk::
- 
+
     crack_slab.info['nneightol'] = 1.30 # set nearest neighbour tolerance
     crack_slab.info['LatticeConstant'] = a0
     crack_slab.info['C11'] = c[0, 0]

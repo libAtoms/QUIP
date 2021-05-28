@@ -29,10 +29,10 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X TB_KPoints Module 
+!X TB_KPoints Module
 !X
-!% This is a module for doing (weighted and unweighted) k-points sums, 
-!% sorting, computing phase factors.  
+!% This is a module for doing (weighted and unweighted) k-points sums,
+!% sorting, computing phase factors.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -75,7 +75,7 @@ interface Initialise
   module procedure KPoints_Initialise_mesh, KPoints_Initialise_density
 end interface Initialise
 
-!% Prepare splitting according to mpi. 
+!% Prepare splitting according to mpi.
 public :: init_mpi
 interface init_mpi
   module procedure KPoints_init_mpi
@@ -114,7 +114,7 @@ end interface read_points_xml
 !% Minimum over k-points of a quantity that's duplicated among processors of each k-point.
 public :: min
 interface min
-  module procedure KPoints_kmin_real, KPoints_kmin_real1 
+  module procedure KPoints_kmin_real, KPoints_kmin_real1
 end interface min
 
 !% Maximum over k-points of a quantity that's duplicated among processors of each k-point.
@@ -300,13 +300,13 @@ subroutine KPoints_Initialise_mesh(this, n, monkhorst_pack, mpi_obj)
     shift = .false.
     if (present(monkhorst_pack)) then
       if (monkhorst_pack .and. mod(n(1),2) == 0) then
-	shift(1) = .true.
+        shift(1) = .true.
       end if
       if (monkhorst_pack .and. mod(n(2),2) == 0) then
-	shift(2) = .true.
+        shift(2) = .true.
       end if
       if (monkhorst_pack .and. mod(n(3),2) == 0) then
-	shift(3) = .true.
+        shift(3) = .true.
       end if
     endif
 
@@ -351,7 +351,7 @@ subroutine KPoints_Initialise_mesh(this, n, monkhorst_pack, mpi_obj)
       if (-i1 >= min(1) .and. -i1 <= max(1) .and. &
           -i2 >= min(2) .and. -i2 <= max(2) .and. &
           -i3 >= min(3) .and. -i3 <= max(3)) then ! reflected k-point is in range
-        if ((i1 /= 0 .or. i2 /= 0 .or. i3 /= 0) .and. & 
+        if ((i1 /= 0 .or. i2 /= 0 .or. i3 /= 0) .and. &
             (mesh_wt(i1,i2,i3) > 0.0_dp .and. mesh_wt(-i1,-i2,-i3) > 0.0_dp)) then ! not gamma and both points have weight
           mesh_wt(-i1,-i2,-i3) = mesh_wt(-i1,-i2,-i3) + mesh_wt(i1,i2,i3)
           mesh_wt(i1,i2,i3) = 0.0_dp
@@ -491,9 +491,9 @@ subroutine KP_characters_handler(in)
 end subroutine
 
 subroutine KP_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -524,9 +524,9 @@ subroutine KP_startElement_handler(URI, localname, name, attributes)
 end subroutine
 
 subroutine KP_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   character(len=1024) :: str
 

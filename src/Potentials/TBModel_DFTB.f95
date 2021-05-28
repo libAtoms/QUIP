@@ -184,7 +184,7 @@ subroutine TBModel_DFTB_Finalise(this)
     do ti=1, size(this%H_spline,2)
     do tj=1, size(this%H_spline,3)
       do i=1, size(this%H_spline,1)
-	call finalise(this%H_spline(i,ti,tj))
+        call finalise(this%H_spline(i,ti,tj))
       end do
     end do
     end do
@@ -194,7 +194,7 @@ subroutine TBModel_DFTB_Finalise(this)
     do ti=1, size(this%S_spline,2)
     do tj=1, size(this%S_spline,3)
       do i=1, size(this%S_spline,1)
-	call finalise(this%S_spline(i,ti,tj))
+        call finalise(this%S_spline(i,ti,tj))
       end do
     end do
     end do
@@ -222,9 +222,9 @@ subroutine TBM_characters_handler(in)
 end subroutine
 
 subroutine TBM_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -254,11 +254,11 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     if (len(trim(parse_tbm%label)) > 0) then ! we were passed in a label
       call print("DFTB_params startElement_handler was passed in label '"//trim(parse_tbm%label)//"'", PRINT_NERD)
       if (value == parse_tbm%label) then ! exact match
-	call print("DFTB_params startElement_handler got label exact match", PRINT_NERD)
+        call print("DFTB_params startElement_handler got label exact match", PRINT_NERD)
         parse_matched_label = .true.
         parse_in_tbm = .true.
       else ! no match
-	call print("DFTB_params startElement_handler got label didn't match", PRINT_NERD)
+        call print("DFTB_params startElement_handler got label didn't match", PRINT_NERD)
         parse_in_tbm = .false.
       endif
     else ! no label passed in
@@ -272,7 +272,7 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     if (parse_in_tbm) then
       call initialise(parse_cur_data)
       if (parse_tbm%n_types /= 0) then
-	call print("DFTB_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
+        call print("DFTB_params startElement_handler finalising old data, restarting to parse new section", PRINT_NERD)
         call finalise(parse_tbm)
       endif
     endif
@@ -347,7 +347,7 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
     parse_tbm%type_of_atomic_num(:) = 0
     do ti=1, parse_tbm%n_types
       if (parse_tbm%atomic_num(ti) > 0) &
-	parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ti)) = ti
+        parse_tbm%type_of_atomic_num(parse_tbm%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_tbm .and. name == 'per_pair_data') then
@@ -401,9 +401,9 @@ subroutine TBM_startElement_handler(URI, localname, name, attributes)
 end subroutine TBM_startElement_handler
 
 subroutine TBM_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   character(len=10240) :: val
   integer ii
@@ -426,12 +426,12 @@ subroutine TBM_endElement_handler(URI, localname, name)
       if (allocated(parse_Vrep_vals)) deallocate(parse_Vrep_vals)
     elseif (parse_in_tbm .and. name == 'H_spline') then
       do ii=1, 10
-	call initialise(parse_tbm%H_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_H_vals(ii,:), 0.0_dp, 0.0_dp)
+        call initialise(parse_tbm%H_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_H_vals(ii,:), 0.0_dp, 0.0_dp)
       end do
       parse_in_H_spline = .false.
     elseif (parse_in_tbm .and. name == 'S_spline') then
       do ii=1, 10
-	call initialise(parse_tbm%S_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_S_vals(ii,:), 0.0_dp, 0.0_dp)
+        call initialise(parse_tbm%S_spline(ii,parse_cur_type_i,parse_cur_type_j), parse_SK_r, parse_S_vals(ii,:), 0.0_dp, 0.0_dp)
       end do
       parse_in_S_spline = .false.
     elseif (parse_in_tbm .and. name == 'Vrep_spline') then
@@ -439,22 +439,22 @@ subroutine TBM_endElement_handler(URI, localname, name)
       parse_in_Vrep_spline = .false.
     elseif (name == 'point') then
       if (parse_in_H_spline) then
-	val = string(parse_cur_data)
-	parse_H_vals(1:10,parse_cur_point_i) = 0.0_dp
-	read (val, *, end=1000) parse_H_vals(1:10,parse_cur_point_i)
+        val = string(parse_cur_data)
+        parse_H_vals(1:10,parse_cur_point_i) = 0.0_dp
+        read (val, *, end=1000) parse_H_vals(1:10,parse_cur_point_i)
 1000    continue
-	parse_H_vals(1:10,parse_cur_point_i) = parse_H_vals(1:10,parse_cur_point_i) * HARTREE
+        parse_H_vals(1:10,parse_cur_point_i) = parse_H_vals(1:10,parse_cur_point_i) * HARTREE
       elseif (parse_in_S_spline) then
-	val = string(parse_cur_data)
-	parse_S_vals(1:10,parse_cur_point_i) = 0.0_dp
-	read (val, *, end=1010) parse_S_vals(1:10,parse_cur_point_i)
+        val = string(parse_cur_data)
+        parse_S_vals(1:10,parse_cur_point_i) = 0.0_dp
+        read (val, *, end=1010) parse_S_vals(1:10,parse_cur_point_i)
 1010    continue
       elseif (parse_in_Vrep_spline) then
-	val = string(parse_cur_data)
-	read (val, *) parse_Vrep_vals(parse_cur_point_i)
-	parse_Vrep_vals(parse_cur_point_i) = parse_Vrep_vals(parse_cur_point_i) * HARTREE
+        val = string(parse_cur_data)
+        read (val, *) parse_Vrep_vals(parse_cur_point_i)
+        parse_Vrep_vals(parse_cur_point_i) = parse_Vrep_vals(parse_cur_point_i) * HARTREE
       else
-	call system_abort('Found point in DFTB_params but not in H_spline, S_spline, or Vrep_Spline')
+        call system_abort('Found point in DFTB_params but not in H_spline, S_spline, or Vrep_Spline')
       endif
       parse_cur_point_i = parse_cur_point_i + 1
     endif
@@ -578,13 +578,13 @@ end subroutine
 !    ndata = 0
 !    call build_data_array(pcdata, this%orb_set_type(1:this%n_orb_sets(ti),ti), ndata)
 !    if (ndata /= this%n_orb_sets(ti)) call system_abort ('Mismatch in amount of data reading orb_set_type '// trim(str(ti)) // &
-!	' ' // trim(str(ndata)))
+!        ' ' // trim(str(ndata)))
 !
 !    call get_node(fxml, path='E', attributes=attributes, pcdata=pcdata, status=status)
 !    ndata = 0
 !    call build_data_array(pcdata, this%E(1:this%n_orb_sets(ti),ti), ndata)
 !    if (ndata /= this%n_orb_sets(ti)) call system_abort ('Mismatch in amount of data reading E '// trim(str(ti)) // &
-!	' ' // trim(str(ndata)))
+!        ' ' // trim(str(ndata)))
 !    this%E(:,ti) = this%E(:,ti)*HARTREE
 !
 !  end do
@@ -639,7 +639,7 @@ end subroutine
 !    do i=1, SK_npts
 !      call get_node(fxml, path='point', attributes=attributes, pcdata=pcdata, status=status)
 !      if (status /= 0) then
-!	call system_abort("Can't find H_spline/point for " // str(ii) // ' ' // str(jj))
+!        call system_abort("Can't find H_spline/point for " // str(ii) // ' ' // str(jj))
 !      endif
 !
 !      call QUIP_FoX_get_value(attributes, "r", value, status);
@@ -661,7 +661,7 @@ end subroutine
 !    do i=1, SK_npts
 !      call get_node(fxml, path='point', attributes=attributes, pcdata=pcdata, status=status)
 !      if (status /= 0) then
-!	call system_abort("Can't find S_spline/point for " // str(ii) // ' ' // str(jj))
+!        call system_abort("Can't find S_spline/point for " // str(ii) // ' ' // str(jj))
 !      endif
 !
 !      call QUIP_FoX_get_value(attributes, "r", value, status);
@@ -682,7 +682,7 @@ end subroutine
 !    do i=1, Vrep_npts
 !      call get_node(fxml, path='point', attributes=attributes, pcdata=pcdata, status=status)
 !      if (status /= 0) then
-!	call system_abort("Can't find Vrep_spline/point for " // str(ii) // ' ' // str(jj))
+!        call system_abort("Can't find Vrep_spline/point for " // str(ii) // ' ' // str(jj))
 !      endif
 !
 !      call QUIP_FoX_get_value(attributes, "r", value, status);
@@ -726,7 +726,7 @@ subroutine TBModel_DFTB_Print(this,file)
       call Print ("TBModel_DFTB E " // this%E(1,ti), file=file)
     else if (this%n_orb_sets(ti) == 2) then
       call Print ("TBModel_DFTB E " // this%E(1:2,ti), file=file)
-    else 
+    else
       call Print ("TBModel_DFTB E " //this%E(1:3,ti), file=file)
     endif
   end do
@@ -736,15 +736,15 @@ subroutine TBModel_DFTB_Print(this,file)
     do ti=1, this%n_types
     do tj=1, this%n_types
       call Print ("TBModel_DFTB interaction " // ti // " " // tj // " Z " // this%atomic_num(ti) //  " " // &
-	 this%atomic_num(tj), file=file)
+         this%atomic_num(tj), file=file)
 
       do i=1, 10
-	call Print ("H_spline " // i, file=file)
-	call Print (this%H_spline(i,ti,tj), file=file)
+        call Print ("H_spline " // i, file=file)
+        call Print (this%H_spline(i,ti,tj), file=file)
       end do
       do i=1, 10
-	call Print ("S_spline " // i, file=file)
-	call Print (this%S_spline(i,ti,tj), file=file)
+        call Print ("S_spline " // i, file=file)
+        call Print (this%S_spline(i,ti,tj), file=file)
       end do
       call Print ("Vrep_spline", file=file)
       call Print (this%Vrep_spline(ti,tj), file=file)
@@ -839,14 +839,14 @@ subroutine TBModel_DFTB_get_HS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, b_H,
       j = 1
       do j_set=1, this%n_orb_sets(tj)
       call radial_functions(this, ti, tj, dv_mag, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	is, js, SK_frad_H, SK_frad_S)
+        is, js, SK_frad_H, SK_frad_S)
       do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
-	b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	  is, js, SK_frad_H)
-	b_S(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	  is, js, SK_frad_S)
-	j = j + 1
+        b_H(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+          is, js, SK_frad_H)
+        b_S(i,j) = angular_function(dv_hat, dv_hat_sq, this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+          is, js, SK_frad_S)
+        j = j + 1
       end do
       end do
       i = i + 1
@@ -923,16 +923,16 @@ function TBModel_DFTB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_in
     do js=1, N_ORBS_OF_SET(this%orb_set_type(j_set,tj))
 
       if (at_ind > 0) then
-	virial_outerprod_fac = 1.0_dp
+        virial_outerprod_fac = 1.0_dp
       else
-	virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
+        virial_outerprod_fac = -dv_mag*dv_hat(-at_ind)
       end if
       b_dH(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
-	this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
+        this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+        is, js, SK_frad_H, SK_dfrad_H)*virial_outerprod_fac
       b_dS(i,j,:) = dangular_function(dv_mag, dv_hat, dv_hat_sq, &
-	this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
-	is, js, SK_frad_S, SK_dfrad_S)*virial_outerprod_fac
+        this%orb_set_type(i_set,ti), this%orb_set_type(j_set, tj), &
+        is, js, SK_frad_S, SK_dfrad_S)*virial_outerprod_fac
       j = j + 1
     end do
     end do
@@ -950,7 +950,7 @@ function TBModel_DFTB_get_dHS_blocks(this, at, at_i, at_j, dv_hat, dv_mag, at_in
 
 
 end function TBModel_DFTB_get_dHS_blocks
- 
+
 subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j, is, js, f_H, f_S)
    type(TBModel_DFTB), intent(in) :: this
    integer, intent(in) :: ti, tj
@@ -1063,7 +1063,7 @@ subroutine radial_functions(this, ti, tj, dv_mag, orb_set_type_i, orb_set_type_j
    endif
 
 end subroutine dradial_functions
- 
+
 function TBModel_DFTB_get_local_rep_E(this, at, i)
   type(TBModel_DFTB), intent(in) :: this
   type(Atoms), intent(in) :: at

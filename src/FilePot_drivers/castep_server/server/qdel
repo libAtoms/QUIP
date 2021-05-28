@@ -24,19 +24,19 @@ fi
 
 if [[ $JOB_STATUS == "PENDING" ]]; then
     awk -F'/' '{ if($1 == '$JOB_ID') {} else {print}}'\
-	cs_queue > cs_queue.tmp
+        cs_queue > cs_queue.tmp
     mv cs_queue.tmp cs_queue
     echo qdel: Removing pending job $JOB_ID
 else
     if [[ ! -e cs_lock ]]; then
-	awk -F'/' '{ if($1 == '$JOB_ID') { print $1"/KILLED/"$3 } else {print}}'\
-	    cs_queue > cs_queue.tmp
-	mv cs_queue.tmp cs_queue
-	echo qdel: Server down, removing job $JOB_ID from queue
+        awk -F'/' '{ if($1 == '$JOB_ID') { print $1"/KILLED/"$3 } else {print}}'\
+            cs_queue > cs_queue.tmp
+        mv cs_queue.tmp cs_queue
+        echo qdel: Server down, removing job $JOB_ID from queue
     else
-	echo qdel: Killing running job $JOB_ID
-	touch $JOB_ID/killed
-	eval $KILL_CASTEP
+        echo qdel: Killing running job $JOB_ID
+        touch $JOB_ID/killed
+        eval $KILL_CASTEP
     fi
 fi
 

@@ -49,8 +49,8 @@ Setup of the QM and QM/MM potentials
 
 For the QM/MM simulation, we first need to initialise the classical SW potential
 (`mm_pot`) and the quantum-mechanical one (`qm_pot`). The two Hamiltonians then need
-to be combined into a hybrid QM/MM potential (`qmmm_pot`), which mixes the QM 
-and MM forces. 
+to be combined into a hybrid QM/MM potential (`qmmm_pot`), which mixes the QM
+and MM forces.
 
 Leave the initialisiton of the SW classical potential as it is. After this, we
 want to add some lines of code to setup the QM potential. Using the same
@@ -72,17 +72,17 @@ buffer options control the size of the :ref:`hysteretic <hysteretic>` :ref:`buff
 region <buffer>` region used for the embedded QM force calculation. ::
 
   qmmm_pot = ForceMixingPotential(pot1=mm_pot,
-				  pot2=qm_pot,
+                                  pot2=qm_pot,
           atoms=atoms,
-				  qm_args_str='single_cluster cluster_periodic_z carve_cluster '+
-					      'terminate cluster_hopping=F randomise_buffer=F',
-				  fit_hops=4,
-				  lotf_spring_hops=3,
-				  hysteretic_buffer=True,
-				  hysteretic_buffer_inner_radius=7.0,
-				  hysteretic_buffer_outer_radius=9.0,
-				  cluster_hopping_nneighb_only=False,
-				  min_images_only=True)
+                                  qm_args_str='single_cluster cluster_periodic_z carve_cluster '+
+                                              'terminate cluster_hopping=F randomise_buffer=F',
+                                  fit_hops=4,
+                                  lotf_spring_hops=3,
+                                  hysteretic_buffer=True,
+                                  hysteretic_buffer_inner_radius=7.0,
+                                  hysteretic_buffer_outer_radius=9.0,
+                                  cluster_hopping_nneighb_only=False,
+                                  min_images_only=True)
 
 The `qm_args_str` argument defines some parameters which control how
 the QM calculation is carried out: we use a single cluster, periodic
@@ -219,10 +219,10 @@ writes to the trajectory file if the state of the dynamical systems is
 `Interpolation`::
 
     trajectory = ... # Initialise trajectory using traj_file
-    
+
     def traj_writer(dynamics):
         if dynamics.state == LOTFDynamics.Interpolation:
-            trajectory.write(dynamics.atoms) 
+            trajectory.write(dynamics.atoms)
 
 As before, we attach this function to the dynamical system, passing
 `traj_interval` and and extra argument of `dynamics` which gets passed along to the
@@ -231,10 +231,10 @@ method)::
 
     dynamics. ...    # Attach traj_writer to dynamics
 
-Now, we can simply run the dynamics for `nsteps` steps:: 
+Now, we can simply run the dynamics for `nsteps` steps::
 
     dynamics. ...    # Run dynamics for nsteps
- 
+
 If you are interested in seeing how the LOTF predictor-corrector cycle is
 implemented, look at the documentation and `source code
 <_modules/quippy/lotf.html#LOTFDynamics.step>`_ for the
@@ -300,7 +300,7 @@ As this is the first step, there were no changes, so no re-optimisation is
 required. Next we carry out 10 steps of extrapolation, with constant LOTF
 adjustable parameters. During this time the strain is incremented as normal::
 
-    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
+    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     ---------------------------------------------------------------------------------
     E            1.0  553.716406     0.08427      5.0012      -30.61    (-0.00)
     E            2.0  547.749233     0.08428      5.0024      -30.61    (-0.01)
@@ -332,7 +332,7 @@ that the temperature after one step exactly matches the interpolation phase
 (since the forces and velocities at :math:`t = 0` are identical for
 extrapolation and interpolation)::
 
-    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A 
+    State      Time/fs    Temp/K     Strain      G/(J/m^2)  CrackPos/A D(CrackPos)/A
     ---------------------------------------------------------------------------------
     I            1.0  553.716406     0.08427      5.0012      -30.65    (-0.04)
     I            2.0  547.759567     0.08428      5.0024      -30.65    (-0.05)
@@ -380,7 +380,7 @@ If you want to see the actual cluster used for carrying out the embedded DFTB
 calculation, you could use the :func:`~quippy.clusters.create_cluster_simple`
 function together with the same `args_str` cluster options defined above::
 
-   cluster = create_cluster_simple(gcat(), 
+   cluster = create_cluster_simple(gcat(),
                   args_str=("single_cluster cluster_periodic_z carve_cluster "
                             "terminate cluster_hopping=F randomise_buffer=F"))
    view(cluster)
@@ -487,7 +487,7 @@ Low speed instability on the (111) cleavage plane
 
 If you are lucky, you may see the formation of a crack tip reconstruction
 consisting of a 5 and a 7 membered ring on the lower fracture surface,
-related to the Pandey surface reconstruction. 
+related to the Pandey surface reconstruction.
 
 .. image:: lotf-crack-step-1.png
    :width: 400
@@ -524,10 +524,10 @@ the interpolation and extrapolation. Add the following code before the
 :meth:`dynamics.run()` call::
 
     def log_pred_corr_errors(dynamics, logfile):
-	logfile.write('%s err %10.1f%12.6f%12.6f\n' % (dynamics.state_label,
-						       dynamics.get_time()/units.fs,
-						       dynamics.rms_force_error,
-						       dynamics.max_force_error))
+        logfile.write('%s err %10.1f%12.6f%12.6f\n' % (dynamics.state_label,
+                                                       dynamics.get_time()/units.fs,
+                                                       dynamics.rms_force_error,
+                                                       dynamics.max_force_error))
     logfile = open('pred-corr-error.txt', 'w')
     dynamics.attach(log_pred_corr_errors, 1, dynamics, logfile)
 

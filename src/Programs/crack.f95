@@ -34,7 +34,7 @@ program crack
   !% The 'crack' program can either load a crack configuration that has
   !% previosuly been created with 'makecrack' or continue a previous
   !% simulation, either from an XYZ file or from a binary checkpoint file.
-  !% 
+  !%
   !% There are several distinct modes of operation for the crack code,
   !% corresponding to different simulation tasks, as listed in the table
   !% below. Each of these is described below.
@@ -45,7 +45,7 @@ program crack
   !% 'md'                Molecular dynamics
   !% 'minim'             Hybrid structural relaxation
   !% 'force_integraion'  Hybrid force integration
-  !% 'quasi_static'      Quasi-static loading 
+  !% 'quasi_static'      Quasi-static loading
   !% =================== ================================
   !%
   !% Molecular Dynamics
@@ -56,7 +56,7 @@ program crack
   !% find a load that satisfies $G_{-} < G < G_c$ so the relaxed crack is
   !% lattice trapped and will not move until the load is increased above
   !% $G_+$.
-  !% 
+  !%
   !% Molecular dynamics is then carried out at a temperature of 300~K, with
   !% a weak Langevin thermostat to correct for the energy drift caused by
   !% the time dependence of the LOTF Hamiltonian.
@@ -73,7 +73,7 @@ program crack
   !%      for the fracture simulations. See text for a description of
   !%      each state and the conditions that have to met for
   !%      transitions to take place.
-  !% 
+  !%
   !% Unfortunately it is not possible to run dynamics for long enough to
   !% fully explore the environment at each load and to cross barriers which
   !% the real system would have sufficient thermal energy to pass over at
@@ -81,22 +81,22 @@ program crack
   !% %
   !% Instead we allow the dynamics to proceed for some fixed amount of time
   !% 'md_wait_time', and then periodically check for rebonding near the
-  !% crack tip using the time-averaged coordinates with an averaging time of 
+  !% crack tip using the time-averaged coordinates with an averaging time of
   !% 'md_avg_time'.
-  !% 
+  !%
   !% Fig.~\ref{fig:flow-chart} schematically illustrates the details of the
   !% molecular dynamics methodology used for the fracture simulations.
   !% If no rebonding occurs for some time then we increase the load.
   !% After each loading increment there is a thermalisation period in which
   !% a stronger thermostat is used to dissipate the energy produced by the
-  !% rescaling. 
+  !% rescaling.
   !% The thermalisation continues until the fluctuations in temperature
   !% are small, defined by the inequality
   !%
   !%  .. math::
-  !% 
+  !%
   !%     \frac{T - \left<T\right>}{T} < \frac{1}{\sqrt{N}}
-  !% 
+  !%
   !% where $T$ and $\left<T\right>$ are the instantaneous and average
   !% temperatures and $N$ is the total number of atoms in the simulation.
   !% Once this condition is satisfied the thermostat is turned down and we
@@ -108,31 +108,31 @@ program crack
   !%
   !% There is now an alternative way to smoothly increase the load during
   !% an MD simulation. To use this method set the 'md_smooth_loading_rate'
-  !% parameter to a non-zero value. This parameter causes the load to be 
+  !% parameter to a non-zero value. This parameter causes the load to be
   !% increased smoothly by an amount 'md_smooth_loading_rate*md_time_step'
   !% after each Verlet integration step. Once the crack starts to move
   !% (defined by the tip position changing by more than 'md_smooth_loading_tip_move_tol'
   !% from the original position), then loading will stop. If the crack arrests
   !% (defined by a movement of less than 'md_smooth_loading_tip_move_tol' in
   !% a time 'md_smooth_loading_arrest_time' then loading will recommence.
-  !% 
+  !%
   !% At the moment loading always uses the same 'load' field, but it is
   !% planned to allow the loading field to be recomputed from time to time
-  !% if the crack moves and subsequently arrests.                                          
-  !% 
+  !% if the crack moves and subsequently arrests.
+  !%
   !% \subsection{QM Selection Algorithm}
-  !% 
+  !%
   !% A major advantage of LOTF is that it allows us to keep the QM region
   !% small.
   !% This requires a robust selection algorithm to follow the crack tip as
   !% it moves and identify the atoms that need to be treated with quantum
   !% mechanical accuracy.
-  !% This is a difficultproblem since the timescales of thermal vibration 
+  !% This is a difficultproblem since the timescales of thermal vibration
   !% and crack motion are not well separated.
   !% The hysteretic selection algorithm described in Section 4.6 of my thesis
   !% \footnote{Available at 'http://www.srcf.ucam.org/\~jrk33/Publications'}.
   !% provides an effective solution to this problem.
-  !% 
+  !%
   !% We identify atoms as active when they change their bonding topology,
   !% and then construct embedding ellipses around each active atom.
   !% The set of active atoms is seeded with a few atoms near to the crack
@@ -146,7 +146,7 @@ program crack
   !% selection regions, and then the hysteretic algorithm ensures that
   !% atoms near the edges of the QM region do not oscillate in and out of
   !% the active region.
-  !% 
+  !%
   !% \begin{figure}
   !%   \centering
   !%   \includegraphics[width=120mm]{qm-selection-crack}
@@ -157,9 +157,9 @@ program crack
   !%     (right panel) selection regions. The atom indicated with the black
   !%     arrow remains selected despite oscillating in and out of the inner
   !%     region providing that it stays inside the outer region.  }
-  !%     
+  !%
   !% \end{figure}
-  !% 
+  !%
   !% As the crack moves on, we can stop treating atoms behind the crack tip
   !% quantum mechanically.
   !% We cap the size of the QM region at 'selection_max_qm_atoms'
@@ -169,9 +169,9 @@ program crack
   !% By keeping track of the order in which atoms became active, we can
   !% remove them from the QM region in a consistent fashion.
   !% An additional condition prevents atoms further than a threshold
-  !% distance 'selection_cutoff_plane' away from the centre of mass of the 
+  !% distance 'selection_cutoff_plane' away from the centre of mass of the
   !% current QM region from becoming active.
-  !% 
+  !%
   !% \subsection{Hybrid Structural Relaxation}
   !%
   !% Classical geometry optimisation can be performed rapidly using the
@@ -187,7 +187,7 @@ program crack
   !% classical and adjustable potential forces: as for MD, this ensures
   !% that there is no mechanical incompatibility at the boundary between
   !% classical and quantum regions.
-  !% 
+  !%
   !% The standard formulation of the conjugate gradients algorithm requires
   !% both an objective function and its derivative.
   !% For geometry optimisation, the former is the total energy.
@@ -196,14 +196,14 @@ program crack
   !% It is possible to modify the line minimisation step of the
   !% conjugate gradient algorithm to work with derivative information only.
   !% This is done by extrapolating the projection of the derivative along
-  !% the search direction to zero. This is invoked by setting 'minim_linmin_routine' 
+  !% the search direction to zero. This is invoked by setting 'minim_linmin_routine'
   !% to 'LINMIN_DERIV'.
   !% To avoid errors associated with large extrapolation lengths, a maximum
   !% step size is specified and then the procedure is iterated until the
   !% projected derivative is zero.
-  !% 
+  !%
   !% \subsection{Quasi-static loading}
-  !% 
+  !%
   !% As well as MD, the 'crack' code can perform quasi-static
   !% simulations where the system is fully relaxed after each increment of
   !% load.
@@ -212,9 +212,9 @@ program crack
   !% For this purpose, we consider fracture to have occured when the
   !% crack tip moves more than 'quasi_static_tip_move_tol' from its
   !% original position.
-  !% 
+  !%
   !% \subsection{Hybrid Force Integration}
-  !% 
+  !%
   !% Within the LOTF scheme, there is not a meaningful total energy for the
   !% hybrid classical/quantum system; the method matches forces between the
   !% QM and classical regions, rather than energies, so the solution is to
@@ -226,13 +226,13 @@ program crack
   !% where $\mathbf{R}$ denotes all atomic positions and the integration
   !% contour $\gamma$ can be any path between the two configurations of
   !% interest.
-  !% The start and end configurations should be obtained by hybrid minimisation, 
+  !% The start and end configurations should be obtained by hybrid minimisation,
   !% so that $\mathbf{F} = 0$ at both integration limits.
   !% The ending configuation is taken from the file specified in the
   !% 'force_integration_end_file' parameter.
-  !% 
-  !% The simplest contour connecting the two minima is used: linear interpolation 
-  !% between the relaxed unreconstructed state with atomic coordinates $\mathbf{R}_U$ and 
+  !%
+  !% The simplest contour connecting the two minima is used: linear interpolation
+  !% between the relaxed unreconstructed state with atomic coordinates $\mathbf{R}_U$ and
   !% the reconstructed state with coordinates $\mathbf{R}_R$.
   !% The QM region is fixed during the integration process.
   !% The forces $\mathbf{F}(\mathbf{R})$ are calculated in the standard
@@ -244,14 +244,14 @@ program crack
   !% the boundary.
   !% The integration path is discretised into $N+1$ samples according to
   !% \begin{eqnarray}
-  !%   \Delta \mathbf{R} & = & \frac{1}{N}\left(\mathbf{R}_R - \mathbf{R}_U\right) 
+  !%   \Delta \mathbf{R} & = & \frac{1}{N}\left(\mathbf{R}_R - \mathbf{R}_U\right)
   !%   \\ \mathbf{F}_i & = & \mathbf{F}(\mathbf{R}_U + i\,\Delta \mathbf{R}), \;\; 0 \le i \le N
   !% \end{eqnarray}
   !% and then Eq.~\ref{eq:force-integration} can be evaluated using
   !% Simpson's Rule:
   !% \begin{eqnarray}
   !%   \Delta E & \approx & \frac{\Delta \mathbf{R}}{3} \cdot \left[
-  !%     \mathbf{F}_0 + 
+  !%     \mathbf{F}_0 +
   !%     2 \sum_{j=1}^{N/2-1} \mathbf{F}_{2j} +
   !%     4 \sum_{j=1}^{N/2} \mathbf{F}_{2j-1} +
   !%     \mathbf{F}_N \right]
@@ -485,7 +485,7 @@ program crack
   call print('extra_qm_args = '//trim(extra_qm_args))
   call print('extra_mm_args = '//trim(extra_mm_args))
   call print('extra_args = '//trim(extra_args))
-  
+
   call finalise(bulk_cell)
 
   ! Look for input file. Check for the following, in order
@@ -600,7 +600,7 @@ program crack
 #ifndef HAVE_NETCDF4
   if (params%io_netcdf) &
        call system_abort('io_netcdf = .true. but NetCDF support not compiled in')
-#endif 
+#endif
 
   if (params%io_netcdf) then
      suffix = '.nc'
@@ -620,7 +620,7 @@ program crack
 
      call print('Setting up movie output file '//movie_name)
      call initialise(movie, movie_name, action=OUTPUT)
-     if (params%io_backup) then 
+     if (params%io_backup) then
         write (movie_name, '(a,i0,a)') trim(stem)//'_movie_backup_', movie_n, trim(suffix)
         call initialise(movie_backup, movie_name, action=OUTPUT)
      end if
@@ -634,7 +634,7 @@ program crack
 
   if (params%qm_calc_force_error) allocate(f_fm(3,ds%atoms%N))
 
-  ! Allocate various flags 
+  ! Allocate various flags
 
   call Print('Setting nneightol to '//params%md(params%md_stanza)%nneigh_tol)
   ds%atoms%nneightol = params%md(params%md_stanza)%nneigh_tol
@@ -678,7 +678,7 @@ program crack
 
   if (all(abs(load) < 1.0e-7_dp)) then
      call print_title('Applying Initial Load')
-     call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, & 
+     call crack_calc_load_field(ds%atoms, params, classicalpot, params%crack_loading, &
           .true., mpi_glob)
 
      call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
@@ -702,7 +702,7 @@ program crack
   !*  MOLECULAR DYNAMICS                                          *
   !*                                                              *
   !*                                                              *
-  !****************************************************************    
+  !****************************************************************
   if (trim(params%simulation_task) == 'md' .or. trim(params%simulation_task) == 'damped_md') then
 
      md_stanza: do md_stanza_idx = 1, params%num_md_stanza
@@ -753,13 +753,13 @@ program crack
         state_string = ''
         if (trim(params%simulation_task) == 'md') then
            if (.not. get_value(ds%atoms%params, "State", state_string)) then
-              if (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp) then 
+              if (params%md(params%md_stanza)%smooth_loading_rate .fne. 0.0_dp) then
                  state_string = 'MD_LOADING'
               else
                  state_string = 'THERMALISE'
               end if
            end if
-        else 
+        else
            state_string = 'DAMPED_MD'
         end if
 
@@ -779,74 +779,74 @@ program crack
 
         ! Special thermostat for damping
         allocate(ds%thermostat(0:0)); call initialise(ds%thermostat(0),THERMOSTAT_NONE,0.0_dp)
-	! set damp mask, just in case we'll be doing damping
-	ds%atoms%damp_mask = 1
-	where (ds%atoms%move_mask == 0)
-	   ds%atoms%damp_mask = 0
-	end where
+        ! set damp mask, just in case we'll be doing damping
+        ds%atoms%damp_mask = 1
+        where (ds%atoms%move_mask == 0)
+           ds%atoms%damp_mask = 0
+        end where
 
-	! if DAMPED_MD, override this below
-	call disable_damping(ds)
+        ! if DAMPED_MD, override this below
+        call disable_damping(ds)
 
-	select case(trim(state_string))
-	   case ('THERMALISE')
-	      state = STATE_THERMALISE
+        select case(trim(state_string))
+           case ('THERMALISE')
+              state = STATE_THERMALISE
 
-	   case ('MD')
-	      state = STATE_MD
+           case ('MD')
+              state = STATE_MD
 
-	   case ('MD_LOADING')
-	      state = STATE_MD_LOADING
-	      call crack_find_tip(ds%atoms, params, old_crack_tips)
-	      crack_tips = old_crack_tips
+           case ('MD_LOADING')
+              state = STATE_MD_LOADING
+              call crack_find_tip(ds%atoms, params, old_crack_tips)
+              crack_tips = old_crack_tips
 
-	   case ('MD_CRACKING')
-	      state = STATE_MD_CRACKING
-	      call crack_find_tip(ds%atoms, params, old_crack_tips)
-	      crack_tips = old_crack_tips
+           case ('MD_CRACKING')
+              state = STATE_MD_CRACKING
+              call crack_find_tip(ds%atoms, params, old_crack_tips)
+              crack_tips = old_crack_tips
 
-	   case ('MD_CONSTANT')
-	      state = STATE_MD_CONSTANT
+           case ('MD_CONSTANT')
+              state = STATE_MD_CONSTANT
 
-	   case ('DAMPED_MD')
-	      state = STATE_DAMPED_MD
-	      call enable_damping(ds, params%md(params%md_stanza)%damping_time)
+           case ('DAMPED_MD')
+              state = STATE_DAMPED_MD
+              call enable_damping(ds, params%md(params%md_stanza)%damping_time)
 
-	   case default
-	      call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
+           case default
+              call system_abort("Don't know how to resume in molecular dynamics state "//trim(state_string))
 
         end select
 
-	if (state /= STATE_DAMPED_MD) then
-	   ! default thermostat 
-	   if (params%md(params%md_stanza)%ensemble == 'NVT') then
-	      if (state == STATE_THERMALISE) then
-		 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
-	      else
-		 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
-	      endif
-	      ds%atoms%thermostat_region = i_thermostat
-	   endif
-	   ! per-atom thermostats
-	   if (params%md(params%md_stanza)%per_atom_tau) then
-	      call assign_property_pointer(ds%atoms, 'per_atom_tau', per_atom_tau)
-	      n_per_atom_tau = count(per_atom_tau > 0.0_dp)
-	      allocate(per_atom_tau_a(n_per_atom_tau))
-	      per_atom_tau_a = pack(per_atom_tau, per_atom_tau > 0.0_dp)
-	      call add_thermostats(ds, THERMOSTAT_LANGEVIN, n=n_per_atom_tau, T=params%md(params%md_stanza)%sim_temp, tau_a=per_atom_tau_a, &
-	         region_i=i_thermostat)
-	      do i=1, ds%atoms%N
-	         if (per_atom_tau(i) > 0.0_dp) then
-		    ds%atoms%thermostat_region(i) = i_thermostat
-		    i_thermostat = i_thermostat + 1
-	         endif
-	      end do
-	   endif ! per_atom_tau
-	endif ! state /= STATE_DAMPED_MD
-	! never thermostat atoms with move_mask == 0
-	where (ds%atoms%move_mask == 0)
-	   ds%atoms%thermostat_region = 0
-	end where
+        if (state /= STATE_DAMPED_MD) then
+           ! default thermostat
+           if (params%md(params%md_stanza)%ensemble == 'NVT') then
+              if (state == STATE_THERMALISE) then
+                 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%thermalise_tau,region_i=i_thermostat)
+              else
+                 call add_thermostat(ds, THERMOSTAT_LANGEVIN, T=params%md(params%md_stanza)%sim_temp, tau=params%md(params%md_stanza)%tau,region_i=i_thermostat)
+              endif
+              ds%atoms%thermostat_region = i_thermostat
+           endif
+           ! per-atom thermostats
+           if (params%md(params%md_stanza)%per_atom_tau) then
+              call assign_property_pointer(ds%atoms, 'per_atom_tau', per_atom_tau)
+              n_per_atom_tau = count(per_atom_tau > 0.0_dp)
+              allocate(per_atom_tau_a(n_per_atom_tau))
+              per_atom_tau_a = pack(per_atom_tau, per_atom_tau > 0.0_dp)
+              call add_thermostats(ds, THERMOSTAT_LANGEVIN, n=n_per_atom_tau, T=params%md(params%md_stanza)%sim_temp, tau_a=per_atom_tau_a, &
+                 region_i=i_thermostat)
+              do i=1, ds%atoms%N
+                 if (per_atom_tau(i) > 0.0_dp) then
+                    ds%atoms%thermostat_region(i) = i_thermostat
+                    i_thermostat = i_thermostat + 1
+                 endif
+              end do
+           endif ! per_atom_tau
+        endif ! state /= STATE_DAMPED_MD
+        ! never thermostat atoms with move_mask == 0
+        where (ds%atoms%move_mask == 0)
+           ds%atoms%thermostat_region = 0
+        end where
 
         call print('Thermostats')
         call print(ds%thermostat)
@@ -856,7 +856,7 @@ program crack
         ! Bootstrap the adjustable potential if we're doing predictor/corrector dynamics
         if (params%md(params%md_stanza)%extrapolate_steps /= 1 .and. .not. params%simulation_classical) then
            if (trim(params%fit_method) /= 'lotf_adj_pot_svd' .and. trim(params%fit_method) /= 'lotf_adj_pot_minim') then
-              call system_abort('extrapolate_steps /= 1 and fit_method is not lotf_adj_pot_{svd, minim}') 
+              call system_abort('extrapolate_steps /= 1 and fit_method is not lotf_adj_pot_{svd, minim}')
            end if
 
            if (params%qm_cp2k) then
@@ -874,7 +874,7 @@ program crack
         !****************************************************************
         !*  Main MD Loop                                                *
         !*                                                              *
-        !****************************************************************    
+        !****************************************************************
         do
            call system_timer('step')
            call crack_fix_pointers(ds%atoms, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
@@ -908,7 +908,7 @@ program crack
                     end if
                  end do
 
-                 if (.not. mismatch) then 
+                 if (.not. mismatch) then
                     ! changed_nn hasn't changed for a while so we can increase strain
                     ! Rescale and change to state THERMALISE
                     call print('STATE changing MD -> THERMALISE')
@@ -936,7 +936,7 @@ program crack
 
            case(STATE_MD_LOADING)
               ! If tip has moved by more than smooth_loading_tip_move_tol then
-              ! turn off loading. 
+              ! turn off loading.
               call crack_find_tip(ds%atoms, params, crack_tips)
               if (crack_tips%N /= old_crack_tips%N) &
                    call system_abort('State MD_LOADING: number of crack tips changed from '//old_crack_tips%N//' to '//crack_tips%N)
@@ -980,7 +980,7 @@ program crack
               end if
 
            case(STATE_MD_CONSTANT)
-              
+
            case default
               call system_abort('Unknown molecular dynamics state!')
            end select
@@ -991,7 +991,7 @@ program crack
               !****************************************************************
               !*  Quantum Selection                                           *
               !*                                                              *
-              !****************************************************************    
+              !****************************************************************
               call system_timer('selection')
               call print_title('Quantum Selection')
               if (trim(params%selection_method) /= 'static') call crack_update_selection(ds%atoms, params)
@@ -1000,7 +1000,7 @@ program crack
               !****************************************************************
               !*  Extrapolation                                               *
               !*                                                              *
-              !****************************************************************    
+              !****************************************************************
               if (.not. params%simulation_classical) then
                  call print_title('Extrapolation')
                  call system_timer('extrapolation')
@@ -1039,7 +1039,7 @@ program crack
                               crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     if (params%hack_qm_zero_z_force) then
                        ! Zero z forces in embed region
-                       force(3,find(hybrid == 1)) = 0.0_dp 
+                       force(3,find(hybrid == 1)) = 0.0_dp
                        if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
                     end if
                  end if
@@ -1085,7 +1085,7 @@ program crack
                  !*  QM Force Computation                                        *
                  !*  and optimisation of Adjustable Potential                    *
                  !*                                                              *
-                 !****************************************************************    
+                 !****************************************************************
 
                  call print_title('Computation of forces')
                  call system_timer('force computation')
@@ -1104,7 +1104,7 @@ program crack
                  !****************************************************************
                  !*  Interpolation                                               *
                  !*                                                              *
-                 !****************************************************************    
+                 !****************************************************************
                  call print_title('Interpolation')
                  call system_timer('interpolation')
 
@@ -1135,10 +1135,10 @@ program crack
                        call calc(forcemix_pot, ds%atoms, force=f_fm, args_str= &
                             crack_hybrid_calc_args(qm_args_str, extra_qm_args, mm_args_str, extra_mm_args, extra_args))
                     end if
-                         
+
                     if (params%hack_qm_zero_z_force) then
                        ! Zero z forces in embed region
-                       force(3,find(hybrid == 1)) = 0.0_dp 
+                       force(3,find(hybrid == 1)) = 0.0_dp
                        if (params%qm_calc_force_error) f_fm(3, find(hybrid == 1)) = 0.0_dp
                     end if
 
@@ -1177,7 +1177,7 @@ program crack
               !****************************************************************
               !*  Non-Predictor/Corrector Dynamics                            *
               !*                                                              *
-              !****************************************************************    
+              !****************************************************************
 
               if (ds%t - last_update_selection_time >= params%selection_update_interval) then
                  last_update_selection_time = ds%t
@@ -1192,7 +1192,7 @@ program crack
                  last_update_crack_tip_time = ds%t
                  mainlog%prefix = 'CRACK_TIP'
                  call crack_find_tip(ds%atoms, params, crack_tips)
-  	         call print('time '//ds%t)
+                   call print('time '//ds%t)
                  call print(crack_tips)
                  mainlog%prefix = ''
                  call system_timer('crack_find_tip')
@@ -1211,7 +1211,7 @@ program crack
 
               if (params%hack_qm_zero_z_force) then
                  ! Zero z forces in embed region
-                 force(3,find(hybrid == 1)) = 0.0_dp 
+                 force(3,find(hybrid == 1)) = 0.0_dp
               end if
 
               call print_title('Advance Verlet')
@@ -1260,7 +1260,7 @@ program crack
                  call set_value(ds%atoms%params, 'LastPrintTime', last_print_time)
 
                  if (params%io_backup) then
-                    k=k+1           
+                    k=k+1
                     if (mod(k,2).eq.0) then
                        call crack_print(ds%atoms, movie, params)
                        call print('writing .nc file '//trim(stem)//'.nc')
@@ -1335,7 +1335,7 @@ program crack
      !*  FORCE INTEGRATION                                           *
      !*                                                              *
      !*                                                              *
-     !****************************************************************    
+     !****************************************************************
   else if (trim(params%simulation_task) == 'force_integration') then
 
 !!$     params%io_print_properties = trim(params%io_print_properties) // ":dr:forces"
@@ -1416,7 +1416,7 @@ program crack
      !*  GEOMETRY OPTIMISATION                                       *
      !*                                                              *
      !*                                                              *
-     !****************************************************************    
+     !****************************************************************
   else if (trim(params%simulation_task) == 'minim') then
 
      call print_title('Geometry Optimisation')
@@ -1457,7 +1457,7 @@ program crack
      !*  QUASI-STATIC LOADING                                        *
      !*                                                              *
      !*                                                              *
-     !****************************************************************    
+     !****************************************************************
   else if (trim(params%simulation_task) == 'quasi_static') then
 
      call print_title('Quasi Static Loading')

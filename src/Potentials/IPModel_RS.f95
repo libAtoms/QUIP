@@ -29,13 +29,13 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_RS module  
+!X IPModel_RS module
 !X
 !% Module for a Repulsive Step pair potential.
-!% \begin{equation} 
+!% \begin{equation}
 !%   \nonumber
-!%     V(r) = \epsilon \left[  \left( \frac{\sigma}{r} \right)^{14} + \frac{1}{2} \left( 1 - \tanh (k (r - \sigma_1)) \right) \right] 
-!% \end{equation} 
+!%     V(r) = \epsilon \left[  \left( \frac{\sigma}{r} \right)^{14} + \frac{1}{2} \left( 1 - \tanh (k (r - \sigma_1)) \right) \right]
+!% \end{equation}
 !% From J. Chem. Phys. 129, 064512 (2008)
 !%
 !% The IPModel_RS object contains all the parameters read from a
@@ -61,14 +61,14 @@ use QUIP_Common_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_RS
 type IPModel_RS
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
+  integer :: n_types = 0         !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
@@ -135,7 +135,7 @@ subroutine IPModel_RS_Finalise(this)
 end subroutine IPModel_RS_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -143,8 +143,8 @@ end subroutine IPModel_RS_Finalise
 subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_RS), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -168,7 +168,7 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      call check_size('Local_E',local_e,(/at%N/),'IPModel_RS_Calc', error)
      local_e = 0.0_dp
   endif
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_RS_Calc', error)
      f = 0.0_dp
   end if
@@ -204,7 +204,7 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -219,39 +219,39 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       if (present(e) .or. present(local_e)) then
-	de = IPModel_RS_pairenergy(this, ti, tj, dr_mag)
+        de = IPModel_RS_pairenergy(this, ti, tj, dr_mag)
 
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + 0.5_dp*de
+        if (present(local_e)) then
+          local_e(i) = local_e(i) + 0.5_dp*de
           if(i/=j) local_e(j) = local_e(j) + 0.5_dp*de
-	endif
-	if (present(e)) then
-	  if (associated(w_e)) then
-	    de = de*0.5_dp*(w_e(i)+w_e(j))
-	  endif
+        endif
+        if (present(e)) then
+          if (associated(w_e)) then
+            de = de*0.5_dp*(w_e(i)+w_e(j))
+          endif
           if(i==j) then
              e = e + 0.5_dp*de
           else
              e = e + de
           endif
-	endif
+        endif
       endif
       if (present(f) .or. present(virial)) then
-	de_dr = IPModel_RS_pairenergy_deriv(this, ti, tj, dr_mag)
-	if (associated(w_e)) then
-	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
-	endif
-	if (present(f)) then
-	  f(:,i) = f(:,i) + de_dr*dr
-	  if(i/=j) f(:,j) = f(:,j) - de_dr*dr
-	endif
-	if (present(virial)) then
+        de_dr = IPModel_RS_pairenergy_deriv(this, ti, tj, dr_mag)
+        if (associated(w_e)) then
+          de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
+        endif
+        if (present(f)) then
+          f(:,i) = f(:,i) + de_dr*dr
+          if(i/=j) f(:,j) = f(:,j) - de_dr*dr
+        endif
+        if (present(virial)) then
           if(i==j) then
              virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*dr_mag
           else
              virial = virial - de_dr*(dr .outer. dr)*dr_mag
           endif
-	endif
+        endif
       endif
     end do
   end do
@@ -300,11 +300,11 @@ function IPModel_RS_pairenergy_deriv(this, ti, tj, r)
      14.0_dp * ( this%sigma(ti,tj) / r )**14 / r + &
      0.5_dp * this%k(ti,tj) / cosh( this%k(ti,tj) * ( r - this%sigma1(ti,tj) ) )**2 &
      )
-  
+
 end function IPModel_RS_pairenergy_deriv
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
@@ -312,19 +312,19 @@ end function IPModel_RS_pairenergy_deriv
 !%> <RS_params n_types="2" cutoff="10.0" label="default">
 !%> <per_type_data type="1" atomic_num="29" />
 !%> <per_type_data type="2" atomic_num="79" />
-!%> <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" 
+!%> <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0"
 !%>       sigma1="1.35" k="10" />
-!%> <per_pair_data type1="1" type2="2" sigma="1.0" eps="1.0" 
+!%> <per_pair_data type1="1" type2="2" sigma="1.0" eps="1.0"
 !%>       sigma1="1.35" k="10" />
-!%> <per_pair_data type1="2" type2="2" sigma="1.0" eps="1.0" 
+!%> <per_pair_data type1="2" type2="2" sigma="1.0" eps="1.0"
 !%>       sigma1="1.35" k="10" />
 !%> </RS_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -344,10 +344,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -355,21 +355,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in RS_params")
+        call system_abort("Can't find n_types in RS_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%cutoff
+        read (value, *) parse_ip%cutoff
       else
-	call system_abort("Can't find cutoff in RS_params")
+        call system_abort("Can't find cutoff in RS_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -402,7 +402,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -444,9 +444,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'RS_params') then
@@ -482,7 +482,7 @@ end subroutine IPModel_RS_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of RS parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -501,7 +501,7 @@ subroutine IPModel_RS_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_RS : interaction " // ti // " " // tj // " sigma " // this%sigma(ti,tj) // " eps " // &
-	this%eps(ti,tj) // " sigma1 " // this%sigma1(ti,tj) // " k " // this%k(ti,tj), file=file)
+        this%eps(ti,tj) // " sigma1 " // this%sigma1(ti,tj) // " k " // this%k(ti,tj), file=file)
     end do
     call verbosity_pop()
   end do

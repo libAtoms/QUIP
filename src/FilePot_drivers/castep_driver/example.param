@@ -8,7 +8,7 @@ spin_polarised          : false
 max_scf_cycles          : 200
 num_dump_cycles         : -1
 iprint                  : 2
-metals_method 		: DM(EDFT)
+metals_method           : DM(EDFT)
 elec_force_tol          : 0.1 ev/ang
 cut_off_energy          : 180
 

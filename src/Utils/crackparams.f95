@@ -54,7 +54,7 @@
 !%   *  'force_intergration' -- parameters for the force integration task, used
 !%       when 'simulation_task = force_integration'.
 !%   *  'quasi_static' -- parameters for the quasi-static loading task, used
-!%       when 'simulation_task = quasi_static'. 
+!%       when 'simulation_task = quasi_static'.
 !%   *  'hack' -- finally, nasty hacks required for some crack systems, for
 !%       example it is necessary to zero the $z$-component of the QM forces to
 !%       get a well behaved simulation of the fracture of two-dimensional graphene.
@@ -63,14 +63,14 @@
 !% them with an underscore: for example the 'task' attribute within  the 'simulation'
 !% tag becomes the 'simulation_task' variables.
 !% See below for a brief description of each parameter.
-!% 
+!%
 !% Here is a complete example of the '<crack_params>' XML stanza for a MD run
-!% using the Bowler tight binding model in the QM region and the standard 
+!% using the Bowler tight binding model in the QM region and the standard
 !% Stillinger-Weber potential for the classical region ::
 !%
 !%><crack_params>
-!%>  <crack structure="diamond" element="Si" lattice_guess="5.44" 
-!%>    name="(111)[11b0]" width="200.0" height="100.0" 
+!%>  <crack structure="diamond" element="Si" lattice_guess="5.44"
+!%>    name="(111)[11b0]" width="200.0" height="100.0"
 !%>    num_layers="1" G="1.0" seed_length="50.0"
 !%>    strain_zone_width="50.0" vacuum_size="50.0"
 !%>    hydrogenate="T" rescale_x_z="F" rescale_x="F" nerate_load="F" strain_increment="0.005" />
@@ -89,7 +89,7 @@
 !%>    checkpoint_interval="100.0"  />
 !%>
 !%>  <selection max_qm_atoms="200" dynamic="T" ellipse="8.0 5.0 10.0"
-!%>    ellipse_bias="0.5" ellipse_buffer="1.3" cutoff_plane="10.0" 
+!%>    ellipse_bias="0.5" ellipse_buffer="1.3" cutoff_plane="10.0"
 !%>    fit_on_eqm_coordination_only="F" />
 !%>
 !%>  <classical args="IP SW label=PRB_31_plus_H" reweight="1.0" />
@@ -97,13 +97,13 @@
 !%>  <qm args="TB Bowler" little_clusters="F" terminate="T"
 !%>    buffer_hops="3" vacuum_size="3.0" even_electrons="T"
 !%>    randomise_buffer="T" force_periodic="F" />
-!%> 
+!%>
 !%>  <fit hops="3" method="adj_pot_svd" />
 !%></crack_params>
 !%
-!% Parameters for the classical and QM regions should be included in the same XML 
+!% Parameters for the classical and QM regions should be included in the same XML
 !% file, and all three stanzas should then be enclosed by some outer tags to make
-!% a well formed XML file. For example this could be '<params>...</params>', 
+!% a well formed XML file. For example this could be '<params>...</params>',
 !% but the choice of name is arbitrary.
 
 #include "error.inc"
@@ -135,7 +135,7 @@ module CrackParams_module
      real(dp) :: avg_time              !% Averaging time for bonding/nearest neighbours etc. Unit:~fs.
      real(dp) :: thermalise_tau        !% Thermostat time constant during thermalisiation. Unit:~fs.
      real(dp) :: thermalise_wait_time  !% Minimium thermalisation time at each load before changing to (almost) microcanoical MD. Unit:~fs.
-     real(dp) :: thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD     
+     real(dp) :: thermalise_wait_factor!% Factor controlling the thermalisation time at each load before changing to (almost) microcanonical MD
      real(dp) :: tau                   !% Thermostat time constant during (almost) microcanonical MD. Unit:~fs.
      logical  :: per_atom_tau          !% Use per-atom thermostat time constant (property name 'per_atom_tau', overrides md%tau for atoms where $\text{property} > 0$) during (almost) microcanonical MD. Logical.
      real(dp) :: wait_time             !% Minimum wait time between loadings. Unit:~fs.
@@ -154,7 +154,7 @@ module CrackParams_module
 
   end type CrackMDParams
 
-  !% This type contains all the parameters for a crack simulation, each of which is described briefly 
+  !% This type contains all the parameters for a crack simulation, each of which is described briefly
   !% below.
   type CrackParams
 
@@ -162,7 +162,7 @@ module CrackParams_module
      character(STRING_LENGTH) :: crack_structure !% Structure: so far 'diamond' and 'graphene' are supported
      character(STRING_LENGTH) :: crack_element !% Element to make slab from. Supported so far: Si, C, SiC, SiO
      integer :: crack_z(2)  !% Initialised automatically from crack element
-     character(STRING_LENGTH) :: crack_name !% Crack name, in format '(abc)[def]' with negative indices 
+     character(STRING_LENGTH) :: crack_name !% Crack name, in format '(abc)[def]' with negative indices
                                           !% denoted by a trailing 'b' (for bar), e.g. '(111)[11b0]'.
      real(dp) :: crack_lattice_guess      !% Guess at bulk lattice parameter, used to obtain accurate result. Unit:~\AA{}.
      real(dp) :: crack_lattice_a, crack_lattice_c, crack_lattice_u, crack_lattice_x, crack_lattice_y, crack_lattice_z
@@ -172,13 +172,13 @@ module CrackParams_module
      logical  :: crack_apply_initial_load !% If 'true', apply initial loading field to crack slab
      real(dp) :: crack_strain             !% Initial applied strain
      real(dp) :: crack_G                  !% Initial energy release rate loading in J/m$^2$ (override strain)
-     character(STRING_LENGTH) :: crack_loading !% 'uniform' for constant load, 
-                                               !% 'ramp' for linearly decreasing load along $x$, 
+     character(STRING_LENGTH) :: crack_loading !% 'uniform' for constant load,
+                                               !% 'ramp' for linearly decreasing load along $x$,
                                                !% 'kfield' for Irwin plane strain K-field,
-                                               !% 'interp_kfield_uniform' to linearly interpolate between k-field 
+                                               !% 'interp_kfield_uniform' to linearly interpolate between k-field
                                                !% (at crack tip) and uniform at distance 'crack_load_interp_length'
-                                               !% 'reduce_uniform' for reducing load  
-     real(dp) :: crack_load_interp_length !% Length over which linear interpolation between k-field 
+                                               !% 'reduce_uniform' for reducing load
+     real(dp) :: crack_load_interp_length !% Length over which linear interpolation between k-field
                                           !% and uniform strain field is carried out
      real(dp) :: crack_ramp_length        !% Length of ramp for the case 'crack_loading="ramp"'
      real(dp) :: crack_ramp_start_length  !% Length of the region in between the crack tip and the start of the ramp for the case 'crack_loading="ramp"'
@@ -188,11 +188,11 @@ module CrackParams_module
      real(dp) :: crack_seed_length        !% Length of seed crack. Unit:~\AA{}.
      real(dp) :: crack_strain_zone_width  !% Distance over which strain increases. Unit:~\AA{}.
      real(dp) :: crack_vacuum_size        !% Amount of vacuum around crack slab. Unit:~\AA{}.
-     logical  :: crack_rescale_x_z        !% Rescale atomsatoms  in x direction by v and in z direction by v2 
-     logical  :: crack_rescale_x          !% Rescale atomsatoms  in x direction by v 
+     logical  :: crack_rescale_x_z        !% Rescale atomsatoms  in x direction by v and in z direction by v2
+     logical  :: crack_rescale_x          !% Rescale atomsatoms  in x direction by v
      logical  :: crack_relax_loading_field      !% Should 'makecrack' relax the applied loading field
      real(dp) :: crack_edge_fix_tol       !% How close must an atom be to top or bottom to be fixed. Unit:~\AA{}.
-     real(dp) :: crack_y_shift            !% Shift required to align y=0 with centre of a vertical bond. 
+     real(dp) :: crack_y_shift            !% Shift required to align y=0 with centre of a vertical bond.
                                           !% This value is only used for unknown values of 'crack_name'. Unit:~\AA{}.
      real(dp) :: crack_x_shift            !% Shift required to get "nice" surface terminations on vertical edges
      logical  :: crack_align_y            !% Vertical alignment turned on
@@ -205,9 +205,9 @@ module CrackParams_module
      logical :: crack_relax_bulk !% If true (default) relax bulk cell using classical potential
      integer  :: crack_dislo_seed          !% atom at the core of the dislocation
      logical  :: crack_check_surface_coordination !% Checking of the surface coordination before generating the crack seed
-     integer  :: crack_check_coordination_atom_type       !% Atom type we check the coordination for 
+     integer  :: crack_check_coordination_atom_type       !% Atom type we check the coordination for
      integer  :: crack_check_coordination_critical_nneigh !% Critical number of neighbours in the connectivity checking
-     real(dp) :: crack_check_coordination_region          !% Region (+/- around y=0 level) where the atomic coordination is checked.  
+     real(dp) :: crack_check_coordination_region          !% Region (+/- around y=0 level) where the atomic coordination is checked.
      logical ::  crack_double_ended         !% If true, we do a double ended crack with periodic boundary conditions along $x$ direction.
      real(dp) :: crack_tip_grid_size       !% Size (in A) of grid used for locating crack tips
      real(dp) :: crack_tip_min_separation  !% Minimum seperation (in A) between a pair of crack tips for them to be considered distinct
@@ -225,7 +225,7 @@ module CrackParams_module
      real(dp) :: crack_curvature !% Curvature used when crack_curved_front=T
      real(dp) :: crack_front_alpha !% Value of alpha to use when tip_method=alpha_shape
      real(dp) :: crack_front_angle_threshold !% Maximum bearing for segments to be included in crack front
- 
+
      ! Simulation parameters
      character(STRING_LENGTH) :: simulation_task !% Task to perform: 'md', 'minim', etc.
      integer  :: simulation_seed          !% Random number seed. Use zero for a random seed, or a particular value to repeat a previous run.
@@ -235,14 +235,14 @@ module CrackParams_module
 
 
      ! Minimisation parameters
-     character(STRING_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent. 
+     character(STRING_LENGTH) :: minim_method !% Minimisation method: use 'cg' for conjugate gradients or 'sd' for steepest descent.
                                               !% See 'minim()' in 'libAtoms/minimisation.f95' for details.
-     real(dp) :: minim_tol                !% Target force tolerance - geometry optimisation is considered to be 
+     real(dp) :: minim_tol                !% Target force tolerance - geometry optimisation is considered to be
                                           !% converged when $|\mathbf{f}|^2 <$ 'tol'
      real(dp) :: minim_eps_guess          !% Initial guess for line search step size $\epsilon$.
      integer  :: minim_max_steps          !% Maximum number of minimisation steps.
      integer  :: minim_print_output       !% Number of steps between XYZ confgurations printed
-     character(STRING_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or 
+     character(STRING_LENGTH) :: minim_linminroutine !% Linmin routine, e.g. 'FAST_LINMIN' for classical potentials with total energy, or
                                                      !% 'LINMIN_DERIV' when doing a LOTF hybrid simulation and only forces are available.
      real(dp) :: minim_fire_dt0 !% If using fire_minim, the initial step size
      real(dp) :: minim_fire_dt_max !% If using fire_minim, the maximum step size
@@ -264,7 +264,7 @@ module CrackParams_module
                                           !% files but is useful for debugging.
      character(STRING_LENGTH), allocatable :: io_print_properties(:) !% List of properties to print to movie file.
      real(dp) :: io_checkpoint_interval   !% Interval between writing checkpoint files, in fs.
-     character(STRING_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing 
+     character(STRING_LENGTH) :: io_checkpoint_path !% Path to write checkpoint files to. Set this to local scratch space to avoid doing
                                                     !%lots of I/O to a network drive. Default is current directory.
      logical :: io_mpi_print_all !% Print output on all nodes. Useful for debugging. Default .false.
      logical :: io_backup  !% If true, create backups of check files
@@ -298,7 +298,7 @@ module CrackParams_module
      logical :: qm_terminate              !% Terminate clusters with hydrogen atoms
      logical :: qm_force_periodic         !% Force clusters to be periodic in $z$ direction.
      logical :: qm_randomise_buffer       !% Randomise positions of outer layer of buffer atoms slightly to avoid systematic errors.
-     logical :: qm_even_electrons            !% Discard a hydrogen if necessary to give an overall non-spin-polarised cluster 
+     logical :: qm_even_electrons            !% Discard a hydrogen if necessary to give an overall non-spin-polarised cluster
      real(dp) :: qm_vacuum_size           !% Amount of vacuum surrounding cluster in non-periodic directions ($x$ and $y$ at least). Unit:~\AA{}.
      logical :: qm_calc_force_error       !% Do a full QM calculation at each stage in extrap and interp to measure force error
      logical :: qm_rescale_r              !% If true, rescale space in QM cluster to match QM lattice constant
@@ -307,7 +307,7 @@ module CrackParams_module
      real(dp) :: qm_hysteretic_buffer_outer_radius !% Outer radius used for hystertic buffer region
      logical :: qm_hysteretic_buffer_nneighb_only !% Should hysteretic buffer be formed by nearest neighbor hopping?
 
-     logical :: qm_hysteretic_connect !% Enable hysteretic connectivity 
+     logical :: qm_hysteretic_connect !% Enable hysteretic connectivity
      real(dp) :: qm_hysteretic_connect_inner_factor !% Inner bond factor. Default 1.2
      real(dp) :: qm_hysteretic_connect_outer_factor !% Outer bond factor. Default 1.5
      real(dp) :: qm_hysteretic_connect_cluster_radius !% Radius other which to keep track of hysteretic connectivity info. Default 10.0 A.
@@ -320,17 +320,17 @@ module CrackParams_module
      !%  \item 'lotf_adj_pot_svd' --- LOTF using SVD to optimised the Adj Pot
      !%  \item 'lotf_adj_pot_minim' --- LOTF using conjugate gradients to optimise the Adj Pot
      !%  \item 'lotf_adj_pot_sw' --- LOTF using old style SW Adj Pot
-     !%  \item 'conserve_momentum' --- divide the total force on QM region over the fit atoms to conserve momentum 
+     !%  \item 'conserve_momentum' --- divide the total force on QM region over the fit atoms to conserve momentum
      !%  \item 'force_mixing' --- force mixing with details depending on values of
      !%      'buffer_hops', 'transtion_hops' and 'weight_interpolation'
-     !%  \item 'force_mixing_abrupt' --- simply use QM forces on QM atoms and MM forces on MM atoms 
+     !%  \item 'force_mixing_abrupt' --- simply use QM forces on QM atoms and MM forces on MM atoms
      !%      (shorthand for 'method=force_mixing buffer_hops=0 transition_hops=0')
-     !%  \item 'force_mixing_smooth' --- use QM forces in QM region, MM forces in MM region and 
+     !%  \item 'force_mixing_smooth' --- use QM forces in QM region, MM forces in MM region and
      !%    linearly interpolate in buffer region  (shorthand for 'method=force_mixing weight_interpolation=hop_ramp')
-     !%  \item 'force_mixing_super_smooth' --- as above, but weight forces on each atom by distance from 
+     !%  \item 'force_mixing_super_smooth' --- as above, but weight forces on each atom by distance from
      !%    centre of mass of core region (shorthand for 'method=force_mixing weight_interpolation=distance_ramp')
      !% \end{itemize}
-     !% 
+     !%
 
      ! Force intergration parameters
      character(STRING_LENGTH) :: force_integration_end_file  !% XYZ file containing ending configuration for force integration.
@@ -345,7 +345,7 @@ module CrackParams_module
 
      ! Finally, nasty hacks
      logical :: hack_qm_zero_z_force       !% Zero $z$ component of all forces (used for graphene)
-     logical  :: hack_fit_on_eqm_coordination_only !% Only include fit atoms that have coordination 
+     logical  :: hack_fit_on_eqm_coordination_only !% Only include fit atoms that have coordination
                                                    !% number equal to 'md_eqm_coordination' (used for graphene).
 
      integer :: num_md_stanza, md_stanza
@@ -362,7 +362,7 @@ module CrackParams_module
 
   public :: initialise
   interface initialise
-     module procedure CrackParams_initialise 
+     module procedure CrackParams_initialise
   end interface
 
   public :: finalise
@@ -380,7 +380,7 @@ module CrackParams_module
      module procedure CrackParams_read_xml_filename
      module procedure CrackParams_read_xml
   end interface
-  
+
 
 contains
 
@@ -418,7 +418,7 @@ contains
     endif
   end subroutine crack_parse_atomic_numbers
 
-  
+
   !% Initialise this CrackParams structure and set default
   !% values for all parameters. WARNING: many of these defaults are
   !% only really appropriate for diamond structure silicon fracture.
@@ -427,7 +427,7 @@ contains
     character(len=*), optional, intent(in) :: filename
     logical, optional, intent(in) :: validate
     integer md_idx
-    
+
     ! Parameters for 'makecrack'
     this%crack_structure         = 'diamond'
     this%crack_element           = 'Si'
@@ -459,8 +459,8 @@ contains
     this%crack_strain_zone_width = 0.0_dp ! Angstrom
     this%crack_vacuum_size       = 100.0_dp ! Angstrom
     this%crack_relax_loading_field     = .true.
-    this%crack_rescale_x_z       = .false. 
-    this%crack_rescale_x         = .false. 
+    this%crack_rescale_x_z       = .false.
+    this%crack_rescale_x         = .false.
     this%crack_edge_fix_tol      = 2.7_dp   ! Angstrom
     this%crack_y_shift           = 0.0_dp   ! Angstrom
     this%crack_x_shift           = 0.0_dp   ! Angstrom
@@ -474,8 +474,8 @@ contains
     this%crack_free_surfaces = .false.
     this%crack_front_window_size = 5.44_dp ! Angstrom
     this%crack_fix_sides = .false.
-    this%crack_fix_dipoles = .false. 
-    this%crack_fix_dipoles_tol = 5.0_dp    ! Angstrom 
+    this%crack_fix_dipoles = .false.
+    this%crack_fix_dipoles_tol = 5.0_dp    ! Angstrom
     this%crack_thermostat_ramp_length = 50.0
     this%crack_thermostat_ramp_max_tau = 10000.0
 
@@ -498,9 +498,9 @@ contains
     this%crack_relax_bulk = .true.
 
     this%crack_check_surface_coordination         = .false.
-    this%crack_check_coordination_atom_type       = 18  
-    this%crack_check_coordination_critical_nneigh = 2 
-    this%crack_check_coordination_region          = 10.0_dp  
+    this%crack_check_coordination_atom_type       = 18
+    this%crack_check_coordination_critical_nneigh = 2
+    this%crack_check_coordination_region          = 10.0_dp
 
     ! Basic simulation parameters
     this%simulation_task         = 'md'
@@ -541,7 +541,7 @@ contains
        this%md(md_idx)%ensemble = 'NVT'
     end do
 
-    
+
     ! Minimisation parameters
     this%minim_method            = 'cg'
     this%minim_tol               = 1e-3_dp  ! normsq(force) eV/A
@@ -568,13 +568,13 @@ contains
     allocate(this%io_print_properties(4))
     ! arrays of strings must all have the same length, really
     this%io_print_properties     = (/"species          ", &
-				     "pos              ", &
-	                             "changed_nn       ", &
-				     "hybrid_mark      "/)
+                                     "pos              ", &
+                                     "changed_nn       ", &
+                                     "hybrid_mark      "/)
     this%io_checkpoint_interval  = 100.0_dp ! fs
     this%io_checkpoint_path      = ''
     this%io_mpi_print_all        = .false.
-    this%io_backup               = .false. 
+    this%io_backup               = .false.
     this%io_timing               = .false.
 
      ! Selection parameters
@@ -589,8 +589,8 @@ contains
     this%selection_update_interval= 0.0_dp
 
      ! Classical parameters
-    this%classical_args           = 'IP SW' 
-    this%classical_args_str       = '' 
+    this%classical_args           = 'IP SW'
+    this%classical_args_str       = ''
     this%classical_force_reweight = 1.0_dp   ! Fraction
 
      ! QM parameters
@@ -627,7 +627,7 @@ contains
     this%force_integration_end_file = ''  ! Filename
     this%force_integration_n_steps  = 10  ! number
 
-    ! Quasi static loading 
+    ! Quasi static loading
     this%quasi_static_tip_move_tol  = 5.0_dp ! Angstrom
 
     this%elastic_read = .false.
@@ -657,7 +657,7 @@ contains
 
   subroutine CrackParams_finalise(this)
     type(CrackParams), intent(inout) :: this
-    
+
     ! do nothing
 
   end subroutine CrackParams_finalise
@@ -681,7 +681,7 @@ contains
     PASS_ERROR(error)
 
     call finalise(xml)
-    
+
   end subroutine CrackParams_read_xml_filename
 
   subroutine CrackParams_read_xml(this, xmlfile, validate, error)
@@ -754,16 +754,16 @@ contains
 
   subroutine CrackParams_error_handler(msg)
     character(len=*), intent(in) :: msg
-    
+
     call system_abort(msg)
 
   end subroutine CrackParams_error_handler
 
   !% OMIT
   subroutine CrackParams_startElement_handler(URI, localname, name, attributes)
-    character(len=*), intent(in)   :: URI  
+    character(len=*), intent(in)   :: URI
     character(len=*), intent(in)   :: localname
-    character(len=*), intent(in)   :: name 
+    character(len=*), intent(in)   :: name
     type(dictionary_t), intent(in) :: attributes
 
     integer status
@@ -799,7 +799,7 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%crack_lattice_guess
        end if
-       
+
        call QUIP_FoX_get_value(attributes, "lattice_a", value, status)
        if (status == 0) then
           read (value, *) parse_cp%crack_lattice_a
@@ -1274,7 +1274,7 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%minim_max_steps
        end if
- 
+
        call QUIP_FoX_get_value(attributes, "print_output", value, status)
        if (status == 0) then
           read (value, *) parse_cp%minim_print_output
@@ -1309,7 +1309,7 @@ contains
        if (status == 0) then
           read (value, *) parse_cp%minim_mm_tol
        end if
-       
+
        call QUIP_FoX_get_value(attributes, "mm_eps_guess", value, status)
        if (status == 0) then
           read (value, *) parse_cp%minim_mm_eps_guess
@@ -1331,7 +1331,7 @@ contains
        end if
 
     elseif (parse_in_crack .and. name == 'io') then
-       
+
        call QUIP_FoX_get_value(attributes, "verbosity", value, status)
        if (status == 0) then
           parse_cp%io_verbosity = verbosity_of_str(value)
@@ -1357,26 +1357,26 @@ contains
 
          ! Backwards compatibility: prepend species tag if it's missing
          call parse_string(value, ':', tmp_properties, n_properties)
-	 got_species = .false.
-	 do i=1, n_properties
-	  if (trim(tmp_properties(i)) == 'species') then
-	    if (i /= 1) then
-	      tmp_properties(i) = tmp_properties(1)
-	      tmp_properties(1) = 'species'
-	    endif
-	    got_species = .true.
-	  endif
-	 end do
+         got_species = .false.
+         do i=1, n_properties
+          if (trim(tmp_properties(i)) == 'species') then
+            if (i /= 1) then
+              tmp_properties(i) = tmp_properties(1)
+              tmp_properties(1) = 'species'
+            endif
+            got_species = .true.
+          endif
+         end do
 
-	 if (got_species) then
-	   value = trim(tmp_properties(1))
-	   do i=2, n_properties
-	     value = trim(value) // ':' // tmp_properties(i)
-	   end do
-	 else
-	   value = 'species:'//trim(value)
-	 endif
-         
+         if (got_species) then
+           value = trim(tmp_properties(1))
+           do i=2, n_properties
+             value = trim(value) // ':' // tmp_properties(i)
+           end do
+         else
+           value = 'species:'//trim(value)
+         endif
+
          call parse_string(value, ':', tmp_properties, n_properties)
 
          if (n_properties > MAX_PROPERTIES) &
@@ -1480,7 +1480,7 @@ contains
        end if
 
     elseif (parse_in_crack .and. name == 'qm') then
-       
+
        call QUIP_FoX_get_value(attributes, "args", value, status)
        if (status == 0) then
           parse_cp%qm_args = value
@@ -1629,7 +1629,7 @@ contains
 
 
     elseif (parse_in_crack .and. name == 'force_integration') then
-       
+
        call QUIP_FoX_get_value(attributes, "end_file", value, status)
        if (status == 0) then
           parse_cp%force_integration_end_file = value
@@ -1648,7 +1648,7 @@ contains
        end if
 
     elseif (parse_in_crack .and. name == 'elastic') then
-       
+
        call QUIP_FoX_get_value(attributes, "read", value, status)
        if (status == 0) then
           read(value, *) parse_cp%elastic_read
@@ -1662,7 +1662,7 @@ contains
              end if
           end do
        end do
-          
+
 
     elseif (parse_in_crack .and. name == 'hack') then
 
@@ -1735,9 +1735,9 @@ contains
 
   !% OMIT
   subroutine CrackParams_endElement_handler(URI, localname, name)
-    character(len=*), intent(in)   :: URI  
+    character(len=*), intent(in)   :: URI
     character(len=*), intent(in)   :: localname
-    character(len=*), intent(in)   :: name 
+    character(len=*), intent(in)   :: name
 
     if (parse_in_crack) then
        if (name == 'crack_params') then
@@ -1975,7 +1975,7 @@ contains
           return
        end if
     end do
-    
+
   end function CrackParams_any_per_atom_tau
 
 end module CrackParams_module

@@ -34,7 +34,7 @@
 !% Reimplementation of TS potential:
 !% P. Tangney and S. Scandolo,
 !% An ab initio parametrized interatomic force field for silica
-!% J. Chem. Phys, 117, 8898 (2002). 
+!% J. Chem. Phys, 117, 8898 (2002).
 !%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -128,7 +128,7 @@ subroutine IPModel_TS_Initialise_str(this, args_str, param_str)
 
   call IPModel_TS_read_params_xml(this, param_str)
   this%initialised = .true.
-  
+
 end subroutine IPModel_TS_Initialise_str
 
 subroutine IPModel_TS_Finalise(this)
@@ -174,8 +174,8 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
   !$omp do schedule(runtime)
   do i=1, at%n
      if (present(mpi)) then
-	if (mpi%active) then
- 	  if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+        if (mpi%active) then
+           if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
         endif
      endif
 
@@ -183,7 +183,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
      if (.not. (abs(this%pol(ti)) > 0.0_dp)) cycle
 
      do m = 1, n_neighbours(at, i)
-         
+
          j = neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=(this%cutoff_ms*BOHR))
          if (j <= 0) cycle
          if (r_ij .feq. 0.0_dp) cycle
@@ -198,15 +198,15 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
 
          dist3 = r_ij**3.0_dp
          dist5 = r_ij**5.0_dp
-         
+
          gij = 0.0_dp
          factork = cij*exp(-bij*r_ij)
          do k=1,nk
-            gij = gij + factork 
+            gij = gij + factork
             factork = factork*bij*r_ij/real(k,dp)
          enddo
          gij = gij + factork
-         
+
          expfactor = exp(-this%yukalpha*r_ij)
          call smooth_cutoff(r_ij, this%cutoff_coulomb-this%yuksmoothlength, this%yuksmoothlength, fc, dfc_dr)
 
@@ -214,7 +214,7 @@ subroutine asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
       end do
   end do
   !$omp end do
-  
+
   if (present(mpi)) then
      if (mpi%active)   call sum_in_place(mpi, private_dip_sr)
   endif
@@ -232,7 +232,7 @@ end subroutine asap_short_range_dipole_moments
 
 !% Morse-stretch potential, defined by
 !% \begin{displaymath}
-!% U_ij = D_ij \left[ e^{\gamma_{ij}\left( 1 - r_{ij}/r^0_{ij} \right)} 
+!% U_ij = D_ij \left[ e^{\gamma_{ij}\left( 1 - r_{ij}/r^0_{ij} \right)}
 !%                  - 2 e^{\gamma_{ij}/2\left( 1 - r_{ij}/r^0_{ij} \right)} \right]
 !% \end{displaymath}
 subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
@@ -279,13 +279,13 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
       private_f = 0.0_dp
    endif
    if (present(virial)) private_virial = 0.0_dp
-  
+
    !$omp do schedule(runtime)
    do i=1, at%n
       if (present(mpi)) then
-	 if (mpi%active) then
-	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	 endif
+         if (mpi%active) then
+            if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
       endif
 
       if (allocated(at%connect%is_min_image)) then
@@ -295,7 +295,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
       end if
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       do m = 1, n_neighbours(at, i)
-         
+
          j = neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=(this%cutoff_ms*BOHR))
 
          if (j <= 0) cycle
@@ -333,7 +333,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
                   private_e = private_e + 0.5_dp*de
                end if
             end if
-            
+
             if (present(local_e)) then
                private_local_e(i) = private_local_e(i) + 0.5_dp*de
                if (i_is_min_image .and. j_is_min_image) private_local_e(j) = private_local_e(j) + 0.5_dp*de
@@ -360,10 +360,10 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
 
    if (present(mpi)) then
       if (mpi%active) then
-	 if (present(e)) private_e = sum(mpi, private_e) 
-	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
-	 if (present(f)) call sum_in_place(mpi, private_f)
-	 if (present(virial)) call sum_in_place(mpi, private_virial)
+         if (present(e)) private_e = sum(mpi, private_e)
+         if (present(local_e)) call sum_in_place(mpi, private_local_e)
+         if (present(f)) call sum_in_place(mpi, private_f)
+         if (present(virial)) call sum_in_place(mpi, private_virial)
       end if
    end if
 
@@ -372,7 +372,7 @@ subroutine asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
    if (present(f)) f = f + private_f*(HARTREE/BOHR)
    if (present(local_e)) local_e = local_e + private_local_e*HARTREE
    if (present(virial)) virial = virial + private_virial*HARTREE
-   !$omp end critical 
+   !$omp end critical
 
    if (allocated(private_f)) deallocate(private_f)
    if (allocated(private_local_e)) deallocate(private_local_e)
@@ -390,9 +390,9 @@ subroutine IPModel_TS_setup_atoms(this, at)
   logical :: dummy
   integer :: i, ti
   real(dp), dimension(:), pointer :: charge
-  
+
   ! If charge property doesn't exist, we add and initialise it now
-   
+
   if (.not. has_property(at, 'charge')) then
      call add_property(at, 'charge', 0.0_dp)
      dummy = assign_pointer(at, 'charge', charge)
@@ -401,24 +401,24 @@ subroutine IPModel_TS_setup_atoms(this, at)
         charge(i) = this%z(ti)
      end do
   end if
-  
+
   if (.not. has_property(at, 'fixdip')) call add_property(at, 'fixdip', .false.)
   if (.not. has_property(at, 'efield')) call add_property(at, 'efield', 0.0_dp, n_cols=3)
   if (.not. has_property(at, 'dipoles')) call add_property(at, 'dipoles', 0.0_dp, n_cols=3)
   if (.not. has_property(at, 'efield_old1')) call add_property(at, 'efield_old1', 0.0_dp, n_cols=3)
   if (.not. has_property(at, 'efield_old2')) call add_property(at, 'efield_old2', 0.0_dp, n_cols=3)
   if (.not. has_property(at, 'efield_old3')) call add_property(at, 'efield_old3', 0.0_dp, n_cols=3)
-  
+
   ! Increment at%cutoff if necessary
   call set_cutoff_minimum(at, max(this%cutoff_ms, this%cutoff_coulomb)*BOHR)
-  
+
 end subroutine IPModel_TS_setup_atoms
 
 subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
    type(IPModel_TS), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional, intent(in) :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -568,11 +568,11 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if (this%pred_order == 0 .or. n_efield_old < 2) then
          efield_dipole = efield_old1(:,:)
       end if
-      
+
       if (this%pred_order == 1 .and. n_efield_old >= 2) then
          efield_dipole = 2.0_dp*efield_old1(:,:) - efield_old2(:,:)
       end if
-      
+
       if (this%pred_order == 2 .and. n_efield_old >= 3) then
          efield_dipole = 3.0_dp*efield_old1(:,:) - 3.0_dp*efield_old2(:,:) + efield_old3(:,:)
       end if
@@ -602,10 +602,10 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       allocate(dip_sr(3,at%n))
       dip_sr = 0.0_dp
       if (this%tdip_sr) call asap_short_range_dipole_moments(this, at, charge, dip_sr, mpi)
-      
+
       allocate(efield_int_old(3,at%n))
       efield_int_old = 0.0_dp
-      
+
       if (maxval(abs(this%pol)) > 0.0_dp .and. .not. all(fixdip)) then
 
          call print('Entering TS Self-consistent dipole loop with '//count(.not. fixdip)//' variable dipole moments', PRINT_VERBOSE)
@@ -614,7 +614,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
          diff_old = 1.0_dp
          npol = 1
          call system_timer('asap_self_consistent_dipoles')
-         do 
+         do
             ! Mix current and previous total efields
             if (npol == 1) then
                efield = efield_dipole + efield_charge
@@ -622,7 +622,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
                efield = this%betapol*efield_dipole + &
                     (1.0_dp - this%betapol)*efield_int_old + efield_charge
             end if
-            
+
             ! Add external field if present
             if (applied_efield) then
                do i=1,at%n
@@ -654,19 +654,19 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
             end do
             diff = sqrt(diff/at%n)
             efield_old1 = efield_dipole
-            
+
             if (vv >= PRINT_VERBOSE) then
                write (line,'("Polarisation iteration : ",i5,3e16.8)') npol, diff_old, diff
                call print(line, PRINT_VERBOSE)
             end if
-            
+
             if (diff > difftol) then
                call write(at, 'ipmodel_asap_polarisation_divergence.xyz')
                RAISE_ERROR('IPModel_TS_calc: Polarisation diverges - diff='//diff, error)
             end if
-      
+
             if (abs(diff - diff_old) < this%tolpol) exit
-            
+
             diff_old = diff
             npol = npol + 1
             if (npol >= this%maxipol)  then
@@ -681,7 +681,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
          efield_old1 = efield_dipole
       end if
    end if
-      
+
    efield_dipole = 0.0_dp
    if (calc_dipoles) then
       ! Compute final energy, local energies, forces, virial and electric efield
@@ -690,7 +690,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
               (BOHR**2/HARTREE)*this%pol, this%b_pol, this%c_pol, this%type_of_atomic_num, this%tdip_sr, &
               e, local_e, f, virial, efield_dipole, mpi, atom_mask_name, source_mask_name, pseudise, &
               this%pseudise_sigma*BOHR, grid_size, error=error)
-         
+
          if (save_dipole_velo) then
             ! dip_velo = dipoles_{N-1} - dipoles_N (we do not divide by timestep here)
             do i=1,at%n
@@ -701,7 +701,7 @@ subroutine IPModel_TS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
    end if
 
    efield(:,1:at%n) = efield_charge + efield_dipole
-   
+
    ! Finally, add the short-range contribution
    if (calc_short_range) then
       call asap_morse_stretch(this, at, e, local_e, f, virial, mpi)
@@ -756,7 +756,7 @@ subroutine IPModel_TS_read_params_xml(this, param_str)
 
   if (len(trim(param_str)) <= 0) return
 
-  parse_in_ip = .false. 
+  parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
 
@@ -780,7 +780,7 @@ subroutine IPModel_TS_read_params_xml(this, param_str)
 end subroutine IPModel_TS_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

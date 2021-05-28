@@ -31,7 +31,7 @@
 !X
 !X  Connection module
 !X
-!% A Connection object stores the connectivity information (i.e. 
+!% A Connection object stores the connectivity information (i.e.
 !% list) for a specific Atoms object.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -194,8 +194,8 @@ contains
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     integer, optional, intent(in) :: nn_guess
     logical, optional, intent(in) :: store_rij
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     integer                           :: i, do_nn_guess
     real(dp)                          :: extent_inv(3,3), subregion_center(3)
     logical :: do_subregion, do_store_rij
@@ -220,7 +220,7 @@ contains
     if (allocated(this%neighbour2)) then
        if (size(this%neighbour2, 1) < Nbuffer) deallocate(this%neighbour2)
     endif
-    
+
     if (.not. allocated(this%neighbour1)) allocate(this%neighbour1(Nbuffer))
     if (.not. allocated(this%neighbour2)) allocate(this%neighbour2(Nbuffer))
     do i=1,Nbuffer
@@ -239,12 +239,12 @@ contains
        endif
        if (.not. associated(this%neighbour1(i)%t)) then
           allocate(this%neighbour1(i)%t)
-	  do_store_rij = optional_default(.false., store_rij)
-	  if (do_store_rij) then
-	     call allocate(this%neighbour1(i)%t,4,4, 0, 0, max(do_nn_guess, 1))
-	  else
-	     call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
-	  endif
+          do_store_rij = optional_default(.false., store_rij)
+          if (do_store_rij) then
+             call allocate(this%neighbour1(i)%t,4,4, 0, 0, max(do_nn_guess, 1))
+          else
+             call allocate(this%neighbour1(i)%t,4,1, 0, 0, max(do_nn_guess, 1))
+          endif
           this%neighbour1(i)%t%increment = max(do_nn_guess/2, 1)
 
           allocate(this%neighbour2(i)%t)
@@ -321,19 +321,19 @@ contains
 
     if (allocated(this%neighbour1)) then
       do i=1,size(this%neighbour1)
-	 if (associated(this%neighbour1(i)%t)) then
-	   call finalise(this%neighbour1(i)%t)
-	   deallocate(this%neighbour1(i)%t)
-	 endif
+         if (associated(this%neighbour1(i)%t)) then
+           call finalise(this%neighbour1(i)%t)
+           deallocate(this%neighbour1(i)%t)
+         endif
       end do
     endif
 
     if (allocated(this%neighbour2)) then
       do i=1,size(this%neighbour2)
-	 if (associated(this%neighbour2(i)%t)) then
-	   call finalise(this%neighbour2(i)%t)
-	   deallocate(this%neighbour2(i)%t)
-	 endif
+         if (associated(this%neighbour2(i)%t)) then
+           call finalise(this%neighbour2(i)%t)
+           deallocate(this%neighbour2(i)%t)
+         endif
       end do
     endif
 
@@ -497,16 +497,16 @@ contains
     d = sqrt(dd(1)*dd(1) + dd(2)*dd(2) + dd(3)*dd(3))
 
     if (check_for_dup) then
-      index = find(this%neighbour1(i)%t, (/ j, shift /)) 
+      index = find(this%neighbour1(i)%t, (/ j, shift /))
       if (index /= 0) then ! bond is already in table
 #ifdef DEBUG
-	if (current_verbosity() >= PRINT_ANALYSIS) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANALYSIS)
+        if (current_verbosity() >= PRINT_ANALYSIS) call print('test_form_bond had check_for_dup=T, found bond already in table', PRINT_ANALYSIS)
 #endif
-	this%neighbour1(i)%t%real(1,index) = d
-	if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
-	   this%neighbour1(i)%t%real(2:4,index) = pos(1:3,j) + (lattice .mult. shift) - pos(1:3,i)
-	endif
-	return
+        this%neighbour1(i)%t%real(1,index) = d
+        if (size(this%neighbour1(i)%t%real,1) == 4) then ! store_rij was set
+           this%neighbour1(i)%t%real(2:4,index) = pos(1:3,j) + (lattice .mult. shift) - pos(1:3,i)
+        endif
+        return
       endif
     endif
 
@@ -561,7 +561,7 @@ contains
        cutoff = cutoff_break
     else
        cutoff = bond_length(Z(i),Z(j)) * cutoff_break
-    end if    
+    end if
 
     d = norm(pos(:,j)+(lattice .mult. shift) - pos(:,i))
 #ifdef DEBUG
@@ -615,7 +615,7 @@ contains
       ddv = dv*sign(1,j-i)
     else ! dv not present
       if (size(this%neighbour1(i)%t%real,1) == 4) then
-	 ddv = pos(:,jj) + (lattice .mult. shift) - pos(:,ii)
+         ddv = pos(:,jj) + (lattice .mult. shift) - pos(:,ii)
       endif
     endif
 
@@ -625,7 +625,7 @@ contains
     else
        call append(this%neighbour1(ii)%t, (/jj, shift /), (/ d /))
     endif
-    if(ii .ne. jj) then		
+    if(ii .ne. jj) then
        index = this%neighbour1(min(ii,jj))%t%N
        ! Put a reference to this in neighbour2 for larger of i and j
        call append(this%neighbour2(jj)%t, (/ ii, index/))
@@ -638,8 +638,8 @@ contains
     type(Connection), intent(inout) :: this
     integer,     intent(in)    :: i,j
     integer,     intent(in), optional    :: shift(3)
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
 
     integer :: ii, jj, iii, jjj, jjjj, r_index, n_removed, my_shift(3)
 
@@ -664,50 +664,50 @@ contains
     do while (r_index /= 0)
       ! remove entry from neighbour1(ii)
       if (present(shift)) then
-	r_index = find(this%neighbour1(ii)%t, (/ jj, my_shift /) )
+        r_index = find(this%neighbour1(ii)%t, (/ jj, my_shift /) )
       else
-	r_index = find(this%neighbour1(ii)%t, (/ jj, 0, 0, 0 /), (/ .true., .false., .false., .false./) )
+        r_index = find(this%neighbour1(ii)%t, (/ jj, 0, 0, 0 /), (/ .true., .false., .false., .false./) )
       endif
       if (r_index == 0) then
-	if (n_removed == 0) then
-	  if (present(shift)) then
-	    call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // &
-		       " couldn't find a bond to remove", PRINT_ALWAYS)
-	  else
-	    call print("WARNING: remove bond called for i " // i // " j " // j // &
-		       " couldn't find a bond to remove", PRINT_ALWAYS)
-	  endif
-	endif
+        if (n_removed == 0) then
+          if (present(shift)) then
+            call print("WARNING: remove bond called for i " // i // " j " // j // " shift " // shift // &
+                       " couldn't find a bond to remove", PRINT_ALWAYS)
+          else
+            call print("WARNING: remove bond called for i " // i // " j " // j // &
+                       " couldn't find a bond to remove", PRINT_ALWAYS)
+          endif
+        endif
       else ! r_index /= 0
-	n_removed = n_removed + 1
+        n_removed = n_removed + 1
 
-	call delete(this%neighbour1(ii)%t, r_index, keep_order = .true.)
-	! remove entry from neighbour2(jj)
-	if (ii /= jj) then
-	  call delete(this%neighbour2(jj)%t, (/ ii, r_index /), keep_order = .true.)
-	endif
-	! renumber other neighbour2 entries
-	do iii=r_index, this%neighbour1(ii)%t%N
-	  ! jjj is another neighbour of ii
-	  jjj = this%neighbour1(ii)%t%int(1,iii)
-	  if (jjj > ii) then
-	    ! jjjj is r_index in jjj's neighbour2 of pointer back to ii's neighbour1
-	    jjjj = find(this%neighbour2(jjj)%t, (/ ii, iii+1 /) )
-	    if (jjjj /= 0) then
-	      ! decrement reference in jjj's neighbour2 table
-	      this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
-	    else
-	      RAISE_ERROR("remove_bond: Couldn't find neighbor to fix neighbour2 of", error)
-	    endif
-	  endif
-	end do
+        call delete(this%neighbour1(ii)%t, r_index, keep_order = .true.)
+        ! remove entry from neighbour2(jj)
+        if (ii /= jj) then
+          call delete(this%neighbour2(jj)%t, (/ ii, r_index /), keep_order = .true.)
+        endif
+        ! renumber other neighbour2 entries
+        do iii=r_index, this%neighbour1(ii)%t%N
+          ! jjj is another neighbour of ii
+          jjj = this%neighbour1(ii)%t%int(1,iii)
+          if (jjj > ii) then
+            ! jjjj is r_index in jjj's neighbour2 of pointer back to ii's neighbour1
+            jjjj = find(this%neighbour2(jjj)%t, (/ ii, iii+1 /) )
+            if (jjjj /= 0) then
+              ! decrement reference in jjj's neighbour2 table
+              this%neighbour2(jjj)%t%int(:,jjjj) = (/ ii, iii /)
+            else
+              RAISE_ERROR("remove_bond: Couldn't find neighbor to fix neighbour2 of", error)
+            endif
+          endif
+        end do
       end if ! r_index == 0
     end do ! while r_index /= 0
 
   end subroutine remove_bond
 
-  
-   !% Remove all bonds listed in the Table `bonds` from connectivity 
+
+   !% Remove all bonds listed in the Table `bonds` from connectivity
    subroutine remove_bonds(this, at, bonds, error)
      type(Connection), intent(inout) :: this
      type(Atoms), intent(in) :: at
@@ -796,7 +796,7 @@ contains
 
     my_own_neighbour = optional_default(.false., own_neighbour)
     my_store_is_min_image = optional_default(.true., store_is_min_image)
-    my_store_n_neighb = optional_default(.true., store_n_neighb)    
+    my_store_n_neighb = optional_default(.true., store_n_neighb)
 
     !Find the maximum covalent radius of all the atoms in the structure, double it
     !and multiple by cutoff. At makes sure we can deal with the worst case scenario of big atom
@@ -806,7 +806,7 @@ contains
        if (ElementCovRad(at%Z(i)) > cutoff) cutoff = ElementCovRad(at%Z(i))
     end do
     cutoff = (2.0_dp * cutoff) * cutoff_factor
-   
+
     call print("calc_connect_hysteretic: cutoff_factor " // cutoff_factor, PRINT_NERD)
     call print("calc_connect_hysteretic: cutoff_break_factor " // cutoff_break_factor, PRINT_NERD)
     call print("calc_connect_hysteretic: cutoff " // cutoff, PRINT_NERD)
@@ -845,15 +845,15 @@ contains
     ! Allocate space for the connection object if needed
     if (present(origin) .and. present(extent)) then
       if (.not.this%initialised) then
-	 call connection_initialise(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, origin, extent, nn_guess)
+         call connection_initialise(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, origin, extent, nn_guess)
       else
-	 call connection_fill(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, origin, extent, nn_guess)
+         call connection_fill(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, origin, extent, nn_guess)
       end if
     else
       if (.not.this%initialised) then
-	 call connection_initialise(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, nn_guess=nn_guess)
+         call connection_initialise(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, nn_guess=nn_guess)
       else
-	 call connection_fill(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, nn_guess=nn_guess)
+         call connection_fill(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, nn_guess=nn_guess)
       end if
     endif
 
@@ -872,15 +872,15 @@ contains
     do i=1, at%N
       ji = 1
       do
-	if (ji > n_neighbours(this, i)) exit
-	j = connection_neighbour(this, at, i, ji, shift = s_ij)
+        if (ji > n_neighbours(this, i)) exit
+        j = connection_neighbour(this, at, i, ji, shift = s_ij)
         broken = test_break_bond(this, cutoff_break_factor, .false., &
              at%Z, at%pos, at%lattice, i, j, s_ij, error)
         PASS_ERROR(error)
-	if (.not. broken) then
-	  ji = ji + 1 ! we didn't break at bond, so go to next one
-	              ! if we did break a bond, ji now points to a different bond, so don't increment it
-	endif
+        if (.not. broken) then
+          ji = ji + 1 ! we didn't break at bond, so go to next one
+                      ! if we did break a bond, ji now points to a different bond, so don't increment it
+        endif
       end do
     end do
 
@@ -894,15 +894,15 @@ contains
     do k = 1, cellsNc
        change_k = .true.
        do j = 1, cellsNb
-	  change_j = .true.
+          change_j = .true.
           do i = 1, cellsNa
-	     change_i = .true.
-	     call get_min_max_images(at%is_periodic, cellsNa, cellsNb, cellsNc, &
-	        cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
-	        min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
-	     change_i = .false.
-	     change_j = .false.
-	     change_k = .false.
+             change_i = .true.
+             call get_min_max_images(at%is_periodic, cellsNa, cellsNb, cellsNc, &
+                cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
+                min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+             change_i = .false.
+             change_j = .false.
+             change_k = .false.
 
              !Loop over atoms in cell(i,j,k)
              atom1 = this%cell_heads(i, j, k)
@@ -911,22 +911,22 @@ contains
                 ! Loop over neighbouring cells, applying PBC
                 do k2 = -cell_image_Nc, +cell_image_Nc
 
-                   ! the stored cell we are in 
-                   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+                   ! the stored cell we are in
+                   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1
 
                    ! the shift we need to get to the cell image
                    k4 = (k+k2-k3)/cellsNc
 
                    do j2 = -cell_image_Nb, +cell_image_Nb
-                      ! the stored cell we are in                 
-                      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+                      ! the stored cell we are in
+                      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1
 
                       ! the shift we need to get to the cell image
                       j4 = (j+j2-j3)/cellsNb
 
                       do i2 = -cell_image_Na, +cell_image_Na
-                         ! the stored cell we are in                 
-                         if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+                         ! the stored cell we are in
+                         if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1
 
                          ! the shift we need to get to the cell image
                          i4 = (i+i2-i3)/cellsNa
@@ -944,7 +944,7 @@ contains
                                cycle atom2_loop
                             endif
                             ! omit self in the same cell without shift
-                            if (.not. my_own_neighbour .and. (atom1 == atom2 .and. & 
+                            if (.not. my_own_neighbour .and. (atom1 == atom2 .and. &
                                  (i4==0 .and. j4==0 .and. k4==0) .and. &
                                  (i==i3 .and. j==j3 .and. k==k3))) then
                                atom2 = this%next_atom_in_cell(atom2)
@@ -953,15 +953,15 @@ contains
 
                             call test_form_bond(this, cutoff_factor, .false., &
                                  at%Z, at%pos, at%lattice, atom1,atom2, &
-				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
-				 .true., error)
+                                 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
+                                 .true., error)
                             PASS_ERROR(error)
 
                             atom2 = this%next_atom_in_cell(atom2)
                          end do atom2_loop ! atom2
 
                       end do ! i2
-		   end do ! j2
+                   end do ! j2
                 end do ! k2
 
                 atom1 = this%next_atom_in_cell(atom1)
@@ -996,8 +996,8 @@ contains
   subroutine connection_remove_atom(this, i, error)
     type(Connection), intent(inout) :: this
     integer, intent(in) :: i
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     integer :: ji, j, jj, s_ij(3), n_entries
 
     INIT_ERROR(error)
@@ -1097,7 +1097,7 @@ contains
           else
              ! FIXME 1. we should also take into account changes in lattice here - for
              !          now we force a reconnect whenever lattice changes.
-             !       2. it may be possible to further speed up calculation of delta_pos by 
+             !       2. it may be possible to further speed up calculation of delta_pos by
              !          not calling distance_min_image() every time
              my_max_pos_change = 0.0_dp
              do i=1, at%N
@@ -1116,7 +1116,7 @@ contains
              return
           end if
 
-          ! We need to do a full recalculation of connectivity. Store the current pos and lattice. 
+          ! We need to do a full recalculation of connectivity. Store the current pos and lattice.
           call print('calc_connect: max pos change '//my_max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_VERBOSE)
           if (present(did_rebuild)) did_rebuild = .true.
           this%last_connect_pos(:,:) = at%pos
@@ -1170,7 +1170,7 @@ contains
 
     if (do_fill) then
        volume_per_cell = cell_volume(at%lattice)/real(cellsNa*cellsNb*cellsNc,dp)
- 
+
        ! Count the occupied cells so vacuum does not contribute to average number density
        n_occ = 0
        do k=1,cellsNc
@@ -1203,85 +1203,85 @@ contains
     do k = 1, cellsNc
        change_k = .true.
        do j = 1, cellsNb
-	  change_j = .true.
-	  do i = 1, cellsNa
-	     change_i = .true.
-	     call get_min_max_images(at%is_periodic, cellsNa, cellsNb, cellsNc, &
-	        cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
-	        min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
-	     change_i = .false.
-	     change_j = .false.
-	     change_k = .false.
+          change_j = .true.
+          do i = 1, cellsNa
+             change_i = .true.
+             call get_min_max_images(at%is_periodic, cellsNa, cellsNb, cellsNc, &
+                cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, change_i, change_j, change_k, &
+                min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+             change_i = .false.
+             change_j = .false.
+             change_k = .false.
              atom1 = this%cell_heads(i, j, k)
              atom1_loop: do while (atom1 > 0)
 
-		! Loop over neighbouring cells, applying PBC
+                ! Loop over neighbouring cells, applying PBC
 
-		do k2 = min_cell_image_Nc, max_cell_image_Nc
+                do k2 = min_cell_image_Nc, max_cell_image_Nc
 
-		   ! the stored cell we are in 
-		   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+                   ! the stored cell we are in
+                   if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1
 
-		   ! the shift we need to get to the cell image
-		   k4 = (k+k2-k3)/cellsNc
+                   ! the shift we need to get to the cell image
+                   k4 = (k+k2-k3)/cellsNc
 
-		   do j2 = min_cell_image_Nb, max_cell_image_Nb
-		      ! the stored cell we are in                 
-		      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+                   do j2 = min_cell_image_Nb, max_cell_image_Nb
+                      ! the stored cell we are in
+                      if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1
 
-		      ! the shift we need to get to the cell image
-		      j4 = (j+j2-j3)/cellsNb
+                      ! the shift we need to get to the cell image
+                      j4 = (j+j2-j3)/cellsNb
 
-		      do i2 = min_cell_image_Na, max_cell_image_Na
-			 ! the stored cell we are in                 
-			 if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+                      do i2 = min_cell_image_Na, max_cell_image_Na
+                         ! the stored cell we are in
+                         if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1
 
-			 ! the shift we need to get to the cell image
-			 i4 = (i+i2-i3)/cellsNa
+                         ! the shift we need to get to the cell image
+                         i4 = (i+i2-i3)/cellsNa
 
-			 ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
-			 ! with shift (i4,j4,k4)
-			 ! loop over it's atoms and test connectivity if atom1 < atom2
+                         ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
+                         ! with shift (i4,j4,k4)
+                         ! loop over it's atoms and test connectivity if atom1 < atom2
 
                          atom2 = this%cell_heads(i3, j3, k3)
                          atom2_loop: do while (atom2 > 0)
 
-			    ! omit atom2 < atom1
-			    if (atom1 > atom2) then 
+                            ! omit atom2 < atom1
+                            if (atom1 > atom2) then
                                atom2 = this%next_atom_in_cell(atom2)
                                cycle atom2_loop
                             endif
-                            
+
                             if (my_skip_zero_zero_bonds .and. &
                                  at%z(atom1) == 0 .and. at%z(atom2) == 0) then
                                atom2 = this%next_atom_in_cell(atom2)
                                cycle atom2_loop
                             endif
-       
-			    ! omit self in the same cell without shift
-			    if (.not. my_own_neighbour .and. &
-                                 (atom1 == atom2 .and. & 
-				 (i4==0 .and. j4==0 .and. k4==0) .and. &
-				 (i==i3 .and. j==j3 .and. k==k3))) then
+
+                            ! omit self in the same cell without shift
+                            if (.not. my_own_neighbour .and. &
+                                 (atom1 == atom2 .and. &
+                                 (i4==0 .and. j4==0 .and. k4==0) .and. &
+                                 (i==i3 .and. j==j3 .and. k==k3))) then
                                atom2 = this%next_atom_in_cell(atom2)
                                cycle atom2_loop
                             endif
-			    call test_form_bond(this, cutoff, .true., &
-			      at%Z, at%pos, at%lattice, atom1,atom2, &
-				 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
-				 .false., error)
+                            call test_form_bond(this, cutoff, .true., &
+                              at%Z, at%pos, at%lattice, atom1,atom2, &
+                                 (/i4-map_shift(1,atom1)+map_shift(1,atom2),j4-map_shift(2,atom1)+map_shift(2,atom2),k4-map_shift(3,atom1)+map_shift(3,atom2)/), &
+                                 .false., error)
                             PASS_ERROR(error)
 
                             atom2 = this%next_atom_in_cell(atom2)
-			 end do atom2_loop ! atom2
+                         end do atom2_loop ! atom2
 
-		      end do ! i2
-		   end do ! j2
-		end do ! k2
+                      end do ! i2
+                   end do ! j2
+                end do ! k2
 
                 atom1 = this%next_atom_in_cell(atom1)
-	     end do atom1_loop ! atom1
-	  end do ! i
+             end do atom1_loop ! atom1
+          end do ! i
        end do ! j
     end do ! k
 
@@ -1308,7 +1308,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% The subroutine 'calc_dists' updates the stored distance tables using 
+  !% The subroutine 'calc_dists' updates the stored distance tables using
   !% the stored connectivity and shifts. This should be called every time
   !% any atoms are moved (e.g. it is called by 'DynamicalSystem%advance_verlet').
   !
@@ -1352,9 +1352,9 @@ contains
        allocate(mpi_send(Nelements))
        allocate(mpi_recv(Nelements))
        if (Nelements > 0) then
-	 mpi_send = 0.0_dp
-	 mpi_recv = 0.0_dp
-	end if
+         mpi_send = 0.0_dp
+         mpi_recv = 0.0_dp
+        end if
        mpi_pos = 1
     end if
 #endif
@@ -1365,7 +1365,7 @@ contains
 
     if (at%N > 0) then
        if (size(this%neighbour1(1)%t%real,1) == 4) then ! store_rij was set
-	    RAISE_ERROR("CalcDists: can't have store_rij set", error)
+            RAISE_ERROR("CalcDists: can't have store_rij set", error)
        endif
     endif
 
@@ -1381,7 +1381,7 @@ contains
        end if
 #endif
 
-       do n = 1, connection_n_neighbours(this, i) 
+       do n = 1, connection_n_neighbours(this, i)
 
           j = connection_neighbour_minimal(this, i, n, shift=shift, index=index)
 
@@ -1403,10 +1403,10 @@ contains
 
 #ifdef _MPI
        if (do_parallel) then
-	  if (mpi_old_pos <= mpi_pos-1) then
-	    mpi_send(mpi_old_pos:mpi_pos-1) = &
-		 this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N)
-	  end if
+          if (mpi_old_pos <= mpi_pos-1) then
+            mpi_send(mpi_old_pos:mpi_pos-1) = &
+                 this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N)
+          end if
        end if
 #endif
 
@@ -1416,22 +1416,22 @@ contains
     if (do_parallel) then
        ! collect mpi results
        if (Nelements > 0) then
-	 call mpi_allreduce(mpi_send, mpi_recv, &
-	      size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, err)
-	 call abort_on_mpi_error(err, "Calc_Dists: MPI_ALL_REDUCE()")
+         call mpi_allreduce(mpi_send, mpi_recv, &
+              size(mpi_send), MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, err)
+         call abort_on_mpi_error(err, "Calc_Dists: MPI_ALL_REDUCE()")
        end if
 
        mpi_pos = 1
        do i=1, at%N
-	  if (this%neighbour1(i)%t%N > 0) then
-	    this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N) = &
-		 mpi_recv(mpi_pos:mpi_pos+this%neighbour1(i)%t%N-1)
-	    mpi_pos = mpi_pos + this%neighbour1(i)%t%N
-	  endif
+          if (this%neighbour1(i)%t%N > 0) then
+            this%neighbour1(i)%t%real(1,1:this%neighbour1(i)%t%N) = &
+                 mpi_recv(mpi_pos:mpi_pos+this%neighbour1(i)%t%N-1)
+            mpi_pos = mpi_pos + this%neighbour1(i)%t%N
+          endif
        end do
 
        if (Nelements > 0) then
-	 deallocate(mpi_send, mpi_recv)
+         deallocate(mpi_send, mpi_recv)
        end if
     end if
 #endif
@@ -1442,64 +1442,64 @@ contains
 
 
    subroutine get_min_max_images(is_periodic, cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k, do_i, do_j, do_k, &
-	 min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
+         min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc)
       logical, intent(in) :: is_periodic(3)
       integer, intent(in) :: cellsNa, cellsNb, cellsNc, cell_image_Na, cell_image_Nb, cell_image_Nc, i, j, k
       logical, intent(in) :: do_i, do_j, do_k
       integer, intent(out) :: min_cell_image_Na, max_cell_image_Na, min_cell_image_Nb, max_cell_image_Nb, min_cell_image_Nc, max_cell_image_Nc
 
       if (do_i) then
-	 if (is_periodic(1)) then
-	   min_cell_image_Na = -cell_image_Na
-	   max_cell_image_Na = cell_image_Na
-	 else
-	   if (cell_image_Na < i) then 
-	      min_cell_image_Na = -cell_image_Na
-	   else
-	      min_cell_image_Na = -i+1
-	   endif
-	   if (cell_image_Na < cellsNa-i) then
-	      max_cell_image_Na = cell_image_Na
-	   else
-	      max_cell_image_Na = cellsNa - i
-	   endif
-	 endif
+         if (is_periodic(1)) then
+           min_cell_image_Na = -cell_image_Na
+           max_cell_image_Na = cell_image_Na
+         else
+           if (cell_image_Na < i) then
+              min_cell_image_Na = -cell_image_Na
+           else
+              min_cell_image_Na = -i+1
+           endif
+           if (cell_image_Na < cellsNa-i) then
+              max_cell_image_Na = cell_image_Na
+           else
+              max_cell_image_Na = cellsNa - i
+           endif
+         endif
       endif
       if (do_j) then
-	 if (is_periodic(2)) then
-	   min_cell_image_Nb = -cell_image_Nb
-	   max_cell_image_Nb = cell_image_Nb
-	 else
-	   if (cell_image_Nb < j) then 
-	      min_cell_image_Nb = -cell_image_Nb
-	   else
-	      min_cell_image_Nb = -j+1
-	   endif
-	   if (cell_image_Nb < cellsNb-j) then
-	      max_cell_image_Nb = cell_image_Nb
-	   else
-	      max_cell_image_Nb = cellsNb - j
-	   endif
-	 endif
+         if (is_periodic(2)) then
+           min_cell_image_Nb = -cell_image_Nb
+           max_cell_image_Nb = cell_image_Nb
+         else
+           if (cell_image_Nb < j) then
+              min_cell_image_Nb = -cell_image_Nb
+           else
+              min_cell_image_Nb = -j+1
+           endif
+           if (cell_image_Nb < cellsNb-j) then
+              max_cell_image_Nb = cell_image_Nb
+           else
+              max_cell_image_Nb = cellsNb - j
+           endif
+         endif
       endif
       if (do_k) then
-	 if (is_periodic(3)) then
-	   min_cell_image_Nc = -cell_image_Nc
-	   max_cell_image_Nc = cell_image_Nc
-	 else
-	   if (cell_image_Nc < k) then 
-	      min_cell_image_Nc = -cell_image_Nc
-	   else
-	      min_cell_image_Nc = -k+1
-	   endif
-	   if (cell_image_Nc < cellsNc-k) then
-	      max_cell_image_Nc = cell_image_Nc
-	   else
-	      max_cell_image_Nc = cellsNc - k
-	   endif
-	 endif
+         if (is_periodic(3)) then
+           min_cell_image_Nc = -cell_image_Nc
+           max_cell_image_Nc = cell_image_Nc
+         else
+           if (cell_image_Nc < k) then
+              min_cell_image_Nc = -cell_image_Nc
+           else
+              min_cell_image_Nc = -k+1
+           endif
+           if (cell_image_Nc < cellsNc-k) then
+              max_cell_image_Nc = cell_image_Nc
+           else
+              max_cell_image_Nc = cellsNc - k
+           endif
+         endif
       endif
-      
+
       if (current_verbosity() >= PRINT_ANALYSIS) then
          call print('get_min_max_images cell_image_Na min='//min_cell_image_Na//' max='//max_cell_image_Na, PRINT_ANALYSIS)
          call print('get_min_max_images cell_image_Nb min='//min_cell_image_Nb//' max='//max_cell_image_Nb, PRINT_ANALYSIS)
@@ -1527,7 +1527,7 @@ contains
 
     INIT_ERROR(error)
     ! Check inputs
-    if (.not.this%cells_initialised) then 
+    if (.not.this%cells_initialised) then
        RAISE_ERROR('Partition_Atoms: Cells have not been initialised', error)
     end if
     my_dont_wipe = .false.
@@ -1545,7 +1545,7 @@ contains
     if (.not. assign_pointer(at, 'map_shift', map_shift)) then
        call add_property(at, 'map_shift', 0, 3)
        if (.not. assign_pointer(at, 'map_shift', map_shift)) then
-	  RAISE_ERROR("partition_atoms impossibly failed to assign map_shift pointer", error)
+          RAISE_ERROR("partition_atoms impossibly failed to assign map_shift pointer", error)
        end if
     endif
 
@@ -1597,21 +1597,21 @@ contains
      ! Very small numerical errors in the lattice inverse can lead to bad i,j,k values.
      ! Test for this:
      if (i < 1) then
-	i = 1
+        i = 1
      else if (i > this%cellsNa) then
-	i = this%cellsNa
+        i = this%cellsNa
      end if
 
      if (j < 1) then
-	j = 1
+        j = 1
      else if (j > this%cellsNb) then
-	j = this%cellsNb
+        j = this%cellsNb
      end if
 
      if (k < 1) then
-	k = 1
+        k = 1
      else if (k > this%cellsNc) then
-	k = this%cellsNc
+        k = this%cellsNc
      end if
 
     end subroutine cell_of_pos
@@ -1623,7 +1623,7 @@ contains
       integer :: cell_n
       integer :: a
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. this%cells_initialised) then
          RAISE_ERROR('cell_n: cells are not initialised', error)
@@ -1736,8 +1736,8 @@ contains
        if (.not. associated(this%neighbour1(i)%t)) cycle
 
        if ((this%neighbour1(i)%t%N + this%neighbour2(i)%t%N) > 0) then
-	 write(line,'(a47)')'| Neighbour1 (i <= j)                           |'
-	 call print(line, file=file)
+         write(line,'(a47)')'| Neighbour1 (i <= j)                           |'
+         call print(line, file=file)
        endif
 
        do j = 1, this%neighbour1(i)%t%N
@@ -1775,8 +1775,8 @@ contains
        end if
 
        if ((this%neighbour1(i)%t%N + this%neighbour2(i)%t%N) > 0) then
-	 write(line,'(a47)')'-----------------------------------------------'
-	 call print(line,file=file)
+         write(line,'(a47)')'-----------------------------------------------'
+         call print(line,file=file)
        endif
 
     end do
@@ -1832,7 +1832,7 @@ contains
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
   ! Simple query functions
   !
   !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1841,8 +1841,8 @@ contains
   function connection_n_neighbours(this, i, error) result(n)
     type(Connection),   intent(in)   :: this
     integer,            intent(in)   :: i
-    integer,  optional, intent(out)  :: error     
-    
+    integer,  optional, intent(out)  :: error
+
     integer :: n
 
     INIT_ERROR(error)
@@ -1865,8 +1865,8 @@ contains
   !% Return the total number of neighbour, i.e. the number of bonds in the system
   function connection_n_neighbours_total(this, error) result(n)
     type(Connection),   intent(in)   :: this
-    integer,  optional, intent(out)  :: error     
-    
+    integer,  optional, intent(out)  :: error
+
     integer :: i, n
 
     INIT_ERROR(error)
@@ -1886,15 +1886,15 @@ contains
 
 
   !% Return the number of neighbour that atom $i$ has.
-  !% If the optional arguments max_dist or max_factor are present 
+  !% If the optional arguments max_dist or max_factor are present
   !% then only neighbours closer than this cutoff are included.
   function connection_n_neighbours_with_dist(this, at, i, max_dist, max_factor, error) result(n)
     type(Connection),   intent(in)   :: this
     type(Atoms),        intent(in)   :: at
     integer,            intent(in)   :: i
     real(dp), optional, intent(in)   :: max_dist, max_factor
-    integer,  optional, intent(out)  :: error     
-    
+    integer,  optional, intent(out)  :: error
+
     integer :: n
 
     integer :: j, m
@@ -1943,7 +1943,7 @@ contains
     type(Table), pointer :: t
     !NB
     logical, intent(out) :: is_j
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
     integer :: j
 
     integer :: i_n1n, j_n1n
@@ -1956,13 +1956,13 @@ contains
           j = this%neighbour2(i)%t%int(1,n)
           j_n1n = this%neighbour2(i)%t%int(2,n)
           index = j_n1n
-	  t => this%neighbour1(j)%t
-	  is_j = .true.
+          t => this%neighbour1(j)%t
+          is_j = .true.
        else if (i_n1n <= this%neighbour1(i)%t%N) then
           j = this%neighbour1(i)%t%int(1,i_n1n)
           index = i_n1n
-	  t => this%neighbour1(i)%t
-	  is_j = .false.
+          t => this%neighbour1(i)%t
+          is_j = .false.
        else
           RAISE_ERROR('connection_neighbour_index: '//n//' out of range for atom '//i//' Should be in range 1 < n <= '//n_neighbours(this, i), error)
        end if
@@ -2015,7 +2015,7 @@ contains
     integer,  optional, intent(out) :: index
     real(dp), optional, intent(in)  :: max_dist
     integer,  optional, intent(out) :: jn
-    integer,  optional, intent(out) :: error     
+    integer,  optional, intent(out) :: error
 
     real(dp)::mydiff(3), norm_mydiff
     integer ::myshift(3)
@@ -2061,37 +2061,37 @@ contains
           do i_njn = 1, this%neighbour1(j)%t%N
              if( (this%neighbour1(j)%t%int(1,i_njn) == i) .and. &
                   all(this%neighbour1(j)%t%int(2:4,i_njn) == -this%neighbour1(i)%t%int(2:4,i_n1n))) &
-	       jn = i_njn + this%neighbour2(j)%t%N
+               jn = i_njn + this%neighbour2(j)%t%N
           enddo
        endif
     endif
-          
+
     ! found neighbour, now check for optional requests
     if(present(distance)) then
-       if(i <= j) then 
+       if(i <= j) then
           distance = this%neighbour1(i)%t%real(1,i_n1n)
        else
           distance = this%neighbour1(j)%t%real(1,j_n1n)
        end if
        if (present(max_dist)) then
-	 if (distance > max_dist) then
-	   j = 0
-	   return
-	 endif
+         if (distance > max_dist) then
+           j = 0
+           return
+         endif
        endif
     else
        if (present(max_dist)) then
-	 if (i <= j) then
-	   if (this%neighbour1(i)%t%real(1,i_n1n) > max_dist) then
-	     j = 0
-	     return
-	   endif
-	 else
-	   if (this%neighbour1(j)%t%real(1,j_n1n) > max_dist) then
-	     j = 0
-	     return
-	   endif
-	 endif
+         if (i <= j) then
+           if (this%neighbour1(i)%t%real(1,i_n1n) > max_dist) then
+             j = 0
+             return
+           endif
+         else
+           if (this%neighbour1(j)%t%real(1,j_n1n) > max_dist) then
+             j = 0
+             return
+           endif
+         endif
        endif
     end if
 
@@ -2106,15 +2106,15 @@ contains
 
        if(present(diff) .or. present(cosines)) then
           !mydiff = this%pos(:,j) - this%pos(:,i) + (this%lattice .mult. myshift)
-	  if (size(this%neighbour1(i)%t%real,1) == 4) then
-	     if (i <= j) then
-		mydiff = this%neighbour1(i)%t%real(2:4,i_n1n)
-	     else
-		mydiff = -this%neighbour1(j)%t%real(2:4,j_n1n)
-	     endif
-	  else
-	     mydiff = at%pos(:,j) - at%pos(:,i)
-	  endif
+          if (size(this%neighbour1(i)%t%real,1) == 4) then
+             if (i <= j) then
+                mydiff = this%neighbour1(i)%t%real(2:4,i_n1n)
+             else
+                mydiff = -this%neighbour1(j)%t%real(2:4,j_n1n)
+             endif
+          else
+             mydiff = at%pos(:,j) - at%pos(:,i)
+          endif
           do m=1,3
              ! forall(k=1:3) mydiff(k) = mydiff(k) + this%lattice(k,m) * myshift(m)
              mydiff(1:3) = mydiff(1:3) + at%lattice(1:3,m) * myshift(m)
@@ -2122,12 +2122,12 @@ contains
           if(present(diff)) diff = mydiff
           if(present(cosines)) then
             norm_mydiff = sqrt(mydiff(1)*mydiff(1) + mydiff(2)*mydiff(2) + mydiff(3)*mydiff(3))
-	    if (norm_mydiff > 0.0_dp) then
-	      cosines = mydiff / norm_mydiff
-	    else
-	      cosines = 0.0_dp
-	    endif
-	  endif
+            if (norm_mydiff > 0.0_dp) then
+              cosines = mydiff / norm_mydiff
+            else
+              cosines = 0.0_dp
+            endif
+          endif
        end if
     end if
 
@@ -2144,7 +2144,7 @@ contains
     INIT_ERROR(error)
 
     is_min_image = .true.
-    ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
+    ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j)
     if (this%initialised) then
 
        if (.not. associated(this%neighbour1(i)%t)) then
@@ -2183,14 +2183,14 @@ contains
        RAISE_ERROR('is_min_image: Atoms structure has no connectivity data. Call calc_connect first.', error)
     end if
 
-  endfunction connection_is_min_image 
+  endfunction connection_is_min_image
 
 
    !
    ! Fit_Box_In_Cell
    !
    !% Given an orthogonal box, oriented along the cartesian axes with lengths '2*rx', '2*ry' and '2*rz'
-   !% and centred on the origin, what parameters must we pass to supercell to make a system big 
+   !% and centred on the origin, what parameters must we pass to supercell to make a system big
    !% enough from our original cell defined by lattice for the box to fit inside?
    !%
    !% The required supercell parameters are returned in 'Na', 'Nb', 'Nc' respectively. If, e.g. 'Na = 1'

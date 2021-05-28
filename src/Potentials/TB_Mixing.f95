@@ -110,22 +110,22 @@ subroutine do_mix_broyden_array(iter, n, F, np1, alpha, w0)
     last_n = n
   else
       if (effective_iter .gt. n_hist) then
-	  do i=1, mi-2
-	      dF(:,i) = dF(:,i+1)
-	      w(i) = w(i+1)
-	      u(:,i) = u(:,i+1)
-	  end do
-	  do i=1, mi-2
-	  do j=1, mi-2
-	      a(i,j) = a(i+1,j+1)
-	  end do
-	  end do
-	  do i=1, mi-1
-	  do j=1, mi-1
-	      c(i,j) = c(i,j+1)
-	      gamma(i,j) = gamma(i+1,j)
-	  end do
-	  end do
+          do i=1, mi-2
+              dF(:,i) = dF(:,i+1)
+              w(i) = w(i+1)
+              u(:,i) = u(:,i+1)
+          end do
+          do i=1, mi-2
+          do j=1, mi-2
+              a(i,j) = a(i+1,j+1)
+          end do
+          end do
+          do i=1, mi-1
+          do j=1, mi-1
+              c(i,j) = c(i,j+1)
+              gamma(i,j) = gamma(i+1,j)
+          end do
+          end do
       end if ! iter > n_hist
 
       ! calculate dF_(m-1)
@@ -151,16 +151,16 @@ subroutine do_mix_broyden_array(iter, n, F, np1, alpha, w0)
 
       ! update a_ij
       do i=1, mi-1
-	  a(i,mi-1) = w(i)*w(mi-1)*sum(dF(:,i)*dF(:,mi-1))
-	  if (i .ne. mi-1) then
-	      a(mi-1,i) = a(i,mi-1)
-	  end if
+          a(i,mi-1) = w(i)*w(mi-1)*sum(dF(:,i)*dF(:,mi-1))
+          if (i .ne. mi-1) then
+              a(mi-1,i) = a(i,mi-1)
+          end if
       end do
 
       ! compute beta = (w0^2 + a ) ^ -1
       t = a
       do i=1, mi-1
-	  t(i,i) = t(i,i) + w0**2
+          t(i,i) = t(i,i) + w0**2
       end do
       call inverse(t(1:mi-1,1:mi-1), beta(1:mi-1,1:mi-1), .false.)
 
@@ -169,16 +169,16 @@ subroutine do_mix_broyden_array(iter, n, F, np1, alpha, w0)
 
       ! compute c_k^m
       do ki=1, mi-1
-	  c(ki,mi) = w(ki)*sum(dF(:,ki)*F(:))
+          c(ki,mi) = w(ki)*sum(dF(:,ki)*F(:))
       end do
       do li=1, mi-1
-	  gamma(mi,li) = 0.0_dp
-	  do ki=1, mi-1
-	      gamma(mi,li) = gamma(mi,li) + c(ki,mi)*beta(ki,li)
-	  end do
+          gamma(mi,li) = 0.0_dp
+          do ki=1, mi-1
+              gamma(mi,li) = gamma(mi,li) + c(ki,mi)*beta(ki,li)
+          end do
       end do
       do ni=1, mi-1
-	  np1(:) = np1(:) - w(ni)*gamma(mi,ni)*u(:,ni)
+          np1(:) = np1(:) - w(ni)*gamma(mi,ni)*u(:,ni)
       end do
   endif
 
@@ -378,9 +378,9 @@ end function realloc_size_dep_stuff
 !
 !  do i=1, n
 !      if (dabs(a(i,i)) .lt. 1.0D-12) then
-!	  print *, "Matrix has zero diagonal element ", i
-!	  err = 1
-!	  return
+!          print *, "Matrix has zero diagonal element ", i
+!          err = 1
+!          return
 !      end if
 !  end do
 !
@@ -396,19 +396,19 @@ end function realloc_size_dep_stuff
 !
 !  do i=1, n
 !      do j=1, n
-!	  td(j) = a(j,i) / a(i,i)
+!          td(j) = a(j,i) / a(i,i)
 !      end do
 !
 !      td(i) = 0.0_dp
 !      do k=1, n
-!	  bd(k) = b(i,k)
-!	  ad(k) = a(i,k)
+!          bd(k) = b(i,k)
+!          ad(k) = a(i,k)
 !      end do
 !
 !      do k=1, n
 !      do j=1, n
-!	  b(j,k) = b(j,k) - (td(j)*bd(k))
-!	  a(j,k) = a(j,k) - (td(j)*ad(k))
+!          b(j,k) = b(j,k) - (td(j)*bd(k))
+!          a(j,k) = a(j,k) - (td(j)*ad(k))
 !      end do
 !      end do
 !
@@ -446,7 +446,7 @@ subroutine do_ridders_residual(iter, cur_x, cur_f, next_x)
       bracket_step = bracket_step*1.5
       if (abs(cur_f) < abs(fmin)) then
         xmin = cur_x
-	fmin = cur_f
+        fmin = cur_f
         next_x = cur_x + bracket_step
       else
         next_x = cur_x - bracket_step

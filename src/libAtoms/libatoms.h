@@ -114,7 +114,7 @@
 #ifdef CDEBUG
 #define debug(fmt, ...) fprintf(stderr, fmt, ## __VA_ARGS__)
 #else
-#define debug(fmt, ...) 
+#define debug(fmt, ...)
 #endif
 
 #define ERROR_NONE                0
@@ -190,25 +190,25 @@ void lattice_xyz_to_abc_(double lattice[3][3], double cell_lengths[3], double ce
 /* xyz.c */
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error);
+               int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error);
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
-		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format, 
-		int string, fortran_t *estr, int update_index, int *error);
+                int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format,
+                int string, fortran_t *estr, int update_index, int *error);
 
 void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int *n_atom, int *error);
 
 
 /* netcdf.c */
 
-void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], 
-		  double cell_lengths[3], double cell_angles[3], int *cell_rotated,
+void read_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
+                  double cell_lengths[3], double cell_angles[3], int *cell_rotated,
 
-		  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error);
+                  int *n_atom, int frame, int zero, int *range, int irep, double rrep, int *error);
 void write_netcdf (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3],
-		   double cell_lengths[3], double cell_angles[3], int cell_rotated,
-		   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
-		   int shuffle, int deflate, int deflate_level, int *error);
+                   double cell_lengths[3], double cell_angles[3], int cell_rotated,
+                   int n_atom, int n_label, int n_string, int frame, int netcdf4, int append,
+                   int shuffle, int deflate, int deflate_level, int *error);
 void query_netcdf (char *filename, int *n_frame, int *n_atom, int *n_label, int *n_string, int *error);
 
 

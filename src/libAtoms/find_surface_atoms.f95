@@ -5,7 +5,7 @@
 !   tetrahedron half spaces is null for internal atoms - seems to be just something
 !   like Voronoi cell of atom (if all (covalent) radii are equal, anyway)
 ! instead, look for intersection of power cell with half spaces that don't include
-!   system (iterate over 6 - could be done with 4 with a tetrahedron).  If any 
+!   system (iterate over 6 - could be done with 4 with a tetrahedron).  If any
 !   intersections are not null, atom has an unbounded power cell and is a surface atom.
 module find_surface_atoms_module
 use system_module, only : dp, print, mainlog, PRINT_VERBOSE, PRINT_ALWAYS, ran, operator(//), system_abort
@@ -64,53 +64,53 @@ subroutine label_surface_atoms(at, probe_r)
       ! count close enough neighbours
       nn = 0
       do ji=1, n_neighbours(at, i)
-	 j = neighbour(at, i, ji, distance=dist_ij)
-	 if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
-	    nn = nn + 1
-	 endif
+         j = neighbour(at, i, ji, distance=dist_ij)
+         if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
+            nn = nn + 1
+         endif
       end do
 
       if (allocated(plane_constraints)) then
-	 if (size(plane_constraints,2) /= nn+1) deallocate(plane_constraints)
+         if (size(plane_constraints,2) /= nn+1) deallocate(plane_constraints)
       endif
       if (.not. allocated(plane_constraints)) allocate(plane_constraints(6,nn+1))
 
       ! do constraints for close enough neighbours
       nn = 0
       do ji=1, n_neighbours(at, i)
-	 j = neighbour(at, i, ji, distance=dist_ij, cosines=cos_ij)
-	 if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
-	    nn = nn + 1
-	    ! pi = di^2 - (ElementCovRad(i)+probe_r)^2
-	    ! pj = dj^2 - (ElementCovRad(j)+probe_r)^2
-	    ! along r_ij, di+dj=dij, dj=dij-di
+         j = neighbour(at, i, ji, distance=dist_ij, cosines=cos_ij)
+         if (dist_ij <= ElementCovRad(at%Z(i)) + ElementCovRad(at%Z(j)) + 2.0_dp*probe_R) then
+            nn = nn + 1
+            ! pi = di^2 - (ElementCovRad(i)+probe_r)^2
+            ! pj = dj^2 - (ElementCovRad(j)+probe_r)^2
+            ! along r_ij, di+dj=dij, dj=dij-di
 
-	    ! pi == pj 
-	    ! di^2 - (Ci+pr)^2 = (dij-di)^2 - (Cj+pr)^2
-	    ! di^2 - (Ci+pr)^2 = dij^2 - 2 di dij + di^2 - (Cj+pr)^2
-	    ! -(Ci+pr)^2 = dij^2 - 2 di dij - (Cj+pr)^2
-	    ! -2 di dij = (Cj+pr)^2-(Ci+pr)^2-dij^2
-	    ! di = ((Cj+pr)^2-(Ci+pr)^2-dij^2)/(-2 dij)
-	    di = ((ElementCovRad(at%Z(j))+probe_r)**2 - (ElementCovRad(at%Z(i))+probe_r)**2 - dist_ij**2)/(-2.0_dp*dist_ij)
-	    dj = dist_ij - di
-	    if (abs(di) < dist_ij .and. abs(dj) < dist_ij) then ! in between
-	       p(:) = at%pos(:,i) + abs(di)*cos_ij(:)
-	    else if (abs(di) > abs(dj)) then ! not in between, and closer to j than to i
-	       p(:) = at%pos(:,i) + abs(di)*cos_ij(:)
-	    else ! not in between and closer to i than to j
-	       p(:) = at%pos(:,i) - abs(di)*cos_ij(:)
-	    endif
-	    v(:) = -cos_ij(:)
-	    plane_constraints(1:3,nn) = p
-	    plane_constraints(4:6,nn) = v
-	 endif
+            ! pi == pj
+            ! di^2 - (Ci+pr)^2 = (dij-di)^2 - (Cj+pr)^2
+            ! di^2 - (Ci+pr)^2 = dij^2 - 2 di dij + di^2 - (Cj+pr)^2
+            ! -(Ci+pr)^2 = dij^2 - 2 di dij - (Cj+pr)^2
+            ! -2 di dij = (Cj+pr)^2-(Ci+pr)^2-dij^2
+            ! di = ((Cj+pr)^2-(Ci+pr)^2-dij^2)/(-2 dij)
+            di = ((ElementCovRad(at%Z(j))+probe_r)**2 - (ElementCovRad(at%Z(i))+probe_r)**2 - dist_ij**2)/(-2.0_dp*dist_ij)
+            dj = dist_ij - di
+            if (abs(di) < dist_ij .and. abs(dj) < dist_ij) then ! in between
+               p(:) = at%pos(:,i) + abs(di)*cos_ij(:)
+            else if (abs(di) > abs(dj)) then ! not in between, and closer to j than to i
+               p(:) = at%pos(:,i) + abs(di)*cos_ij(:)
+            else ! not in between and closer to i than to j
+               p(:) = at%pos(:,i) - abs(di)*cos_ij(:)
+            endif
+            v(:) = -cos_ij(:)
+            plane_constraints(1:3,nn) = p
+            plane_constraints(4:6,nn) = v
+         endif
       end do
       do j=1,6
-	 plane_constraints(1:6,nn+1) = bounds_constraints(1:6,j)
-	 if (feasible_cell_has_solution(plane_constraints, bounds)) then
-	    surf(i) = 1
-	    exit
-	 endif
+         plane_constraints(1:6,nn+1) = bounds_constraints(1:6,j)
+         if (feasible_cell_has_solution(plane_constraints, bounds)) then
+            surf(i) = 1
+            exit
+         endif
       end do
    end do
 
@@ -136,22 +136,22 @@ function feasible_cell_has_solution(plane_constraints, bounds)
       call print("solution x " //x, PRINT_VERBOSE)
       constraint_ok=.true.
       do i=1, size(plane_constraints,2)
-	 call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
-	    " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
-	 t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
-	 if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
-	 constraint_ok = constraint_ok .and. t_constraint_ok
+         call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
+            " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
+         t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
+         if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
+         constraint_ok = constraint_ok .and. t_constraint_ok
       end do
-      if (.not. constraint_ok) then 
-	 call print("WARNING: has_solution=T but some constraint violated")
-	 do i=1, size(plane_constraints, 2)
-	    t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
-	    if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
-	    if (.not. t_constraint_ok) then
-	       call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
-		  " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
-	    endif
-	 end do
+      if (.not. constraint_ok) then
+         call print("WARNING: has_solution=T but some constraint violated")
+         do i=1, size(plane_constraints, 2)
+            t_constraint_ok = (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)))
+            if (.not. t_constraint_ok .and. abs(sum(-plane_constraints(4:6,i)*x) - sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))) < 1.0e-6_dp) t_constraint_ok = .true.
+            if (.not. t_constraint_ok) then
+               call print(i//" a.x "//sum(-plane_constraints(4:6,i)*x)//" <=? "//sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i)) // &
+                  " " // (sum(-plane_constraints(4:6,i)*x) <= sum(-plane_constraints(1:3,i)*plane_constraints(4:6,i))), PRINT_VERBOSE)
+            endif
+         end do
       endif
    endif
 end function feasible_cell_has_solution
@@ -184,22 +184,22 @@ recursive function seidel_solve(a, b, bounds, has_solution) result(x)
       x_min = bounds(1,1)
       x_max = bounds(1,2)
       do i=1, m
-	 if (a(1,i) .feq. 0.0_dp) then 
-	    if (0.0_dp <= b(i)) then
-	       has_solution = .true.
-	    else
-	       has_solution = .false.
-	    endif
-	 else if (a(1,i) > 0) then ! x <= b/a
-	    x_max = min(x_max, b(i)/a(1,i))
-	 else ! x >= b/a
-	    x_min = max(x_min, b(i)/a(1,i))
-	 endif
+         if (a(1,i) .feq. 0.0_dp) then
+            if (0.0_dp <= b(i)) then
+               has_solution = .true.
+            else
+               has_solution = .false.
+            endif
+         else if (a(1,i) > 0) then ! x <= b/a
+            x_max = min(x_max, b(i)/a(1,i))
+         else ! x >= b/a
+            x_min = max(x_min, b(i)/a(1,i))
+         endif
       end do ! i=1,m
       if (x_max >= x_min) then
-	 has_solution = has_solution .and. .true.
+         has_solution = has_solution .and. .true.
       else
-	 has_solution = has_solution .and. .false.
+         has_solution = has_solution .and. .false.
       endif
       x = 0.5_dp*(x_max+x_min)
 ! call print("1-D returning has_solution "//has_solution//" "//x_min//" "//x_max)
@@ -225,13 +225,13 @@ recursive function seidel_solve(a, b, bounds, has_solution) result(x)
       allocate(a_skip_m(d,m-1), b_skip_m(m-1))
       ii=1
       do i=1, m
-	 if (i /= i_skip) then
-	    skip_m_index(ii) = i
-	    ii = ii + 1
-	 endif
+         if (i /= i_skip) then
+            skip_m_index(ii) = i
+            ii = ii + 1
+         endif
       end do
       do j=1, d
-	 a_skip_m(j,:) = a(j,skip_m_index(:))
+         a_skip_m(j,:) = a(j,skip_m_index(:))
       end do
       b_skip_m(:) = b(skip_m_index(:))
 prefix=trim(mainlog%prefix)
@@ -241,9 +241,9 @@ mainlog%prefix=trim(prefix)
 ! call print("got has_solution "//has_solution//" "//x_skip_m)
       deallocate(a_skip_m, b_skip_m)
       if (.not. has_solution) then
-	 deallocate(x_skip_m)
-	 deallocate(skip_m_index)
-	 return
+         deallocate(x_skip_m)
+         deallocate(skip_m_index)
+         return
       endif
    endif
    if (sum(x_skip_m(:)*a(:,i_skip)) <= b(i_skip)) then
@@ -261,8 +261,8 @@ mainlog%prefix=trim(prefix)
    j_skip=0
    do j=1,d
       if (a(j,i_skip) .fne. 0.0_dp) then
-	 j_skip=j
-	 exit
+         j_skip=j
+         exit
       endif
    end do
 ! call print("eliminating dim "//j_skip)
@@ -277,8 +277,8 @@ mainlog%prefix=trim(prefix)
    jj=1
    do j=1, d
       if (j /= j_skip) then
-	 skip_d_index(jj) = j
-	 jj = jj + 1
+         skip_d_index(jj) = j
+         jj = jj + 1
       endif
    end do
    if (m == 1) then ! fake m=0 call
@@ -288,10 +288,10 @@ mainlog%prefix=trim(prefix)
    else
       allocate(a_skip_dm(d-1,m-1), b_skip_dm(m-1))
       do i=1, m-1
-	 do j=1, d-1
-	    a_skip_dm(j,i) = a(skip_d_index(j),skip_m_index(i)) - a(j_skip,skip_m_index(i))*a(skip_d_index(j),i_skip)/a(j_skip,i_skip)
-	 end do
-	 b_skip_dm(i) = b(skip_m_index(i)) - a(j_skip,skip_m_index(i))*b(i_skip)/a(j_skip,i_skip)
+         do j=1, d-1
+            a_skip_dm(j,i) = a(skip_d_index(j),skip_m_index(i)) - a(j_skip,skip_m_index(i))*a(skip_d_index(j),i_skip)/a(j_skip,i_skip)
+         end do
+         b_skip_dm(i) = b(skip_m_index(i)) - a(j_skip,skip_m_index(i))*b(i_skip)/a(j_skip,i_skip)
       end do
       allocate(bounds_skip_dm(d-1,2))
       bounds_skip_dm(:,1) = bounds(skip_d_index(:),1)

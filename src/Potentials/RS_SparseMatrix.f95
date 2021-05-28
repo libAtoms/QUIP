@@ -228,14 +228,14 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
     do ji=1, n_uniq
       j = neighbour_sorted(ji)
       if (ji > 1) then
-	if (j == neighbour_sorted(ji-1)) cycle
+        if (j == neighbour_sorted(ji-1)) cycle
       end if
 
       ! insert data for regular element
       if (neighbour_distance_sorted(ji) <= my_cutoff) then
-	this%row_indices(i+1) = this%row_indices(i+1) + 1
-	this%n_blocks = this%n_blocks + 1
-	this%data_size = this%data_size + this%block_size(i)*this%block_size(j)
+        this%row_indices(i+1) = this%row_indices(i+1) + 1
+        this%n_blocks = this%n_blocks + 1
+        this%data_size = this%data_size + this%block_size(i)*this%block_size(j)
       end if
 
     end do
@@ -279,15 +279,15 @@ subroutine RS_SparseMatrixL_Initialise_at(this, at, first_orb_of_atom, cutoff, m
     do ji=1, n_uniq
       j = neighbour_sorted(ji)
       if (ji > 1) then
-	if (j == neighbour_sorted(ji-1)) cycle
+        if (j == neighbour_sorted(ji-1)) cycle
       end if
 
       ! insert data for regular element
       if (neighbour_distance_sorted(ji) <= my_cutoff) then
-	this%col(this%row_indices(i)+cur_row_offset) = j
-	this%data_ptrs(this%row_indices(i)+cur_row_offset) = cur_data_pos
-	cur_row_offset = cur_row_offset + 1
-	cur_data_pos = cur_data_pos + this%block_size(i)*this%block_size(j)
+        this%col(this%row_indices(i)+cur_row_offset) = j
+        this%data_ptrs(this%row_indices(i)+cur_row_offset) = cur_data_pos
+        cur_row_offset = cur_row_offset + 1
+        cur_data_pos = cur_data_pos + this%block_size(i)*this%block_size(j)
       end if
 
     end do
@@ -402,14 +402,14 @@ subroutine RS_SparseMatrixL_Initialise_prod(this, al, bl, mpi_obj)
       ks = al%col(kk)
       cur_entry = 0
       do jj=bl%row_indices(ks), bl%row_indices(ks+1)-1
-	js = bl%col(jj)
-	if (.not.col_used(js)) then
-	  cur_entry = cur_entry + 1
-	  col_list(cur_entry) = js
-	  col_used(js) = .true.
-	  this%n_blocks = this%n_blocks + 1
-	  this%data_size = this%data_size + al%block_size(is)*bl%block_size(js)
-	end if
+        js = bl%col(jj)
+        if (.not.col_used(js)) then
+          cur_entry = cur_entry + 1
+          col_list(cur_entry) = js
+          col_used(js) = .true.
+          this%n_blocks = this%n_blocks + 1
+          this%data_size = this%data_size + al%block_size(is)*bl%block_size(js)
+        end if
       end do
     end do
     do jj=1, cur_entry
@@ -430,17 +430,17 @@ subroutine RS_SparseMatrixL_Initialise_prod(this, al, bl, mpi_obj)
       ks = al%col(kk)
       cur_entry = 0
       do jj=bl%row_indices(ks), bl%row_indices(ks+1)-1
-	js = bl%col(jj)
-	if (.not.col_used(js)) then
-	  cur_entry = cur_entry + 1
-	  col_list(cur_entry) = js
-	  col_used(js) = .true.
+        js = bl%col(jj)
+        if (.not.col_used(js)) then
+          cur_entry = cur_entry + 1
+          col_list(cur_entry) = js
+          col_used(js) = .true.
 
-	  this%col(p) = js
-	  this%data_ptrs(p) = pd
-	  p = p + 1
-	  pd = pd + al%block_size(is)*bl%block_size(js)
-	end if
+          this%col(p) = js
+          this%data_ptrs(p) = pd
+          p = p + 1
+          pd = pd + al%block_size(is)*bl%block_size(js)
+        end if
       end do
     end do
     do jj=1, cur_entry
@@ -547,14 +547,14 @@ subroutine RS_SparseMatrixD_Zero(this, d_mask, od_mask)
     do i=1, this%l%N
       block_nr = this%l%block_size(i)
       do ji=this%l%row_indices(i), this%l%row_indices(i+1)-1
-	j = this%l%col(ji)
-	block_nc = this%l%block_size(j)
-	if (present(d_mask) .and. i == j) then
-	  if (d_mask(i)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
-	end if
-	if (present(od_mask) .and. i /= j) then
-	  if (od_mask(i) .or. od_mask(j)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
-	end if
+        j = this%l%col(ji)
+        block_nc = this%l%block_size(j)
+        if (present(d_mask) .and. i == j) then
+          if (d_mask(i)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
+        end if
+        if (present(od_mask) .and. i /= j) then
+          if (od_mask(i) .or. od_mask(j)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
+        end if
       end do
     end do
   else
@@ -573,14 +573,14 @@ subroutine RS_SparseMatrixZ_Zero(this, d_mask, od_mask)
     do i=1, this%l%N
       block_nr = this%l%block_size(i)
       do ji=this%l%row_indices(i), this%l%row_indices(i+1)-1
-	j = this%l%col(ji)
-	block_nc = this%l%block_size(j)
-	if (present(d_mask) .and. i == j) then
-	  if (d_mask(i)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
-	end if
-	if (present(od_mask) .and. i /= j) then
-	  if (od_mask(i) .or. od_mask(j)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
-	end if
+        j = this%l%col(ji)
+        block_nc = this%l%block_size(j)
+        if (present(d_mask) .and. i == j) then
+          if (d_mask(i)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
+        end if
+        if (present(od_mask) .and. i /= j) then
+          if (od_mask(i) .or. od_mask(j)) this%data(this%l%data_ptrs(ji):this%l%data_ptrs(ji)+block_nr*block_nc-1) = 0.0_dp
+        end if
       end do
     end do
   else
@@ -602,15 +602,15 @@ subroutine RS_SparseMatrixD_Print(this,file)
 
   do i=1, this%l%N
     call Print ('RS_SparseMatrixD : row, block_size dense_row ' // i // " " // this%l%block_size(i) // " " // &
-					 this%l%dense_row_of_row(i), file=file)
+                                         this%l%dense_row_of_row(i), file=file)
     do j=this%l%row_indices(i), this%l%row_indices(i+1)-1
       call Print ("RS_SparseMatrixD entry j "// j // " col " // this%l%col(j) //  " data_ptr " // this%l%data_ptrs(j), &
-	file=file)
+        file=file)
       block_nr = this%l%block_size(i)
       block_nc = this%l%block_size(this%l%col(j))
       call Print(reshape( &
-	this%data(this%l%data_ptrs(j):this%l%data_ptrs(j)+block_nr*block_nc-1),(/block_nr,block_nc/) ), &
-	file=file)
+        this%data(this%l%data_ptrs(j):this%l%data_ptrs(j)+block_nr*block_nc-1),(/block_nr,block_nc/) ), &
+        file=file)
     end do
   end do
 
@@ -631,13 +631,13 @@ subroutine RS_SparseMatrixZ_Print(this,file)
 
   do i=1, this%l%N
     call Print ('RS_SparseMatrixZ : row, block_size dense_row ' // i // " " //  this%l%block_size(i) //  " " // &
-					 this%l%dense_row_of_row(i), file=file)
+                                         this%l%dense_row_of_row(i), file=file)
     do j=this%l%row_indices(i), this%l%row_indices(i+1)-1
       call Print ("RS_SparseMatrixZ entry j " // j // " col " // this%l%col(j) //  " data_ptr " // this%l%data_ptrs(j), file=file)
       block_nr = this%l%block_size(i)
       block_nc = this%l%block_size(this%l%col(j))
       call Print(reshape( &
-	this%data(this%l%data_ptrs(j):this%l%data_ptrs(j)+block_nr*block_nc-1),(/block_nr,block_nc/) ), file=file)
+        this%data(this%l%data_ptrs(j):this%l%data_ptrs(j)+block_nr*block_nc-1),(/block_nr,block_nc/) ), file=file)
     end do
   end do
 
@@ -668,8 +668,8 @@ subroutine RS_SparseMatrixD_Print_simple(this,file)
       j = this%l%col(tj)
       do ii=1, block_nr
       do jj=1, block_nc
-	call print((this%l%dense_row_of_row(i)+ii-1) // " " // (this%l%dense_row_of_row(j)+jj-1) // " " // &
-	  this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr), file=file)
+        call print((this%l%dense_row_of_row(i)+ii-1) // " " // (this%l%dense_row_of_row(j)+jj-1) // " " // &
+          this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr), file=file)
       end do
       end do
     end do
@@ -701,9 +701,9 @@ subroutine copy_dsp_dd(this, dense)
       j = this%l%col(tj)
       do ii=1, block_nr
         do jj=1, block_nc
-  	       dense(this%l%dense_row_of_row(i)+ii-1, &
+                 dense(this%l%dense_row_of_row(i)+ii-1, &
                  this%l%dense_row_of_row(j)+jj-1) = &
-  	             this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr)
+                       this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr)
         end do
       end do
     end do
@@ -735,9 +735,9 @@ subroutine copy_zsp_zd(this, dense)
       j = this%l%col(tj)
       do ii=1, block_nr
         do jj=1, block_nc
-  	       dense(this%l%dense_row_of_row(i)+ii-1, &
+                 dense(this%l%dense_row_of_row(i)+ii-1, &
                  this%l%dense_row_of_row(j)+jj-1) = &
-  	             this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr)
+                       this%data(this%l%data_ptrs(tj)+ii-1+(jj-1)*block_nr)
         end do
       end do
     end do
@@ -757,15 +757,15 @@ subroutine copy_dd_dsp(a, b, d_mask, od_mask)
     do jj=b%l%row_indices(is), b%l%row_indices(is+1)-1
       js = b%l%col(jj)
       if (present(d_mask)) then
-	if ((is == js) .and. .not. d_mask(is)) cycle
+        if ((is == js) .and. .not. d_mask(is)) cycle
       endif
       if (present(od_mask)) then
-	if ((is /= js) .and. .not. od_mask(is) .and. .not. od_mask(js)) cycle
+        if ((is /= js) .and. .not. od_mask(is) .and. .not. od_mask(js)) cycle
       endif
       jd = b%l%dense_row_of_row(js)
       a%data(id:id+b%l%block_size(is)-1,jd:jd+b%l%block_size(js)-1) = &
-	reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+b%l%block_size(is)*b%l%block_size(js)-1), &
-	        (/b%l%block_size(is), b%l%block_size(js)/) )
+        reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+b%l%block_size(is)*b%l%block_size(js)-1), &
+                (/b%l%block_size(is), b%l%block_size(js)/) )
     end do
   end do
 end subroutine copy_dd_dsp
@@ -783,15 +783,15 @@ subroutine copy_zd_zsp(a, b, d_mask, od_mask)
     do jj=b%l%row_indices(is), b%l%row_indices(is+1)-1
       js = b%l%col(jj)
       if (present(d_mask)) then
-	if ((is == js) .and. .not. d_mask(is)) cycle
+        if ((is == js) .and. .not. d_mask(is)) cycle
       endif
       if (present(od_mask)) then
-	if ((is /= js) .and. .not. od_mask(is) .and. .not. od_mask(js)) cycle
+        if ((is /= js) .and. .not. od_mask(is) .and. .not. od_mask(js)) cycle
       endif
       jd = b%l%dense_row_of_row(js)
       a%data(id:id+b%l%block_size(is)-1,jd:jd+b%l%block_size(js)-1) = &
-	reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+b%l%block_size(is)*b%l%block_size(js)-1), &
-	        (/b%l%block_size(is), b%l%block_size(js)/) )
+        reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+b%l%block_size(is)*b%l%block_size(js)-1), &
+                (/b%l%block_size(is), b%l%block_size(js)/) )
     end do
   end do
 end subroutine copy_zd_zsp
@@ -825,26 +825,26 @@ subroutine matrix_product_sub_dsp_dsp_dsp(c,a,b, a_transpose, b_transpose)
       ks = a%l%col(kk)
       block_nk = a%l%block_size(ks)
       a_block(1:block_ni,1:block_nk) = reshape(a%data(a%l%data_ptrs(kk):a%l%data_ptrs(kk)+block_ni*block_nk-1), &
-					       (/block_ni,block_nk/))
+                                               (/block_ni,block_nk/))
 
       jj_c = c%l%row_indices(is)
       jj_b = b%l%row_indices(ks)
       do while (jj_c < c%l%row_indices(is+1) .and. jj_b < b%l%row_indices(ks+1))
-	if (b%l%col(jj_b) == c%l%col(jj_c)) then
-	  block_nj = b%l%block_size(b%l%col(jj_b))
-	  c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) = &
-	    c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) + reshape( &
-	      matmul( a_block(1:block_ni,1:block_nk), &
-		      reshape(b%data(b%l%data_ptrs(jj_b):b%l%data_ptrs(jj_b)+block_nk*block_nj-1), &
-			      (/block_nk,block_nj/)) ), &
-	    (/block_ni*block_nj/) )
-	  jj_b = jj_b + 1
-	  jj_c = jj_c + 1
-	else if (b%l%col(jj_b) < c%l%col(jj_c)) then
-	  jj_b = jj_b + 1
-	else
-	  jj_c = jj_c + 1
-	end if
+        if (b%l%col(jj_b) == c%l%col(jj_c)) then
+          block_nj = b%l%block_size(b%l%col(jj_b))
+          c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) = &
+            c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) + reshape( &
+              matmul( a_block(1:block_ni,1:block_nk), &
+                      reshape(b%data(b%l%data_ptrs(jj_b):b%l%data_ptrs(jj_b)+block_nk*block_nj-1), &
+                              (/block_nk,block_nj/)) ), &
+            (/block_ni*block_nj/) )
+          jj_b = jj_b + 1
+          jj_c = jj_c + 1
+        else if (b%l%col(jj_b) < c%l%col(jj_c)) then
+          jj_b = jj_b + 1
+        else
+          jj_c = jj_c + 1
+        end if
       end do
 
     end do
@@ -889,26 +889,26 @@ subroutine matrix_product_sub_zsp_zsp_zsp(c,a,b, a_transpose, a_conjugate, b_tra
       ks = a%l%col(kk)
       block_nk = a%l%block_size(ks)
       a_block(1:block_ni,1:block_nk) = reshape(a%data(a%l%data_ptrs(kk):a%l%data_ptrs(kk)+block_ni*block_nk-1), &
-					       (/block_ni,block_nk/))
+                                               (/block_ni,block_nk/))
 
       jj_c = c%l%row_indices(is)
       jj_b = b%l%row_indices(ks)
       do while (jj_c < c%l%row_indices(is+1) .and. jj_b < b%l%row_indices(ks+1))
-	if (b%l%col(jj_b) == c%l%col(jj_c)) then
-	  block_nj = b%l%block_size(b%l%col(jj_b))
-	  c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) = &
-	    c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) + reshape( &
-	      matmul( a_block(1:block_ni,1:block_nk), &
-		      reshape(b%data(b%l%data_ptrs(jj_b):b%l%data_ptrs(jj_b)+block_nk*block_nj-1), &
-			      (/block_nk,block_nj/)) ), &
-	    (/block_ni*block_nj/) )
-	  jj_b = jj_b + 1
-	  jj_c = jj_c + 1
-	else if (b%l%col(jj_b) < c%l%col(jj_c)) then
-	  jj_b = jj_b + 1
-	else
-	  jj_c = jj_c + 1
-	end if
+        if (b%l%col(jj_b) == c%l%col(jj_c)) then
+          block_nj = b%l%block_size(b%l%col(jj_b))
+          c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) = &
+            c%data(c%l%data_ptrs(jj_c):c%l%data_ptrs(jj_c)+block_ni*block_nj-1) + reshape( &
+              matmul( a_block(1:block_ni,1:block_nk), &
+                      reshape(b%data(b%l%data_ptrs(jj_b):b%l%data_ptrs(jj_b)+block_nk*block_nj-1), &
+                              (/block_nk,block_nj/)) ), &
+            (/block_ni*block_nj/) )
+          jj_b = jj_b + 1
+          jj_c = jj_c + 1
+        else if (b%l%col(jj_b) < c%l%col(jj_c)) then
+          jj_b = jj_b + 1
+        else
+          jj_c = jj_c + 1
+        end if
       end do
 
     end do
@@ -946,22 +946,22 @@ subroutine matrix_product_sub_dden_dden_dsp(c,a,b,a_transpose, b_transpose, diag
     do while (kd <= a%M)
       block_nk = b%l%block_size(ks)
       do jj=b%l%row_indices(ks), b%l%row_indices(ks+1)-1
-	js = b%l%col(jj)
-	jd = b%l%dense_row_of_row(js)
-	block_nj = b%l%block_size(js)
+        js = b%l%col(jj)
+        jd = b%l%dense_row_of_row(js)
+        block_nj = b%l%block_size(js)
 
-	if (present(diag_mask)) then
-	  if (js == ks .and. .not. diag_mask(ks)) cycle
-	end if
-	if (present(offdiag_mask)) then
-	  if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
-	end if
+        if (present(diag_mask)) then
+          if (js == ks .and. .not. diag_mask(ks)) cycle
+        end if
+        if (present(offdiag_mask)) then
+          if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
+        end if
 
-	c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
-	  c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
-	  matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
-		  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
-			  (/block_nk,block_nj/)) )
+        c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
+          c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
+          matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
+                  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
+                          (/block_nk,block_nj/)) )
       end do
       kd = kd + b%l%block_size(ks)
       ks = ks + 1
@@ -999,9 +999,9 @@ subroutine matrix_product_sub_dden_dden_zsp(c,a,b,a_transpose, b_transpose, diag
     do while (kd <= a%M)
       block_nk = b%l%block_size(ks)
       do jj=b%l%row_indices(ks), b%l%row_indices(ks+1)-1
-	js = b%l%col(jj)
-	jd = b%l%dense_row_of_row(js)
-	block_nj = b%l%block_size(js)
+        js = b%l%col(jj)
+        jd = b%l%dense_row_of_row(js)
+        block_nj = b%l%block_size(js)
 
         if (present(diag_mask)) then
           if (js == ks .and. .not. diag_mask(ks)) cycle
@@ -1010,11 +1010,11 @@ subroutine matrix_product_sub_dden_dden_zsp(c,a,b,a_transpose, b_transpose, diag
           if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
         end if
 
-	c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
-	  c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
-	  matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
-		  reshape(real(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1)),  &
-			  (/block_nk,block_nj/)) )
+        c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
+          c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
+          matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
+                  reshape(real(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1)),  &
+                          (/block_nk,block_nj/)) )
       end do
       kd = kd + b%l%block_size(ks)
       ks = ks + 1
@@ -1055,9 +1055,9 @@ subroutine matrix_product_sub_zden_dden_zsp(c,a,b,a_transpose, b_transpose, b_co
     do while (kd <= a%M)
       block_nk = b%l%block_size(ks)
       do jj=b%l%row_indices(ks), b%l%row_indices(ks+1)-1
-	js = b%l%col(jj)
-	jd = b%l%dense_row_of_row(js)
-	block_nj = b%l%block_size(js)
+        js = b%l%col(jj)
+        jd = b%l%dense_row_of_row(js)
+        block_nj = b%l%block_size(js)
 
         if (present(diag_mask)) then
           if (js == ks .and. .not. diag_mask(ks)) cycle
@@ -1066,11 +1066,11 @@ subroutine matrix_product_sub_zden_dden_zsp(c,a,b,a_transpose, b_transpose, b_co
           if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
         end if
 
-	c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
-	  c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
-	  matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
-		  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
-			  (/block_nk,block_nj/)) )
+        c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
+          c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
+          matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
+                  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
+                          (/block_nk,block_nj/)) )
       end do
       kd = kd + b%l%block_size(ks)
       ks = ks + 1
@@ -1114,9 +1114,9 @@ subroutine matrix_product_sub_zden_zden_zsp(c,a,b,a_transpose, a_conjugate, b_tr
     do while (kd <= a%M)
       block_nk = b%l%block_size(ks)
       do jj=b%l%row_indices(ks), b%l%row_indices(ks+1)-1
-	js = b%l%col(jj)
-	jd = b%l%dense_row_of_row(js)
-	block_nj = b%l%block_size(js)
+        js = b%l%col(jj)
+        jd = b%l%dense_row_of_row(js)
+        block_nj = b%l%block_size(js)
 
         if (present(diag_mask)) then
           if (js == ks .and. .not. diag_mask(ks)) cycle
@@ -1125,11 +1125,11 @@ subroutine matrix_product_sub_zden_zden_zsp(c,a,b,a_transpose, a_conjugate, b_tr
           if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
         end if
 
-	c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
-	  c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
-	  matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
-		  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
-			  (/block_nk,block_nj/)) )
+        c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
+          c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
+          matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
+                  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
+                          (/block_nk,block_nj/)) )
       end do
       kd = kd + b%l%block_size(ks)
       ks = ks + 1
@@ -1170,9 +1170,9 @@ subroutine matrix_product_sub_zden_zden_dsp(c,a,b,a_transpose, a_conjugate, b_tr
     do while (kd <= a%M)
       block_nk = b%l%block_size(ks)
       do jj=b%l%row_indices(ks), b%l%row_indices(ks+1)-1
-	js = b%l%col(jj)
-	jd = b%l%dense_row_of_row(js)
-	block_nj = b%l%block_size(js)
+        js = b%l%col(jj)
+        jd = b%l%dense_row_of_row(js)
+        block_nj = b%l%block_size(js)
 
         if (present(diag_mask)) then
           if (js == ks .and. .not. diag_mask(ks)) cycle
@@ -1181,11 +1181,11 @@ subroutine matrix_product_sub_zden_zden_dsp(c,a,b,a_transpose, a_conjugate, b_tr
           if (js /= ks .and. .not. offdiag_mask(ks) .and. .not. offdiag_mask(js)) cycle
         end if
 
-	c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
-	  c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
-	  matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
-		  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
-			  (/block_nk,block_nj/)) )
+        c%data(id:id+block_ni-1,jd:jd+block_nj-1) = &
+          c%data(id:id+block_ni-1,jd:jd+block_nj-1) + &
+          matmul( a%data(id:id+block_ni-1,kd:kd+block_nk-1), &
+                  reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_nk*block_nj-1),  &
+                          (/block_nk,block_nj/)) )
       end do
       kd = kd + b%l%block_size(ks)
       ks = ks + 1
@@ -1225,9 +1225,9 @@ subroutine RS_SparseMatrixD_add_block(this, block, block_nr, block_nc, at_row, a
     do col_offset = this%l%cur_col_offset-1, 0, -1
       cur_col = this%l%col(this%l%row_indices(this%l%cur_row)+col_offset)
       if (cur_col == at_col) then
-	this%l%cur_col_offset = col_offset
-	call add_block_d(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
-	return
+        this%l%cur_col_offset = col_offset
+        call add_block_d(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
+        return
       end if
     end do
   else
@@ -1235,9 +1235,9 @@ subroutine RS_SparseMatrixD_add_block(this, block, block_nr, block_nc, at_row, a
     do col_offset = this%l%cur_col_offset+1, n_cols-1
       cur_col = this%l%col(this%l%row_indices(this%l%cur_row)+col_offset)
       if (cur_col == at_col) then
-	this%l%cur_col_offset = col_offset
-	call add_block_d(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
-	return
+        this%l%cur_col_offset = col_offset
+        call add_block_d(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
+        return
       end if
     end do
   end if
@@ -1270,9 +1270,9 @@ subroutine RS_SparseMatrixZ_add_block(this, block, block_nr, block_nc, at_row, a
     do col_offset = this%l%cur_col_offset-1, 0, -1
       cur_col = this%l%col(this%l%row_indices(this%l%cur_row)+col_offset)
       if (cur_col == at_col) then
-	this%l%cur_col_offset = col_offset
-	call add_block_z(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
-	return
+        this%l%cur_col_offset = col_offset
+        call add_block_z(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
+        return
       end if
     end do
   else
@@ -1280,9 +1280,9 @@ subroutine RS_SparseMatrixZ_add_block(this, block, block_nr, block_nc, at_row, a
     do col_offset = this%l%cur_col_offset+1, n_cols-1
       cur_col = this%l%col(this%l%row_indices(this%l%cur_row)+col_offset)
       if (cur_col == at_col) then
-	this%l%cur_col_offset = col_offset
-	call add_block_z(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
-	return
+        this%l%cur_col_offset = col_offset
+        call add_block_z(this, this%l%cur_row, this%l%cur_col_offset, block_nr, block_nc, block)
+        return
       end if
     end do
   end if
@@ -1374,21 +1374,21 @@ function RS_SparseMatrix_partial_TraceMult_dden_dsp(a, b, a_T, b_T, diag_mask, o
       have_any = get_dense_block(a%data, a%scalapack_info_obj, use_a_ij_transpose, i, j, b%l, block_ni, block_nj, a_block)
 
       if (have_any) then
-	b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(ji):b%l%data_ptrs(ji)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(ji):b%l%data_ptrs(ji)+block_ni*block_nj-1),(/block_ni,block_nj/))
 
-	if (u_b_T) then
-	  do tt=1, block_nj
-	    v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	else
-	  do tt=1, block_ni
-	    v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	end if
+        if (u_b_T) then
+          do tt=1, block_nj
+            v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
+              v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        else
+          do tt=1, block_ni
+            v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
+              v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        end if
       end if
 
     end do
@@ -1449,22 +1449,22 @@ function RS_SparseMatrix_partial_TraceMult_dden_zsp(a, b, a_T, b_H, diag_mask, o
       have_any = get_dense_block(a%data, a%scalapack_info_obj, use_a_ij_transpose, i, j, b%l, block_ni, block_nj, a_block)
 
       if (have_any) then
-	b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
-	if (u_b_H) b_block = conjg(b_block)
+        b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        if (u_b_H) b_block = conjg(b_block)
 
-	if (u_b_H) then
-	  do tt=1, block_nj
-	    v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	else
-	  do tt=1, block_ni
-	    v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	end if
+        if (u_b_H) then
+          do tt=1, block_nj
+            v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
+              v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        else
+          do tt=1, block_ni
+            v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
+              v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        end if
       end if
 
     end do
@@ -1526,21 +1526,21 @@ function RS_SparseMatrix_partial_TraceMult_zden_dsp(a, b, a_H, b_T, diag_mask, o
       if (u_a_H) a_block = conjg(a_block)
 
       if (have_any) then
-	b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
 
-	if (u_b_T) then
-	  do tt=1, block_nj
-	    v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	else
-	  do tt=1, block_ni
-	    v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	end if
+        if (u_b_T) then
+          do tt=1, block_nj
+            v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
+              v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        else
+          do tt=1, block_ni
+            v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
+              v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        end if
       end if
 
     end do
@@ -1601,22 +1601,22 @@ function RS_SparseMatrix_partial_TraceMult_zden_zsp(a, b, a_H, b_H, diag_mask, o
       if (u_a_H) a_block = conjg(a_block)
 
       if (have_any) then
-	b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
-	if (u_b_H) b_block = conjg(b_block)
+        b_block(1:block_ni,1:block_nj) = reshape(b%data(b%l%data_ptrs(jj):b%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        if (u_b_H) b_block = conjg(b_block)
 
-	if (u_b_H) then
-	  do tt=1, block_nj
-	    v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	else
-	  do tt=1, block_ni
-	    v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	end if
+        if (u_b_H) then
+          do tt=1, block_nj
+            v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) = &
+              v(b%l%dense_row_of_row(i):b%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        else
+          do tt=1, block_ni
+            v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) = &
+              v(b%l%dense_row_of_row(j):b%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        end if
       end if
 
     end do
@@ -1678,21 +1678,21 @@ function RS_SparseMatrix_partial_TraceMult_dsp_zden(a, b, a_T, b_H, diag_mask, o
       if (u_b_H) b_block = conjg(b_block)
 
       if (have_any) then
-	a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
 
-	if (u_a_T) then
-	  do tt=1, block_ni
-	    v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	else
-	  do tt=1, block_nj
-	    v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	end if
+        if (u_a_T) then
+          do tt=1, block_ni
+            v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
+              v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        else
+          do tt=1, block_nj
+            v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
+              v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        end if
       end if
 
     end do
@@ -1754,22 +1754,22 @@ function RS_SparseMatrix_partial_TraceMult_zsp_zden(a, b, a_H, b_H, diag_mask, o
       if (u_b_H) b_block = conjg(b_block)
 
       if (have_any) then
-	a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
-	if (u_a_H) a_block = conjg(a_block)
+        a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        if (u_a_H) a_block = conjg(a_block)
 
-	if (u_a_H) then
-	  do tt=1, block_ni
-	    v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	else
-	  do tt=1, block_nj
-	    v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	end if
+        if (u_a_H) then
+          do tt=1, block_ni
+            v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
+              v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        else
+          do tt=1, block_nj
+            v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
+              v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        end if
       end if
 
     end do
@@ -1830,21 +1830,21 @@ function RS_SparseMatrix_partial_TraceMult_dsp_dden(a, b, a_T, b_T, diag_mask, o
       have_any = get_dense_block(b%data, b%scalapack_info_obj, use_b_ij_transpose, i, j, a%l, block_ni, block_nj, b_block)
 
       if (have_any) then
-	a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
+        a_block(1:block_ni,1:block_nj) = reshape(a%data(a%l%data_ptrs(jj):a%l%data_ptrs(jj)+block_ni*block_nj-1),(/block_ni,block_nj/))
 
-	if (u_a_T) then
-	  do tt=1, block_ni
-	    v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
-	      v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
-	      a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
-	  end do
-	else
-	  do tt=1, block_nj
-	    v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
-	      v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
-	      a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
-	  end do
-	end if
+        if (u_a_T) then
+          do tt=1, block_ni
+            v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) = &
+              v(a%l%dense_row_of_row(j):a%l%dense_row_of_row(j)+block_nj-1) + &
+              a_block(tt,1:block_nj)*b_block(tt,1:block_nj)
+          end do
+        else
+          do tt=1, block_nj
+            v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) = &
+              v(a%l%dense_row_of_row(i):a%l%dense_row_of_row(i)+block_ni-1) + &
+              a_block(1:block_ni,tt)*b_block(1:block_ni,tt)
+          end do
+        end if
       end if
 
     end do
@@ -1876,21 +1876,21 @@ function get_dense_blockD(a_data, a_scalapack_info_obj, use_a_ij_transpose, i, j
       g_i = b_l%dense_row_of_row(i) + io
       g_j = b_l%dense_row_of_row(j) + jo
       if (use_a_ij_transpose) then
-	call coords_global_to_local(a_scalapack_info_obj, g_j, g_i, l_i, l_j)
-	if (l_i > 0 .and. l_j > 0) then
-	  a_block(io+1,jo+1) = a_data(l_i,l_j)
-	  get_dense_blockD = .true.
-	else
-	  a_block(io+1,jo+1) = 0.0_dp
-	end if
+        call coords_global_to_local(a_scalapack_info_obj, g_j, g_i, l_i, l_j)
+        if (l_i > 0 .and. l_j > 0) then
+          a_block(io+1,jo+1) = a_data(l_i,l_j)
+          get_dense_blockD = .true.
+        else
+          a_block(io+1,jo+1) = 0.0_dp
+        end if
       else
-	call coords_global_to_local(a_scalapack_info_obj, g_i, g_j, l_i, l_j)
-	if (l_i > 0 .and. l_j > 0) then
-	  a_block(io+1,jo+1) = a_data(l_i,l_j)
-	  get_dense_blockD = .true.
-	else
-	  a_block(io+1,jo+1) = 0.0_dp
-	end if
+        call coords_global_to_local(a_scalapack_info_obj, g_i, g_j, l_i, l_j)
+        if (l_i > 0 .and. l_j > 0) then
+          a_block(io+1,jo+1) = a_data(l_i,l_j)
+          get_dense_blockD = .true.
+        else
+          a_block(io+1,jo+1) = 0.0_dp
+        end if
       end if
     end do
     end do
@@ -1898,10 +1898,10 @@ function get_dense_blockD(a_data, a_scalapack_info_obj, use_a_ij_transpose, i, j
     get_dense_blockD = .true.
     if (use_a_ij_transpose) then
       a_block(1:block_ni,1:block_nj) = transpose(a_data(b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1, &
-				                        b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1))
+                                                        b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1))
     else
       a_block(1:block_ni,1:block_nj) = a_data(b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1, &
-		                              b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1)
+                                              b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1)
     end if
   end if
 
@@ -1926,21 +1926,21 @@ function get_dense_blockZ(a_data, a_scalapack_info_obj, use_a_ij_transpose, i, j
       g_i = b_l%dense_row_of_row(i) + io
       g_j = b_l%dense_row_of_row(j) + jo
       if (use_a_ij_transpose) then
-	call coords_global_to_local(a_scalapack_info_obj, g_j, g_i, l_i, l_j)
-	if (l_i > 0 .and. l_j > 0) then
-	  a_block(io+1,jo+1) = a_data(l_i,l_j)
-	  get_dense_blockZ = .true.
-	else
-	  a_block(io+1,jo+1) = 0.0_dp
-	end if
+        call coords_global_to_local(a_scalapack_info_obj, g_j, g_i, l_i, l_j)
+        if (l_i > 0 .and. l_j > 0) then
+          a_block(io+1,jo+1) = a_data(l_i,l_j)
+          get_dense_blockZ = .true.
+        else
+          a_block(io+1,jo+1) = 0.0_dp
+        end if
       else
-	call coords_global_to_local(a_scalapack_info_obj, g_i, g_j, l_i, l_j)
-	if (l_i > 0 .and. l_j > 0) then
-	  a_block(io+1,jo+1) = a_data(l_i,l_j)
-	  get_dense_blockZ = .true.
-	else
-	  a_block(io+1,jo+1) = 0.0_dp
-	end if
+        call coords_global_to_local(a_scalapack_info_obj, g_i, g_j, l_i, l_j)
+        if (l_i > 0 .and. l_j > 0) then
+          a_block(io+1,jo+1) = a_data(l_i,l_j)
+          get_dense_blockZ = .true.
+        else
+          a_block(io+1,jo+1) = 0.0_dp
+        end if
       end if
     end do
     end do
@@ -1948,10 +1948,10 @@ function get_dense_blockZ(a_data, a_scalapack_info_obj, use_a_ij_transpose, i, j
     get_dense_blockZ = .true.
     if (use_a_ij_transpose) then
       a_block(1:block_ni,1:block_nj) = transpose(a_data(b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1, &
-				                        b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1))
+                                                        b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1))
     else
       a_block(1:block_ni,1:block_nj) = a_data(b_l%dense_row_of_row(i):b_l%dense_row_of_row(i)+block_ni-1, &
-		                              b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1)
+                                              b_l%dense_row_of_row(j):b_l%dense_row_of_row(j)+block_nj-1)
     end if
   end if
 
@@ -2084,8 +2084,8 @@ subroutine RS_SparseMatrixD_multDiagRL_d(this, A, diag)
       block_nj = A%l%block_size(j)
       do jo=0, block_nj-1
       do io=0, block_ni-1
-	fac = 0.5_dp*(diag(this%l%dense_row_of_row(i)+io)+diag(this%l%dense_row_of_row(j)+jo))
-	this%data(this%l%data_ptrs(jj)+io+block_ni*jo) = fac*A%data(this%l%data_ptrs(jj)+io+block_ni*jo)
+        fac = 0.5_dp*(diag(this%l%dense_row_of_row(i)+io)+diag(this%l%dense_row_of_row(j)+jo))
+        this%data(this%l%data_ptrs(jj)+io+block_ni*jo) = fac*A%data(this%l%data_ptrs(jj)+io+block_ni*jo)
       end do
       end do
     end do
@@ -2108,8 +2108,8 @@ subroutine RS_SparseMatrixZ_multDiagRL_d(this, A, diag)
       block_nj = A%l%block_size(j)
       do jo=0, block_nj-1
       do io=0, block_ni-1
-	fac = 0.5_dp*(diag(this%l%dense_row_of_row(i)+io)+diag(this%l%dense_row_of_row(j)+jo))
-	this%data(this%l%data_ptrs(jj)+io+block_ni*jo) = fac*A%data(this%l%data_ptrs(jj)+io+block_ni*jo)
+        fac = 0.5_dp*(diag(this%l%dense_row_of_row(i)+io)+diag(this%l%dense_row_of_row(j)+jo))
+        this%data(this%l%data_ptrs(jj)+io+block_ni*jo) = fac*A%data(this%l%data_ptrs(jj)+io+block_ni*jo)
       end do
       end do
     end do
@@ -2128,15 +2128,15 @@ subroutine check_sparse_layout(l)
       call print("check_sparse " // i // " " // j)
 
       if (ji > l%row_indices(i)) then
-	if (j <= l%col(ji-1)) then
-	  call print("ERROR row " // i // " col " // j // " (ji="//ji//") out of order")
-	  call print(l%col(l%row_indices(i):l%row_indices(i+1)-1))
-	end if
+        if (j <= l%col(ji-1)) then
+          call print("ERROR row " // i // " col " // j // " (ji="//ji//") out of order")
+          call print(l%col(l%row_indices(i):l%row_indices(i+1)-1))
+        end if
       end if
 
       if (.not. any(l%col(l%row_indices(j):l%row_indices(j+1)-1) == i)) then
-	call print ("ERROR row "//i//" col "//j//" has no transpose match")
-	call print(l%col(l%row_indices(j):l%row_indices(j+1)-1))
+        call print ("ERROR row "//i//" col "//j//" has no transpose match")
+        call print(l%col(l%row_indices(j):l%row_indices(j+1)-1))
       end if
 
     end do

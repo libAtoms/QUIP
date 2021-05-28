@@ -34,7 +34,7 @@
 !% Interface to ASAP potential.
 !% P. Tangney and S. Scandolo,
 !% An ab initio parametrized interatomic force field for silica
-!% J. Chem. Phys, 117, 8898 (2002). 
+!% J. Chem. Phys, 117, 8898 (2002).
 !%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -98,9 +98,9 @@ contains
 
     use atoms
     use verlet
-    use neighbour 
+    use neighbour
     use pot_parameters
-    use stuff 
+    use stuff
     use energy_i
     use print65
     use electric_field
@@ -199,7 +199,7 @@ subroutine IPModel_ASAP_Initialise_str(this, args_str, param_str)
   call IPModel_ASAP_read_params_xml(this, param_str)
   this%n_atoms = 0
   this%initialised = .true.
-  
+
 end subroutine IPModel_ASAP_Initialise_str
 
 subroutine IPModel_ASAP_Finalise(this)
@@ -278,36 +278,36 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
         ElementName, print, operator(//), cell_volume, has_property, &
         assign_pointer, add_property, system_abort, fit_box_in_cell, &
         param_register, check_size, operator(.fne.), assign_property_pointer
-	
+
    type(IPModel_ASAP), intent(inout):: this
    type(myAtoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional, intent(in) :: args_str
    type(MPI_Context), intent(in), optional :: mpi
 
    integer, intent(out), optional :: error
-   type(Dictionary) :: params	 
-   real(dp) :: asap_e, asap_stress(3,3), a_ew, f_ew	 
-   logical smlra,smlrc,smlgc,smlrc2,smlrc3,smlrc4	 
-   logical nsmlra,nsmlrc,nsmlgc	 
-   real*8 rarec,gcrec,rcrec,root2	 
-   real*8 raggio_in,rcut_in,gcut_in	 
-   real(dp), allocatable :: asap_f(:,:)	 
+   type(Dictionary) :: params
+   real(dp) :: asap_e, asap_stress(3,3), a_ew, f_ew
+   logical smlra,smlrc,smlgc,smlrc2,smlrc3,smlrc4
+   logical nsmlra,nsmlrc,nsmlgc
+   real*8 rarec,gcrec,rcrec,root2
+   real*8 raggio_in,rcut_in,gcut_in
+   real(dp), allocatable :: asap_f(:,:)
    real(dp), pointer :: dipoles_ptr(:,:), ext_efield_ptr(:,:)
-   integer :: i, ti, tj	 
-   logical :: do_restart, calc_dipoles	 
-   integer at0, atf	 
-   integer idebug	 
-   real(dp) dtold,dtnew	 
-   logical  tzeroc	 
-   logical sumewald	 
-   real(dp) mass_cel	 
-   logical tscaled	 
-   logical readnat	 
-   logical texist	 
-   logical tpow,tgmin	 
+   integer :: i, ti, tj
+   logical :: do_restart, calc_dipoles
+   integer at0, atf
+   integer idebug
+   real(dp) dtold,dtnew
+   logical  tzeroc
+   logical sumewald
+   real(dp) mass_cel
+   logical tscaled
+   logical readnat
+   logical texist
+   logical tpow,tgmin
    integer nesr
 
    logical :: has_atom_mask_name, applied_efield
@@ -360,7 +360,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    end if
 
    if (.not. asap_initialised .or. this%n_atoms /= at%n) then
-      
+
       if (asap_initialised) then
          call asap_singlepoint_finalise()
          asap_initialised = .false.
@@ -368,7 +368,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
 
       this%n_atoms = at%n
 
-      idebug = 0 
+      idebug = 0
       nat = this%n_atoms
       nsp = this%n_types
       at0 = 1
@@ -405,7 +405,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       tgmin = .false.
       testewald = .false.
       ttime = .true.
-      tforcetest = .false. 
+      tforcetest = .false.
       tscaled = .false.
       tangstrom = .false.
       texist = .false.
@@ -456,7 +456,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       hafta=.false.
       tbegin = .true.
       tyukawa = .true.
-      
+
       sumewald = .true.
       allocate(spind(nat),objind(nat),numobj(nobj),numobjsp(nobj,nsp))
       allocate(z(nsp),bij(nsp,nsp),Cij(nsp,nsp))
@@ -502,8 +502,8 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       XNOS2M = 0.D0
       XNOSM  = 0.D0
       XNOS0  = 0.D0
-      VRNOS  = 0.D0 
-      
+      VRNOS  = 0.D0
+
       it = 1
 
       c_harm = 0.0_dp
@@ -606,21 +606,21 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       write(6,'(" Recommended g-space cutoff  : ",f10.5)')gcrec
       write(6,'(/," Using Raggio                : ",f10.5)')raggio
       write(6,'(" Using r-space cutoff        : ",f10.5)')rcut(1)
-      write(6,'(" Using g-space cutoff        : ",f10.5)')gcut  
+      write(6,'(" Using g-space cutoff        : ",f10.5)')gcut
       write(6,'(/," Secondary r-space cutoff    : ",f10.5)')rcut(2)
       write(6,'(" Tertiary  r-space cutoff    : ",f10.5)')rcut(3)
       write(6,'(" Quaternary r-space cutoff   : ",f10.5)')rcut(4)
-      
+
       netcharge = 0.0d0
       do i=1,this%n_types
          netcharge = netcharge + z(i)*dfloat(ntype(i))
          if (dabs(z(i)).gt.1.d-10) tz = .true.
       end do
-      
+
       write(6,'(/," Charges : ",100(e13.5))') z
       write(6,'(/," Net charge ",e13.5)') netcharge
       write(6,*)
-      
+
       ! Short range parameters
       tsr = .true.
       alphaij = 0.0_dp
@@ -664,12 +664,12 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
 
       ! Smoothing
       smooth = .false.
-      
+
       ! Yukawa parameters
       yukalpha = this%yukalpha
       yuksmoothlength = this%yuksmoothlength
       tdip_sr = this%tdip_sr
-      
+
       asap_initialised = .true.
    end if
 
@@ -684,9 +684,9 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    r(:,:) = at%pos(:,:)/BOHR         ! positions
    rm(:,:) = at%pos(:,:)/BOHR
    htm = transpose(at%lattice/BOHR)  ! lattice
-   ht = transpose(at%lattice/BOHR) 
+   ht = transpose(at%lattice/BOHR)
    restart = do_restart   ! reset electric field
-   
+
    if (applied_efield) then
       call assign_property_pointer(at, 'ext_efield', ext_efield_ptr, error)
       PASS_ERROR(error)
@@ -725,7 +725,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
    nesr = (2*iesr(1)+1)*(2*iesr(2)+1)*(2*iesr(3)+1)
    nnatmax = min(nnatmax,nat*nesr)
    nnatmax = nnatmax + 10
-  
+
    if (allocated(nnat)) deallocate(nnat)
    if (allocated(nnat2)) deallocate(nnat2)
    if (allocated(nnat3)) deallocate(nnat3)
@@ -764,7 +764,7 @@ subroutine IPModel_ASAP_Calc(this, at, e, local_e, f, virial, local_virial, args
       PASS_ERROR(error)
       dipoles_ptr = dip*BOHR
    end if
-   
+
    deallocate(asap_f)
 #else
   RAISE_ERROR('ASAP potential is not compiled in. Recompile with HAVE_ASAP=1', error)
@@ -811,7 +811,7 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
 
   if (len(trim(param_str)) <= 0) return
 
-  parse_in_ip = .false. 
+  parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
 
@@ -828,7 +828,7 @@ subroutine IPModel_ASAP_read_params_xml(this, param_str)
 end subroutine IPModel_ASAP_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

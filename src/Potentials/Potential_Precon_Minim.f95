@@ -26,12 +26,12 @@ module Potential_Precon_Minim_module
    create_hybrid_weights, add_cut_hydrogens, create_cluster_info_from_mark, bfs_grow, carve_cluster
 
   implicit none
-  
+
   public :: Precon_Minim
   interface Precon_Minim
      module procedure Precon_Potential_Minim
   end interface
- 
+
   public :: Precon_Dimer
   interface Precon_Dimer
      module procedure Precon_Potential_Dimer
@@ -41,7 +41,7 @@ module Potential_Precon_Minim_module
 !  interface Precon_MEP
 !     module procedure Precon_Potential_MEP
 !  end interface
- 
+
   contains
 
 
@@ -74,16 +74,16 @@ module Potential_Precon_Minim_module
 
     allocate(this%preconrowlengths(at%N))
     allocate(this%preconindices(nneigh+1,at%N))
-    
+
     if (trim(precon_id) == "LJ" .OR. trim(precon_id) == "ID" .OR. trim(precon_id) == "C1" .OR. trim(precon_id) == "exp") then
       this%multI = .TRUE.
     elseif (trim(precon_id) == "LJdense") then
       this%dense = .true.
-    else 
+    else
       call print ("Unrecognized Preconditioner, exiting")
       call exit()
     end if
-    
+
 
     call set_cutoff_minimum(at, this%cutoff)
     if(at%cutoff > 0.0_dp) call calc_connect(at)
@@ -107,8 +107,8 @@ module Potential_Precon_Minim_module
            scalingnumer = scalingnumer + 1.0
            thisneighcount = n_neighbours(at,I)
            do J = 1,thisneighcount
-              thisind = neighbour(at,I,J,distance=thisdist) 
-              if (thisind > 0 .and. (thisdist <= this%cutoff)) then 
+              thisind = neighbour(at,I,J,distance=thisdist)
+              if (thisind > 0 .and. (thisdist <= this%cutoff)) then
                  if (this%precon_id == "LJ" .or. this%precon_id == "C1" .or. this%precon_id == "exp") then
                     this_r2 = thisdist**2.0
                     if (this%precon_id == "LJ") then
@@ -130,9 +130,9 @@ module Potential_Precon_Minim_module
      call print('allocate_precon: selected mu='//this%mu)
 
  end subroutine allocate_precon
-  
+
   subroutine build_precon(this,am_data)
-  
+
     implicit none
 
     type (precon_data),intent(inout) :: this
@@ -140,23 +140,23 @@ module Potential_Precon_Minim_module
 
     type (potential_minimise) :: am
 
-    real(dp) :: conconstant 
+    real(dp) :: conconstant
     integer :: I,J,thisneighcount,thisneighcountlocal,thisind,thisind2
     real(dp) :: thisdist, thiscoeff
-    real(dp) :: thisdiff(3) 
+    real(dp) :: thisdiff(3)
     integer :: nearneighcount
     logical :: did_rebuild, fixed_neighbour
-    integer :: didcount 
+    integer :: didcount
     real(dp) :: scalingcoeff, scalingnumer, scalingdenom
 
     call system_timer('build_precon')
     am = transfer(am_data,am)
-        
-    call atoms_repoint(am%minim_at)    
+
+    call atoms_repoint(am%minim_at)
     call set_cutoff_minimum(am%minim_at, this%cutoff)
-    
+
     if(am%minim_at%cutoff > 0.0_dp) call calc_connect(am%minim_at,did_rebuild=did_rebuild)
-    if (did_rebuild .eqv. .true.) then    
+    if (did_rebuild .eqv. .true.) then
       call print("Connectivity rebuilt by preconditioner")
       am%connectivity_rebuilt = .true.
     end if
@@ -174,17 +174,17 @@ module Potential_Precon_Minim_module
     scalingnumer = 0.0
     scalingdenom = 0.0
 
-    this%preconrowlengths = 0 
+    this%preconrowlengths = 0
     this%preconindices = 0
     this%preconcoeffs = 0.0
-    !call print('Building precon with cutoff ' // this%cutoff) 
-    
+    !call print('Building precon with cutoff ' // this%cutoff)
+
     if(this%precon_id /= "ID") then
       didcount = 0
       do I = 1,(am%minim_at%N)
-      !call print("rah")  
+      !call print("rah")
       !if(am%minim_at%move_mask(I) == 1) then
-      
+
       if(this%has_fixed) then
         if (am%minim_at%move_mask(I) == 0) then
           this%preconcoeffs(1,I,1) = 1.0
@@ -193,19 +193,19 @@ module Potential_Precon_Minim_module
           cycle
         end if
       end if
-     
-      scalingnumer = scalingnumer + 1 
+
+      scalingnumer = scalingnumer + 1
       didcount = didcount+1
       thisneighcount = n_neighbours(am%minim_at,I)
       thisneighcountlocal = n_neighbours(am%minim_at,I,max_dist=this%cutoff)
       !call print(thisneighcount)
-       
+
      ! call print(thisneighcount // ' ' // thisneighcountlocal)
      ! do J=1,thisneighcount
      !   call print(neighbour(am%minim_at,I,J))
      ! end do
      ! call exit()
-      
+
       if(thisneighcountlocal > this%nneigh) then
         call print("Not enough memory was allocated for preconditioner, increase value of nneigh, undefined behaviour (probably runtime error) follows",PRINT_ALWAYS)
       end if
@@ -215,16 +215,16 @@ module Potential_Precon_Minim_module
       nearneighcount = 1
       do J = 1,thisneighcount
 
-        thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,index=thisind2) 
+        thisind = neighbour(am%minim_at,I,J,distance=thisdist,diff=thisdiff,index=thisind2)
         if (thisind > 0 .and. (thisdist <= this%cutoff) .and. thisind /= I) then
           !call print(thisdist // ' ' // this%cutoff)
           !call print(  I  // ' '// J // ' '// thisneighcount// ' ' // thisind // ' ' // thisdist)
           !call print(  I  //  ' ' // thisind // ' ' //thisind2 // ' ' // thisdist)
-          
+
 
           !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs0.dat')
           if (this%precon_id == "LJ" .or. this%precon_id == "C1" .or. this%precon_id == "exp") then
-              
+
             if (this%precon_id == "LJ") then
               thiscoeff = ( thisdist/this%length_scale)**(-6.0_dp)
              ! thiscoeff = 1.0_dp!max(min(thiscoeff,10.0_dp),0.1_dp)
@@ -237,58 +237,58 @@ module Potential_Precon_Minim_module
 
             this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff
             scalingdenom = scalingdenom + thisdist**2.0
-            
+
             fixed_neighbour = this%has_fixed .and. (am%minim_at%move_mask(thisind) /= 1)
             if (.not. fixed_neighbour) then
-                nearneighcount = nearneighcount+1                
+                nearneighcount = nearneighcount+1
                 this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
                 this%preconindices(nearneighcount,I) = thisind
             end if
-              
-            !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff 
+
+            !this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) + thiscoeff
             !this%preconcoeffs(nearneighcount,I,1) = -thiscoeff
-         
+
             !nearneighcount = nearneighcount+1
 !          elseif (this%precon_id == "LJdense") then
-!           
-!            ! Coeff 1 
+!
+!            ! Coeff 1
 !            thiscoeff = this%energy_scale * (  (thisdiff(1)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) &
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0))
 !            this%preconcoeffs(nearneighcount,I,1) = thiscoeff
-!            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) - thiscoeff 
-!          
+!            this%preconcoeffs(1,I,1) = this%preconcoeffs(1,I,1) - thiscoeff
+!
 !            ! Coeff 2
 !            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(2))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)))
 !            this%preconcoeffs(nearneighcount,I,2) = thiscoeff
-!            this%preconcoeffs(1,I,2) = this%preconcoeffs(1,I,2) - thiscoeff 
-!            
+!            this%preconcoeffs(1,I,2) = this%preconcoeffs(1,I,2) - thiscoeff
+!
 !            ! Coeff 3
 !            thiscoeff = this%energy_scale * (  (thisdiff(1)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)))
 !            this%preconcoeffs(nearneighcount,I,3) = thiscoeff
-!            this%preconcoeffs(1,I,3) = this%preconcoeffs(1,I,3) - thiscoeff 
-!            
+!            this%preconcoeffs(1,I,3) = this%preconcoeffs(1,I,3) - thiscoeff
+!
 !            ! Coeff 4
 !            thiscoeff = this%energy_scale * (  (thisdiff(2)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) &
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0))
 !            this%preconcoeffs(nearneighcount,I,4) = thiscoeff
-!            this%preconcoeffs(1,I,4) = this%preconcoeffs(1,I,4) - thiscoeff 
-!            
+!            this%preconcoeffs(1,I,4) = this%preconcoeffs(1,I,4) - thiscoeff
+!
 !            ! Coeff 5
 !            thiscoeff = this%energy_scale * (  (thisdiff(2)*thisdiff(3))*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0))) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)))
 !            this%preconcoeffs(nearneighcount,I,5) = thiscoeff
-!            this%preconcoeffs(1,I,5) = this%preconcoeffs(1,I,5) - thiscoeff 
-! 
+!            this%preconcoeffs(1,I,5) = this%preconcoeffs(1,I,5) - thiscoeff
+!
 !            ! Coeff 6
 !            thiscoeff = this%energy_scale * (  (thisdiff(3)**2.0)*( -42.0*4.0*this%length_scale**12.0/(thisdist**16.0) &
-!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) & 
-!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0)) 
+!                                                                    +24.0*4.0*this%length_scale**6.0/(thisdist**10.0)) &
+!                                              + 12.0*this%length_scale**12.0/(thisdist**14.0) - 12.0*this%length_scale**6.0/(thisdist**8.0))
 !            this%preconcoeffs(nearneighcount,I,6) = thiscoeff
-!            this%preconcoeffs(1,I,6) = this%preconcoeffs(1,I,6) - thiscoeff 
+!            this%preconcoeffs(1,I,6) = this%preconcoeffs(1,I,6) - thiscoeff
 !
 !            !call writevec(reshape(this%preconcoeffs(1,I,1:6),(/6/)),'coeffs1.dat')
 !            !call writevec(reshape(this%preconcoeffs(nearneighcount,I,1:6),(/6/)),'coeffs2.dat')
@@ -302,7 +302,7 @@ module Potential_Precon_Minim_module
       end do
 
       !call print(nearneighcount)
-      this%preconrowlengths(I) = nearneighcount 
+      this%preconrowlengths(I) = nearneighcount
       !end if
     end do
   else if (this%precon_id == 'ID') then
@@ -310,7 +310,7 @@ module Potential_Precon_Minim_module
       this%preconcoeffs(1,I,1) = 1.0
       this%preconrowlengths(I) = 1
       this%preconindices(1,I) = I
-    end do 
+    end do
     end if
 
     if(this%precon_id == 'LJ' .or. this%precon_id == 'C1' .or. this%precon_id == 'exp') then
@@ -322,7 +322,7 @@ module Potential_Precon_Minim_module
         !call print(this%number_density)
         call print('build_precon: using mu='//this%mu, PRINT_VERBOSE)
         this%preconcoeffs= this%preconcoeffs*this%mu
-    end if  
+    end if
     am%connectivity_rebuilt = .false.
     !call exit()
 
@@ -347,44 +347,44 @@ module Potential_Precon_Minim_module
     real(dp) :: scoeff
 
     call allocate_precon(pr,at,'C1',125,1.0_dp,1.0_dp,cutoff,10.0_dp**(-10.0),100,20,0.625_dp,0.1_dp,.true.)
-    
+
     am%minim_at => at
     am_data_size = size(transfer(am, am_mold))
     allocate(am_data(am_data_size))
     am_data = transfer(am, am_data)
-    call build_precon(pr,am_data) 
+    call build_precon(pr,am_data)
     prmat = 0.0
     do I = 1,9
       prmat(I,I) = 1.0
     end do
     do I = 1,size(pr%preconindices,DIM=2)
-      
+
       !call print(pr%preconindices(1:pr%preconrowlengths(I),I))
       target_elements = (/ I*3-2+9, I*3-1+9, I*3+9 /)
       if (pr%preconrowlengths(I) >= 1) then
       do J = 1,(pr%preconrowlengths(I))
-        
+
         thisind = pr%preconindices(J,I)
         row_elements = (/ thisind*3-2+9, thisind*3-1+9, thisind*3+9/)
-       
-        scoeff = pr%preconcoeffs(J,I,1) 
+
+        scoeff = pr%preconcoeffs(J,I,1)
         !call print(scoeff)
         do K = 1,3
           prmat(row_elements(K),target_elements(K)) = prmat(row_elements(K),target_elements(K)) + scoeff
           prmat(target_elements(K),row_elements(K)) = prmat(target_elements(K),row_elements(K)) + scoeff
-        end do 
+        end do
       end do
-      end if 
-    end do  
-  end subroutine 
-   
+      end if
+    end do
+  end subroutine
+
   function Precon_Potential_Minim(this, at, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook, hook_print_interval, &
    error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,convchoice,bulk_modulus,number_density,auto_mu)
-    
+
     implicit none
-    
+
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
     type(Atoms), intent(inout), target :: at !% starting configuration
     character(*), intent(in)    :: method !% passed to precon_minim()
@@ -394,14 +394,14 @@ module Potential_Precon_Minim_module
 ! 'preconLBFGS - preconditioned LBFGS
 
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-                                                    !% 'convergence_tol'. 
+                                                    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of steps
-    
+
     character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
 !Options for efuncroutine
 ! 'basic' - naive summation (default)
-! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy, if it does turn this on) 
-    
+! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy, if it does turn this on)
+
     character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
 ! Options for linminroutine
 ! 'basic' - simple backtracking, each iteration satisfies armijo
@@ -415,31 +415,31 @@ module Potential_Precon_Minim_module
     character(len=*), intent(in), optional :: args_str !% arguments to pass to calc()
     real(dp), dimension(3,3), optional :: external_pressure
     optional :: hook
-    INTERFACE 
+    INTERFACE
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
+         logical, optional, intent(in) :: do_print
          character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     END INTERFACE
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
-    
+
     character(*), intent(in),optional :: precon_id
 ! Eventually will support multiple preconditioners for now just supports:
 ! 'ID' - identity preconditioner (default) i.e. no preconditioner
 ! 'C1' - binary connectivity precontioner
-! 'LJ' - connectivity preconditioner based on LJ potential 
+! 'LJ' - connectivity preconditioner based on LJ potential
 
     real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
     real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
     real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances, assuming first neighbours contribute much more to the energy, if the potential is more or less 'flat' then may need to include second neighbours
     integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125, only necessary to edit if you run out of memory
-   
+
 
     real(dp), intent(in), optional :: bulk_modulus
     real(dp), intent(in), optional :: number_density
@@ -449,7 +449,7 @@ module Potential_Precon_Minim_module
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting, probably dont need to change this
 
     real(dp), optional :: infoverride !optional override to max step in infinity norm
-    logical, optional :: auto_mu 
+    logical, optional :: auto_mu
 
     character(*), intent(in),optional :: convchoice
 
@@ -481,13 +481,13 @@ module Potential_Precon_Minim_module
     doinfnorm = .false.
     if (present(convchoice)) then
       if (trim(convchoice) == 'infnorm') then
-        
+
         doinfnorm = .true.
         call print("Using inf_norm for convergence")
       else
         call print("Unrecognized choice of convergence metric, defaulting to 2 norm")
       end if
-    
+
     else
       call print("Defaulting to 2 norm for convergence")
     end if
@@ -500,11 +500,11 @@ module Potential_Precon_Minim_module
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
       call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
     end if
-  
+
 !    if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
 !      call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
 !    end if
-  
+
     if ((present(precon_cutoff) .eqv. .false.) .and. (trim(my_precon_id) /= 'ID')) then
       call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
     end if
@@ -592,7 +592,7 @@ module Potential_Precon_Minim_module
     my_mat_mult_max_iter = optional_default(am%minim_at%N*3,mat_mult_max_iter)
     my_auto_mu = optional_default(.true.,auto_mu)
     my_max_sub = 30
-   
+
     if (my_length_scale < 0.5_dp) then
       call print("WARNING: You have set your atomistic length scale (approximate first neighbour distance) to: "//my_length_scale // " this is very low and probably constitutes an incorrect input",PRINT_ALWAYS)
     end if
@@ -603,8 +603,8 @@ module Potential_Precon_Minim_module
       efuncroutine=efuncroutine, linminroutine=linminroutine, hook=hook, hook_print_interval=hook_print_interval, &
       am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian,getfdhconnectivity=getfdhconnectivity,&
       infoverride = infoverride, infconvext = doinfnorm)
- 
-    
+
+
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
     if(am%minim_at%cutoff > 0.0_dp) call calc_connect(am%minim_at)
@@ -618,15 +618,15 @@ module Potential_Precon_Minim_module
     Precon_Potential_Minim = n_iter_tot
     deallocate(am_data)
 
-  end function 
-  
+  end function
+
   function Precon_Potential_Dimer(this, at,at2, method, convergence_tol, max_steps,efuncroutine, linminroutine, do_print, print_inoutput, print_cinoutput, &
        do_pos, do_lat, args_str,external_pressure, &
        hook,hook_print_interval,&
    error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,res2,mat_mult_max_iter,max_sub,infoverride,bulk_modulus,number_density,auto_mu)
-    
+
     implicit none
-    
+
     type(Potential), intent(inout), target :: this !% potential to evaluate energy/forces with
     type(Atoms), intent(inout), target :: at ! final configuration
     type(Atoms), intent(in), target :: at2 ! start configuration 2
@@ -636,14 +636,14 @@ module Potential_Precon_Minim_module
 ! 'preconCG' - preconditioned safeguarded Polak-Ribiere conjugate gradient
 
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-                                                    !% 'convergence_tol'. 
+                                                    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of steps
-    
+
     character(*), intent(in), optional    :: efuncroutine !% How to evaluate change in energy in a step
 !Options for efuncroutine
 ! 'basic' - naive summation (default)
-! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy) 
-    
+! 'kahan' - kahan summation of local energy differences (QUIPs potential must provide local_energy)
+
     character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
 ! Options for linminroutine
 ! 'basic' - simple backtracking, each iteration satisfies armijo
@@ -660,29 +660,29 @@ module Potential_Precon_Minim_module
     integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
     integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
     optional :: hook
-    INTERFACE 
+    INTERFACE
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
+         logical, optional, intent(in) :: do_print
          character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     END INTERFACE
-  
+
     character(*), intent(in),optional :: precon_id
 ! Eventually will support multiple preconditioners for now just supports:
 ! 'ID' - identity preconditioner (default) i.e. no preconditioner
 ! 'C1' - binary connectivity precontioner
-! 'LJ' - connectivity preconditioner based on LJ potential 
+! 'LJ' - connectivity preconditioner based on LJ potential
 
     real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
     real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
     real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances, assuming first neighbours contribute much more to the energy, if the potential is more or less 'flat' then may need to include second neighbours
-    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125 
-    
+    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125
+
     real(dp), intent(in), optional :: res2 !criteria for the residual squared of the approximate preconditioner inverse, probably dont need to change this
     integer, intent(in), optional :: mat_mult_max_iter !max number of iterations of the preconditioner inverter, probably dont need to change this
     integer, intent(in), optional :: max_sub !max number of iterations of the inverter before restarting
@@ -721,11 +721,11 @@ module Potential_Precon_Minim_module
     if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
       call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
     end if
-  
+
     if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
       call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
     end if
-  
+
     if ((present(precon_cutoff) .eqv. .false.) .and. (trim(my_precon_id) /= 'ID')) then
       call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
     end if
@@ -739,7 +739,7 @@ module Potential_Precon_Minim_module
     at%pos = (at%pos + at2%pos)/2.0
     allocate(vpos(at%N,3))
     vpos = (at%pos - at2%pos)
-    
+
     my_bulk_modulus = optional_default(0.625_dp,bulk_modulus)
     my_number_density = optional_default(0.01_dp,number_density)
 
@@ -754,7 +754,7 @@ module Potential_Precon_Minim_module
       am%minim_args_str = ""
     endif
     am%minim_pot => this
-    
+
 !      am%minim_do_lat = .false.
     am%minim_do_lat = .false.
 !  if (.not.present(do_pos) .and. .not. present(do_lat)) then
@@ -814,7 +814,7 @@ module Potential_Precon_Minim_module
     am%last_connect_x=1.0e38_dp
     deform_grad = 0.0_dp; call add_identity(deform_grad)
     call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
-    
+
     call pack_pos_dg(vpos, deform_grad, v, 0.0_dp)
     !call print(x)
     !call exit()
@@ -831,13 +831,13 @@ module Potential_Precon_Minim_module
     my_auto_mu = optional_default(.true.,auto_mu)
 
     call allocate_precon(pr,at,my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub,my_bulk_modulus,my_number_density,my_auto_mu)
-    !call print(use_method)   
+    !call print(use_method)
     n_iter = precondimer(x,v, energy_func_local, gradient_func, build_precon, pr, use_method, convergence_tol, max_steps,efuncroutine=efuncroutine, linminroutine=linminroutine, &
             hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data, status=status, writehessian=writeapproxhessiangrad,gethessian=getapproxhessian)
 !       n_iter = minim(x, energy_func, gradient_func, use_method, convergence_tol, max_steps, linminroutine, &
  !           print_hook, hook_print_interval=hook_print_interval, eps_guess=my_eps_guess, data=am_data, status=status)
- 
-    
+
+
     call unpack_pos_dg(x, am%minim_at%N, am%minim_at%pos, deform_grad, 1.0_dp/am%pos_lat_preconditioner_factor)
     call prep_atoms_deform_grad(deform_grad, am%minim_at, am)
     if(am%minim_at%cutoff > 0.0_dp ) call calc_connect(am%minim_at)
@@ -851,15 +851,15 @@ module Potential_Precon_Minim_module
 
     deallocate(am_data)
 
-  end function 
+  end function
 
 
 !  function Precon_Potential_MEP(this,allat,at1,at2, method, convergence_tol, max_steps, linminroutine,efuncroutine,k, do_print, print_inoutput, print_cinoutput, &
 !       do_pos, do_lat, args_str,external_pressure, &
 !       hook_print_interval, error,precon_id,length_scale,energy_scale,precon_cutoff,nneigh,NatMax,fix_ends,res2,mat_mult_max_iter,max_sub,deltat)
-!    
+!
 !    implicit none
-!    
+!
 !    type(Potential), intent(in), target :: this !% potential to evaluate energy/forces with
 !    type(Atoms), intent(inout), target, dimension(:) :: allat
 !    type(Atoms), intent(in), target :: at1 !% start of the chain
@@ -870,7 +870,7 @@ module Potential_Precon_Minim_module
 !! 'preconCG' - preconditioned safeguarded Polak-Ribiere conjugate gradient
 !
 !    real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-!                                                    !% 'convergence_tol'. 
+!                                                    !% 'convergence_tol'.
 !    integer,      intent(in)    :: max_steps  !% Maximum number of steps
 !    character(*), intent(in),optional    :: linminroutine !% Name of the line minisation routine to use
 !! Options for linminroutine
@@ -889,17 +889,17 @@ module Potential_Precon_Minim_module
 !    real(dp), dimension(3,3), optional :: external_pressure
 !    integer, intent(in), optional :: hook_print_interval !% how often to print xyz from hook function
 !    integer, intent(out), optional :: error !% set to 1 if an error occurred during minimisation
-!    
+!
 !    character(*), intent(in),optional :: precon_id
 !! Eventually will support multiple preconditioners for now just supports:
 !! 'ID' - identity preconditioner (default) i.e. no preconditioner
 !! 'C1' - binary connectivity precontioner
-!! 'LJ' - connectivity preconditioner based on LJ potential 
+!! 'LJ' - connectivity preconditioner based on LJ potential
 !
 !    real(dp), intent(in), optional :: length_scale !length scale of potential (reference lattice distance, approximately will be probably good enough), default 1.0
 !    real(dp), intent(in), optional :: energy_scale !prefactor of the potential energy, default 1.0
 !    real(dp), intent(in), optional :: precon_cutoff !cutoff radius of the preconditioner, default 1.5, probably set this midway between first and second neighbour distances
-!    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125 
+!    integer, intent(in), optional :: nneigh !maximum number of neighbours expected in precon_cutoff radius, may be removed when this becomes automatic, default is 125
 !    integer :: status
 !    integer, intent(in), optional :: NatMax
 !    logical, intent(in), optional :: fix_ends
@@ -909,7 +909,7 @@ module Potential_Precon_Minim_module
 !    real(dp), optional :: deltat
 !
 !    integer :: Precon_Potential_MEP
-!    type (potential_minimise), allocatable, dimension(:) :: am 
+!    type (potential_minimise), allocatable, dimension(:) :: am
 !    real (dp), allocatable, dimension(:) :: x1, x2
 !    real (dp), allocatable, dimension(:,:) :: allx
 !    integer :: I, Nd, Nat
@@ -919,9 +919,9 @@ module Potential_Precon_Minim_module
 !    logical my_do_print
 !    character(len=100) :: use_method
 !    character, allocatable, dimension(:,:) :: am_data
-!    real(dp) :: var 
+!    real(dp) :: var
 !    real(dp) :: myk
-!    
+!
 !    type (precon_data), allocatable, dimension (:) :: pr
 !    real(dp) :: my_length_scale, my_energy_scale, my_precon_cutoff, my_res2
 !    integer :: my_nneigh, my_mat_mult_max_iter,my_max_sub
@@ -931,32 +931,32 @@ module Potential_Precon_Minim_module
 !
 !    my_fix_ends = .true.
 !    if( present(fix_ends) ) my_fix_ends = fix_ends
-!    
+!
 !    my_precon_id = optional_default('ID',precon_id)
 !    if ((present(length_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
 !      call print("No length_scale specified, defaulting to reference lattice distance = 1.0. Unless this is a good estimate preconditioning may work VERY POORLY, if in doubt estimate high, set optional argument length_scale.")
 !    end if
-!  
+!
 !    if ((present(energy_scale) .eqv. .false.) .and. (trim(my_precon_id) == 'LJ')) then
 !      call print("No energy_scale specified, defaulting to prefactor = 1.0. Unless this is a good estimate preconditioning may work very poorly, set optional argument energy_scale.")
 !    end if
-!  
+!
 !    if ((present(precon_cutoff) .eqv. .false.) .and. (trim(my_precon_id) /= 'ID')) then
 !      call print("No precon cutoff specified, using the potential's own cutoff = "//cutoff(this)//". Decreasing this may improve performance, set optional argument precon_cutoff.")
 !    end if
 !
 !    myk = 1.0
 !    if (present(k)) myk=k
-!     
+!
 !    Nat = size(allat)
 !    allocate(am(Nat))
 !    allocate(pr(Nat))
-! 
-!    ! build the Atoms types 
+!
+!    ! build the Atoms types
 !    do I = 1,Nat
 !      call initialise(allat(I),at1%N,at1%lattice)
 !    end do
-!     
+!
 !    ! just for now most Atoms are copies of at1
 !    do I = 1,(Nat-1)
 !      allat(I) = at1
@@ -966,7 +966,7 @@ module Potential_Precon_Minim_module
 !
 !    Nd = 9+at1%N*3
 !    call print("Nd " // Nd)
-!    
+!
 !    ! setup minimization
 !    use_method = trim(method)
 !    do I = 1,Nat
@@ -1040,17 +1040,17 @@ module Potential_Precon_Minim_module
 !    allocate(x1(Nd))
 !    allocate(x2(Nd))
 !    allocate(allx(Nd,Nat))
-!    
+!
 !    deform_grad = 0.0_dp; call add_identity(deform_grad)
 !    call pack_pos_dg(am(1)%minim_at%pos, deform_grad, x1, am(1)%pos_lat_preconditioner_factor)
 !    call pack_pos_dg(am(Nat)%minim_at%pos, deform_grad, x2, am(Nat)%pos_lat_preconditioner_factor)
 !    allx(1:Nd,1) = x1
 !    allx(1:Nd,Nat) = x2
-!        
-!    ! place atoms linearly along the path 
+!
+!    ! place atoms linearly along the path
 !    do I=2,(Nat-1)
 !      var = (I-1.0)/(Nat-1.0)
-!      allx(1:Nd,I) = x1 + var*(x2-x1) 
+!      allx(1:Nd,I) = x1 + var*(x2-x1)
 !      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
 !    end do
 !
@@ -1064,23 +1064,23 @@ module Potential_Precon_Minim_module
 !    my_mat_mult_max_iter = optional_default(am(1)%minim_at%N*3,mat_mult_max_iter)
 !    my_max_sub = optional_default(200,max_sub)
 !
-!    allocate(am_data(am_data_size,Nat))     
+!    allocate(am_data(am_data_size,Nat))
 !    do I=1,Nat
 !      am_data(1:am_data_size,I) = transfer(am(I), am_data(1:am_data_size,I))
 !      call allocate_precon(pr(I),allat(I),my_precon_id,my_nneigh,my_energy_scale,my_length_scale,my_precon_cutoff,my_res2,my_mat_mult_max_iter,my_max_sub)
 !    end do
-!   
+!
 !    n_iter = preconMEP(allx,energy_func, gradient_func, build_precon, pr, use_method,my_fix_ends, convergence_tol, max_steps, linminroutine=linminroutine,efuncroutine=efuncroutine,k=myk, &
 !               hook=print_hook, hook_print_interval=hook_print_interval, am_data=am_data,status=status,deltat=deltat)
 !
 !    do I=1,Nat
 !      call unpack_pos_dg(allx(1:Nd,I) , am(I)%minim_at%N, am(I)%minim_at%pos, deform_grad, 1.0_dp/am(I)%pos_lat_preconditioner_factor)
 !    end do
-!   
 !
-!  
+!
+!
 !  end function
- 
+
   ! compute energy
   function energy_func_local(x, am_data, local_energy_inout,gradient_inout)
     real(dp) :: x(:)
@@ -1097,7 +1097,7 @@ module Potential_Precon_Minim_module
     integer, pointer, dimension(:) :: move_mask, fixed_pot
     real(dp), pointer :: minim_applied_force(:,:)
     logical :: did_rebuild
-    
+
     call system_timer("energy_func")
 
     if (.not. present(am_data)) call system_abort("potential_minimise energy_func must have am_data")
@@ -1127,7 +1127,7 @@ module Potential_Precon_Minim_module
       call print("Connectivity rebuilt in objective function",PRINT_NERD)
       am%connectivity_rebuilt = .true.
     end if
- 
+
     if (current_verbosity() >= PRINT_NERD) then
        call print("energy_func using am%minim_at", PRINT_NERD)
        call write(am%minim_at, 'stdout')
@@ -1164,8 +1164,8 @@ module Potential_Precon_Minim_module
 
       ! add applied forces
       if (am%minim_do_pos .and. assign_pointer(am%minim_at, "minim_applied_force", minim_applied_force)) then
-	f = f + minim_applied_force
-	energy_func_local = energy_func_local - sum(minim_applied_force*am%minim_at%pos)
+        f = f + minim_applied_force
+        energy_func_local = energy_func_local - sum(minim_applied_force*am%minim_at%pos)
       endif
 
       if (current_verbosity() >= PRINT_NERD) then
@@ -1191,7 +1191,7 @@ module Potential_Precon_Minim_module
 
       call pack_pos_dg(-f, -virial, gradient_inout, 1.0_dp/am%pos_lat_preconditioner_factor)
     end if
-  
+
     call print ("energy_func got energy " // energy_func_local, PRINT_NERD)
     energy_func_local = energy_func_local + cell_volume(am%minim_at)*trace(am%external_pressure) / 3.0_dp
     call print ("energy_func got enthalpy " // energy_func_local, PRINT_NERD)
@@ -1214,9 +1214,9 @@ module Potential_Precon_Minim_module
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) vec
     close(outid)
-  
+
   end subroutine
- 
+
   subroutine writemat(mat,filename)
     real(dp) :: mat(:,:)
     character(*) :: filename
@@ -1225,9 +1225,9 @@ module Potential_Precon_Minim_module
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) mat
     close(outid)
-  
+
   end subroutine
- 
+
   subroutine writematint(mat,filename)
     integer :: mat(:,:)
     character(*) :: filename
@@ -1236,11 +1236,11 @@ module Potential_Precon_Minim_module
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) mat
     close(outid)
-  
+
   end subroutine
 
   subroutine writeapproxhessian(x,data,filename)
-    
+
     implicit none
 
     real(dp) :: x(:)
@@ -1259,11 +1259,11 @@ module Potential_Precon_Minim_module
     integer :: hx,hy
     real(dp) :: fx
     am = transfer(data,am)
-    
-    !call atoms_repoint(am%minim_at)    
+
+    !call atoms_repoint(am%minim_at)
     !call calc_connect(am%minim_at)
     !call calc_dists(am%minim_at)
- 
+
     !call fix_atoms_deform_grad(deform_grad, am%minim_at, am)
     !call pack_pos_dg(am%minim_at%pos, deform_grad, x, am%pos_lat_preconditioner_factor)
 
@@ -1281,23 +1281,23 @@ module Potential_Precon_Minim_module
       call print(I)
       thisneighcount = n_neighbours(am%minim_at,I)
       !call print(x)
-      !call exit() 
+      !call exit()
       if(thisneighcount > 3*nneigh) then
         call print("Not enough memory was allocated for Hessian, increase value of nneigh")
       end if
-            
+
       do II = 1,3 ! Loop over coordinates of atom I
         hx = 3*(I-1) + II
-                  
+
           do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
           if (J > 1) then
-          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind)
           else
           thisind = I
           end if
           do JJ = 1,3 ! Loop over coordinates of atom J
             hy = 3*(thisind-1) + JJ
-            
+
             if(hy .eq. hx) then
             xpp = x
             xmm = x
@@ -1313,7 +1313,7 @@ module Potential_Precon_Minim_module
             hessinds(hxcount,2) = hx
             !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
-            
+
             elseif(hy .gt. hx) then
             xpp = x
             xpm = x
@@ -1327,8 +1327,8 @@ module Potential_Precon_Minim_module
             xmp(hy+9) = xmp(hy+9) + eps
             xmm(hx+9) = xmm(hx+9) - eps
             xmm(hy+9) = xmm(hy+9) - eps
-         
-           
+
+
             fpp = energy_func_local(xpp,data,lepp)
             fpm = energy_func_local(xpm,data,lepm)
             fmp = energy_func_local(xmp,data,lemp)
@@ -1343,19 +1343,19 @@ module Potential_Precon_Minim_module
             !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
             endif
-            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 
+            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm)
           end do
         end do
       end do
     end do
-    
+
     call writevec(hess,filename // 'hess.dat')
     call writematint(hessinds, filename // 'hessinds.dat')
-     
+
   end subroutine
-  
+
   function KahanSum(vec)
-    
+
     real(dp) :: vec(:)
     real(dp) :: KahanSum
 
@@ -1372,11 +1372,11 @@ module Potential_Precon_Minim_module
       C = (T - KahanSum) - Y
       KahanSum = T
     end do
-  
+
   end function
 
   subroutine writeapproxhessiangrad(x,data,filename)
-    
+
     implicit none
 
     real(dp) :: x(:)
@@ -1386,7 +1386,7 @@ module Potential_Precon_Minim_module
     type(potential_minimise) :: am
 
     real(dp),parameter :: eps = 10.0**(-3)
-  
+
     real(dp), allocatable :: hess(:)
     integer, allocatable :: hessinds(:,:)
     real(dp),allocatable :: gp(:,:), gm(:,:), g(:), xm(:)
@@ -1403,9 +1403,9 @@ module Potential_Precon_Minim_module
     allocate(gm(N,N-9))
     allocate(hessinds(3*am%minim_at%N*nneigh,2))
     allocate(hess(3*am%minim_at%N*nneigh))
-  
+
     hess = 0.0
-    hessinds = 0  
+    hessinds = 0
     gp = 0.0
     gm = 0.0
     call verbosity_push_decrement()
@@ -1415,11 +1415,11 @@ module Potential_Precon_Minim_module
       g = gradient_func(xm,data)
       !call print(g)
       !call exit()
-      gp(1:N,I-9) = g     
+      gp(1:N,I-9) = g
       xm(I) = xm(I) - 2.0*eps
       g = gradient_func(xm,data)
-      gm(1:N,I-9) = g     
-      !call print(gp(1:N,I-9)) 
+      gm(1:N,I-9) = g
+      !call print(gp(1:N,I-9))
     end do
     call verbosity_pop()
     !call exit()
@@ -1428,17 +1428,17 @@ module Potential_Precon_Minim_module
       !call print(I)
       thisneighcount = n_neighbours(am%minim_at,I)
       !call print(x)
-      !call exit() 
+      !call exit()
       if(thisneighcount > 3*nneigh) then
         call print("Not enough memory was allocated for Hessian, increase value of nneigh")
       end if
-            
+
       do II = 1,3 ! Loop over coordinates of atom I
         hx = 3*(I-1) + II
-                  
+
           do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
           if (J > 1) then
-          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind)
           else
           thisind = I
           end if
@@ -1454,7 +1454,7 @@ module Potential_Precon_Minim_module
             !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
             end if
-            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 
+            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm)
           end do
         end do
       end do
@@ -1462,11 +1462,11 @@ module Potential_Precon_Minim_module
     !call exit()
     call writevec(hess,filename // 'hess.dat')
     call writematint(hessinds, filename // 'hessinds.dat')
-    !call exit() 
-  end subroutine 
-  
+    !call exit()
+  end subroutine
+
   subroutine getapproxhessian(x,data,hessout)
-    
+
     implicit none
 
     real(dp),intent(in) :: x(:)
@@ -1476,7 +1476,7 @@ module Potential_Precon_Minim_module
     type(potential_minimise) :: am
 
     real(dp),parameter :: eps = 10.0**(-3)
-  
+
     real(dp),allocatable :: gp(:,:), gm(:,:), g(:), xm(:)
     real(dp) :: hesscoeff
     integer :: I,J,II,JJ,N
@@ -1489,9 +1489,9 @@ module Potential_Precon_Minim_module
     allocate(xm(N),g(N))
     allocate(gp(N,N-9))
     allocate(gm(N,N-9))
-  
+
     hessout = 0.0_dp
-    
+
     gp = 0.0
     gm = 0.0
     call verbosity_push_decrement()
@@ -1501,11 +1501,11 @@ module Potential_Precon_Minim_module
       g = gradient_func(xm,data)
       !call print(g)
       !call exit()
-      gp(1:N,I-9) = g     
+      gp(1:N,I-9) = g
       xm(I) = xm(I) - 2.0*eps
       g = gradient_func(xm,data)
-      gm(1:N,I-9) = g     
-      !call print(gp(1:N,I-9)) 
+      gm(1:N,I-9) = g
+      !call print(gp(1:N,I-9))
     end do
     call verbosity_pop()
     !call exit()
@@ -1517,17 +1517,17 @@ module Potential_Precon_Minim_module
       !call print(I)
       thisneighcount = n_neighbours(am%minim_at,I)
       !call print(x)
-      !call exit() 
+      !call exit()
       if(thisneighcount > 3*nneigh) then
         call print("Not enough memory was allocated for Hessian, increase value of nneigh")
       end if
-            
+
       do II = 1,3 ! Loop over coordinates of atom I
         hx = 3*(I-1) + II
-                  
+
           do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
           if (J > 1) then
-          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind) 
+          thisind = neighbour(am%minim_at,I,J-1,index=thisotherind)
           else
           thisind = I
           end if
@@ -1545,15 +1545,15 @@ module Potential_Precon_Minim_module
             !call print(I // ' ' // II  // ' '// thisind// ' '//JJ//' ' // J //  ' '// hx // ' '//hy// ' '//hess(hxcount))
             hxcount = hxcount + 1
             end if
-            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm) 
+            !call print(fpp// ' '//fpm// ' '//fmp // ' '// fmm// ' '//fpp+fmm-fmp-fpm)
           end do
         end do
       end do
     end do
     deallocate(xm,g,gp,gm)
     !call exit()
-    !call exit() 
-  end subroutine 
+    !call exit()
+  end subroutine
 
   subroutine getfdhconnectivity(rows,diag,rn,data)
 
@@ -1574,25 +1574,25 @@ module Potential_Precon_Minim_module
     diag(1:9) = (/1, 2, 3, 4, 5, 6, 7, 8, 9/)
     rows(1:9) = (/1, 2, 3, 4, 5, 6, 7, 8, 9/)
     am = transfer(data,am)
-    
-    rowsindex = 10 
+
+    rowsindex = 10
     do I = 1,(am%minim_at%N)
       thisneighcount = n_neighbours(am%minim_at,I)
-           
+
       do II = 1,3 ! Loop over coordinates of atom I
-         
+
         hx = 3*(I-1) + II + 9
-        diag(hx) = rowsindex 
+        diag(hx) = rowsindex
         buffer = 3*am%minim_at%N + 10
         bufferindex = 1
         do J = 1,(thisneighcount+1) ! Loop over neighbours of atom I
-          
+
           if (J > 1) then
-            thisind = neighbour(am%minim_at,I,J-1) 
+            thisind = neighbour(am%minim_at,I,J-1)
           else
             thisind = I
           end if
-          !if (thisind >= I) then 
+          !if (thisind >= I) then
           do JJ = 1,3
             hy = 3*(thisind-1) + JJ + 9
             if (hy>=hx) then
@@ -1605,28 +1605,28 @@ module Potential_Precon_Minim_module
           !end if
         end do
         !call print(" ")
-        !call print(buffer)        
+        !call print(buffer)
         call fdhcleaner(buffer,3*am%minim_at%N+10,cleanN)
         !call print(buffer(1:cleanN))
         rows(rowsindex:(rowsindex+cleanN-1)) = buffer(1:cleanN)
         rowsindex = rowsindex + cleanN
       end do
-    end do 
+    end do
     rn = rowsindex-1
-  end subroutine  
+  end subroutine
 
- recursive function qsort( data ) result( sorted ) 
-    integer, dimension(:), intent(in) :: data 
-    integer, dimension(1:size(data))  :: sorted 
-    if ( size(data) > 1 ) then 
-      sorted = (/ qsort( pack( data(2:), abs(data(2:)) <= abs(data(1)) )  ), data(1), qsort( pack( data(2:), abs(data(2:)) > abs(data(1)) ) ) /) 
-    else 
-      sorted = data    
-    endif 
-  end function 
+ recursive function qsort( data ) result( sorted )
+    integer, dimension(:), intent(in) :: data
+    integer, dimension(1:size(data))  :: sorted
+    if ( size(data) > 1 ) then
+      sorted = (/ qsort( pack( data(2:), abs(data(2:)) <= abs(data(1)) )  ), data(1), qsort( pack( data(2:), abs(data(2:)) > abs(data(1)) ) ) /)
+    else
+      sorted = data
+    endif
+  end function
 
   subroutine fdhcleaner(data,data_max,cleanN)
-  
+
     implicit none
 
     integer, intent(inout) :: data(:)
@@ -1637,7 +1637,7 @@ module Potential_Precon_Minim_module
 
     N = size(data)
     data = qsort(data)
-    
+
     !call print(data)
     !call exit()
     I = 1
@@ -1645,7 +1645,7 @@ module Potential_Precon_Minim_module
       !call print(I // ' ' // N // ' '// data(I:) //  ' '// data_max)
       if (data(I) == data(I+1)) then
         data(I+1:N-1) = data(I+2:N)
-      else 
+      else
         I = I+1
       end if
       if(I == N .or. data(I) >= data_max) then

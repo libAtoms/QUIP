@@ -29,10 +29,10 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X TB_Common_module  
+!X TB_Common_module
 !X
-!% TB module computes the tight-binding Hamiltonian matrix elements 
-!% in the two-center approximation, applying the general expressions 
+!% TB module computes the tight-binding Hamiltonian matrix elements
+!% in the two-center approximation, applying the general expressions
 !% derived by A.V. Podolskiy and P. Vogl Phys. Rev. B {\bf 69}, 233101 (2004).
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -52,16 +52,16 @@ integer, parameter, public :: N_ORBS_OF_SET(4) = (/1, 3, 5, 7/)
 
 
 integer, parameter, public :: harrison_sign_sss = -1, harrison_sign_sps = 1, &
-		      harrison_sign_pps = 1, harrison_sign_ppp = -1, &
-	              harrison_sign_sds = -1, harrison_sign_pds = -1, &
-		      harrison_sign_pdp = 1, harrison_sign_dds = -1, &
-		      harrison_sign_ddp = 1
+                      harrison_sign_pps = 1, harrison_sign_ppp = -1, &
+                      harrison_sign_sds = -1, harrison_sign_pds = -1, &
+                      harrison_sign_pdp = 1, harrison_sign_dds = -1, &
+                      harrison_sign_ddp = 1
 
 integer, parameter, public :: N_SK = 20
 integer, parameter, public :: SK_SSS = 1, SK_SPS = 2, SK_PPS = 3, SK_PPP = 4, &
-		      SK_SDS = 5, SK_PDS = 6, SK_PDP = 7, SK_DDS = 8, SK_DDP = 9, SK_DDD = 10, \
-		      SK_SFS = 11, SK_PFS = 12, SK_PFP = 13, SK_DFS = 14, SK_DFP = 15, SK_DFD = 16, \
-		      SK_FFS = 17, SK_FFP = 18, SK_FFD = 19, SK_FFF = 20
+                      SK_SDS = 5, SK_PDS = 6, SK_PDP = 7, SK_DDS = 8, SK_DDP = 9, SK_DDD = 10, \
+                      SK_SFS = 11, SK_PFS = 12, SK_PFP = 13, SK_DFS = 14, SK_DFP = 15, SK_DFD = 16, \
+                      SK_FFS = 17, SK_FFP = 18, SK_FFD = 19, SK_FFF = 20
 
 public :: angular_function, dangular_function, spin_orbit_function
 
@@ -84,7 +84,7 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
   real(dp) :: L, M, N, Lsq, Msq, Nsq
 
   real(dp) :: root_3
-  
+
   root_3 = sqrt(3.0_dp)
 
   ! L on L
@@ -189,10 +189,10 @@ function spin_orbit_function(orb_type_i, orb_dir_i, orb_dir_j) result(V)
   complex(dp) :: V(2,2)
 
   real(dp) :: root_3
-  
+
   root_3 = sqrt(3.0_dp)
 
-  ! spin-orbit term 
+  ! spin-orbit term
   ! from Podolskiy and Vogl, Phys. Rev. B v. 69, p 233101 (2004)
 
 include 'SK_SO_vogl.h'
@@ -200,7 +200,7 @@ include 'SK_SO_vogl.h'
 end function spin_orbit_function
 
 function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
-			   orb_dir_i, orb_dir_j, sk, dsk)
+                           orb_dir_i, orb_dir_j, sk, dsk)
   real(dp), intent(in) :: dist, dcos(3), dcos_sq(3)
   integer, intent(in) :: orb_type_i, orb_type_j
   integer, intent(in) :: orb_dir_i, orb_dir_j
@@ -227,7 +227,7 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
   real(dp) :: dL_dr(3), dM_dr(3), dN_dr(3)
 
   real(dp) :: root_3
-  
+
   root_3 = sqrt(3.0_dp)
 
   ! L on L

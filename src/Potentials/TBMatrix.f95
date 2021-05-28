@@ -216,15 +216,15 @@ subroutine TBMatrix_sum_in_place(this, mpi)
   do i=1, this%n_matrices
     if (this%is_complex) then
       if (this%is_sparse) then
-	call sum_in_place(mpi, this%sdata_z(i)%data)
+        call sum_in_place(mpi, this%sdata_z(i)%data)
       else
-	call sum_in_place(mpi, this%data_z(i)%data)
+        call sum_in_place(mpi, this%data_z(i)%data)
       endif
     else
       if (this%is_sparse) then
-	call sum_in_place(mpi, this%sdata_d(i)%data)
+        call sum_in_place(mpi, this%sdata_d(i)%data)
       else
-	call sum_in_place(mpi, this%data_d(i)%data)
+        call sum_in_place(mpi, this%data_d(i)%data)
       endif
     endif
   end do
@@ -630,17 +630,17 @@ subroutine TBMatrix_diagonalise_gen(this, overlap, evals, evecs, ignore_symmetry
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_z(i), overlap%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_d(i), overlap%data_d(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   endif
@@ -665,17 +665,17 @@ subroutine TBMatrix_diagonalise(this, evals, evecs, ignore_symmetry, error)
   if (this%is_complex) then
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_z(i), evals%data_d(:,i), evecs%data_z(i), ignore_symmetry=ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
+        call diagonalise(this%data_z(i), evals%data_d(:,i), ignore_symmetry=ignore_symmetry, error = error)
       endif
     end do
   else
     do i=1, this%n_matrices
       if (present(evecs)) then
-	call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry = ignore_symmetry, error = error)
+        call diagonalise(this%data_d(i), evals%data_d(:,i), evecs%data_d(i), ignore_symmetry = ignore_symmetry, error = error)
       else
-	call diagonalise(this%data_d(i), evals%data_d(:,i), ignore_symmetry = ignore_symmetry, error = error)
+        call diagonalise(this%data_d(i), evals%data_d(:,i), ignore_symmetry = ignore_symmetry, error = error)
       endif
     end do
   endif
@@ -708,17 +708,17 @@ end function TBVector_dotproduct
 !  do ik=1, mati%n_matrices
 !    if (TBV_f%data_d(i,ik) .fne. 0.0_dp) then
 !      if (mati%is_complex) then
-!	if (this%is_complex) then
-!	  call accum_col_outer_product(this%data_z(ik), mati%data_z(ik), i, TBV_f%data_d(i,ik))
-!	else
-!	  call system_abort("tried to add outer product of columns of real TBMatrix to complex TBMatrix")
-!	endif
+!        if (this%is_complex) then
+!          call accum_col_outer_product(this%data_z(ik), mati%data_z(ik), i, TBV_f%data_d(i,ik))
+!        else
+!          call system_abort("tried to add outer product of columns of real TBMatrix to complex TBMatrix")
+!        endif
 !      else
-!	if (.not. this%is_complex) then
-!	  call accum_col_outer_product(this%data_d(ik), mati%data_d(ik), i, TBV_f%data_d(i,ik))
-!	else
-!	  call system_abort("tried to add outer product of columns of complex TBMatrix to real TBMatrix")
-!	endif
+!        if (.not. this%is_complex) then
+!          call accum_col_outer_product(this%data_d(ik), mati%data_d(ik), i, TBV_f%data_d(i,ik))
+!        else
+!          call system_abort("tried to add outer product of columns of complex TBMatrix to real TBMatrix")
+!        endif
 !      endif
 !    endif
 !  end do
@@ -859,37 +859,37 @@ subroutine TBMatrix_scaled_sum(this, f1_z, m1, f2, m2)
   do im=1, this%n_matrices
     if (this%is_complex) then
       if (m1%is_complex) then
-	if (m2%is_complex) then
-	  call scaled_sum(this%data_z(im), f1_z, m1%data_z(im), f2_z, m2%data_z(im))
-	else
-	  ! call scaled_sum(this%data_z(im), f1_z, m1%data_z(im), f2_z, m2%data_d(im))
-	  call system_abort ("Can't do scaled sum for Z Z D")
-	endif
+        if (m2%is_complex) then
+          call scaled_sum(this%data_z(im), f1_z, m1%data_z(im), f2_z, m2%data_z(im))
+        else
+          ! call scaled_sum(this%data_z(im), f1_z, m1%data_z(im), f2_z, m2%data_d(im))
+          call system_abort ("Can't do scaled sum for Z Z D")
+        endif
       else
-	if (m2%is_complex) then
-	  ! call scaled_sum(this%data_z(im), f1_z, m1%data_d(im), f2_z, m2%data_z(im))
-	  call system_abort ("Can't do scaled sum for Z D Z")
-	else
-	  call scaled_sum(this%data_z(im), f1_z, m1%data_d(im), f2_z, m2%data_d(im))
-	endif
+        if (m2%is_complex) then
+          ! call scaled_sum(this%data_z(im), f1_z, m1%data_d(im), f2_z, m2%data_z(im))
+          call system_abort ("Can't do scaled sum for Z D Z")
+        else
+          call scaled_sum(this%data_z(im), f1_z, m1%data_d(im), f2_z, m2%data_d(im))
+        endif
       endif
     else
       if (m1%is_complex) then
-	if (m2%is_complex) then
-	  ! call scaled_sum(this%data_d(im), f1_z, m1%data_z(im), f2_z, m2%data_z(im))
-	  call system_abort ("Can't do scaled sum for D Z Z")
-	else
-	  ! call scaled_sum(this%data_d(im), f1_z, m1%data_z(im), f2_z, m2%data_d(im))
-	  call system_abort ("Can't do scaled sum for D Z D")
-	endif
+        if (m2%is_complex) then
+          ! call scaled_sum(this%data_d(im), f1_z, m1%data_z(im), f2_z, m2%data_z(im))
+          call system_abort ("Can't do scaled sum for D Z Z")
+        else
+          ! call scaled_sum(this%data_d(im), f1_z, m1%data_z(im), f2_z, m2%data_d(im))
+          call system_abort ("Can't do scaled sum for D Z D")
+        endif
       else
-	if (m2%is_complex) then
-	  ! call scaled_sum(this%data_d(im), f1_z, m1%data_d(im), f2_z, m2%data_z(im))
-	  call system_abort ("Can't do scaled sum for D D Z")
-	else
-	  ! call scaled_sum(this%data_d(im), f1_z, m1%data_d(im), f2_z, m2%data_d(im))
-	  call system_abort ("Can't do scaled sum for D D D")
-	endif
+        if (m2%is_complex) then
+          ! call scaled_sum(this%data_d(im), f1_z, m1%data_d(im), f2_z, m2%data_z(im))
+          call system_abort ("Can't do scaled sum for D D Z")
+        else
+          ! call scaled_sum(this%data_d(im), f1_z, m1%data_d(im), f2_z, m2%data_d(im))
+          call system_abort ("Can't do scaled sum for D D D")
+        endif
       endif
     endif
   end do
@@ -908,17 +908,17 @@ subroutine TBMatrix_scaled_accum(this, f1_z, m1)
   do im=1, this%n_matrices
     if (this%is_complex) then
       if (m1%is_complex) then
-	call scaled_accum(this%data_z(im), f1_z, m1%data_z(im))
+        call scaled_accum(this%data_z(im), f1_z, m1%data_z(im))
       else
-	! call scaled_accum(this%data_z(im), f1_z, m1%data_d(im))
-	call system_abort ("Can't do scaled accum for Z D")
+        ! call scaled_accum(this%data_z(im), f1_z, m1%data_d(im))
+        call system_abort ("Can't do scaled accum for Z D")
       endif
     else
       if (m1%is_complex) then
-	call scaled_accum(this%data_d(im), f1_z, m1%data_z(im))
+        call scaled_accum(this%data_d(im), f1_z, m1%data_z(im))
       else
-	! call scaled_accum(this%data_d(im), f1_z, m1%data_d(im))
-	call system_abort ("Can't do scaled accum for D D")
+        ! call scaled_accum(this%data_d(im), f1_z, m1%data_d(im))
+        call system_abort ("Can't do scaled accum for D D")
       endif
     endif
   end do
@@ -937,21 +937,21 @@ subroutine TBMatrix_inverse(this, inv, positive)
   do im=1, this%n_matrices
     if (this%is_complex) then
       if (present(inv)) then
-	if (.not. (inv%is_complex)) then
-	    call system_abort("Called TBMatrix_inverse with complex matrix but real inverse")
-	endif
-	call inverse(this%data_z(im), inv%data_z(im), positive)
+        if (.not. (inv%is_complex)) then
+            call system_abort("Called TBMatrix_inverse with complex matrix but real inverse")
+        endif
+        call inverse(this%data_z(im), inv%data_z(im), positive)
       else
-	call inverse(this%data_z(im), positive=positive)
+        call inverse(this%data_z(im), positive=positive)
       endif
     else
       if (present(inv)) then
-	if (inv%is_complex) then
-	    call system_abort("Called TBMatrix_inverse with real matrix but complex inverse")
-	endif
-	call inverse(this%data_d(im), inv%data_d(im), positive)
+        if (inv%is_complex) then
+            call system_abort("Called TBMatrix_inverse with real matrix but complex inverse")
+        endif
+        call inverse(this%data_d(im), inv%data_d(im), positive)
       else
-	call inverse(this%data_d(im), positive=positive)
+        call inverse(this%data_d(im), positive=positive)
       endif
     endif
   end do
@@ -977,15 +977,15 @@ subroutine TBMatrix_multDiag(this, A, diag)
   do im=1, this%n_matrices
     if (this%is_complex) then
       if (diag%is_complex) then
-	call multDiag(this%data_z(im), A%data_z(im), diag%data_z(:,im))
+        call multDiag(this%data_z(im), A%data_z(im), diag%data_z(:,im))
       else
-	call multDiag(this%data_z(im), A%data_z(im), diag%data_d(:,im))
+        call multDiag(this%data_z(im), A%data_z(im), diag%data_d(:,im))
       endif
     else
       if (diag%is_complex) then
-	call system_abort("Can't TBMatrix_multDiag of a real matrix time complex diag")
+        call system_abort("Can't TBMatrix_multDiag of a real matrix time complex diag")
       else
-	call multDiag(this%data_d(im), A%data_d(im), diag%data_d(:,im))
+        call multDiag(this%data_d(im), A%data_d(im), diag%data_d(:,im))
       endif
     endif
   end do
@@ -1064,22 +1064,22 @@ subroutine TBMatrix_multDiagRL_d(this, A, diag)
   do im=1, this%n_matrices
     if (this%is_sparse) then
       if (this%is_complex) then
-	call multDiagRL(this%sdata_z(im), A%sdata_z(im), diag)
+        call multDiagRL(this%sdata_z(im), A%sdata_z(im), diag)
       else
-	call multDiagRL(this%sdata_d(im), A%sdata_d(im), diag)
+        call multDiagRL(this%sdata_d(im), A%sdata_d(im), diag)
       endif
     else
       if (this%is_complex) then
-	call multDiagRL(this%data_z(im), A%data_z(im), diag)
+        call multDiagRL(this%data_z(im), A%data_z(im), diag)
       else
-	call multDiagRL(this%data_d(im), A%data_d(im), diag)
+        call multDiagRL(this%data_d(im), A%data_d(im), diag)
       endif
     endif
   end do
 end subroutine TBMatrix_multDiagRL_d
 
 subroutine TBMatrix_matrix_product_sub(C, A, B, A_transpose, A_conjugate, B_transpose, B_conjugate, &
-				       diag_mask, offdiag_mask)
+                                       diag_mask, offdiag_mask)
   type(TBMatrix), intent(inout) :: C
   type(TBMatrix), intent(in) :: A, B
   logical, intent(in), optional :: A_transpose, A_conjugate, B_transpose, B_conjugate
@@ -1113,54 +1113,54 @@ subroutine TBMatrix_matrix_product_sub(C, A, B, A_transpose, A_conjugate, B_tran
   do im=1, C%n_matrices
     if (C%is_complex) then
       if (A%is_complex) then
-	if (B%is_complex) then
-	  if (B%is_sparse) then
-	    call matrix_product_sub(C%data_z(im), A%data_z(im), B%sdata_z(im), a_transpose, a_conjugate, b_transpose, b_conjugate, &
-				    diag_mask, offdiag_mask)
-	  else
-	    if (present(diag_mask) .or. present(offdiag_mask)) &
-	      call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
-	    call matrix_product_sub(C%data_z(im), A%data_z(im), B%data_z(im), a_transpose, a_conjugate, b_transpose, b_conjugate)
-	  endif
-	else  ! B is real
-	  if (B%is_sparse) then
-	    call matrix_product_sub(C%data_z(im), A%data_z(im), B%sdata_d(im), a_transpose, a_conjugate, b_transp .or. b_conjg, &
-				    diag_mask, offdiag_mask)
-	  else
-	    if (present(diag_mask) .or. present(offdiag_mask)) &
-	      call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
-	    call matrix_product_sub(C%data_z(im), A%data_z(im), B%data_d(im), a_transpose, a_conjugate, b_transp .or. b_conjg)
-	  endif
-	endif
+        if (B%is_complex) then
+          if (B%is_sparse) then
+            call matrix_product_sub(C%data_z(im), A%data_z(im), B%sdata_z(im), a_transpose, a_conjugate, b_transpose, b_conjugate, &
+                                    diag_mask, offdiag_mask)
+          else
+            if (present(diag_mask) .or. present(offdiag_mask)) &
+              call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
+            call matrix_product_sub(C%data_z(im), A%data_z(im), B%data_z(im), a_transpose, a_conjugate, b_transpose, b_conjugate)
+          endif
+        else  ! B is real
+          if (B%is_sparse) then
+            call matrix_product_sub(C%data_z(im), A%data_z(im), B%sdata_d(im), a_transpose, a_conjugate, b_transp .or. b_conjg, &
+                                    diag_mask, offdiag_mask)
+          else
+            if (present(diag_mask) .or. present(offdiag_mask)) &
+              call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
+            call matrix_product_sub(C%data_z(im), A%data_z(im), B%data_d(im), a_transpose, a_conjugate, b_transp .or. b_conjg)
+          endif
+        endif
       else ! A is real
-	if (B%is_complex) then
-	  if (B%is_sparse) then
-	    call matrix_product_sub(C%data_z(im), A%data_d(im), B%sdata_z(im), a_transp .or. a_conjg, b_transpose, b_conjugate, &
-				    diag_mask, offdiag_mask)
-	  else
-	    if (present(diag_mask) .or. present(offdiag_mask)) &
-	      call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
-	    call matrix_product_sub(C%data_z(im), A%data_d(im), B%data_z(im), a_transp .or. a_conjg, b_transpose, b_conjugate)
-	  endif
-	else
-	  call system_abort ("No TBMatrix_matrix_product_sub for C = R R")
-	endif
+        if (B%is_complex) then
+          if (B%is_sparse) then
+            call matrix_product_sub(C%data_z(im), A%data_d(im), B%sdata_z(im), a_transp .or. a_conjg, b_transpose, b_conjugate, &
+                                    diag_mask, offdiag_mask)
+          else
+            if (present(diag_mask) .or. present(offdiag_mask)) &
+              call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
+            call matrix_product_sub(C%data_z(im), A%data_d(im), B%data_z(im), a_transp .or. a_conjg, b_transpose, b_conjugate)
+          endif
+        else
+          call system_abort ("No TBMatrix_matrix_product_sub for C = R R")
+        endif
       endif
     else ! C is real
       if (A%is_complex) then
-	call system_abort("No TBMatrix_matrix_product for R = C * ?")
+        call system_abort("No TBMatrix_matrix_product for R = C * ?")
       else ! A is real
-	if (B%is_complex) then
-	  call system_abort("No TBMatrix_matrix_product for R = ?* C")
-	else ! B is real
-	  if (B%is_sparse) then
-	    call matrix_product_sub(C%data_d(im), A%data_d(im), B%sdata_d(im), a_transp .or. a_conjg, b_transp .or. b_conjg, &
-				    diag_mask, offdiag_mask)
-	  else
-	    if (present(diag_mask) .or. present(offdiag_mask)) &
-	      call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
-	    call matrix_product_sub(C%data_d(im), A%data_d(im), B%data_d(im), a_transp .or. a_conjg, b_transp .or. b_conjg)
-	  endif
+        if (B%is_complex) then
+          call system_abort("No TBMatrix_matrix_product for R = ?* C")
+        else ! B is real
+          if (B%is_sparse) then
+            call matrix_product_sub(C%data_d(im), A%data_d(im), B%sdata_d(im), a_transp .or. a_conjg, b_transp .or. b_conjg, &
+                                    diag_mask, offdiag_mask)
+          else
+            if (present(diag_mask) .or. present(offdiag_mask)) &
+              call system_abort("TBMatrix_matrix_product_sub can't use masks when B isn't sparse")
+            call matrix_product_sub(C%data_d(im), A%data_d(im), B%data_d(im), a_transp .or. a_conjg, b_transp .or. b_conjg)
+          endif
       endif
       endif
     endif
@@ -1194,9 +1194,9 @@ subroutine TBMatrix_matrix_product_sub_r2(C, A, B, a_transpose, a_conjugate, b_t
       call system_abort ("No TBMatrix_matrix_product for C = ? ?")
     else ! C is real
       if (A%is_complex) then
-	call system_abort ("No TBMatrix_matrix_product for R = C ?")
+        call system_abort ("No TBMatrix_matrix_product for R = C ?")
       else
-	call matrix_product_sub(C%data_d(im), A%data_d(im), B, a_transp .or. a_conjg, b_transpose)
+        call matrix_product_sub(C%data_d(im), A%data_d(im), B, a_transp .or. a_conjg, b_transpose)
       endif
     endif
   end do
@@ -1223,13 +1223,13 @@ subroutine TBMatrix_accum_scaled_elem_product(A, B, s, C)
       call system_abort("No TBMatrix_accum_scaled_elem_product for complex C")
     else
       if (A%is_complex) then
-	if (B%is_complex) then
-	  C%data_d(im)%data = C%data_d(im)%data + real(s * A%data_z(im)%data * B%data_z(im)%data)
-	else
-	  call system_abort("No TBMatrix_accum_scaled_elem_product for real B")
-	endif
+        if (B%is_complex) then
+          C%data_d(im)%data = C%data_d(im)%data + real(s * A%data_z(im)%data * B%data_z(im)%data)
+        else
+          call system_abort("No TBMatrix_accum_scaled_elem_product for real B")
+        endif
       else
-	call system_abort("No TBMatrix_accum_scaled_elem_product for real A")
+        call system_abort("No TBMatrix_accum_scaled_elem_product for real A")
       endif
 
     endif
@@ -1275,13 +1275,13 @@ subroutine TBMatrix_transpose_sub(this, m)
       if (m%is_complex) then
         call transpose_sub(this%data_z(im), m%data_z(im))
       else
-	call system_abort("Can't TBMatrix_transpose_sub from real matrix into complex")
+        call system_abort("Can't TBMatrix_transpose_sub from real matrix into complex")
         ! call transpose_sub(this%data_z(im), m%data_d(im))
       endif
     else
       if (m%is_complex) then
         ! call transpose_sub(this%data_d(im), m%data_z(im))
-	call system_abort("Can't TBMatrix_transpose_sub from complex matrix into real")
+        call system_abort("Can't TBMatrix_transpose_sub from complex matrix into real")
       else
         call transpose_sub(this%data_d(im), m%data_d(im))
       endif

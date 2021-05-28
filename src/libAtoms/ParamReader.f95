@@ -82,7 +82,7 @@ module paramreader_module
      logical, pointer :: has_value
 
      character(len=STRING_LENGTH) :: help_string
-     character(len=STRING_LENGTH) :: altkey 
+     character(len=STRING_LENGTH) :: altkey
   end type ParamEntry
 
   !% Overloaded interface to register a parameter in a Dictionary object.
@@ -126,7 +126,7 @@ module paramreader_module
               help_string=help_string, logical_target=logical_target, &
               has_value_target=has_value_target, altkey=key)
       end if
-      
+
 
     end subroutine param_register_single_logical
 
@@ -139,7 +139,7 @@ module paramreader_module
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
       character(len=*), intent(in), optional :: altkey
-      
+
       call param_register_main(dict, key, value, 1, PARAM_INTEGER, &
            help_string=help_string, int_target=int_target, &
            has_value_target=has_value_target, altkey=altkey)
@@ -160,7 +160,7 @@ module paramreader_module
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
       character(len=*), intent(in), optional :: altkey
-      
+
       call param_register_main(dict, key, value, size(int_target_array), PARAM_INTEGER,&
            help_string=help_string, int_target_array=int_target_array, &
            has_value_target=has_value_target, altkey=altkey)
@@ -169,7 +169,7 @@ module paramreader_module
            help_string=help_string, int_target_array=int_target_array, &
            has_value_target=has_value_target, altkey=key)
       end if
-         
+
     end subroutine param_register_multiple_integer
 
 
@@ -204,7 +204,7 @@ module paramreader_module
       character(len=*), intent(in) :: help_string
       logical, intent(inout), optional, target :: has_value_target
       character(len=*), intent(in), optional :: altkey
-      
+
       call param_register_main(dict, key, value, size(real_target_array), PARAM_REAL, &
            help_string=help_string, real_target_array=real_target_array, &
            has_value_target=has_value_target, altkey=altkey)
@@ -228,8 +228,8 @@ module paramreader_module
       character(len=*), intent(in), optional :: altkey
 
       if (len(char_target) /= STRING_LENGTH) &
-	call system_abort('param_register_single_string called for "'//trim(key)// &
-	 '" has char_target(len='//len(char_target)//'), must be called with char_target(len=STRING_LENGTH)')
+        call system_abort('param_register_single_string called for "'//trim(key)// &
+         '" has char_target(len='//len(char_target)//'), must be called with char_target(len=STRING_LENGTH)')
 
 
       call param_register_main(dict, key, value, 1, PARAM_STRING, &
@@ -247,9 +247,9 @@ module paramreader_module
       type(Dictionary), intent(inout) :: dict
       character(len=*), intent(in) :: key
       character(len=*), intent(in), optional :: altkey
-      
+
       call param_register_main(dict, key, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED", altkey=altkey)
-      if (present(altkey)) then 
+      if (present(altkey)) then
          call param_register_main(dict, altkey, '', 0, PARAM_NO_VALUE, help_string="NOT PARSED", altkey=key)
       end if
     end subroutine param_register_dontread
@@ -293,13 +293,13 @@ module paramreader_module
       else
          entry%altkey = ''
       endif
-      
+
 ! call print("parser register entry " // trim(key) // " value " // trim(value), PRINT_ALWAYS)
 
       if (present(has_value_target)) then
-	entry%has_value => has_value_target
+        entry%has_value => has_value_target
       else
-	nullify(entry%has_value)
+        nullify(entry%has_value)
       endif
 
       ! Check target type and size and set pointer to point to it
@@ -308,15 +308,15 @@ module paramreader_module
          ! Do nothing
 
       case (PARAM_LOGICAL)
-	if (N == 1) then
-	  if (present(logical_target)) then
-	    entry%logical => logical_target
-	  else
-	    call system_abort('Param_Register: no target for single logical parameter')
-	  endif
-	else
-	  call system_abort('Param_Register: no support for logical array parameters')
-	endif
+        if (N == 1) then
+          if (present(logical_target)) then
+            entry%logical => logical_target
+          else
+            call system_abort('Param_Register: no target for single logical parameter')
+          endif
+        else
+          call system_abort('Param_Register: no support for logical array parameters')
+        endif
       case (PARAM_INTEGER)
          if (N == 1) then
             if (present(int_target)) then
@@ -428,10 +428,10 @@ module paramreader_module
 
       ! zero out has_value pointers for entire dictionary
       do i=1, dict%N
-	entry = transfer(dict%entries(i)%d%d,entry)
-	if (associated(entry%has_value)) then
-	  entry%has_value = .false.
-	endif
+        entry = transfer(dict%entries(i)%d%d,entry)
+        if (associated(entry%has_value)) then
+          entry%has_value = .false.
+        endif
       end do
 
       if (present(task)) then
@@ -442,28 +442,28 @@ module paramreader_module
       call print("parser input line: <"//trim(myline)//">", PRINT_VERBOSE)
       ! Set the new entries
       do i=1,num_pairs
-	 field = final_fields(i)
-	 equal_pos = index(trim(field),'=')
-	 if (equal_pos == 0) then
-	  key=field
-	  value=''
-	 else if (equal_pos == 1) then
-	  call system_abort("Malformed field '"//trim(field)//"'")
+         field = final_fields(i)
+         equal_pos = index(trim(field),'=')
+         if (equal_pos == 0) then
+          key=field
+          value=''
+         else if (equal_pos == 1) then
+          call system_abort("Malformed field '"//trim(field)//"'")
          else if (equal_pos == len(trim(field))) then
-	  key = field(1:equal_pos-1)
-	  value = ''
-	 else
-	  key = field(1:equal_pos-1)
-	  value = field(equal_pos+1:len(trim(field)))
-	 endif
-	 call print("param_read_line key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
+          key = field(1:equal_pos-1)
+          value = ''
+         else
+          key = field(1:equal_pos-1)
+          value = field(equal_pos+1:len(trim(field)))
+         endif
+         call print("param_read_line key='"//trim(key)//"' value='"//trim(value)//"'", PRINT_NERD)
          if (len_trim(value) > STRING_LENGTH) then
             call print("param_read_line: value "//trim(value)//" too long")
             status = .false.
             return
          end if
 
-	 if (trim(key) == "--help") then
+         if (trim(key) == "--help") then
             if(present(did_help)) did_help = .true.
             call param_print_help(dict)
             cycle
@@ -471,32 +471,32 @@ module paramreader_module
 
          ! Extract this value
          if (.not. get_value(dict, key, data, i=entry_i)) then
-	    if (.not. my_ignore_unknown) then
-	      call print("param_read_line: unknown key "//trim(key))
-	      status = .false.
-	      return
-	    endif
-	 else
-	   entry = transfer(data%d,entry)
-	   entry%value = value
+            if (.not. my_ignore_unknown) then
+              call print("param_read_line: unknown key "//trim(key))
+              status = .false.
+              return
+            endif
+         else
+           entry = transfer(data%d,entry)
+           entry%value = value
            my_has_value(entry_i) = .true.
-	   if (associated(entry%has_value)) then
-	     entry%has_value = .true.
-	   endif
+           if (associated(entry%has_value)) then
+             entry%has_value = .true.
+           endif
            call print ("parser got: " // trim(paramentry_write_string(key, entry)), PRINT_VERBOSE)
-	   if (equal_pos == 0) then
-	      status = param_parse_value(entry, key)
-	   else
-	      status = param_parse_value(entry)
-	   endif
-	   if (.not. status) then
-	      call Print('Error parsing value '//trim(entry%value))
-	      return
-	   end if
+           if (equal_pos == 0) then
+              status = param_parse_value(entry, key)
+           else
+              status = param_parse_value(entry)
+           endif
+           if (.not. status) then
+              call Print('Error parsing value '//trim(entry%value))
+              return
+           end if
 
-	   ! Put it back in dict
-	   data%d = transfer(entry,data%d)
-	   call set_value(dict,key,data)
+           ! Put it back in dict
+           data%d = transfer(entry,data%d)
+           call set_value(dict,key,data)
          end if
       end do
 
@@ -603,17 +603,17 @@ module paramreader_module
            if (index(trim(this_arg),'=') /= 0) then
              eq_loc = index(trim(this_arg),'=')
              this_len = len_trim(this_arg)
-	     if (scan(this_arg(eq_loc+1:eq_loc+1),"'{"//'"') <= 0) then
-	       my_command_line = trim(my_command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
-	     else
-	       my_command_line = trim(my_command_line)//' '//trim(this_arg)
-	     endif
+             if (scan(this_arg(eq_loc+1:eq_loc+1),"'{"//'"') <= 0) then
+               my_command_line = trim(my_command_line)//' '//this_arg(1:eq_loc)//'"'//this_arg(eq_loc+1:this_len)//'"'
+             else
+               my_command_line = trim(my_command_line)//' '//trim(this_arg)
+             endif
            else
-	     if (scan(this_arg(1:1),"{'"//'"') <= 0) then
-	       my_command_line = trim(my_command_line)//' "'//trim(this_arg)//'"'
-	     else
-	       my_command_line = trim(my_command_line)//' '//trim(this_arg)
-	     endif
+             if (scan(this_arg(1:1),"{'"//'"') <= 0) then
+               my_command_line = trim(my_command_line)//' "'//trim(this_arg)//'"'
+             else
+               my_command_line = trim(my_command_line)//' '//trim(this_arg)
+             endif
            endif
          else
            my_command_line = trim(my_command_line)//' '//trim(this_arg)
@@ -662,7 +662,7 @@ module paramreader_module
 
       ! Read command line args into array args
       do i=1,n_args
-	 call get_cmd_arg(i, args(i))
+         call get_cmd_arg(i, args(i))
       end do
 
       ! Find the key=value pairs, skipping over non-option arguments
@@ -786,59 +786,59 @@ module paramreader_module
               call system_abort('param_print: Key '//string(dict%keys(i))//' missing')
          entry = transfer(data%d,entry)
 
-	 out_line=string(dict%keys(i)//" type=")
+         out_line=string(dict%keys(i)//" type=")
 
-	 param_dim_str = "unknown"
-	 select case(entry%param_type)
-	    case(PARAM_NO_VALUE)
-	       out_line=trim(out_line)//"NO_VALUE"
-	    case(PARAM_REAL)
-	       out_line=trim(out_line)//"REAL"
-	       if (associated(entry%real)) then
-		  out_line=trim(out_line)//" scalar"
-	       elseif (associated(entry%reals)) then
-		  out_line=trim(out_line)//" dim="//size(entry%reals)
-	       else
-		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
-	       endif
-	    case(PARAM_INTEGER)
-	       out_line=trim(out_line)//"INTEGER"
-	       if (associated(entry%integer)) then
-		  out_line=trim(out_line)//" scalar"
-	       elseif (associated(entry%integers)) then
-		  out_line=trim(out_line)//" dim="//size(entry%integers)
-	       else
-		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
-	       endif
-	    case(PARAM_STRING)
-	       out_line=trim(out_line)//"STRING"
-	       if (associated(entry%string)) then
-		  out_line=trim(out_line)//" scalar"
-	       else
-		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
-	       endif
-	    case(PARAM_LOGICAL)
-	       out_line=trim(out_line)//"LOGICAL"
-	       if (associated(entry%logical)) then
-		  out_line=trim(out_line)//" scalar"
-	       else
-		  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
-	       endif
-	    case default
-	       call system_abort("Unknown param_type "//entry%param_type//" for key " //string(dict%keys(i)))
-	 end select
+         param_dim_str = "unknown"
+         select case(entry%param_type)
+            case(PARAM_NO_VALUE)
+               out_line=trim(out_line)//"NO_VALUE"
+            case(PARAM_REAL)
+               out_line=trim(out_line)//"REAL"
+               if (associated(entry%real)) then
+                  out_line=trim(out_line)//" scalar"
+               elseif (associated(entry%reals)) then
+                  out_line=trim(out_line)//" dim="//size(entry%reals)
+               else
+                  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+               endif
+            case(PARAM_INTEGER)
+               out_line=trim(out_line)//"INTEGER"
+               if (associated(entry%integer)) then
+                  out_line=trim(out_line)//" scalar"
+               elseif (associated(entry%integers)) then
+                  out_line=trim(out_line)//" dim="//size(entry%integers)
+               else
+                  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+               endif
+            case(PARAM_STRING)
+               out_line=trim(out_line)//"STRING"
+               if (associated(entry%string)) then
+                  out_line=trim(out_line)//" scalar"
+               else
+                  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+               endif
+            case(PARAM_LOGICAL)
+               out_line=trim(out_line)//"LOGICAL"
+               if (associated(entry%logical)) then
+                  out_line=trim(out_line)//" scalar"
+               else
+                  out_line=trim(out_line)//" ERROR-no-value-pointer-associated"
+               endif
+            case default
+               call system_abort("Unknown param_type "//entry%param_type//" for key " //string(dict%keys(i)))
+         end select
 
          ! Print value in quotes if it contains any spaces
          if (index(trim(entry%value), ' ') /= 0) then
-	    out_line=trim(out_line)//" current_value='"//trim(entry%value)//"'"
+            out_line=trim(out_line)//" current_value='"//trim(entry%value)//"'"
          else
-	    out_line=trim(out_line)//" current_value="//trim(entry%value)
+            out_line=trim(out_line)//" current_value="//trim(entry%value)
          end if
-	 call print(trim(out_line), verbosity=PRINT_ALWAYS, file=out)
+         call print(trim(out_line), verbosity=PRINT_ALWAYS, file=out)
 
-	 call print(linebreak_string(trim(entry%help_string), 80), verbosity=PRINT_ALWAYS, file=out)
+         call print(linebreak_string(trim(entry%help_string), 80), verbosity=PRINT_ALWAYS, file=out)
 
-	 call print("", verbosity=PRINT_ALWAYS, file=out)
+         call print("", verbosity=PRINT_ALWAYS, file=out)
       end do
 
       deallocate(data%d)
@@ -931,13 +931,13 @@ module paramreader_module
       select case(entry%param_type)
       case (PARAM_LOGICAL)
          if (entry%N == 1) then
-	    if (num_fields == 0) then
-	      entry%logical = .true.
-	    else
-	      entry%logical = String_to_Logical(fields(1))
-	    endif
+            if (num_fields == 0) then
+              entry%logical = .true.
+            else
+              entry%logical = String_to_Logical(fields(1))
+            endif
          else
-	    call system_abort("param_parse_value no support for logical array yet")
+            call system_abort("param_parse_value no support for logical array yet")
          end if
 
       case (PARAM_INTEGER)
@@ -959,11 +959,11 @@ module paramreader_module
          end if
 
       case (PARAM_STRING)
-	 if (num_fields == 0 .and. present(key)) then
-	    entry%string = trim(key)
-	 else
-	    entry%string = trim(entry%value)
-	 endif
+         if (num_fields == 0 .and. present(key)) then
+            entry%string = trim(key)
+         else
+            entry%string = trim(entry%value)
+         endif
 
       case default
          write (line, '(a,i0)') 'Param_ParseValue: unknown parameter type ', &
@@ -1006,13 +1006,13 @@ module paramreader_module
          else
             valuemissing = .false.
          endif
-         
+
          ! see if we have an altkey for this key
          if (entry%altkey /= '') then
             altpresent = .true.
             if (.not. get_value(dict, entry%altkey, altdata)) &
                   call system_abort('Param_Check: Key '//entry%altkey//' missing')
-            
+
             altentry = transfer(altdata%d, altentry)
 
             if (trim(altentry%value) == PARAM_MANDATORY) then

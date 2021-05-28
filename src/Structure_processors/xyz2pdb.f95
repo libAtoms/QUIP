@@ -158,8 +158,8 @@ program xyz2pdb
     if (trim(Library) /= '-') then
        inquire(file=trim(Library),exist=ex)
        if (.not.ex) then
-	  call print_usage
-	  call system_abort('Missing Residue_Library '//Library)
+          call print_usage
+          call system_abort('Missing Residue_Library '//Library)
        endif
     endif
 
@@ -196,7 +196,7 @@ program xyz2pdb
     if (trim(Library) == "-") then
        call find_molecule_ids(my_atoms)
        if (.not. assign_pointer(my_atoms, 'mol_id', mol_id)) &
-	 call system_abort("Failed to find mol_id field after find_molecule_ids!")
+         call system_abort("Failed to find mol_id field after find_molecule_ids!")
        call add_property(my_atoms, 'atom_charge', 0.0_dp)
        call add_property(my_atoms, 'atom_res_number', 0, ptr=atom_res_number)
        call add_property(my_atoms, 'atom_type', '          ', ptr=atom_type)
@@ -207,23 +207,23 @@ program xyz2pdb
        atom_type(:,:) = my_atoms%species(:,:)
        atom_type_PDB(:,:) = my_atoms%species(:,:)
        do i=1, my_atoms%N
-	 t_atom_name = adjustl("R"//atom_res_number(i))
-	 do j=1, len_trim(t_atom_name)
-	    atom_res_name(j,i) = t_atom_name(j:j)
-	 end do
-	 t_atom_name = adjustl("M"//mol_id(i))
-	 do j=1, len_trim(t_atom_name)
-	    atom_mol_name(j,i) = t_atom_name(j:j)
-	 end do
+         t_atom_name = adjustl("R"//atom_res_number(i))
+         do j=1, len_trim(t_atom_name)
+            atom_res_name(j,i) = t_atom_name(j:j)
+         end do
+         t_atom_name = adjustl("M"//mol_id(i))
+         do j=1, len_trim(t_atom_name)
+            atom_mol_name(j,i) = t_atom_name(j:j)
+         end do
        end do
     else
        call set_value(my_atoms%params,'Library',trim(Library))
        if (use_avgpos) then
-	  call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	   find_silica_residue=have_silica_potential,pos_field_for_connectivity="avgpos")
+          call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+           find_silica_residue=have_silica_potential,pos_field_for_connectivity="avgpos")
        else !use actual positions
-	  call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
-	   find_silica_residue=have_silica_potential,pos_field_for_connectivity="pos")
+          call create_residue_labels_arb_pos(my_atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers, &
+           find_silica_residue=have_silica_potential,pos_field_for_connectivity="pos")
        endif
     endif
 
@@ -231,38 +231,38 @@ program xyz2pdb
        ! sort by molecule, residue ID
        nullify(sort_index_p)
        if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) then
-	 call add_property(my_atoms, 'sort_index', 0)
-	 if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) &
-	   call system_abort("WARNING: do_cp2k_calc failed to assign pointer or create new field for sort_index, can't sort")
+         call add_property(my_atoms, 'sort_index', 0)
+         if (.not. assign_pointer(my_atoms, 'sort_index', sort_index_p)) &
+           call system_abort("WARNING: do_cp2k_calc failed to assign pointer or create new field for sort_index, can't sort")
        endif
        do at_i=1, my_atoms%N
-	 sort_index_p(at_i) = at_i
+         sort_index_p(at_i) = at_i
        end do
        if (.not.(has_property(my_atoms,'mol_id')) .or. .not. has_property(my_atoms,'atom_res_number')) then
-	 call system_abort("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number")
+         call system_abort("WARNING: can't do sort_by_molecule - need mol_id and atom_res_number")
        else
-	 if (do_sort_3) then
-	   call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
-	 else
-	   call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', error=error)
-	 endif
-	 HANDLE_ERROR(error)
-	 do at_i=1, my_atoms%N
-	   if (sort_index_p(at_i) /= at_i) then
-	     call print("sort() of my_atoms%data by mol_id, atom_res_number reordered some atoms")
-	     exit
-	   endif
-	 end do
+         if (do_sort_3) then
+           call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', 'motif_atom_num', error=error)
+         else
+           call atoms_sort(my_atoms, 'mol_id', 'atom_res_number', error=error)
+         endif
+         HANDLE_ERROR(error)
+         do at_i=1, my_atoms%N
+           if (sort_index_p(at_i) /= at_i) then
+             call print("sort() of my_atoms%data by mol_id, atom_res_number reordered some atoms")
+             exit
+           endif
+         end do
        end if
        call calc_connect(my_atoms)
 
        ! fix intrares_impropers to correspond to sorted atom numbers
        allocate(rev_sort_index(my_atoms%N))
        do at_i=1, my_atoms%N
-	  rev_sort_index(sort_index_p(at_i)) = at_i
+          rev_sort_index(sort_index_p(at_i)) = at_i
        end do
        do iri_i=1, intrares_impropers%N
-	  intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
+          intrares_impropers%int(1:4,iri_i) = rev_sort_index(intrares_impropers%int(1:4,iri_i))
        end do
        deallocate(rev_sort_index)
     end if ! do_sort

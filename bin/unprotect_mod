@@ -61,19 +61,19 @@ for file in $*; do
       cp $mod $mod.txt
       cp $mod.save $mod.save.txt
       if [[ ! -z $OD_SKIP ]] ; then
-	 od -t x -j $OD_SKIP < $mod > $mod.txt
-	 od -t x -j $OD_SKIP < $mod.save > $mod.save.txt
+         od -t x -j $OD_SKIP < $mod > $mod.txt
+         od -t x -j $OD_SKIP < $mod.save > $mod.save.txt
       fi
       if [[ ! -z $RE_SKIP ]] ; then
-	 egrep -v "$RE_SKIP" < $mod > $mod.txt
-	 egrep -v "$RE_SKIP" < $mod.save > $mod.save.txt
+         egrep -v "$RE_SKIP" < $mod > $mod.txt
+         egrep -v "$RE_SKIP" < $mod.save > $mod.save.txt
       fi
       diff -q $mod.txt $mod.save.txt > /dev/null
       out=$?
       if [[ $out == 0 ]]; then
-	mv $mod.save $mod
+        mv $mod.save $mod
       else
-	rm -f $mod.save
+        rm -f $mod.save
       fi
       # rm -f $mod.txt $mod.save.txt
     fi

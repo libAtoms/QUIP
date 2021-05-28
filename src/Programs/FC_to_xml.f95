@@ -90,16 +90,16 @@ implicit none
     ! print '("atom ", I6)', i
     do j=bond_list_i(i), bond_list_i(i+1)-1
       ! print '("bond ",I3," Zs ",2I3," phis ",3F25.15," r0 ",F25.15)', j-bond_list_i(i)+1, &
-	! Z(i), Z(bond_list(j)), phi2(j), phi3(j), phi4(j), r0(j)
+        ! Z(i), Z(bond_list(j)), phi2(j), phi3(j), phi4(j), r0(j)
       Zi = Z(i)
       Zj = Z(bond_list(j))
       if (minval(abs(r0_table(Zi,Zj,:)-r0(j))) > 1.0e-4_dp) then
-	fc_i_a = minloc(r0_table(Zi,Zj,:))
-	fc_i = fc_i_a(1)
-	phi2_table(Zi,Zj,fc_i) = phi2(j)
-	phi3_table(Zi,Zj,fc_i) = phi3(j)
-	phi4_table(Zi,Zj,fc_i) = phi4(j)
-	r0_table(Zi,Zj,fc_i) = r0(j)
+        fc_i_a = minloc(r0_table(Zi,Zj,:))
+        fc_i = fc_i_a(1)
+        phi2_table(Zi,Zj,fc_i) = phi2(j)
+        phi3_table(Zi,Zj,fc_i) = phi3(j)
+        phi4_table(Zi,Zj,fc_i) = phi4(j)
+        r0_table(Zi,Zj,fc_i) = r0(j)
       endif
     end do
   end do
@@ -110,10 +110,10 @@ implicit none
   do Zi=1, size(phi2_table,1)
     do Zj=1, size(phi2_table,2)
       if (maxval(r0_table(Zi,Zj,:)) > 0.0) then
-	do fc_i=1, count(r0_table(Zi,Zj,:) > 0.0)
-	  call print('  <FC atnum_i="'//Zi//'" atnum_j="'//Zj//'" fc_i="'//fc_i//'" r0="'//r0_table(Zi,Zj,fc_i)//'" phi2="'//phi2_table(Zi,Zj,fc_i)//&
-	    '" phi3="'//phi3_table(Zi,Zj,fc_i)//'" phi4="'//phi4_table(Zi,Zj,fc_i)//'" />')
-	end do
+        do fc_i=1, count(r0_table(Zi,Zj,:) > 0.0)
+          call print('  <FC atnum_i="'//Zi//'" atnum_j="'//Zj//'" fc_i="'//fc_i//'" r0="'//r0_table(Zi,Zj,fc_i)//'" phi2="'//phi2_table(Zi,Zj,fc_i)//&
+            '" phi3="'//phi3_table(Zi,Zj,fc_i)//'" phi4="'//phi4_table(Zi,Zj,fc_i)//'" />')
+        end do
       endif
     end do
   end do

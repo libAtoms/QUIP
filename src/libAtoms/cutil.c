@@ -28,7 +28,7 @@
 /* H0 X                                                                            */
 /* H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 // cutil.c. : C Utility Functions to do things that fortran 95 can't do
-// 
+//
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,26 +55,26 @@
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 //X
-//X  Constraint Pointers: 
+//X  Constraint Pointers:
 //X
-//X  Contains a struct used for accessing constraint subroutines 
+//X  Contains a struct used for accessing constraint subroutines
 //X  via pointers
 //X
-//X  The definition of the constraint subroutine in the struct   
-//X  matches the fortran version:					     
-//X  								     
-//X   subroutine CONSTRAINT(pos, velo, t, data, C, dC_dr, dC_dt, target_v)	     
-//X     real(dp), dimension(:),         intent(in)  :: pos, velo, data 
+//X  The definition of the constraint subroutine in the struct
+//X  matches the fortran version:
+//X
+//X   subroutine CONSTRAINT(pos, velo, t, data, C, dC_dr, dC_dt, target_v)
+//X     real(dp), dimension(:),         intent(in)  :: pos, velo, data
 //X     real(dp),                       intent(in)  :: t
-//X     real(dp),                       intent(out) :: C		     
-//X     real(dp), dimension(size(pos)), intent(out) :: dC_dr	     
-//X     real(dp),                       intent(out) :: dC_dt           
+//X     real(dp),                       intent(out) :: C
+//X     real(dp), dimension(size(pos)), intent(out) :: dC_dr
+//X     real(dp),                       intent(out) :: dC_dt
 //X     real(dp),                       intent(out) :: target_v
 //X     ...
-//X   end subroutine CONSTRAINT 
+//X   end subroutine CONSTRAINT
 //X
 //X  Remember fortran passes everything by reference, hence all the asterisks
-//X  
+//X
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
@@ -89,8 +89,8 @@ void register_constraint_sub_(void (*sub)(double*,double*,double*,double*,double
   constraintsub_table[nconstraintsub++].sub = sub;
 }
 
-void call_constraint_sub_(int* i, double* pos, double* velo, double* mass, double *lattice, double* t, 
-			  double* data, double* C, double* dC_dr, double* dC_dt, double* dcoll_dr, double* Z_coll, double* target_v){
+void call_constraint_sub_(int* i, double* pos, double* velo, double* mass, double *lattice, double* t,
+                          double* data, double* C, double* dC_dr, double* dC_dt, double* dcoll_dr, double* Z_coll, double* target_v){
   constraintsub_table[*i].sub(pos, velo, mass, lattice, t, data, C, dC_dr, dC_dt, dcoll_dr, Z_coll, target_v);
 }
 
@@ -280,7 +280,7 @@ void c_mem_info_(double *total_mem, double *free_mem)
 #ifndef DARWIN
    struct sysinfo s_info;
 #else
-   int mib[6]; 
+   int mib[6];
    int pagesize;
    size_t length = sizeof (pagesize);
    mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
@@ -382,7 +382,7 @@ void fchdir_(char *path) {
    return;
 }
 
-// FORTRAN callable function for length of dirname 
+// FORTRAN callable function for length of dirname
 //
 int fdirname_size_(char *path) {
 
@@ -397,7 +397,7 @@ int fdirname_size_(char *path) {
    return dirname_size;
 }
 
-// FORTRAN callable subroutine to determine dirname, dirname_return must be the correct length, 
+// FORTRAN callable subroutine to determine dirname, dirname_return must be the correct length,
 // specified by dirname_size, which can be obtained in advance by calling fdirname_size_
 //
 void fdirname_(char* path, char* dirname_return, int* dirname_size) {
@@ -420,7 +420,7 @@ void fdirname_(char* path, char* dirname_return, int* dirname_size) {
    return;
 }
 
-// FORTRAN callable function for length of basename 
+// FORTRAN callable function for length of basename
 //
 int fbasename_size_(char *path) {
 
@@ -435,7 +435,7 @@ int fbasename_size_(char *path) {
    return basename_size;
 }
 
-// FORTRAN callable subroutine to determine basename, basename_return must be the correct length, 
+// FORTRAN callable subroutine to determine basename, basename_return must be the correct length,
 // specified by basename_size, which can be obtained in advance by calling fbasename_size_
 //
 void fbasename_(char* path, char* basename_return, int* basename_size) {

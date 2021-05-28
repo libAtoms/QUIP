@@ -51,11 +51,11 @@ while [[ $# > 0 ]]; do
       lc_set=1
     else
       if [[ $1 == "-suffix" ]]; then
-	shift
-	suffix=$1
+        shift
+        suffix=$1
       else
-	echo "$usage" 1>&2
-	exit 1
+        echo "$usage" 1>&2
+        exit 1
       fi
     fi
   fi

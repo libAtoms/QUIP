@@ -10,7 +10,7 @@ if ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null ; then
     echo Server is currently down, trying to restart it...
     cs_start
     while ! $CS_RSH $CS_HOST $CS_HOME/bin/status > /dev/null; do
-	sleep 10
+        sleep 10
     done
 fi
 

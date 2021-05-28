@@ -37,30 +37,30 @@ subroutine mean_var_decorrelated_err_r1(A, m, v, decorrelated_err, decorrelation
    if (present(decorrelation_t) .or. present(decorrelated_err)) then
       bin_size = 1
       do while (bin_size <= N)
-	 n_bins = N/bin_size
-	 allocate(binned_means(n_bins))
-	 do bin_i=1, n_bins
-	    binned_means(bin_i) = mean(A((bin_i-1)*bin_size+1:(bin_i-1)*bin_size+bin_size))
-	 end do
-	 binned_means_var = variance(binned_means, mean(binned_means))
-	 deallocate(binned_means)
-	 A_decorrelation_t = binned_means_var*real(bin_size,dp)/A_var
-	 call print("bin_size " // bin_size // " decorrelation_t " // A_decorrelation_t, PRINT_VERBOSE)
-	 if (A_decorrelation_t < p_d_t .and. p_d_t > pp_d_t) then
-	    if (.not. found_max) then
-	       if (present(decorrelation_t)) decorrelation_t = A_decorrelation_t
-	       if (present(decorrelated_err)) decorrelated_err = sqrt(binned_means_var/real(n_bins,dp))
-	       found_max = .true.
-	    endif
-	    if (current_verbosity() <= PRINT_NORMAL) exit
-	 endif
-	 pp_d_t = p_d_t
-	 p_d_t = A_decorrelation_t
-	 if (bin_size == 1) then
-	    bin_size = bin_size * 2
-	 else
-	    bin_size = bin_size * 1.5
-	 endif
+         n_bins = N/bin_size
+         allocate(binned_means(n_bins))
+         do bin_i=1, n_bins
+            binned_means(bin_i) = mean(A((bin_i-1)*bin_size+1:(bin_i-1)*bin_size+bin_size))
+         end do
+         binned_means_var = variance(binned_means, mean(binned_means))
+         deallocate(binned_means)
+         A_decorrelation_t = binned_means_var*real(bin_size,dp)/A_var
+         call print("bin_size " // bin_size // " decorrelation_t " // A_decorrelation_t, PRINT_VERBOSE)
+         if (A_decorrelation_t < p_d_t .and. p_d_t > pp_d_t) then
+            if (.not. found_max) then
+               if (present(decorrelation_t)) decorrelation_t = A_decorrelation_t
+               if (present(decorrelated_err)) decorrelated_err = sqrt(binned_means_var/real(n_bins,dp))
+               found_max = .true.
+            endif
+            if (current_verbosity() <= PRINT_NORMAL) exit
+         endif
+         pp_d_t = p_d_t
+         p_d_t = A_decorrelation_t
+         if (bin_size == 1) then
+            bin_size = bin_size * 2
+         else
+            bin_size = bin_size * 1.5
+         endif
       end do
    end if
 

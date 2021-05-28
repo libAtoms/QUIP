@@ -29,15 +29,15 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_LinearSOAP module  
+!X IPModel_LinearSOAP module
 !X
 !% Module for a Linear SOAP potential.
-!% \begin{equation} 
+!% \begin{equation}
 !%   \nonumber
 !%     E = \sum_i \beta \cdot p_{ss'nn'l,i}
-!% \end{equation} 
+!% \end{equation}
 !% where $p_{ss'nn'l,i}$ is the SOAP sphericial power spectrum of atom i, and
-!% $\beta$ is a vector of coefficients. 
+!% $\beta$ is a vector of coefficients.
 !%
 !% The IPModel_LinearSOAP object contains all the parameters read from a
 !% 'LinearSOAP_params' XML stanza.
@@ -57,30 +57,30 @@ use atoms_types_module
 use atoms_module
 #ifdef HAVE_GAP
 use descriptors_module
-#endif 
+#endif
 use mpi_context_module
 use QUIP_Common_module
 use extendable_str_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_LinearSOAP
 type IPModel_LinearSOAP
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
+  integer :: n_types = 0         !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp     !% Cutoff for computing connection.
   real(dp) :: atom_sigma = 0.0_dp !% atom_sigma to be passed to SOAP
   integer  :: l_max = 0
   integer  :: n_max = 0
-  integer  :: pissnl_dimension !% actual dimension of fit. 
+  integer  :: pissnl_dimension !% actual dimension of fit.
   real(dp), allocatable :: e0(:)     !% energy shift per atom
   real(dp), allocatable :: beta(:,:) !% pissnl coefficients. size is the maximum of the pissnl_dimensions over all species
-  
+
   character(len=STRING_LENGTH) label
 
 end type IPModel_LinearSOAP
@@ -148,7 +148,7 @@ subroutine IPModel_LinearSOAP_Finalise(this)
 end subroutine IPModel_LinearSOAP_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -156,8 +156,8 @@ end subroutine IPModel_LinearSOAP_Finalise
 subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_LinearSOAP), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -182,9 +182,9 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   type(descriptor_data) :: my_descriptor_data
   type(extendable_str) :: Zstring
   type(extendable_str) :: my_args_str
-  
 
-  
+
+
   INIT_ERROR(error)
 
   if (present(e)) e = 0.0_dp
@@ -192,7 +192,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
      call check_size('Local_E',local_e,(/at%N/),'IPModel_LinearSOAP_Calc', error)
      local_e = 0.0_dp
   endif
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_LinearSOAP_Calc', error)
      f = 0.0_dp
      RAISE_ERROR("IPModel_LinearSOAP_Calc: force calculation requested but not supported yet.", error)
@@ -215,7 +215,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
   has_atom_mask_name = .false.
   atom_mask_name = ""
 
-  
+
   if (present(args_str)) then
     call initialise(params)
     call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
@@ -226,7 +226,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
        RAISE_ERROR("IPModel_LinearSOAP_Calc failed to parse args_str='"//trim(args_str)//"'",error)
     endif
     call finalise(params)
-    
+
     if(has_atom_mask_name) then
        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
         call system_abort("IPModel_GAP_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
@@ -247,7 +247,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
 
   allocate(my_descriptor(this%n_types))
 
-  
+
   ! compute descriptors for all atoms in the cell
 
   call initialise(Zstring)
@@ -275,10 +275,10 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
      endif
   endif
 
-  
+
   do atomtype=1,this%n_types
      call initialise(my_descriptor(atomtype),"soap cutoff="//this%cutoff//" n_max="//this%n_max//" l_max="//this%l_max//" atom_sigma="//this%atom_sigma//" n_species="//this%n_types//" Z="//this%atomic_num(atomtype)//Zstring//" "//string(my_args_str))
-   
+
      if(mpi%active) call descriptor_MPI_setup(my_descriptor(atomtype),at,mpi,mpi_local_mask,error)
 
      d = descriptor_dimensions(my_descriptor(atomtype))
@@ -294,7 +294,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
 
         !beta . pissnl
         e_i = sum(this%beta(:,atomtype) * my_descriptor_data%x(i)%data(:))
-        
+
         local_e_in(my_descriptor_data%x(i)%ci(1)) = e_i
      end do
 
@@ -303,7 +303,7 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
 
   !
   ! collect data and cleanup
-  
+
   if(present(e)) e = sum(local_e_in)
   if(present(local_e)) local_e = local_e_in
 
@@ -314,22 +314,22 @@ subroutine IPModel_LinearSOAP_Calc(this, at, e, local_e, f, virial, local_virial
         if (present(virial)) call sum_in_place(mpi, virial)
         if (present(f)) call sum_in_place(mpi, f)
 
-        call remove_property(at,'mpi_local_mask', error=error) 
+        call remove_property(at,'mpi_local_mask', error=error)
         deallocate(mpi_local_mask)
      end if
   endif
 
   ! cleanup
   if(allocated(local_e_in)) deallocate(local_e_in)
-  
-#endif 
-  
+
+#endif
+
 end subroutine IPModel_LinearSOAP_Calc
 
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
@@ -345,9 +345,9 @@ end subroutine IPModel_LinearSOAP_Calc
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
 #ifdef HAVE_GAP
@@ -369,10 +369,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -380,14 +380,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in LinearSOAP_params")
+        call system_abort("Can't find n_types in LinearSOAP_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -463,19 +463,19 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
      if (i > parse_ip%pissnl_dimension) call system_abort("IPModel_LinearSOAP_read_params_xml: i > pissnl_dimension in <beta> stanza")
      if (atomtype > parse_ip%n_types) call system_abort("IPModel_LinearSOAP_read_params_xml: atomtype > n_types in <beta> stanza")
-     
+
      parse_ip%beta(i,atomtype) = v
 
-     
+
   endif
 #endif
 
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'LinearSOAP_params') then
@@ -511,7 +511,7 @@ end subroutine IPModel_LinearSOAP_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of LinearSOAP parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -521,7 +521,7 @@ subroutine IPModel_LinearSOAP_Print (this, file)
   type(Inoutput), intent(inout),optional :: file
 
   integer :: ti
-  
+
   call Print("IPModel_LinearSOAP ", file=file)
   call Print("IPModel_LinearSOAP : n_types = " // this%n_types // " cutoff = " // this%cutoff // " l_max = " // this%l_max // " n_max = " // this%n_max // " atom_sigma = " // this%atom_sigma // " pissnl_dimension = " // this%pissnl_dimension, file=file)
 

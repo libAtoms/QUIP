@@ -29,14 +29,14 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_LJ module  
+!X IPModel_LJ module
 !X
 !% Module for Lennard-Jones pair potential.
-!% \begin{equation} 
+!% \begin{equation}
 !%   \nonumber
-!%     V(r) = 4 \epsilon \left[  \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^6 \right] 
-!% \end{equation} 
-!% For parameters see Ashcroft and Mermin, {\it Solid State Physics}. 
+!%     V(r) = 4 \epsilon \left[  \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^6 \right]
+!% \end{equation}
+!% For parameters see Ashcroft and Mermin, {\it Solid State Physics}.
 !%
 !% NB: The energy calculation in the code is
 !% \begin{equation*}
@@ -74,14 +74,14 @@ use QUIP_Common_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_LJ
 type IPModel_LJ
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
+  integer :: n_types = 0         !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
@@ -211,7 +211,7 @@ subroutine IPModel_LJ_Finalise(this)
 end subroutine IPModel_LJ_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -219,8 +219,8 @@ end subroutine IPModel_LJ_Finalise
 subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_LJ), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -255,7 +255,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      call check_size('Local_E',local_e,(/at%N/),'IPModel_LJ_Calc', error)
      local_e = 0.0_dp
   endif
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%Nbuffer/),'IPModel_LJ_Calc', error)
      f = 0.0_dp
   end if
@@ -276,18 +276,18 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     if (len_trim(args_str) > 0) then
       n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
       if (n_extra_calcs > 0) then
-	do i_calc=1, n_extra_calcs
-	  select case(trim(extra_calcs_list(i_calc)))
-	    case("flux")
-	      if (.not. assign_pointer(at, "velo", velo)) then
-		RAISE_ERROR("IPModel_LJ_Calc Flux calculation requires velo field", error)
+        do i_calc=1, n_extra_calcs
+          select case(trim(extra_calcs_list(i_calc)))
+            case("flux")
+              if (.not. assign_pointer(at, "velo", velo)) then
+                RAISE_ERROR("IPModel_LJ_Calc Flux calculation requires velo field", error)
               endif
-	      do_flux = .true.
-	      flux = 0.0_dp
-	    case default
-	      RAISE_ERROR("Unsupported extra_calc '"//trim(extra_calcs_list(i_calc))//"'", error)
-	  end select
-	end do
+              do_flux = .true.
+              flux = 0.0_dp
+            case default
+              RAISE_ERROR("Unsupported extra_calc '"//trim(extra_calcs_list(i_calc))//"'", error)
+          end select
+        end do
       endif ! n_extra_calcs
     endif ! len_trim(args_str)
     call initialise(params)
@@ -316,7 +316,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -344,23 +344,23 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if ((i < j)) cycle
 
       if (this%only_inter_resid) then
-	 if (resid(i) == resid(j)) cycle
+         if (resid(i) == resid(j)) cycle
       end if
 
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       if (present(e) .or. present(local_e)) then
-	de = IPModel_LJ_pairenergy(this, ti, tj, dr_mag)
+        de = IPModel_LJ_pairenergy(this, ti, tj, dr_mag)
 
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + 0.5_dp*de
+        if (present(local_e)) then
+          local_e(i) = local_e(i) + 0.5_dp*de
           !if(i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
           if(i/=j) local_e(j) = local_e(j) + 0.5_dp*de
-	endif
-	if (present(e)) then
-	  if (associated(w_e)) then
-	    de = de*0.5_dp*(w_e(i)+w_e(j))
-	  endif
+        endif
+        if (present(e)) then
+          if (associated(w_e)) then
+            de = de*0.5_dp*(w_e(i)+w_e(j))
+          endif
           !if(i_is_min_image) then
           !   e = e + de
           !else
@@ -370,24 +370,24 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
              e = e + de
           endif
           !endif
-	endif
+        endif
       endif
       if (present(f) .or. present(virial) .or. do_flux) then
-	de_dr = IPModel_LJ_pairenergy_deriv(this, ti, tj, dr_mag)
-	if (associated(w_e)) then
-	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
-	endif
-	if (present(f)) then
-	  f(:,i) = f(:,i) + de_dr*dr
-	  !if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
-	  if(i/=j) f(:,j) = f(:,j) - de_dr*dr
-	endif
-	if (do_flux) then
-	  ! -0.5 (v_i + v_j) . F_ij * dr_ij
-	  flux = flux - 0.5_dp*sum((velo(:,i)+velo(:,j))*(de_dr*dr))*(dr*dr_mag)
-	endif
-	if (present(virial)) then
-	  !if(i_is_min_image) then
+        de_dr = IPModel_LJ_pairenergy_deriv(this, ti, tj, dr_mag)
+        if (associated(w_e)) then
+          de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
+        endif
+        if (present(f)) then
+          f(:,i) = f(:,i) + de_dr*dr
+          !if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
+          if(i/=j) f(:,j) = f(:,j) - de_dr*dr
+        endif
+        if (do_flux) then
+          ! -0.5 (v_i + v_j) . F_ij * dr_ij
+          flux = flux - 0.5_dp*sum((velo(:,i)+velo(:,j))*(de_dr*dr))*(dr*dr_mag)
+        endif
+        if (present(virial)) then
+          !if(i_is_min_image) then
           !   virial = virial - de_dr*(dr .outer. dr)*dr_mag
           !else
           if(i==j) then
@@ -396,7 +396,7 @@ subroutine IPModel_LJ_Calc(this, at, e, local_e, f, virial, local_virial, args_s
              virial = virial - de_dr*(dr .outer. dr)*dr_mag
           endif
           !endif
-	endif
+        endif
       endif
     end do
   end do
@@ -478,11 +478,11 @@ function IPModel_LJ_pairenergy_deriv(this, ti, tj, r)
                                  +IPModel_LJ_pairenergy(this, ti, tj, r)  * dpoly_switch(r,this%cutoff_a(ti,tj),this%smooth_cutoff_width(ti,tj))
 
   end if
-  
+
 end function IPModel_LJ_pairenergy_deriv
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
@@ -490,19 +490,19 @@ end function IPModel_LJ_pairenergy_deriv
 !%> <LJ_params n_types="2" label="default">
 !%> <per_type_data type="1" atomic_num="29" />
 !%> <per_type_data type="2" atomic_num="79" />
-!%> <per_pair_data type1="1" type2="1" sigma="4.0" eps6="1.0" 
+!%> <per_pair_data type1="1" type2="1" sigma="4.0" eps6="1.0"
 !%>       eps12="1.0" cutoff="6.0" energy_shift="T" linear_force_shift="F" />
-!%> <per_pair_data type1="2" type2="2" sigma="5.0" eps6="2.0" 
+!%> <per_pair_data type1="2" type2="2" sigma="5.0" eps6="2.0"
 !%>       eps12="2.0" cutoff="7.5" energy_shift="T" linear_force_shift="F" />
-!%> <per_pair_data type1="1" type2="2" sigma="4.5" eps6="1.5" 
+!%> <per_pair_data type1="1" type2="2" sigma="4.5" eps6="1.5"
 !%>       eps12="1.5" cutoff="6.75" energy_shift="T" linear_force_shift="F" />
 !%> </LJ_params>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -523,10 +523,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -534,21 +534,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in LJ_params")
+        call system_abort("Can't find n_types in LJ_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'only_inter_resid', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%only_inter_resid
+        read (value, *) parse_ip%only_inter_resid
       else
-	parse_ip%only_inter_resid = .false.
+        parse_ip%only_inter_resid = .false.
       endif
 
       call QUIP_FoX_get_value(attributes, 'tail_corr_factor', value, status)
@@ -595,7 +595,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
     parse_ip%energy_shift = 0.0_dp
@@ -628,12 +628,12 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "cutoff", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find cutoff")
     read (value, *) parse_ip%cutoff_a(ti,tj)
-    
+
     call QUIP_FoX_get_value(attributes, "energy_shift", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find energy_shift")
     read (value, *) energy_shift
     if (energy_shift) parse_ip%energy_shift(ti,tj) = IPModel_LJ_pairenergy(parse_ip, ti, tj, parse_ip%cutoff_a(ti,tj))
-    
+
     call QUIP_FoX_get_value(attributes, "linear_force_shift", value, status)
     if (status /= 0) call system_abort ("IPModel_LJ_read_params_xml cannot find linear_force_shift")
     read (value, *) linear_force_shift
@@ -657,9 +657,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'LJ_params') then
@@ -695,7 +695,7 @@ end subroutine IPModel_LJ_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of LJ parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -715,8 +715,8 @@ subroutine IPModel_LJ_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_LJ : interaction " // ti // " " // tj // " sigma " // this%sigma(ti,tj) // " eps6,12 " // &
-	this%eps6(ti,tj) // " " // this%eps12(ti,tj) // " cutoff_a " // this%cutoff_a(ti,tj) // " energy_shift " // &
-	this%energy_shift(ti,tj) // " linear_force_shift " // this%linear_force_shift(ti,tj) // &
+        this%eps6(ti,tj) // " " // this%eps12(ti,tj) // " cutoff_a " // this%cutoff_a(ti,tj) // " energy_shift " // &
+        this%energy_shift(ti,tj) // " linear_force_shift " // this%linear_force_shift(ti,tj) // &
         " smooth_cutoff_width " // this%smooth_cutoff_width(ti,tj) , file=file)
     end do
     call verbosity_pop()

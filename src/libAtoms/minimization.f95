@@ -30,8 +30,8 @@
 
 !X
 !X  Minimization module
-!X  
-!%  This module contains subroutines to perform conjugate gradient and 
+!X
+!%  This module contains subroutines to perform conjugate gradient and
 !%  damped MD minimisation of an objective function.
 !%  The conjugate gradient minimiser can use various different line minimisation routines.
 !X
@@ -66,8 +66,8 @@ module minimization_module
     logical :: diag = .FALSE.
     logical :: dense = .FALSE.
     integer, allocatable ::   preconrowlengths(:)
-    integer, allocatable ::  preconindices(:,:) 
-    real(dp), allocatable ::  preconcoeffs(:,:,:) 
+    integer, allocatable ::  preconindices(:,:)
+    real(dp), allocatable ::  preconcoeffs(:,:,:)
     character(10) :: precon_id
     integer :: nneigh,mat_mult_max_iter,max_sub
     real(dp) :: energy_scale,length_scale,cutoff,res2
@@ -80,11 +80,11 @@ module minimization_module
   interface minim
      module procedure minim
   end interface
-  
+
   interface preconminim
      module procedure preconminim
   end interface
-  
+
   interface precondimer
      module procedure precondimer
   end interface
@@ -106,7 +106,7 @@ module minimization_module
   integer::MP,LP
   real(dp)::GTOL,STPMIN,STPMAX
   common /lb3/MP,LP,GTOL,STPMIN,STPMAX
- 
+
 CONTAINS
 
 
@@ -126,11 +126,11 @@ CONTAINS
     real(dp) :: xdir(:)!% Direction of gradient at 'x0'
     real(dp) :: y(:)   !% Finishing position returned in 'y' after 'linmin'
     real(dp)::epsilon  !% Initial step size
-    INTERFACE 
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     END INTERFACE
@@ -166,7 +166,7 @@ CONTAINS
     b=2.0_dp*epsilon
 
 
-    ! lets figure out if we can go downhill at all 
+    ! lets figure out if we can go downhill at all
 
     it = 2
     do while( (Eb.GT.Ea) .AND. (.NOT.(Eb.FEQ.Ea)))
@@ -241,7 +241,7 @@ CONTAINS
 
 
 
-    !let's bracket the minimum 
+    !let's bracket the minimum
 
     do while(Eb.GT.Ec)
 
@@ -252,7 +252,7 @@ CONTAINS
 
 
 
-       ! compute u by quadratic fit to a, b, c 
+       ! compute u by quadratic fit to a, b, c
 
 
        !inverted ?????????????????????
@@ -268,7 +268,7 @@ CONTAINS
        if((u-b)*(c-u).GT. 0) then ! b < u < c
 
           write(line,*)"b < u < c" ; call print(line,PRINT_VERBOSE)
-          
+
           tmpu = x0 + u*xdir
 #ifndef _OPENMP
           call verbosity_push_decrement()
@@ -277,16 +277,16 @@ CONTAINS
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
-	  call print("linmin got one Eu " // Eu // " " // u, PRINT_NERD)
+          call print("linmin got one Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
-          if(Eu .LT. Ec) then ! Eb > Eu < Ec 
+          if(Eu .LT. Ec) then ! Eb > Eu < Ec
              a = b
              b = u
              Ea = Eb
              Eb = Eu
              exit !break?
-          else if(Eu .GT. Eb) then  ! Ea > Eb < Eu 
+          else if(Eu .GT. Eb) then  ! Ea > Eb < Eu
              c = u
              Ec = Eu
              exit
@@ -303,7 +303,7 @@ CONTAINS
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
-	  call print("linmin got second Eu " // Eu // " " // u, PRINT_NERD)
+          call print("linmin got second Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
        else if((u-c)*(ulim-u) .GT. 0) then ! c < u < ulim
@@ -317,7 +317,7 @@ CONTAINS
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
-	  call print("linmin got one(2) Eu " // Eu // " " // u, PRINT_NERD)
+          call print("linmin got one(2) Eu " // Eu // " " // u, PRINT_NERD)
           it = it + 1
 
           if(Eu .LT. Ec) then
@@ -334,7 +334,7 @@ CONTAINS
 #ifndef _OPENMP
              call verbosity_pop()
 #endif
-	     call print("linmin got second(2) Eu " // Eu // " " // u, PRINT_NERD)
+             call print("linmin got second(2) Eu " // Eu // " " // u, PRINT_NERD)
              it = it + 1
           end if
 
@@ -350,7 +350,7 @@ CONTAINS
           call verbosity_pop()
 #endif
           it = it + 1
-	  call print("linmin got one(3) Eu " // Eu // " " // u, PRINT_NERD)
+          call print("linmin got one(3) Eu " // Eu // " " // u, PRINT_NERD)
        end if
 
        write(line,*) "  "; call print(line,PRINT_VERBOSE)
@@ -371,13 +371,13 @@ CONTAINS
 #ifndef _OPENMP
              call verbosity_pop()
 #endif
-	     call print("linmin got new Eb " // Eb // " " // b, PRINT_NERD)
+             call print("linmin got new Eb " // Eb // " " // b, PRINT_NERD)
              it = it + 1
              y = tmpb
              write(line,*) " bracket: step too big", b, Eb
              call print(line, PRINT_VERBOSE)
              write(line,'("I= ",I4," C= ",F16.12," xdir(i)= ",F16.12," DXLIM =",F16.12)')&
-                  i, c, xdir(i), DXLIM 
+                  i, c, xdir(i), DXLIM
              call print(line, PRINT_VERBOSE)
 
              epsilon = b
@@ -389,7 +389,7 @@ CONTAINS
 
 
        a = b
-       b = c 
+       b = c
        c = u
        Ea = Eb
        Eb = Ec
@@ -398,14 +398,14 @@ CONTAINS
     end do
 
     epsilon = b
-    fallback = b 
+    fallback = b
 
     bracket_it = it
     call print("  Linmin: bracket OK in "//bracket_it//" steps", PRINT_VERBOSE)
 
 
 
-    ! ahhh.... now we have a minimum between a and c,  Ea > Eb < Ec 
+    ! ahhh.... now we have a minimum between a and c,  Ea > Eb < Ec
 
     write(line,*) " "; call print(line,PRINT_VERBOSE)
     write(line,*) a,Ea; call print(line,PRINT_VERBOSE)
@@ -416,10 +416,10 @@ CONTAINS
 
 
     !********************************************************************
-    !   * primitive linmin 
-    !   * do a quadratic fit to a, b, c 
+    !   * primitive linmin
+    !   * do a quadratic fit to a, b, c
     !   *
-    !  
+    !
     !  r = (b-a)*(Eb-Ec);
     !  q = (b-c)*(Eb-Ea);
     !  u = b-((b-c)*q-(b-a)*r)/(2*Mmax(fabs(q-r), 1e-20)*sign(q-r));
@@ -432,7 +432,7 @@ CONTAINS
     !    y = x0 + u*xdir;
     !    Eu = (*func)(y);
     !  }
-    !  
+    !
     !  if(current_verbosity() > PRINT_SILENT)
     !    logger("      simple quadratic fit: %25.16e%25.16e\n\n", u, Eu);
     !
@@ -471,13 +471,13 @@ CONTAINS
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
-	  call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
+          call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
 
           if(sizeflag.gt.0) call print('Linmin: DXlim exceeded')
 
-          if( Ex .GT. Ea )then ! emergency measure, linmin screwed up, use fallback 
-             call print('  Linmin screwed up! current Ex= '//Ex//' at x= '//x//' is worse than bracket') 
-             call print('  Linmin variables: a='//a//' b='//b//' Ev='//Ev//' v='//v//' Ew='//Ew//' Eu='//Eu//' u='//u); 
+          if( Ex .GT. Ea )then ! emergency measure, linmin screwed up, use fallback
+             call print('  Linmin screwed up! current Ex= '//Ex//' at x= '//x//' is worse than bracket')
+             call print('  Linmin variables: a='//a//' b='//b//' Ev='//Ev//' v='//v//' Ew='//Ew//' Eu='//Eu//' u='//u);
              x = fallback
              epsilon = fallback
              tmpa = x0 + x*xdir
@@ -488,7 +488,7 @@ CONTAINS
 #ifndef _OPENMP
              call verbosity_pop()
 #endif
-	     call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
+             call print("linmin got new Ex " // Ex // " " // x, PRINT_NERD)
              y = tmpa
           else
              epsilon = x
@@ -496,7 +496,7 @@ CONTAINS
 
           call print("  Linmin done "//bracket_it//" bracket and "//it//" steps Ex= "//Ex//" x= "//x)
           linmin=it
-          return 
+          return
        endif
 
        ! try parabolic fit on subsequent steps
@@ -531,7 +531,7 @@ CONTAINS
              if(u-a < tol2 .OR. b-u < tol2) d = tol1 * sign(xm-x)
           end if
 
-       else 
+       else
           ! on the first pass, do golden section
           if(x .GE. xm) then
              e = a-x
@@ -576,7 +576,7 @@ CONTAINS
 
           v=w;w=x;x=u
           Ev=Ew;Ew=Ex;Ex=Eu
-       else 
+       else
           call print('  Linmin: new point is no better', PRINT_VERBOSE+1)
           if(u < x) then
              a = u
@@ -585,7 +585,7 @@ CONTAINS
           endif
 
           if(Eu .LE. Ew .OR. w .EQ. x) then
-             v=w;w=u      
+             v=w;w=u
              Ev = Ew; Ew = Eu
           else if(Eu .LE. Ev .OR. v .EQ. x .OR. v .EQ. w) then
              v = u
@@ -625,17 +625,17 @@ CONTAINS
     real(dp)::fx0     !% Value of 'func' at 'x0'
     real(dp)::xdir(:) !% Direction
     real(dp)::y(:)    !%  Result
-    real(dp)::epsilon !% Initial step            
-    INTERFACE 
+    real(dp)::epsilon !% Initial step
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     END INTERFACE
     character(len=1),optional::data(:)
-    integer::linmin  
+    integer::linmin
 
     ! Dynamically allocate to avoid stack overflow madness with ifort
     real(dp),allocatable::xb(:),xc(:)
@@ -657,7 +657,7 @@ CONTAINS
     reject_quadratic_extrap = .true.
     do while(reject_quadratic_extrap)
 
-       b = a+epsilon 
+       b = a+epsilon
        c = b+GOLD*epsilon
        xb = x0+b*xdir
        xc = x0+c*xdir
@@ -675,11 +675,11 @@ CONTAINS
        write(line,*) "      f   = ",fx0, fxb, fxc; call print(line, PRINT_NORMAL)
 
        if(abs(fx0-fxb) < abs(ftol*fx0))then
-          write(line,*) "*** fast_linmin is stuck, returning 0" 
+          write(line,*) "*** fast_linmin is stuck, returning 0"
           call print(line,PRINT_SILENT)
-          
+
           linmin=0
-          return 
+          return
        end if
 
        !WARNING: find a way to do the following
@@ -689,12 +689,12 @@ CONTAINS
        !if(isnan(fxb) .OR. isnan(fxc))then
        !   write(global_err%unit,*)"    Got a NaN!!!"
        !   linmin=0
-       !   return 
+       !   return
        !end if
        !  if(.NOT.finite(fxb) .OR. .NOT.finite(fxc))then
        !     write(global_err%unit,*)"    Got a INF!!!"
        !     linmin=0
-       !     return 
+       !     return
        !  end if
 
        r = (b-a)*(fxb-fxc)
@@ -740,7 +740,7 @@ CONTAINS
 
     deallocate(xb, xc)
 
-    return 
+    return
   end function linmin_fast
 
 
@@ -761,17 +761,17 @@ CONTAINS
     real(dp)::xdir(:)!% Search direction
     real(dp)::dx0(:) !% Initial gradient
     real(dp)::y(:)   !% Result
-    real(dp)::epsilon!% Initial step            
-    INTERFACE 
+    real(dp)::epsilon!% Initial step
+    INTERFACE
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     character(len=1),optional::data(:)
-    integer::linmin  
+    integer::linmin
 
     ! local vars
     integer::N
@@ -829,7 +829,7 @@ CONTAINS
     epsilon = new_eps
 
     deallocate(x1, dx1)
-    return 
+    return
   end function linmin_deriv
 
 
@@ -840,19 +840,19 @@ CONTAINS
     real(dp)::xdir(:)!% Search direction
     real(dp)::dx0(:) !% Initial gradient
     real(dp)::y(:)   !% Result
-    real(dp)::epsilon!% Initial step            
+    real(dp)::epsilon!% Initial step
     logical, optional :: do_line_scan
 
-    INTERFACE 
+    INTERFACE
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     character(len=1),optional :: data(:)
-    integer::linmin  
+    integer::linmin
 
     ! local vars
     integer::N, extrap_steps,i
@@ -880,9 +880,9 @@ CONTAINS
              call verbosity_pop()
 #endif
              dirdx_new = xdir .DOT. dxn
-          
+
              call print(new_eps//' '//dirdx_new//' <-- LS', PRINT_NORMAL)
-       
+
              new_eps = new_eps*1.15
           enddo
        end if
@@ -902,7 +902,7 @@ CONTAINS
 
     extrap_steps = 0
 
-    do while ( (abs(eps1-eps2) > TOL*abs(eps1)) .and. extrap_steps < max_extrap_steps) 
+    do while ( (abs(eps1-eps2) > TOL*abs(eps1)) .and. extrap_steps < max_extrap_steps)
        do
           xn = x0 + new_eps*xdir
 #ifndef _OPENMP
@@ -920,16 +920,16 @@ CONTAINS
           call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, PRINT_NORMAL)
 
           extrap = .false.
-          if (dirdx_new > 0.0_dp) then 
+          if (dirdx_new > 0.0_dp) then
              if(abs(dirdx_new) < 2.0_dp*abs(dirdx1)) then
-                ! projected gradient at new point +ve, but not too large. 
+                ! projected gradient at new point +ve, but not too large.
                 call print("dirdx_new > 0, but not too large", PRINT_NORMAL)
                 eps2 = new_eps
                 dirdx2 = dirdx_new
                 extrap_steps = 0
-                ! we're straddling the minimum well, so gamma < 2 and we can interpolate to the next step 
+                ! we're straddling the minimum well, so gamma < 2 and we can interpolate to the next step
 
-                ! let's try to bring in eps1 
+                ! let's try to bring in eps1
                 step = 0.5_dp*(new_eps-eps1)
                 dirdx1 = 1.0_dp
                 do while (dirdx1 > 0.0_dp)
@@ -1053,7 +1053,7 @@ CONTAINS
     y = x0 + epsilon*xdir
 
     deallocate(xn, dxn)
-    return 
+    return
   end function linmin_deriv_iter
 
 
@@ -1065,23 +1065,23 @@ CONTAINS
     real(dp)::xdir(:)!% Search direction
     real(dp)::dx0(:) !% Initial gradient
     real(dp)::y(:)   !% Result
-    real(dp)::epsilon!% Initial step            
+    real(dp)::epsilon!% Initial step
     logical, optional :: do_line_scan
-    INTERFACE 
+    INTERFACE
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     character(len=1),optional :: data(:)
-    integer::linmin  
+    integer::linmin
 
     ! local vars
     integer::N, extrap_steps, i
     real(dp), allocatable::xn(:), dxn(:)
-    real(dp)::dirdx1, dirdx2, dirdx_new,  eps1, eps2, new_eps, old_eps 
+    real(dp)::dirdx1, dirdx2, dirdx_new,  eps1, eps2, new_eps, old_eps
     integer, parameter :: max_extrap_steps = 50
     logical :: extrap
 
@@ -1106,9 +1106,9 @@ CONTAINS
              call verbosity_pop()
 #endif
              dirdx_new = xdir .DOT. dxn
-             
+
              call print(new_eps//' '//dirdx_new, PRINT_NORMAL)
-          
+
              new_eps = new_eps*1.15
           enddo
        end if
@@ -1132,7 +1132,7 @@ CONTAINS
 
     extrap_steps = 0
 
-    do while ( (abs(old_eps-new_eps) > TOL*abs(new_eps)) .and. extrap_steps < max_extrap_steps) 
+    do while ( (abs(old_eps-new_eps) > TOL*abs(new_eps)) .and. extrap_steps < max_extrap_steps)
        xn = x0 + new_eps*xdir
 #ifndef _OPENMP
        call verbosity_push_decrement()
@@ -1143,20 +1143,20 @@ CONTAINS
 #endif
        dirdx_new = xdir .DOT. dxn
 
-       
+
        linmin = linmin + 1
-       
+
        call print('eps1   = '//eps1//' eps2   = '//eps2//' new_eps   = '//new_eps, PRINT_NORMAL)
        call print('dirdx1 = '//dirdx1//' dirdx2 = '//dirdx2//' dirdx_new = '//dirdx_new, PRINT_NORMAL)
        extrap = .false.
-       if (dirdx_new > 0.0_dp) then 
+       if (dirdx_new > 0.0_dp) then
           if(abs(dirdx_new) < 10.0_dp*abs(dirdx1)) then
-             ! projected gradient at new point +ve, but not too large. 
+             ! projected gradient at new point +ve, but not too large.
              call print("dirdx_new > 0, but not too large", PRINT_NORMAL)
              eps2 = new_eps
              dirdx2 = dirdx_new
              extrap_steps = 0
-             ! we're straddling the minimum well, so gamma < 2 and we can interpolate to the next step 
+             ! we're straddling the minimum well, so gamma < 2 and we can interpolate to the next step
           else
              ! projected gradient at new point +ve and large
              ! let's decrease the step we take
@@ -1220,7 +1220,7 @@ CONTAINS
        end if
        old_eps = new_eps
        new_eps = eps1 - dirdx1/(dirdx2-dirdx1)*(eps2-eps1)
-       
+
     end do
 
     if (extrap_steps == max_extrap_steps) then
@@ -1233,7 +1233,7 @@ CONTAINS
     y = x0 + epsilon*xdir
 
     deallocate(xn, dxn)
-    return 
+    return
   end function linmin_deriv_iter_simple
 
 
@@ -1256,11 +1256,11 @@ CONTAINS
 
     real(dp)::x(:)  !% Starting vector
     real(dp)::mass(:) !% Effective masses of each degree of freedom
-    INTERFACE 
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -1268,7 +1268,7 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
@@ -1340,12 +1340,12 @@ CONTAINS
        call print(x, PRINT_NERD)
 
     end do
-    ! 
+    !
     if(i .EQ. max_steps) then
        write(line,*) "Failed to converge in ",i," steps" ; call print(line)
     end if
     damped_md_minim = i
-    return 
+    return
   end function damped_md_minim
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1356,7 +1356,7 @@ CONTAINS
   !% steepest descent methods. The objective function is
   !% 'func(x)' and its gradient is 'dfunc(x)'.
   !% There is an additional 'hook' interface which is called at the
-  !% beginning of each gradient descent step. 
+  !% beginning of each gradient descent step.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1365,13 +1365,13 @@ CONTAINS
 
 
   function minim(x_in,func,dfunc,method,convergence_tol,max_steps, linminroutine, hook, hook_print_interval,  &
-		 eps_guess, always_do_test_gradient, data, status)
+                 eps_guess, always_do_test_gradient, data, status)
     real(dp),     intent(inout) :: x_in(:) !% Starting position
-    INTERFACE 
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -1379,16 +1379,16 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
     character(*), intent(in)    :: method !% 'cg' for conjugate gradients or 'sd' for steepest descent
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-    !% 'convergence_tol'. 
+    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of 'cg' or 'sd' steps
     integer::minim
-    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use. 
+    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use.
     !% This should be one of  'NR_LINMIN', 'FAST_LINMIN' and
     !% 'LINMIN_DERIV'.
     !% If 'FAST_LINMIN' is used and problems with the line
@@ -1397,15 +1397,15 @@ CONTAINS
     !% once no more problems have occurred for some time.
     !% the default is NR_LINMIN
     optional :: hook
-    INTERFACE 
+    INTERFACE
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
-	 character(len=1),optional, intent(in) ::data(:)
+         logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end INTERFACE
     integer, intent(in), optional :: hook_print_interval
@@ -1514,7 +1514,7 @@ CONTAINS
     end if
 
 
-    do_fast_linmin = .FALSE. 
+    do_fast_linmin = .FALSE.
     do_linmin_deriv = .FALSE.
     if(present(linminroutine)) then
        if(do_lbfgs) &
@@ -1534,7 +1534,7 @@ CONTAINS
        end if
     end if
 
-    if (current_verbosity() .GE. PRINT_NERD .and. .not. do_linmin_deriv) then 
+    if (current_verbosity() .GE. PRINT_NERD .and. .not. do_linmin_deriv) then
        dumbool=test_gradient(x, func, dfunc,data=data)
     end if
 
@@ -1560,14 +1560,14 @@ CONTAINS
 #endif
 
     if (my_hook_print_interval > 0) then
-      if (present(hook)) then 
-	call hook(x, grad_f, f, done, .true., data)
-	if (done) then
-	  call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
-	  exit_flag = 1
-	end if
+      if (present(hook)) then
+        call hook(x, grad_f, f, done, .true., data)
+        if (done) then
+          call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
+          exit_flag = 1
+        end if
       else
-	call print("hook is not present", PRINT_VERBOSE)
+        call print("hook is not present", PRINT_VERBOSE)
       end if
     endif
 
@@ -1595,16 +1595,16 @@ CONTAINS
 
     do_test_gradient = optional_default(.false., always_do_test_gradient)
     my_eps_guess = optional_default(default_eps_guess, eps_guess)
-    eps = my_eps_guess    
-    
+    eps = my_eps_guess
+
     !********************************************************************
     !*
     !*  MAIN CG LOOP
     !*
     !**********************************************************************
-    
-    
-    if(normsqgrad_f .LT. convergence_tol)then  
+
+
+    if(normsqgrad_f .LT. convergence_tol)then
        call print("Minimization is already converged!")
        call print(trim(method)//" iter = "// 0 //" df^2 = " // normsqgrad_f // " f = " // f &
             &// " "//lsteps//" linmin steps eps = "//eps,PRINT_VERBOSE)
@@ -1613,14 +1613,14 @@ CONTAINS
 
     call system_timer("minim/init")
     call system_timer("minim/main_loop")
-    
+
     main_counter=1 ! incremented at the end of the loop
     do while((main_counter .LT. max_steps) .AND. (.NOT.(exit_flag.gt.0)))
        call system_timer("minim/main_loop/"//main_counter)
-       
-       if ((current_verbosity() >= PRINT_ANALYSIS .or. do_test_gradient) & 
+
+       if ((current_verbosity() >= PRINT_ANALYSIS .or. do_test_gradient) &
             .and. .not. do_linmin_deriv) then
-	  dumbool=test_gradient(x, func, dfunc,data=data)
+          dumbool=test_gradient(x, func, dfunc,data=data)
           if (.not. dumbool) call print("Gradient test failed")
        end if
 
@@ -1643,12 +1643,12 @@ CONTAINS
 #endif
 
        ! call the hook function
-       if (present(hook)) then 
+       if (present(hook)) then
           call hook(x, grad_f, f, done, (mod(main_counter-1,my_hook_print_interval) == 0), data)
           if (done) then
              call print('hook reports that minim finished, exiting.', PRINT_NORMAL)
              exit_flag = 1
-	     call system_timer("minim/main_loop/"//main_counter)
+             call system_timer("minim/main_loop/"//main_counter)
              cycle
           end if
        else
@@ -1660,7 +1660,7 @@ CONTAINS
        !* test to see if we've converged, let's quit
        !*
        !**********************************************************************/
-       ! 
+       !
        if(normsqgrad_f < convergence_tol) then
           convergence_counter = convergence_counter + 1
           !call print("Convergence counter = "//convergence_counter)
@@ -1671,7 +1671,7 @@ CONTAINS
           call print("Converged after step " // main_counter)
           call print(trim(method)//" iter = " // main_counter // " df^2= " // normsqgrad_f // " f= " // f)
           exit_flag = 1 ! while loop will quit
-	  call system_timer("minim/main_loop/"//main_counter)
+          call system_timer("minim/main_loop/"//main_counter)
           cycle !continue
        end if
 
@@ -1681,10 +1681,10 @@ CONTAINS
           !*  do line minimization
           !*
           !**********************************************************************/
-          
+
           oldeps = eps
           ! no output from linmin unless level >= PRINT_VERBOSE
-	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
+          call system_timer("minim/main_loop/"//main_counter//"/linmin")
 #ifndef _OPENMP
           call verbosity_push_decrement()
 #endif
@@ -1705,14 +1705,14 @@ CONTAINS
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
-	  call system_timer("minim/main_loop/"//main_counter//"/linmin")
+          call system_timer("minim/main_loop/"//main_counter//"/linmin")
 
           !**********************************************************************
           !*
           !*  check the result of linmin
           !*
           !**********************************************************************
-          
+
           if(lsteps .EQ. 0) then ! something very bad happenned, gradient is bad?
              call print("*** LINMIN returned 0, RESETTING CG CYCLE and eps  at step " // main_counter)
 #ifndef _OPENMP
@@ -1722,29 +1722,29 @@ CONTAINS
              hdir = -1.0 * grad_f
              eps = my_eps_guess
 
-	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
-             
+             if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+
              bad_iter_counter = bad_iter_counter + 1
-             if(bad_iter_counter .EQ. max_bad_iter) then  
-                
+             if(bad_iter_counter .EQ. max_bad_iter) then
+
                 call print("*** BAD linmin counter reached maximum, exiting " // max_bad_iter)
-                
+
                 exit_flag = 1
                 if (present(status)) status = 1
              end if
 
-	     call system_timer("minim/main_loop/"//main_counter)
+             call system_timer("minim/main_loop/"//main_counter)
              cycle !continue
           end if
 
        end if ! .not. lbfgs .and. .not. sd2
-       
+
        !**********************************************************************
        !*
        !*  Evaluate function at new position
        !*
        !**********************************************************************
-       
+
 
        if (.not. do_linmin_deriv) then
 #ifndef _OPENMP
@@ -1757,16 +1757,16 @@ CONTAINS
        else
           f_new = 0.0_dp
        end if
-       !       if(!finite(f_new)){
-       !	logger(ERROR, "OUCH!!! f_new is not finite!\n");
-       !	return -1; // go back screaming
-       !       end if
+       ! if(!finite(f_new)){
+       !    logger(ERROR, "OUCH!!! f_new is not finite!\n");
+       !    return -1; // go back screaming
+       ! end if
 
        !********************************************************************
        ! Is everything going normal?
        !*********************************************************************/
 
-       ! let's make sure we are progressing 
+       ! let's make sure we are progressing
        ! obj is the thing we are trying to minimize
        ! are we going down,and enough?
 
@@ -1779,7 +1779,7 @@ CONTAINS
              obj     =  0.0_dp
              obj_new = -1.0_dp
           end if
-          
+
           if(obj-obj_new > abs(stuck_tol*obj_new)) then
              ! everything is fine, clear some monitoring flags
              bad_iter_counter = 0
@@ -1789,10 +1789,10 @@ CONTAINS
 #endif
              end do
              extra_report = 0
-             
+
              if(present(linminroutine)) then
                 if(trim(linminroutine) .EQ. "FAST_LINMIN" .and. .not. do_fast_linmin .and. &
-		      main_counter >  fast_linmin_switchback) then
+                      main_counter >  fast_linmin_switchback) then
                    call print("Switching back to FAST_LINMIN linmin")
                    do_fast_linmin = .TRUE.
                 end if
@@ -1801,68 +1801,68 @@ CONTAINS
           !* Otherwise, diagnose problems
           !**********************************************************************
           else if(obj_new > obj)then !  are we not going down ? then things are very bad
-          
+
              if( abs(obj-obj_new) < abs(stuck_tol*obj_new))then ! are we stuck ?
                 call print("*** Minim is stuck, exiting")
                 exit_flag = 1
                 if (present(status)) status = 0
-		call system_timer("minim/main_loop/"//main_counter)
-                cycle !continue 
+                call system_timer("minim/main_loop/"//main_counter)
+                cycle !continue
              end if
-             
-             
+
+
              call print("*** Minim is not going down at step " // main_counter //" ==> eps /= 10")
              eps = oldeps / 10.0_dp
 
-	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
-             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then     
+             if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!!")
                 end if
              end if
-             
-             
+
+
              if(do_fast_linmin) then
                 do_fast_linmin = .FALSE.
                 fast_linmin_switchback = main_counter+5
                 call print("Switching off FAST_LINMIN (back after " //&
                      (fast_linmin_switchback - main_counter) // " steps if all OK")
              end if
-             
+
              call print("Resetting conjugacy")
              resetflag = 1
-             
-             main_counter=main_counter-1      
+
+             main_counter=main_counter-1
              bad_iter_counter=bad_iter_counter+1 ! increment BAD counter
-             
+
           else        ! minim went downhill, but not a lot
-          
+
              call print("*** Minim is stuck at step " // main_counter // ", trying to unstick", PRINT_VERBOSE)
-          
+
 #ifndef _OPENMP
              if (current_verbosity() >= PRINT_NORMAL) then
                 call verbosity_push_increment()
                 extra_report = extra_report + 1
              end if
 #endif
-      
-	     if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
+
+             if (current_verbosity() >= PRINT_NERD) call line_scan(x, hdir, func, .not. do_linmin_deriv, dfunc, data)
              !**********************************************************************
              !*
              !* do gradient test if we need to
              !*
              !**********************************************************************/
-             ! 
-             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then     
+             !
+             if(current_verbosity() >= PRINT_NERD .and. .not. do_linmin_deriv) then
                 if(.NOT.test_gradient(x, func, dfunc,data=data)) then
                    call print("*** Gradient test failed!! Exiting linmin!")
                    exit_flag = 1
                    if (present(status)) status = 1
-		   call system_timer("minim/main_loop/"//main_counter)
+                   call system_timer("minim/main_loop/"//main_counter)
                    cycle !continue
                 end if
              end if
-          
+
              bad_iter_counter=bad_iter_counter+1 ! increment BAD counter
              eps = my_eps_guess ! try to unstick
              call print("resetting eps to " // eps,PRINT_VERBOSE)
@@ -1873,7 +1873,7 @@ CONTAINS
              call print("*** BAD iteration counter reached maximum " // max_bad_iter // " exiting")
              exit_flag = 1
              if (present(status)) status = 1
-	     call system_timer("minim/main_loop/"//main_counter)
+             call system_timer("minim/main_loop/"//main_counter)
              cycle !continue
           end if
        end if ! .not. do_bfgs and .not. do_sd2
@@ -1886,14 +1886,14 @@ CONTAINS
 
        f = f_new
        x = y
-      
-! Removed resetting 
+
+! Removed resetting
 !       if(mod(main_counter,50) .EQ. 0) then ! reset CG every now and then regardless
 !          resetflag = 1
 !       end if
 
        ! measure linmin_quality
-       if(.not. do_lbfgs) hdirgrad_before = hdir.DOT.grad_f  
+       if(.not. do_lbfgs) hdirgrad_before = hdir.DOT.grad_f
 
        grad_f_old = grad_f
 #ifndef _OPENMP
@@ -1905,7 +1905,7 @@ CONTAINS
 #endif
 
        if( (.not. do_lbfgs) .and. (.not. do_sd2) ) then
-          hdirgrad_after = hdir.DOT.grad_f 
+          hdirgrad_after = hdir.DOT.grad_f
           if (hdirgrad_after /= 0.0_dp) then
             linmin_quality = hdirgrad_before/hdirgrad_after
           else
@@ -1915,14 +1915,14 @@ CONTAINS
 
        normsqgrad_f_old = normsqgrad_f
        normsqgrad_f = normsq(grad_f)
-          
+
 
        !**********************************************************************
        !* Choose minimization method
        !**********************************************************************/
-       
+
        if(do_sd) then  !steepest descent
-          hdir = -1.0_dp * grad_f 
+          hdir = -1.0_dp * grad_f
        elseif(do_sd2) then
           if(main_counter == 1) then
              alpha = 1.0e-6_dp
@@ -1934,24 +1934,24 @@ CONTAINS
           x = x - alpha * grad_f
           y = x
        else if(do_cg)then ! conjugate gradients
-          
+
           if( bad_cg_counter == max_bad_cg .OR.(resetflag > 0)) then ! reset the conj grad cycle
-             
-             if( bad_cg_counter .EQ. max_bad_cg)  then 
+
+             if( bad_cg_counter .EQ. max_bad_cg)  then
                 call print("*** bad_cg_counter == "//  max_bad_cg, PRINT_VERBOSE)
              end if
              call print("*** Resetting conjugacy", PRINT_VERBOSE)
-             
-             
+
+
              hdir = -1.0_dp * grad_f
              bad_cg_counter = 0
              resetflag = 0
           else  ! do CG
              gdirlen = 0.0
              dcosine = 0.0
-             
+
              gg = normsq(gdir)
-             
+
              if(.NOT.do_pcg) then ! no preconditioning
                 dgg = max(0.0_dp, (gdir + grad_f).DOT.grad_f) ! Polak-Ribiere formula
                 gdir = (-1.0_dp) * grad_f
@@ -1973,32 +1973,32 @@ CONTAINS
              dcosine = gdir.DOT.gdir_old
              gdir_old = gdir
              gdirlen = norm(gdir)
-             
+
              if(gdirlen .eq. 0.0_dp .or. gdirlen_old .eq. 0.0_dp) then
                 dcosine = 0.0_dp
              else
                 dcosine = dcosine/(gdirlen*gdirlen_old)
              endif
              gdirlen_old = gdirlen
-             
-             if(abs(dcosine) >  0.2) then 
+
+             if(abs(dcosine) >  0.2) then
                 bad_cg_counter= bad_cg_counter +1
-             else 
+             else
                 bad_cg_counter = 0
              end if
-             
+
           end if
        else if(do_lbfgs)then  ! LBFGS method
           y = x
           call LBFGS(size(x),lbfgs_M,y, f, grad_f, .false., lbfgs_diag, (/-1,0/), 1e-12_dp, 1e-12_dp, lbfgs_work, lbfgs_flag)
 !          do while(lbfgs_flag == 2)
-!             call LBFGS(size(x),lbfgs_M,y, f, grad_f, .false., lbfgs_diag, (/-1,0/), 1e-12_dp, 1e-12_dp, lbfgs_work, lbfgs_flag)             
+!             call LBFGS(size(x),lbfgs_M,y, f, grad_f, .false., lbfgs_diag, (/-1,0/), 1e-12_dp, 1e-12_dp, lbfgs_work, lbfgs_flag)
 !          end do
           if(lbfgs_flag < 0) then ! internal LBFGS error
              call print('LBFGS returned error code '//lbfgs_flag//', exiting')
              exit_flag = 1
              if (present(status)) status = 1
-	     call system_timer("minim/main_loop/"//main_counter)
+             call system_timer("minim/main_loop/"//main_counter)
              cycle
           end if
        else
@@ -2010,7 +2010,7 @@ CONTAINS
     end do
     call system_timer("minim/main_loop")
 
-    if(main_counter >= max_steps) then 
+    if(main_counter >= max_steps) then
        call print("Iterations exceeded " // max_steps)
     end if
 
@@ -2048,8 +2048,8 @@ CONTAINS
   ! test_gradient
   !
   !% Test a function against its gradient by evaluating the gradient from the
-  !% function by finite differnces. We can only test the gradient if energy and force 
-  !% functions are pure in that they do not change the input vector 
+  !% function by finite differnces. We can only test the gradient if energy and force
+  !% functions are pure in that they do not change the input vector
   !% (e.g. no capping of parameters). The interface for 'func(x)' and 'dfunc(x)'
   !% are the same as for 'minim' above.
   !
@@ -2060,11 +2060,11 @@ CONTAINS
 
   function test_gradient(xx,func,dfunc, dir,data)
     real(dp),intent(in)::xx(:) !% Position
-    INTERFACE 
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -2072,7 +2072,7 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
@@ -2093,7 +2093,7 @@ CONTAINS
     allocate(x(N), dx(N), x_0(N))
     x=xx
 
-    if(current_verbosity() > PRINT_VERBOSE) then 
+    if(current_verbosity() > PRINT_VERBOSE) then
        printit = .TRUE.
        loopend=0
     else
@@ -2136,11 +2136,11 @@ CONTAINS
     allocate(my_dir(N))
     if (present(dir)) then
        if (norm(dir) .feq. 0.0_dp) &
-	 call system_abort("test_gradient got dir = 0.0, can't use as normalized direction for test")
+         call system_abort("test_gradient got dir = 0.0, can't use as normalized direction for test")
        my_dir = dir/norm(dir)
     else
        if (norm(dx) == 0.0_dp) &
-	 call system_abort("test_gradient got dfunc = 0.0, can't use as normalized direction for test")
+         call system_abort("test_gradient got dfunc = 0.0, can't use as normalized direction for test")
        my_dir = (-1.0_dp)*dx/norm(dx)
     endif
     !//my_dir.zero();
@@ -2157,7 +2157,7 @@ CONTAINS
     end if
 
     ok = .FALSE.
-    ratio = 0.0 
+    ratio = 0.0
 
     do i=0,loopend ! do it twice, print second time if not OK
        previous_ratio = 0.0
@@ -2190,8 +2190,8 @@ CONTAINS
 
           if(.NOT.monitor_ratio) then
              if(abs((f-f0)/f0) .LT. NUMERICAL_ZERO) then ! we ran out of precision, gradient is really bad
-		call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, PRINT_ANALYSIS)
-		call print("ran out of precision, quitting loop", PRINT_ANALYSIS)
+                call print("(f-f0)/f0 " // ((f-f0)/f0) // " ZERO " // NUMERICAL_ZERO, PRINT_ANALYSIS)
+                call print("ran out of precision, quitting loop", PRINT_ANALYSIS)
                 exit
              end if
           end if
@@ -2199,7 +2199,7 @@ CONTAINS
           if(monitor_ratio) then
              if( abs(ratio-1.0_dp) > abs(previous_ratio-1.0_dp) )then !  sequence broke
                 if(abs((f-f0)/f0*(ratio-1.0_dp)) < 1e-10_dp) then ! lets require 10 digits of precision
-                   ok = .TRUE. 
+                   ok = .TRUE.
                    !//break;
                 end if
              end if
@@ -2208,7 +2208,7 @@ CONTAINS
           eps=eps/10.0
        end do
 
-       if(.NOT.ok) then 
+       if(.NOT.ok) then
           printit = .TRUE.  ! go back and print it
        else
           exit
@@ -2237,9 +2237,9 @@ CONTAINS
   ! n_test_gradient
   !
   !% Test a function against its gradient by evaluating the gradient from the
-  !% function by symmetric finite differnces. We can only test the gradient if 
-  !% energy and force functions are pure in that they do not change the input 
-  !% vector (e.g. no capping of parameters). The interface for 'func(x)' and 
+  !% function by symmetric finite differnces. We can only test the gradient if
+  !% energy and force functions are pure in that they do not change the input
+  !% vector (e.g. no capping of parameters). The interface for 'func(x)' and
   !% 'dfunc(x)'are the same as for 'minim' above.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -2248,11 +2248,11 @@ CONTAINS
 
   subroutine n_test_gradient(xx,func,dfunc, dir,data)
     real(dp),intent(in)::xx(:) !% Position
-    INTERFACE 
+    INTERFACE
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
     end INTERFACE
@@ -2260,7 +2260,7 @@ CONTAINS
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     END INTERFACE
@@ -2280,12 +2280,12 @@ CONTAINS
 
     if (present(dir)) then
        if (norm(dir) == 0.0_dp) &
-	 call system_abort("n_test_gradient got dir = 0.0, can't use as normalized direction for test")
+         call system_abort("n_test_gradient got dir = 0.0, can't use as normalized direction for test")
        allocate(my_dir(N))
        my_dir = dir/norm(dir)
     else
        if (norm(dx) == 0.0_dp) &
-	 call system_abort("n_test_gradient got dfunc = 0.0, can't use as normalized direction for test")
+         call system_abort("n_test_gradient got dfunc = 0.0, can't use as normalized direction for test")
        allocate(my_dir(N))
        my_dir = (-1.0_dp)*dx/norm(dx)
     endif
@@ -2313,17 +2313,17 @@ CONTAINS
   function fire_minim(x, mass, func, dfunc, dt0, tol, max_steps, hook, hook_print_interval, data, dt_max, status)
     real(dp), intent(inout), dimension(:) :: x
     real(dp), intent(in) :: mass
-    interface 
+    interface
        function func(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::func
        end function func
        function dfunc(x,data)
          use system_module
          real(dp)::x(:)
-	 character(len=1),optional::data(:)
+         character(len=1),optional::data(:)
          real(dp)::dfunc(size(x))
        end function dfunc
     end interface
@@ -2338,8 +2338,8 @@ CONTAINS
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
-	 character(len=1),optional, intent(in) ::data(:)
+         logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
@@ -2473,19 +2473,19 @@ CONTAINS
 !%%%%
 
 subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
-		  new_x, new_neg_gradient, new_E, &
-		  max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, &
-		  data, error)
+                  new_x, new_neg_gradient, new_E, &
+                  max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, &
+                  data, error)
     real(dp), intent(inout) :: x(:)
     real(dp), intent(in) :: neg_gradient(:)
-    interface 
+    interface
        subroutine bothfunc(x,E,f,data,error)
          use system_module
          real(dp)::x(:)
          real(dp)::E
          real(dp)::f(:)
-	 character(len=1),optional::data(:)
-	 integer,optional :: error
+         character(len=1),optional::data(:)
+         integer,optional :: error
        end subroutine bothfunc
     end interface
     real(dp), intent(inout) :: E
@@ -2497,15 +2497,15 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     integer, intent(inout) :: N_evals
     integer, intent(in) :: max_N_evals
     optional :: hook
-    interface 
+    interface
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
-	 character(len=1),optional, intent(in) ::data(:)
+         logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     integer, intent(in), optional :: hook_print_interval
@@ -2553,7 +2553,7 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
 
     t_projected = search_dir*p0_dot
     if (normsq(t_projected) .lt. accuracy) then
-	call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
+        call print ("n_linmin initial config is apparently converged " // norm(t_projected) // " " // accuracy, PRINT_NERD)
     endif
 
     p0_pos = 0.0_dp
@@ -2565,16 +2565,16 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     call print("initial p0_dot " // p0_dot, PRINT_NERD)
 
     if (p0_dot .lt. 0.0_dp) then
-	p0_ng = -p0_ng
-	p0_dot = -p0_dot
+        p0_ng = -p0_ng
+        p0_dot = -p0_dot
     endif
 
     call print("cg_n " // p0_pos // " " // p0_e // " " // p0_dot // " " // &
-	       normsq(p0_ng) // " " // N_evals // " bracket starting", PRINT_VERBOSE)
+               normsq(p0_ng) // " " // N_evals // " bracket starting", PRINT_VERBOSE)
 
     est_step_size = 4.0_dp*maxval(abs(p0_ng))**2/p0_dot
     if (max_step_size .gt. 0.0_dp .and. est_step_size .gt. max_step_size) then
-	est_step_size = max_step_size
+        est_step_size = max_step_size
     endif
 
     p1_pos = est_step_size
@@ -2582,95 +2582,95 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     p1_ng = p0_ng
     l_error = 1
     do while (l_error .ne. 0)
-	N_evals = N_evals + 1
-	l_error=0
-	call bothfunc(p1, p1_e, p1_ng, data, error=l_error); p1_ng = -p1_ng
-	if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
-	if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
-	if (l_error .ne. 0) then
-	    call print("cg_n " // p1_pos // " " // p1_e // " " // 0.0_dp // " " // &
-		       0.0_dp // " " // N_evals // " bracket first step ERROR", PRINT_ALWAYS)
-	    est_step_size = est_step_size*0.5_dp
-	    p1_pos = est_step_size
-	    p1 = x + p1_pos*search_dir
-	endif
-	if (N_evals .gt. max_N_evals) then
-	    RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
-	endif
+        N_evals = N_evals + 1
+        l_error=0
+        call bothfunc(p1, p1_e, p1_ng, data, error=l_error); p1_ng = -p1_ng
+        if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
+        if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
+        if (l_error .ne. 0) then
+            call print("cg_n " // p1_pos // " " // p1_e // " " // 0.0_dp // " " // &
+                       0.0_dp // " " // N_evals // " bracket first step ERROR", PRINT_ALWAYS)
+            est_step_size = est_step_size*0.5_dp
+            p1_pos = est_step_size
+            p1 = x + p1_pos*search_dir
+        endif
+        if (N_evals .gt. max_N_evals) then
+            RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
+        endif
     end do
 
     p1_dot = p1_ng .dot. search_dir
 
     call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-	       normsq(p1_ng) // " " // N_evals // " bracket first step", PRINT_VERBOSE)
+               normsq(p1_ng) // " " // N_evals // " bracket first step", PRINT_VERBOSE)
 
     t_projected = search_dir*p1_dot
-!     if (object_norm(t_projected,norm_type) .lt. accuracy) then
-! 	! search_dir = search_dir * search_dir_mag
-! 	call scalar_selfmult (search_dir, search_dir_mag)
-! 	minimize_along = 0
-! call print ("returning from minimize_along, t_projected is_converged")
-! 	return
-!     endif
+    ! if (object_norm(t_projected,norm_type) .lt. accuracy) then
+    !    ! search_dir = search_dir * search_dir_mag
+    !    call scalar_selfmult (search_dir, search_dir_mag)
+    !    minimize_along = 0
+    !    call print ("returning from minimize_along, t_projected is_converged")
+    !    return
+    ! endif
 
     call print ("starting bracketing loop", PRINT_NERD)
 
     ! bracket solution
     do while (p1_dot .ge. 0.0_dp)
-	p0 = p1
-	p0_ng = p1_ng
-	p0_E = p1_E
-	p0_pos = p1_pos
-	p0_dot = p1_dot
+        p0 = p1
+        p0_ng = p1_ng
+        p0_E = p1_E
+        p0_pos = p1_pos
+        p0_dot = p1_dot
 
-	p1_pos = p1_pos + est_step_size
+        p1_pos = p1_pos + est_step_size
 
-	call print ("checking bracketing for " // p1_pos, PRINT_NERD)
+        call print ("checking bracketing for " // p1_pos, PRINT_NERD)
 
-	p1 = x + p1_pos*search_dir
-	l_error = 1
-	do while (l_error .ne. 0)
-	    N_evals = N_evals + 1
-	    l_error = 0
-	    call bothfunc (p1, p1_E, p1_ng, data, error=l_error); p1_ng = -p1_ng
-	    if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
-	    if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
-	    if (done) then
-	      call print("hook reported done", PRINT_NERD)
-	      search_dir = search_dir * search_dir_mag
-	      new_x = p1
-	      new_neg_gradient = p1_ng
-	      new_E = p1_E
-	      return
-	    endif
-	    if (l_error .ne. 0) then
-	      call print("cg_n " // p0_pos // " " // p0_e // " " // 0.0_dp // " " // &
-			 0.0_dp // " " // N_evals // " bracket loop ERROR", PRINT_ALWAYS)
-	      call print ("Error in bracket loop " // l_error // " stepping back", PRINT_ALWAYS)
-	      p1_pos = p1_pos - est_step_size
-	      est_step_size = est_step_size*0.5_dp
-	      p1_pos = p1_pos + est_step_size
-	      p1 = x + p1_pos*search_dir
-	    endif
-	    if (N_evals .gt. max_N_evals) then
-	      search_dir = search_dir * search_dir_mag
-	      RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
-	    endif
-	end do
+        p1 = x + p1_pos*search_dir
+        l_error = 1
+        do while (l_error .ne. 0)
+            N_evals = N_evals + 1
+            l_error = 0
+            call bothfunc (p1, p1_E, p1_ng, data, error=l_error); p1_ng = -p1_ng
+            if (present(hook_print_interval)) do_print = (mod(N_evals, hook_print_interval) == 0)
+            if (present(hook)) call hook(p1,p1_ng,p1_E,done,do_print,data)
+            if (done) then
+              call print("hook reported done", PRINT_NERD)
+              search_dir = search_dir * search_dir_mag
+              new_x = p1
+              new_neg_gradient = p1_ng
+              new_E = p1_E
+              return
+            endif
+            if (l_error .ne. 0) then
+              call print("cg_n " // p0_pos // " " // p0_e // " " // 0.0_dp // " " // &
+                         0.0_dp // " " // N_evals // " bracket loop ERROR", PRINT_ALWAYS)
+              call print ("Error in bracket loop " // l_error // " stepping back", PRINT_ALWAYS)
+              p1_pos = p1_pos - est_step_size
+              est_step_size = est_step_size*0.5_dp
+              p1_pos = p1_pos + est_step_size
+              p1 = x + p1_pos*search_dir
+            endif
+            if (N_evals .gt. max_N_evals) then
+              search_dir = search_dir * search_dir_mag
+              RAISE_ERROR_WITH_KIND(ERROR_MINIM_NOT_CONVERGED, "n_linmin ran out of iterations", error)
+            endif
+        end do
 
-	p1_dot = p1_ng .dot. search_dir
+        p1_dot = p1_ng .dot. search_dir
 
-!	tt = -p0_dot/(p1_dot-p0_dot)
-!	if (1.5D0*tt*(p1_pos-p0_pos) .lt. 10.0*est_step_size) then
-!	    est_step_size = 1.5_dp*tt*(p1_pos-p0_pos)
-!	else
-	    est_step_size = est_step_size*2.0_dp
-!	end if
+        ! tt = -p0_dot/(p1_dot-p0_dot)
+        ! if (1.5D0*tt*(p1_pos-p0_pos) .lt. 10.0*est_step_size) then
+        !     est_step_size = 1.5_dp*tt*(p1_pos-p0_pos)
+        ! else
+        est_step_size = est_step_size*2.0_dp
+        ! end if
 
       call print("cg_n " // p1_pos // " " // p1_e // " " // p1_dot // " " // &
-		 normsq(p1_ng) // " " // N_evals // " bracket loop", PRINT_VERBOSE)
+                 normsq(p1_ng) // " " // N_evals // " bracket loop", PRINT_VERBOSE)
     end do
-    
+
     call print ("bracketed by" // p0_pos // " " // p1_pos, PRINT_NERD)
 
     done = .false.
@@ -2678,74 +2678,74 @@ subroutine n_linmin(x, bothfunc, neg_gradient, E, search_dir, &
     !new_p_dot = accuracy*2.0_dp
     n_pure_linesearch = 0
     do while (n_pure_linesearch < max_pure_linesearch .and. normsq(t_projected) .ge. accuracy .and. (.not. done))
-        n_pure_linesearch = n_pure_linesearch + 1 
+        n_pure_linesearch = n_pure_linesearch + 1
         call print ("n_linmin starting true minimization loop", PRINT_NERD)
 
-	use_cubic = .false.
-	if (use_cubic) then
-	    !!!! fit to cubic polynomial
-	    Ebar = p1_E-p0_E
-	    pbar = p1_pos-p0_pos
-	    t_a = (-p0_dot)
-	    t_c = (pbar*((-p1_dot)-(-p0_dot)) - 2.0_dp*Ebar + 2*(-p0_dot)*pbar)/pbar**3
-	    t_b = (Ebar - (-p0_dot)*pbar - t_c*pbar**3)/pbar**2
+        use_cubic = .false.
+        if (use_cubic) then
+            !!!! fit to cubic polynomial
+            Ebar = p1_E-p0_E
+            pbar = p1_pos-p0_pos
+            t_a = (-p0_dot)
+            t_c = (pbar*((-p1_dot)-(-p0_dot)) - 2.0_dp*Ebar + 2*(-p0_dot)*pbar)/pbar**3
+            t_b = (Ebar - (-p0_dot)*pbar - t_c*pbar**3)/pbar**2
 
-	    soln_1 = (-2.0_dp*t_b + sqrt(4.0_dp*t_b**2 - 12.0_dp*t_a*t_c))/(6.0_dp*t_c)
-	    soln_2 = (-2.0_dp*t_b - sqrt(4.0_dp*t_b**2 - 12.0_dp*t_a*t_c))/(6.0_dp*t_c)
+            soln_1 = (-2.0_dp*t_b + sqrt(4.0_dp*t_b**2 - 12.0_dp*t_a*t_c))/(6.0_dp*t_c)
+            soln_2 = (-2.0_dp*t_b - sqrt(4.0_dp*t_b**2 - 12.0_dp*t_a*t_c))/(6.0_dp*t_c)
 
-	    if (soln_1 .ge. 0.0_dp .and. soln_1 .le. pbar) then
-		new_p_pos = p0_pos + soln_1
-		got_valid_cubic = .true.
-	    else if (soln_2 .ge. 0.0_dp .and. soln_2 .le. pbar) then
-		new_p_pos = p0_pos + soln_2
-		got_valid_cubic = .true.
-	    else
-		call print ("n_linmin warning: no valid solution for cubic", PRINT_ALWAYS)
-		!!!! use only derivative information to find pt. where derivative = 0
-		tt = -p0_dot/(p1_dot-p0_dot)
-		new_p_pos = p0_pos + tt*(p1_pos-p0_pos)
-		done = .false.
-	    endif
-	else
-	    !!!! use only derivative information to find pt. where derivative = 0
-	    tt = -p0_dot/(p1_dot-p0_dot)
-	    new_p_pos = p0_pos + tt*(p1_pos-p0_pos)
-	    ! done = .true.
-	    done = .false.
-	endif
+            if (soln_1 .ge. 0.0_dp .and. soln_1 .le. pbar) then
+                new_p_pos = p0_pos + soln_1
+                got_valid_cubic = .true.
+            else if (soln_2 .ge. 0.0_dp .and. soln_2 .le. pbar) then
+                new_p_pos = p0_pos + soln_2
+                got_valid_cubic = .true.
+            else
+                call print ("n_linmin warning: no valid solution for cubic", PRINT_ALWAYS)
+                !!!! use only derivative information to find pt. where derivative = 0
+                tt = -p0_dot/(p1_dot-p0_dot)
+                new_p_pos = p0_pos + tt*(p1_pos-p0_pos)
+                done = .false.
+            endif
+        else
+            !!!! use only derivative information to find pt. where derivative = 0
+            tt = -p0_dot/(p1_dot-p0_dot)
+            new_p_pos = p0_pos + tt*(p1_pos-p0_pos)
+            ! done = .true.
+            done = .false.
+        endif
 
-	new_p = x + new_p_pos*search_dir
-	N_evals = N_evals + 1
-	call bothfunc (new_p, new_p_E, new_p_ng, data, error); new_p_ng = -new_p_ng
-	if (error .ne. 0) then
-	    call system_abort("n_linmin: Error in line search " // error)
-	endif
+        new_p = x + new_p_pos*search_dir
+        N_evals = N_evals + 1
+        call bothfunc (new_p, new_p_E, new_p_ng, data, error); new_p_ng = -new_p_ng
+        if (error .ne. 0) then
+            call system_abort("n_linmin: Error in line search " // error)
+        endif
 
-	if (N_evals .gt. max_N_evals) done = .true.
+        if (N_evals .gt. max_N_evals) done = .true.
 
-!	if (inner_prod(new_p_ng,new_p_ng) .lt. 0.1 .and. got_valid_cubic) done = .true.
-!	if (got_valid_cubic) done = .true.
+        ! if (inner_prod(new_p_ng,new_p_ng) .lt. 0.1 .and. got_valid_cubic) done = .true.
+        ! if (got_valid_cubic) done = .true.
 
-	new_p_dot = new_p_ng .dot. search_dir
+        new_p_dot = new_p_ng .dot. search_dir
 
-	call print("cg_n " // new_p_pos // " " // new_p_E // " " // new_p_dot // " " // &
-		   normsq(new_p_ng) // " " // N_evals // " during line search", PRINT_VERBOSE)
+        call print("cg_n " // new_p_pos // " " // new_p_E // " " // new_p_dot // " " // &
+                   normsq(new_p_ng) // " " // N_evals // " during line search", PRINT_VERBOSE)
 
-	if (new_p_dot .gt. 0) then
-	    p0 = new_p
-	    p0_pos = new_p_pos
-	    p0_dot = new_p_dot
-	    p0_ng = new_p_ng
-	    p0_E = new_p_E
-	else
-	    p1 = new_p
-	    p1_pos = new_p_pos
-	    p1_dot = new_p_dot
-	    p1_ng = new_p_ng
-	    p1_E = new_p_E
-	endif
+        if (new_p_dot .gt. 0) then
+            p0 = new_p
+            p0_pos = new_p_pos
+            p0_dot = new_p_dot
+            p0_ng = new_p_ng
+            p0_E = new_p_E
+        else
+            p1 = new_p
+            p1_pos = new_p_pos
+            p1_dot = new_p_dot
+            p1_ng = new_p_ng
+            p1_E = new_p_E
+        endif
 
-	t_projected = search_dir*new_p_dot 
+        t_projected = search_dir*new_p_dot
     end do
 
     new_x = new_p
@@ -2783,40 +2783,40 @@ end subroutine n_linmin
 function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, final_E, &
     expected_reduction, max_N_evals, accuracy, hook, hook_print_interval, data, error) result(N_evals)
     real(dp), intent(inout) :: x_i(:)
-    interface 
+    interface
        subroutine bothfunc(x,E,f,data,error)
          use system_module
          real(dp)::x(:)
          real(dp)::E
          real(dp)::f(:)
-	 character(len=1),optional::data(:)
-	 integer, optional :: error
+         character(len=1),optional::data(:)
+         integer, optional :: error
        end subroutine bothfunc
-    end interface 
+    end interface
     logical :: use_precond
-    interface 
+    interface
        subroutine apply_precond_func(x,g,P_g,data,error)
          use system_module
          real(dp)::x(:),g(:),P_g(:)
-	 character(len=1),optional::data(:)
-	 integer, optional :: error
+         character(len=1),optional::data(:)
+         integer, optional :: error
        end subroutine apply_precond_func
-    end interface 
+    end interface
     real(dp), intent(out) :: initial_E, final_E
     real(dp), intent(inout) :: expected_reduction
     integer, intent(in) :: max_N_evals
     real(dp), intent(in) :: accuracy
     optional :: hook
     integer :: N_evals
-    interface 
+    interface
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
-	 character(len=1),optional, intent(in) ::data(:)
+         logical, optional, intent(in) :: do_print
+         character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end interface
     integer, optional :: hook_print_interval
@@ -2833,7 +2833,7 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     real(dp), allocatable :: x_ip1(:), g_ip1(:)
     real(dp), allocatable :: h_i(:)
     real(dp), allocatable :: P_g(:)
-   
+
     real(dp) :: g_i_dot_g_i, g_ip1_dot_g_i, g_ip1_dot_g_ip1
     real(dp) :: gamma_i
 
@@ -2877,14 +2877,14 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
                            "            -grad.dir" // &
                            "                |grad|^2" // "   n_evals")
     call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.g_i) // " " // &
-	       normsq(g_i) // " " // N_evals // " INITIAL_VAL")
+               normsq(g_i) // " " // N_evals // " INITIAL_VAL")
 
     if (normsq(g_i) .lt. accuracy) then
         call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.g_i) // " " // &
-		  normsq(g_i) // " " // N_evals // " FINAL_VAL")
-	call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, PRINT_VERBOSE)
-	final_E = initial_E
-	return
+                  normsq(g_i) // " " // N_evals // " FINAL_VAL")
+        call print ("n_minim initial config is converged " // norm(g_i) // " " // accuracy, PRINT_VERBOSE)
+        final_E = initial_E
+        return
     endif
 
     h_i = P_g
@@ -2893,87 +2893,87 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     done = .false.
     do while (N_evals .le. max_N_evals .and. (.not.(done)))
 
-	!! max_step_size = 4.0_dp*expected_reduction / norm(g_i)
-	max_step_size = 1.0_dp * expected_reduction / (g_i .dot. (h_i/norm(h_i))) ! dividing by norm(h_i) because n_linmin will normalize h_i
-	! if (max_step_size .gt. 1.0_dp) then
-	    ! max_step_size = 1.0_dp
-	! endif
-	call print("max_step_size "//max_step_size, verbosity=PRINT_VERBOSE)
+        !! max_step_size = 4.0_dp*expected_reduction / norm(g_i)
+        max_step_size = 1.0_dp * expected_reduction / (g_i .dot. (h_i/norm(h_i))) ! dividing by norm(h_i) because n_linmin will normalize h_i
+        ! if (max_step_size .gt. 1.0_dp) then
+            ! max_step_size = 1.0_dp
+        ! endif
+        call print("max_step_size "//max_step_size, verbosity=PRINT_VERBOSE)
 
-	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
-		  normsq(g_i) // " " // N_evals // " n_minim pre linmin")
-	l_error = ERROR_NONE
-	call n_linmin(x_i, bothfunc, g_i, E_i, h_i, &
-		      x_ip1, g_ip1, E_ip1, &
-		      max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, data, l_error)
-	if (l_error == ERROR_MINIM_NOT_CONVERGED) then
-	   if (N_evals > max_N_evals) then
-	     final_E = E_i
-	     RAISE_ERROR_WITH_KIND(l_error, "linmin: n_minim didn't converge", error)
-	   endif
-	   ! we're just going to continue after an unconverged linmin,
-	   CLEAR_ERROR()
-	else
-	   PASS_ERROR_WITH_INFO("linmin: n_minim error", error)
-	endif
+        call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
+                  normsq(g_i) // " " // N_evals // " n_minim pre linmin")
+        l_error = ERROR_NONE
+        call n_linmin(x_i, bothfunc, g_i, E_i, h_i, &
+                      x_ip1, g_ip1, E_ip1, &
+                      max_step_size, accuracy, N_evals, max_N_evals, hook, hook_print_interval, data, l_error)
+        if (l_error == ERROR_MINIM_NOT_CONVERGED) then
+           if (N_evals > max_N_evals) then
+             final_E = E_i
+             RAISE_ERROR_WITH_KIND(l_error, "linmin: n_minim didn't converge", error)
+           endif
+           ! we're just going to continue after an unconverged linmin,
+           CLEAR_ERROR()
+        else
+           PASS_ERROR_WITH_INFO("linmin: n_minim error", error)
+        endif
 
-	call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &
-		    normsq(g_ip1) // " " // N_evals // " n_minim post linmin")
+        call print("cg_n " // 0.0_dp // " " // E_ip1 // " " // (g_ip1.dot.h_i) // " " // &
+                    normsq(g_ip1) // " " // N_evals // " n_minim post linmin")
 
-	if (E_ip1 > E_i) then
-	  final_E = E_i
-	  call print("WARNING:n_minim: n_limin stepped uphill - forces may not be consistent with energy", verbosity=PRINT_ALWAYS)
-	  ! RAISE_ERROR("n_minim: n_limin stepped uphill - forces may not be consistent with energy", error)
-	endif
+        if (E_ip1 > E_i) then
+          final_E = E_i
+          call print("WARNING:n_minim: n_limin stepped uphill - forces may not be consistent with energy", verbosity=PRINT_ALWAYS)
+          ! RAISE_ERROR("n_minim: n_limin stepped uphill - forces may not be consistent with energy", error)
+        endif
 
-	if (normsq(g_ip1) .lt. accuracy) then
-	    call print("n_minim is converged", PRINT_VERBOSE)
-	    E_i = E_ip1
-	    x_i = x_ip1
-	    g_i = g_ip1
-	    done = .true.
-	endif
+        if (normsq(g_ip1) .lt. accuracy) then
+            call print("n_minim is converged", PRINT_VERBOSE)
+            E_i = E_ip1
+            x_i = x_ip1
+            g_i = g_ip1
+            done = .true.
+        endif
 
-	! gamma_i = sum(g_ip1*g_ip1)/sum(g_i*g_i) ! Fletcher-Reeves
-	! gamma_i = sum((g_ip1-g_i)*g_ip1)/sum(g_i*g_i) ! Polak-Ribiere
-	g_i_dot_g_i = g_i .dot. P_g
-	g_ip1_dot_g_i = g_ip1 .dot. P_g
-	!! perhaps have some way of telling apply_precond_func to update/not update preconitioner?
-	if (use_precond) then
-	  call apply_precond_func(x_ip1, g_ip1, P_g, data, error=error)
-	  PASS_ERROR_WITH_INFO("n_minim in-loop preconditioning call", error)
-	else
-	  P_g = g_ip1
-	endif
-	g_ip1_dot_g_ip1 = g_ip1 .dot. P_g
-	gamma_i = (g_ip1_dot_g_ip1 - g_ip1_dot_g_i)/g_i_dot_g_i
-	! steepest descent
-	! gamma_i = 0.0_dp
-	h_i = gamma_i*h_i + P_g
+        ! gamma_i = sum(g_ip1*g_ip1)/sum(g_i*g_i) ! Fletcher-Reeves
+        ! gamma_i = sum((g_ip1-g_i)*g_ip1)/sum(g_i*g_i) ! Polak-Ribiere
+        g_i_dot_g_i = g_i .dot. P_g
+        g_ip1_dot_g_i = g_ip1 .dot. P_g
+        !! perhaps have some way of telling apply_precond_func to update/not update preconitioner?
+        if (use_precond) then
+          call apply_precond_func(x_ip1, g_ip1, P_g, data, error=error)
+          PASS_ERROR_WITH_INFO("n_minim in-loop preconditioning call", error)
+        else
+          P_g = g_ip1
+        endif
+        g_ip1_dot_g_ip1 = g_ip1 .dot. P_g
+        gamma_i = (g_ip1_dot_g_ip1 - g_ip1_dot_g_i)/g_i_dot_g_i
+        ! steepest descent
+        ! gamma_i = 0.0_dp
+        h_i = gamma_i*h_i + P_g
 
-	if (iter .eq. 1) then
-	  expected_reduction = abs(E_i - E_ip1)/10.0_dp
-	else
-	  expected_reduction = abs(E_i - E_ip1)/2.0_dp
-	endif
+        if (iter .eq. 1) then
+          expected_reduction = abs(E_i - E_ip1)/10.0_dp
+        else
+          expected_reduction = abs(E_i - E_ip1)/2.0_dp
+        endif
 
-	E_i = E_ip1
-	x_i = x_ip1
-	g_i = g_ip1
-	! P_g is already P_g_ip1 from gamma_i evaluation code
+        E_i = E_ip1
+        x_i = x_ip1
+        g_i = g_ip1
+        ! P_g is already P_g_ip1 from gamma_i evaluation code
 
-	if (present(hook)) then
-	  call hook(x_i,g_i,E_i,hook_done,(mod(iter-1,my_hook_print_interval) == 0), data)
-	  if (hook_done) done = .true.
-	endif
+        if (present(hook)) then
+          call hook(x_i,g_i,E_i,hook_done,(mod(iter-1,my_hook_print_interval) == 0), data)
+          if (hook_done) done = .true.
+        endif
 
-	call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
-		    normsq(g_i) // " " // N_evals // " n_minim with new dir")
+        call print("cg_n " // 0.0_dp // " " // E_i // " " // (g_i.dot.h_i) // " " // &
+                    normsq(g_i) // " " // N_evals // " n_minim with new dir")
 
-	call print("n_minim loop end, N_evals " // N_evals // " max_N_evals " // max_N_evals // &
-	  " done " // done, PRINT_VERBOSE)
+        call print("n_minim loop end, N_evals " // N_evals // " max_N_evals " // max_N_evals // &
+          " done " // done, PRINT_VERBOSE)
 
-	iter = iter + 1
+        iter = iter + 1
 
     end do
 
@@ -2985,14 +2985,14 @@ function n_minim(x_i, bothfunc, use_precond, apply_precond_func, initial_E, fina
     final_E = E_i
 
     call print("cg_n " // 0.0_dp // " " // final_E // " " // (g_i.dot.h_i) // " " // &
-	    normsq(g_i) // " " // N_evals // " FINAL_VAL")
+            normsq(g_i) // " " // N_evals // " FINAL_VAL")
 
 end function n_minim
 
 subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
   real(dp)::x0(:)  !% Starting vector
   real(dp)::xdir(:)!% Search direction
-  INTERFACE 
+  INTERFACE
      function func(x,data)
        use system_module
        real(dp)::x(:)
@@ -3001,7 +3001,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
      end function func
   END INTERFACE
   logical :: use_func
-  INTERFACE 
+  INTERFACE
      function dfunc(x,data)
        use system_module
        real(dp)::x(:)
@@ -3044,7 +3044,7 @@ subroutine line_scan(x0, xdir, func, use_func, dfunc, data)
 end subroutine line_scan
 
 function func_wrapper(func, x, data, local_energy, gradient, doefunc)
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -3064,8 +3064,8 @@ function func_wrapper(func, x, data, local_energy, gradient, doefunc)
     if (doefunc == E_FUNC_BASIC) then
       func_wrapper = func(x, data, gradient=gradient)
       if (present(local_energy)) then
-	 local_energy = 0.0_dp
-	 local_energy(1) = func_wrapper
+         local_energy = 0.0_dp
+         local_energy(1) = func_wrapper
       endif
     else
       func_wrapper = func(x, data, local_energy=local_energy, gradient=gradient)
@@ -3075,11 +3075,11 @@ end function func_wrapper
 ! Interface is made to imitate the existing interface.
   function preconminim(x_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, &
     hook_print_interval, am_data, status,writehessian,gethessian,getfdhconnectivity,infoverride,infconvext)
-    
+
     implicit none
-    
+
     real(dp),     intent(inout) :: x_in(:) !% Starting position
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -3104,24 +3104,24 @@ end function func_wrapper
         type(precon_data),intent(inout) ::pr
         character(len=1)::am_data(:)
       end subroutine
-    END INTERFACE 
+    END INTERFACE
     type(precon_data):: pr
     character(*), intent(in)    :: method !% 'cg' for conjugate gradients or 'sd' for steepest descent
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-    !% 'convergence_tol'. 
+    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of 'cg' or 'sd' steps
     character(*), intent(in), optional :: efuncroutine !% Control of the objective function evaluation
-    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use. 
+    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use.
     integer, optional :: LM
     optional :: hook
-    INTERFACE 
+    INTERFACE
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
+         logical, optional, intent(in) :: do_print
    character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end INTERFACE
@@ -3129,7 +3129,7 @@ end function func_wrapper
     character(len=1), optional, intent(inout) :: am_data(:)
     integer, optional, intent(out) :: status
     optional :: writehessian
-    INTERFACE 
+    INTERFACE
        subroutine writehessian(x,data,filename)
          use system_module
          real(dp) :: x(:)
@@ -3138,7 +3138,7 @@ end function func_wrapper
        end subroutine writehessian
     end INTERFACE
     optional :: gethessian
-    INTERFACE 
+    INTERFACE
          subroutine gethessian(x,data,FDHess)
          use system_module
          real(dp),intent(in):: x(:)
@@ -3154,12 +3154,12 @@ end function func_wrapper
         integer, intent(out) :: rn
         character(len=1), intent(in)::data(:)
       end subroutine
-    end INTERFACE 
+    end INTERFACE
     ! result
     real(dp), optional :: infoverride
     logical, optional :: infconvext
     integer::preconminim
-  
+
     logical :: doFD,doSD, doCG,doLBFGS,doDLLBFGS,doSHLBFGS,doSHLSR1,doGHLBFGS,doGHLSR1,doGHFD,doSHFD, doGHFDH, doprecon,done
     logical :: doLSbasic,doLSbasicpp,doLSstandard, doLSnone,doLSMoreThuente,doLSunit
     integer :: doefunc
@@ -3179,13 +3179,13 @@ end function func_wrapper
     integer :: LBFGSm, LBFGScount
     integer :: I, n_back,thisind
     integer :: k_out
-    
+
     real(dp), allocatable :: TRcandg(:),TRBs(:),TRyk(:)
     real(dp) :: TRared,TRpred,TRdelta,fcand,TRrho,ftest
     type(precon_data) :: TRB
     real(dp) :: TReta = 0.25
     real(dp) :: TRr = 10.0**(-8)
-    
+
     real(dp), allocatable :: FDhess(:,:)
     integer, allocatable :: IPIV(:)
     real(dp), allocatable :: LBFGSd(:,:), LBFGSl(:,:), SR1testvec(:)
@@ -3266,8 +3266,8 @@ end function func_wrapper
     if (doLBFGS .or. doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doSHFD) then
 
       LBFGSm = 20
-      if ( present(LM) ) LBFGSm = LM    
-    
+      if ( present(LM) ) LBFGSm = LM
+
       allocate(LBFGSs(N,LBFGSm))
       allocate(LBFGSy(N,LBFGSm))
       allocate(LBFGSalp(LBFGSm))
@@ -3281,7 +3281,7 @@ end function func_wrapper
       LBFGScount = 0
       LBFGSy = 0.0_dp
       LBFGSs = 0.0_dp
-      LBFGSdlr = 0.0_dp 
+      LBFGSdlr = 0.0_dp
       LBFGSrho = 0.0
     end if
     if(doDLLBFGS .or. doSHLBFGS .or. doSHLSR1 .or. doSHFD ) then
@@ -3297,7 +3297,7 @@ end function func_wrapper
       allocate(FDHess(N,N))
       allocate(IPIV(N))
     end if
-   
+
 
     doLSbasic = .FALSE.
     doLSbasicpp = .FALSE.
@@ -3319,15 +3319,15 @@ end function func_wrapper
         doefunc = E_FUNC_DOUBLEKAHAN
         allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
-      else 
+      else
         call print('Unrecognized efuncroutine, normally use "basic" or "kahan", aborting for safety')
         call exit()
       end if
-    else 
+    else
       doefunc = E_FUNC_BASIC
        call print('Using naive summation of local energies by default')
     end if
-    
+
     if (doSD .or. doCG .or. doLBFGS) then
     if ( present(linminroutine) ) then
       if (trim(linminroutine) == 'basic') then
@@ -3350,7 +3350,7 @@ end function func_wrapper
         doLSunit = .true.
       else
         call print('Unrecognized linmin routine')
-        call exit() 
+        call exit()
       end if
     else
       call print('Defaulting to basic linesearch')
@@ -3362,11 +3362,11 @@ end function func_wrapper
     if (present(infconvext)) then
       if (infconvext .eqv. .true.) then
         term2norm = .false.
-      end if 
+      end if
     end if
 
     x = x_in
-    
+
     !Main Loop
     this_ls_count = 0
     total_ls_count = 0
@@ -3380,7 +3380,7 @@ end function func_wrapper
     call verbosity_pop()
 #endif
     call system_timer("preconminim/func")
-  
+
    abortcount = 0
    alpha = 0
    this_ls_count = 0
@@ -3396,19 +3396,19 @@ end function func_wrapper
         call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
                   // ' last ls_iter = ' // this_ls_count)
         exit
-      elseif ( maxval(abs(g)) <  convergence_tol .and. .not. term2norm) then    
+      elseif ( maxval(abs(g)) <  convergence_tol .and. .not. term2norm) then
         call print('Extended minim completed with  |df|_infty = '// maxval(abs(g)) // ' < tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
        ! call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |df|^2 = '// normsqgrad// ' max(abs(df)) = '//maxval(abs(g))//' last alpha = '//alpha)
         call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout//' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
                   // ' last ls_iter = ' // this_ls_count)
         exit
-    
+
       end if
 
       call print(trim(method)//" iter = "//n_iter//" f = "//f// ' |g|^2 = '// normsqgrad// ' sg/(|s||g|) = '//dotpgout //' last alpha = '//alpha//' max(abs(g)) = '//maxval(abs(g)) &
                   // ' last ls_iter = ' // this_ls_count,PRINT_NORMAL)
       ! call the hook function
-      if (present(hook)) then 
+      if (present(hook)) then
          call hook(x, g, f, done, (mod(n_iter-1,my_hook_print_interval) == 0), am_data)
       else
          call print("hook is not present", PRINT_VERBOSE)
@@ -3416,12 +3416,12 @@ end function func_wrapper
       !if(n_iter == 1) call build_precon(pr,am_data)
       call build_precon(pr,am_data)
       !call writeprecon(pr,'pr')
-      !call exit() 
-       
+      !call exit()
+
       if (doCG .or. doSD) then
         pgold = pg
-        if (n_iter > 1) then  
-          pg = apply_precon(g,pr,doefunc,init=pgold) 
+        if (n_iter > 1) then
+          pg = apply_precon(g,pr,doefunc,init=pgold)
         elseif (n_iter == 1) then
           pg = apply_precon(g,pr,doefunc)
         end if
@@ -3429,25 +3429,25 @@ end function func_wrapper
 
       sold = s
       if (n_iter > 1 .AND. doCG) then
-        
+
         betanumer = smartdotproduct(pg, (g - gold),doefunc)
         betadenom = smartdotproduct(pgold,gold,doefunc)
         beta = betanumer/betadenom
-        
+
         if (beta > 0) then
           beta = 0
         end if
-        
-        s = -pg + beta*sold 
-   
-      elseif (doLBFGS) then   
+
+        s = -pg + beta*sold
+
+      elseif (doLBFGS) then
 
         !call print(LBFGSrho)
         if (n_iter > 1) then
-          LBFGSs(1:N,1:(LBFGSm-1)) = LBFGSs(1:N,2:LBFGSm) 
-          LBFGSy(1:N,1:(LBFGSm-1)) = LBFGSy(1:N,2:LBFGSm) 
-  
-          LBFGSrho(1:(LBFGSm-1)) = LBFGSrho(2:LBFGSm)  
+          LBFGSs(1:N,1:(LBFGSm-1)) = LBFGSs(1:N,2:LBFGSm)
+          LBFGSy(1:N,1:(LBFGSm-1)) = LBFGSy(1:N,2:LBFGSm)
+
+          LBFGSrho(1:(LBFGSm-1)) = LBFGSrho(2:LBFGSm)
           LBFGSs(1:N,LBFGSm) = x - xold
           LBFGSy(1:N,LBFGSm) = g - gold
           LBFGSrho(LBFGSm) = 1.0/smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,LBFGSm),doefunc)
@@ -3459,35 +3459,35 @@ end function func_wrapper
           thisind = LBFGSm - I + 1
           LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
           !call print(LBFGSy(1:N,thisind))
-          LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)  
+          LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)
         end do
-        if (n_iter == 1) then 
+        if (n_iter == 1) then
           LBFGSz = apply_precon(LBFGSq,pr,doefunc,k_out=k_out)
         else
           LBFGSz = apply_precon(LBFGSq,pr,doefunc,init=LBFGSbuf1,k_out=k_out)
         end if
         LBFGSbuf1 = LBFGSz
         do I = 1,n_back
-          thisind = LBFGSm - n_back + I 
+          thisind = LBFGSm - n_back + I
           LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
-          LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
+          LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind))
         end do
         s = -LBFGSz
       elseif (doFD) then
-        
+
         call gethessian(x,am_data,FDHess)
         !call writemat(FDHess,'densehess' // n_iter)
         s = -g
-        call dgesv(size(x),1,FDHess,size(x),IPIV,s,size(x),INFO) 
+        call dgesv(size(x),1,FDHess,size(x),IPIV,s,size(x),INFO)
       else
-        
+
         s = -pg
-      
+
       end if
-      
+
       dirderivvec(n_iter) = smartdotproduct(g,s,doefunc)
       dotpgout = -dirderivvec(n_iter)/(norm(g)*norm(s))
-      
+
       if (dirderivvec(n_iter) > 0) then
         call print('Problem, directional derivative of search direction = '// dirderivvec(n_iter))
         if(doLBFGS) then
@@ -3498,7 +3498,7 @@ end function func_wrapper
         if (abortcount >= 5) then
           call print(' Extended Minim aborted due to multiple bad search directions, possibly reached machine precision')
           call print('  |df|^2 = '// normsqgrad // ', tolerance = ' //  convergence_tol // ' total linesearch iterations = '// total_ls_count)
-          
+
           !call writehessian(x,am_data,'outfinal')
           exit
         end if
@@ -3512,20 +3512,20 @@ end function func_wrapper
       !initial guess of alpha
       alpha = init_alpha(alpvec,dirderivvec,n_iter)
 
-     if(n_iter == 1 .and. (doCG .or. doSD)) then 
-        alpha = calc_amax(s,pr,doefunc) 
+     if(n_iter == 1 .and. (doCG .or. doSD)) then
+        alpha = calc_amax(s,pr,doefunc)
       elseif (doLBFGS .and. (pr%precon_id == 'C1' .or. pr%precon_id == 'LJ')) then
-        alpha = 1.0 
+        alpha = 1.0
       else
         alpha = init_alpha(alpvec,dirderivvec,n_iter)
         if (pr%precon_id == 'ID') then
           alpha = alpha*2.0
         end if
       end if
-      
+
       gold = g
-      amax = calc_amax(s,pr,doefunc,infoverride) 
-      call print('Beginning linesearch, initial alpha = ' //alpha// ', alpha_max = ' //amax ,PRINT_VERBOSE) 
+      amax = calc_amax(s,pr,doefunc,infoverride)
+      call print('Beginning linesearch, initial alpha = ' //alpha// ', alpha_max = ' //amax ,PRINT_VERBOSE)
       if (doLSbasic) then
         alpha = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,am_data,dirderivvec(n_iter),this_ls_count,amaxin=amax)
         !call print('moo1')
@@ -3540,7 +3540,7 @@ end function func_wrapper
       elseif (doLSunit) then
         alpha = 1.0
         call system_timer("preconminim/func")
-        f =  func_wrapper(func,x+s,am_data,doefunc=doefunc) 
+        f =  func_wrapper(func,x+s,am_data,doefunc=doefunc)
         call system_timer("preconminim/func")
       elseif (doLSnone) then
         !do nothing
@@ -3548,7 +3548,7 @@ end function func_wrapper
       end if
       total_ls_count = total_ls_count + this_ls_count
       alpvec(n_iter) = alpha
-      
+
       xold = x
       if (alpha < 10.0_dp**(-14) ) then
         call print(' Extended Minim aborted due to being unable to find a step along the given descent direction, probably your dE is not accurate else extremely badly conditioned')
@@ -3556,7 +3556,7 @@ end function func_wrapper
         exit
       end if
       x = x + alpha*s
-        
+
       elseif (doDLLBFGS .or. doSHLBFGS .or. doSHLSR1  .or. doSHFD ) then
         if (n_iter == 1) then
           call system_timer("preconminim/func")
@@ -3565,26 +3565,26 @@ end function func_wrapper
 #endif
           f =  func_wrapper(func,x,am_data,local_energy,g,doefunc=doefunc)
           normsqgrad = smartdotproduct(g,g,doefunc)
-          TRDelta = 1.0 
+          TRDelta = 1.0
           call build_precon(pr,am_data)
 #ifndef _OPENMP
           call verbosity_pop()
 #endif
           call system_timer("preconminim/func")
           call print(trim(method)//" iter = 0 f = "//f// ' |g|^2 = '// normsqgrad,PRINT_NORMAL)
-        end if  
+        end if
         n_back = min(LBFGSm,LBFGScount)
-        
+
         if (doSHLBFGS) then
-          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doBFGS=.true.) 
+          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doBFGS=.true.)
         elseif (doSHLSR1) then
-          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doSR1=.true.) 
+          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doSR1=.true.)
         elseif (doSHFD) then
           call gethessian(x,am_data,FDHess)
-          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doFD=.true.,FDhess=FDHess) 
+          s = steihaug(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doFD=.true.,FDhess=FDHess)
         elseif (doDLLBFGS) then
-          s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr) 
-        end if  
+          s = LBFGSdogleg(x,g,pr,TRDelta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr)
+        end if
         xcand = x + s
         normsqs = Pdotproduct(s,s,pr,doefunc)
 
@@ -3597,7 +3597,7 @@ end function func_wrapper
         call verbosity_pop()
 #endif
         call system_timer("preconminim/func")
-        !call print(f // '     '//fcand)      
+        !call print(f // '     '//fcand)
         if (doDLLBFGS .or. doSHLBFGS) then
           TRBs = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,s,pr,doefunc)
         elseif (doSHLSR1) then
@@ -3609,7 +3609,7 @@ end function func_wrapper
         TRared = calcdeltaE(doefunc,f,fcand,local_energy,local_energycand)
         TRpred = -( smartdotproduct(g,s,doefunc) + 0.5*(smartdotproduct(s,TRBs,doefunc)) )
         TRrho = TRared/TRpred
-       
+
         if (TRrho < 0) then
           abortcount = abortcount+1
         else
@@ -3620,26 +3620,26 @@ end function func_wrapper
           call print(' Extended Minim aborted due to multiple bad trust region models, possibly reached machine precision')
           exit
         end if
-        
+
         if (TRrho < 0.25) then
           TRDelta = 0.25*TRdelta
         else if (TRrho > 0.75 .and. abs(sqrt(normsqs) - TRDelta) < 10.0**(-2.0)) then
           TRDelta = 2.0*TRDelta
         end if
-    
+
         if (TRrho > TReta) then
           xold = x
           gold = g
- 
+
           x = xcand
-          f = fcand     
-          local_energy = local_energycand     
+          f = fcand
+          local_energy = local_energycand
           g = gcand
           normsqgrad = smartdotproduct(g,g,doefunc)
           call build_precon(pr,am_data)
-        
+
         end if
-        
+
         SR1doupdate = .false.
         if (doSHLSR1) then
           SR1testvec = g - gold - calc_LSR1_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,x-xold,pr,doefunc)
@@ -3647,20 +3647,20 @@ end function func_wrapper
           SR1testRHS = 10.0**(-8.0)*sqrt(Pdotproduct(x-xold,x-xold,pr,doefunc))*sqrt(Pdotproduct(SR1testvec,SR1testvec,pr,doefunc))
           if(SR1testLHS >= SR1testRHS) SR1doupdate = .true.
         end if
-         
+
         if (doLBFGS .or. doDLLBFGS .or. doSHLBFGS .or. SR1doupdate) then
-           
+
           LBFGSs(1:N,1:(LBFGSm-1)) = LBFGSs(1:N,2:LBFGSm)
           LBFGSy(1:N,1:(LBFGSm-1)) = LBFGSy(1:N,2:LBFGSm)
           LBFGSdlr(1:(LBFGSm-1),1:(LBFGSm-1)) = LBFGSdlr(2:LBFGSm,2:LBFGSm)
-            
+
           LBFGSs(1:N,LBFGSm) = x - xold
           LBFGSy(1:N,LBFGSm) = g - gold
           LBFGScount = LBFGScount + 1
           n_back = min(LBFGSm,LBFGScount)
           do I = 1,n_back
             thisind = LBFGSm - I + 1
-            
+
             LBFGSdlr(LBFGSm,thisind) = smartdotproduct(LBFGSs(1:N,LBFGSm),LBFGSy(1:N,thisind),doefunc)
             LBFGSdlr(thisind,LBFGSm) = smartdotproduct(LBFGSs(1:N,thisind),LBFGSy(1:N,LBFGSm),doefunc)
             if(allocated(LBFGSd))  deallocate(LBFGSd)
@@ -3691,17 +3691,17 @@ end function func_wrapper
 
       if (n_iter >= max_steps) then
         exit
-      end if     
+      end if
       n_iter = n_iter+1
-   
+
     end do
-    
+
     x_in = x
-    
+
   end function preconminim
 
   function fdhmultiply(x,FDH_rows,FDH_H,FDH_diag)
-  
+
     real(dp) :: x(:), FDH_H(:)
     integer :: FDH_rows(:), FDH_diag(:)
     real(dp) :: fdhmultiply(size(x))
@@ -3711,7 +3711,7 @@ end function func_wrapper
     N = size(x)
     NH = size(FDH_H)
     fdhmultiply = 0.0
-    
+
     colind = 1
     do I = 1,NH
       rowind = FDH_rows(I)
@@ -3725,11 +3725,11 @@ end function func_wrapper
     end do
 
   end function
- 
+
   function LBFGSdogleg(x,g,pr,Delta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr) result(s)
-    
+
     implicit none
-    
+
     real(dp) :: x(:),g(:)
     type(precon_data) :: pr
     real(dp) :: Delta
@@ -3747,7 +3747,7 @@ end function func_wrapper
     deltak = pr%energy_scale
     gammak = 1.0/deltak
     LBFGSm = size(LBFGSs,dim=2)
-    
+
     LBFGSr = 0.0
     LBFGSd = 0.0
     LBFGSl = 0.0
@@ -3759,19 +3759,19 @@ end function func_wrapper
         if (I > J) LBFGSl(I,J) = LBFGSdlr(LBFGSm-n_back+I,LBFGSm-n_back+J)
       end do
     end do
- 
+
     Bg = calc_LBFGS_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,g,pr,doefunc)
     su = -(smartdotproduct(g,g,doefunc)/smartdotproduct(g,Bg,doefunc))*g
     sunorm = sqrt(Pdotproduct(su,su,pr,doefunc))
     if (sunorm >=  Delta) then
       s = su*Delta/sunorm
-    else 
+    else
       LBFGSrinv = LBFGSr
       if (n_back >= 1) then
         call dgetrf(n_back,n_back,LBFGSrinv,n_back,IPIV,INFO)
         call dgetri(n_back,LBFGSrinv,n_back,IPIV,WORK,n_back,INFO)
       end if
-      sqn = -calc_LBFGS_Hk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSd,LBFGSrinv,gammak,g,pr,doefunc) 
+      sqn = -calc_LBFGS_Hk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSd,LBFGSrinv,gammak,g,pr,doefunc)
       sqnnorm = sqrt(Pdotproduct(sqn,sqn,pr,doefunc))
       if (sqnnorm <= Delta) then
         s = sqn
@@ -3787,9 +3787,9 @@ end function func_wrapper
   end function
 
   function steihaug(x,g,pr,Delta,doefunc,n_back,LBFGSs,LBFGSy,LBFGSdlr,doSR1,doBFGS,doFD,FDHess) result(s)
- 
+
     implicit none
-  
+
     real(dp) :: x(:),g(:)
     type(precon_data) :: pr
     real(dp) :: Delta
@@ -3800,7 +3800,7 @@ end function func_wrapper
     real(dp), optional :: FDHess(:,:)
     real(dp) :: s(size(x))
     real(dp) :: a,b,c,tau
-   
+
     real(dp) :: alpn,alpd,betn,alp,bet,normzcand,normr
     integer :: thisind,I,J,K,N,thisind2
     integer :: LBFGSm
@@ -3815,10 +3815,10 @@ end function func_wrapper
     integer :: cg_iter_count
 
     LBFGSm = size(LBFGSs,dim=2)
-    N = size(x)    
+    N = size(x)
     first_cg = .true.
 
-    deltak=pr%energy_scale 
+    deltak=pr%energy_scale
     !Extract submatrices of S^T*Y
     LBFGSd = 0.0_dp
     LBFGSl = 0.0_dp
@@ -3828,13 +3828,13 @@ end function func_wrapper
         if (I > J) LBFGSl(I,J) = LBFGSdlr(LBFGSm-n_back+I,LBFGSm-n_back+J)
       end do
     end do
-    
+
     !Main Steihaug loop
     z = 0.0_dp
     r = -g
     rtilde = apply_precon_gs(r,pr,doefunc,force_k=10)
     d = rtilde
-    do     
+    do
       if(present(doSR1)) then
         Bd = calc_LSR1_Bk_mult_v(LBFGSs(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSy(1:N,(LBFGSm-n_back+1):LBFGSm),LBFGSl,LBFGSd,d,pr,doefunc)
       elseif(present(doBFGS)) then
@@ -3843,7 +3843,7 @@ end function func_wrapper
         BD = smartmatmul(FDhess,d,doefunc)
       end if
       alpd = smartdotproduct(d,Bd,doefunc)
-      if (alpd <= 0.0) then 
+      if (alpd <= 0.0) then
         a = Pdotproduct(d,d,pr,doefunc)
         b = 2.0*Pdotproduct(z,d,pr,doefunc)
         c = Pdotproduct(z,z,pr,doefunc) - Delta**2.0
@@ -3876,18 +3876,18 @@ end function func_wrapper
       d = rtilde + bet*d
     end do
   end function
-  
+
   function Pdotproduct(v1,v2,pr,doefunc)
-    
+
     implicit none
-    
+
     real(dp) :: v1(:),v2(:)
     type(precon_data) :: pr
     integer :: doefunc
     real(dp) :: Pdotproduct
 
     real(dp) :: Pv(size(v2))
-    
+
     Pv = do_mat_mult_vec(pr,v2,doefunc)
 
     Pdotproduct = smartdotproduct(v1,Pv,doefunc)
@@ -3896,7 +3896,7 @@ end function func_wrapper
   function calc_LBFGS_Bk_mult_v(LBFGSs,LBFGSy,LBFGSl,LBFGSd,v,pr,doefunc) result(Bkv)
 
     implicit none
-    
+
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSl(:,:), LBFGSd(:,:), v(:)
     type(precon_data) :: pr
     integer :: doefunc
@@ -3912,24 +3912,24 @@ end function func_wrapper
     if (n_back>=1) then
       allocate(IPIV(n_back*2))
       allocate(midmat(2*n_back,2*n_back),midvec(2*n_back))
-    
+
       midvec(1:n_back) = smartmatmul(transpose(LBFGSs),do_mat_mult_vec(pr,v,doefunc),doefunc)
       midvec((n_back+1):) = smartmatmul(transpose(LBFGSy),v,doefunc)
-      
+
       midmat(1:n_back,1:n_back) =  smartmatmul(transpose(LBFGSs),do_mat_mult_vecs(pr,LBFGSs,doefunc),doefunc)
       midmat((n_back+1):,1:n_back) = LBFGSl
       midmat(1:n_back,(n_back+1):) = transpose(LBFGSl)
       midmat((n_back+1):,(n_back+1):) = -LBFGSd
-  
+
       call dgesv(n_back*2,1,midmat,n_back*2,IPIV,midvec,n_back*2,INFO)
-      
+
       Bkv =  Bkv - do_mat_mult_vec(pr,smartmatmul(LBFGSs,midvec(1:n_back),doefunc),doefunc) - smartmatmul(LBFGSy,midvec((n_back+1):),doefunc)
     end if
 
   end function
- 
+
   function calc_LBFGS_Hk_mult_v(LBFGSs,LBFGSy,LBFGSd,LBFGSrinv,gammak,v,pr,doefunc) result(Hkv)
-    
+
     implicit none
 
 !    real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSrinv(:,:), gammak, v(:)
@@ -3940,35 +3940,35 @@ end function func_wrapper
 !    integer :: n_back
 !    integer :: INFO
 !    real(dp), allocatable :: midmat(:,:), midvec(:)
-!    
+!
 !    n_back = size(LBFGSs,dim=2)
 !    Hkv = apply_precon_gs(v,pr,doefunc,force_k=20)
 !    if (n_back>=1) then
 !      allocate(midmat(2*n_back,2*n_back),midvec(2*n_back))
 !      midvec(1:n_back) = smartmatmul(transpose(LBFGSs),v,doefunc)
 !      midvec((n_back+1):2*n_back) = smartmatmul(transpose(LBFGSy),apply_precon_gs(v,pr,doefunc,force_k=20),doefunc)
-!    
+!
 !      midmat = 0.0
 !      midmat(1:n_back,1:n_back) =  smartmatmul(transpose(LBFGSrinv),smartmatmul(LBFGSd + smartmatmul(transpose(LBFGSy),apply_precon_vecs(LBFGSy,pr,doefunc),doefunc),LBFGSrinv,doefunc),doefunc)
 !      midmat((n_back+1):,1:n_back) = -LBFGSrinv
 !      midmat(1:n_back,(n_back+1):) = -transpose(LBFGSrinv)
-!      
+!
 !      midvec = smartmatmul(midmat,midvec,doefunc)
-!      
+!
 !      Hkv =  Hkv + smartmatmul(LBFGSs,midvec(1:n_back),doefunc) + apply_precon_gs(smartmatmul(LBFGSy,midvec((n_back+1):),doefunc),pr,doefunc,force_k=20)
 !    end if
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSrinv(:,:), gammak, v(:)
     real(dp) :: Hkv(size(v))
     type(precon_data) :: pr
     integer :: doefunc
-  
+
     integer :: I,J,n_back,thisind,N
     real(dp), allocatable :: LBFGSq(:),LBFGSz(:),LBFGSalp(:),LBFGSbet(:),LBFGSrho(:)
-    
+
     N = size(LBFGSs,dim=1)
     n_back = size(LBFGSs,dim=2)
     allocate(LBFGSq(N),LBFGSz(N),LBFGSbet(n_back),LBFGSalp(n_back),LBFGSrho(n_back))
-    
+
     do I =1,n_back
       LBFGSrho(I) = 1.0/smartdotproduct(LBFGSs(1:N,I),LBFGSy(1:N,I),doefunc)
     end do
@@ -3977,23 +3977,23 @@ end function func_wrapper
       thisind = n_back - I + 1
 
       LBFGSalp(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSs(1:N,thisind),LBFGSq,doefunc)
-      LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)  
+      LBFGSq = LBFGSq - LBFGSalp(thisind)*LBFGSy(1:N,thisind)
     end do
-      
+
     LBFGSz = apply_precon(LBFGSq,pr,doefunc)
-    
+
     do I = 1,n_back
-      thisind = I 
+      thisind = I
 
       LBFGSbet(thisind) = LBFGSrho(thisind)*smartdotproduct(LBFGSy(1:N,thisind),LBFGSz,doefunc)
-      LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind)) 
+      LBFGSz = LBFGSz + LBFGSs(1:N,thisind)*(LBFGSalp(thisind) - LBFGSbet(thisind))
     end do
     Hkv = LBFGSz
 
    end function
 
   function calc_LSR1_Bk_mult_v(LBFGSs,LBFGSy,LBFGSd,LBFGSl,v,pr,doefunc) result(Bkv)
-    
+
     implicit none
 
     real(dp) :: LBFGSs(:,:), LBFGSy(:,:), LBFGSd(:,:), LBFGSl(:,:), v(:)
@@ -4004,14 +4004,14 @@ end function func_wrapper
     integer :: n_back, INFO
     real(dp), allocatable :: midmat(:,:), midvec(:)
     integer, allocatable :: IPIV(:)
-    
+
     n_back = size(LBFGSs,dim=2)
     Bkv = do_mat_mult_vec(pr,v,doefunc)
     if (n_back >= 1) then
       allocate(IPIV(n_back))
       allocate(midmat(n_back,n_back),midvec(n_back))
       midvec = smartmatmul(transpose(LBFGSy - do_mat_mult_vecs(pr,LBFGSs,doefunc)),v,doefunc)
-      midmat = LBFGSd + LBFGSl + transpose(LBFGSl) - smartmatmul(transpose(LBFGSs),do_mat_mult_vecs(pr,LBFGSs,doefunc),doefunc) 
+      midmat = LBFGSd + LBFGSl + transpose(LBFGSl) - smartmatmul(transpose(LBFGSs),do_mat_mult_vecs(pr,LBFGSs,doefunc),doefunc)
       call dgesv(n_back,1,midmat,n_back,IPIV,midvec,n_back,INFO)
       Bkv = Bkv + smartmatmul(LBFGSy-do_mat_mult_vecs(pr,LBFGSs,doefunc),midvec,doefunc)
     end if
@@ -4037,11 +4037,11 @@ end function func_wrapper
 
     P_amax = pr%length_scale/sqrt(pdotproduct(g,g,pr,doefunc))
     inf_amax = infcoeff/maxval(abs(g))
-    
+
     calc_amax = min(P_amax,inf_amax)
 
   end function
-  
+
   !basic linear backtracking linesearch, relies on changing initial alpha to increase step size
   function linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d0,n_iter_final,amaxin)
 
@@ -4053,7 +4053,7 @@ end function func_wrapper
     real(dp), intent(inout) :: g(:)
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
-   INTERFACE 
+   INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -4086,14 +4086,14 @@ end function func_wrapper
     end if
 
     if(alpha>amax) alpha = amax
-    
+
     f0 = f
     local_energy0 = local_energy
     ls_it = 0
     do
 
       !f1 =  func_wrapper(func,x+alpha*s,data,doefunc=doefunc)
- 
+
       call system_timer("preconminim/linesearch_basic/func")
 #ifndef _OPENMP
       call verbosity_push_decrement()
@@ -4101,10 +4101,10 @@ end function func_wrapper
       f1 =  func_wrapper(func,x+alpha*s,data,local_energy1,g1,doefunc=doefunc)
 #ifndef _OPENMP
       call verbosity_pop()
-#endif     
+#endif
       call system_timer("preconminim/linesearch_basic/func")
       call print("linesearch_basic loop "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//alpha)
-      
+
       deltaE = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
       !call print(deltaE)
 
@@ -4119,13 +4119,13 @@ end function func_wrapper
       if(ls_it>ls_it_max) then
         exit
       end if
-      
+
       alpha = alpha/4.0_dp
-      
+
       if (alpha <1.0e-15) then
         exit
       end if
-       
+
     end do
 
     call print("linesearch_basic returning "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//alpha)
@@ -4148,7 +4148,7 @@ end function func_wrapper
     real(dp) :: s(:)
     real(dp) :: f
     real(dp) :: alpha
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -4173,14 +4173,14 @@ end function func_wrapper
     real(dp) :: deltaE
     !real(dp) :: local_energy0(size(local_energy)),local_energy1(size(local_energy))
 
-    alpha = alpha*4.0 
+    alpha = alpha*4.0
     if (present(amaxin)) then
       amax = amaxin
       if(alpha>amax) alpha = amax
     else
       amax = 100.0_dp*alpha
     end if
-   
+
     a1 = alpha
     f0 = f
     ls_it = 1
@@ -4209,18 +4209,18 @@ end function func_wrapper
       if(ls_it>ls_it_max) then
         exit
       end if
-      
+
       ls_it = ls_it + 1
       acand = cubic_min(0.0_dp,f0,d0,a1,f1,d1)
       !acand = quad_min(0.0_dp,a1,f0,f1,d0)
-      
-      !call print(a1 //' '// f0//' ' //f1// ' ' //d0) 
+
+      !call print(a1 //' '// f0//' ' //f1// ' ' //d0)
       !call print('a1=' // a1 // ' acand=' // acand)
-          
+
       !if ( acand == 0.0_dp)  acand = a1/4.0_dp
       acand = max(0.1*a1, min(acand,0.8*a1) )
       a1 = acand
-       
+
       !call print(a1)
 
     end do
@@ -4242,7 +4242,7 @@ end function func_wrapper
     real(dp), intent(inout) :: g(:)
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -4263,7 +4263,7 @@ end function func_wrapper
     integer, parameter :: ls_it_max = 20
     real(dp), parameter :: C1 = 10.0_dp**(-4.0)
     real(dp), parameter :: C2 = 0.9
-    real(dp) :: amax 
+    real(dp) :: amax
     real(dp), parameter :: amin = 10.0_dp**(-5.0)
 
     real(dp) :: f0, f1, ft, a0, a1, a2, at, d0, d1, dt
@@ -4279,18 +4279,18 @@ end function func_wrapper
     local_energy0 = local_energy
     d0 = d
     a1 = alpha
-   
-   
+
+
     if (present(amaxin)) then
       amax = amaxin
       if(a1>amax) a1 = amax
     else
       amax = 100.0_dp*alpha
     end if
-   
+
     !begin bracketing
     ls_it = 0
-    do 
+    do
 
       call system_timer("preconminim/linesearch_standard/func")
 #ifndef _OPENMP
@@ -4301,14 +4301,14 @@ end function func_wrapper
       call verbosity_pop()
 #endif
       call system_timer("preconminim/linesearch_standard/func")
-    
-    
+
+
       ls_it = ls_it + 1
       call print("linesearch_standard bracket "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
 
-     
+
       d1 = smartdotproduct(s,g1,doefunc)
-      
+
       deltaE = calcdeltaE(doefunc,f1,f,local_energy1,local_energy)
       deltaE0 = calcdeltaE(doefunc,f1,f0,local_energy1,local_energy0)
 
@@ -4327,7 +4327,7 @@ end function func_wrapper
 
       if ( abs(d1) <= C2*abs(d) ) then
         dozoom = .FALSE.
-        exit 
+        exit
       end if
 
       if ( d1 >= 0.0_dp) then
@@ -4345,27 +4345,27 @@ end function func_wrapper
       if(ls_it>ls_it_max) then
         call print('linesearch_standard Ran out of line search iterations in phase 1')
         a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-	! *1 quantities will be copied into function arguments for return at end
-	f1 = f
-	g1 = g
-	local_energy1 = local_energy
+        ! *1 quantities will be copied into function arguments for return at end
+        f1 = f
+        g1 = g
+        local_energy1 = local_energy
         n_iter_final = n_iter_final + ls_it
-        dozoom = .FALSE.   
+        dozoom = .FALSE.
         exit
       end if
 
       if(a1 >= amax) then
         call print('linesearch_standard Bracketing failed to find an interval, reverting to basic linesearch')
         a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-	! *1 quantities will be copied into function arguments for return at end
-	f1 = f
-	g1 = g
-	local_energy1 = local_energy
+        ! *1 quantities will be copied into function arguments for return at end
+        f1 = f
+        g1 = g
+        local_energy1 = local_energy
         n_iter_final = n_iter_final + ls_it
-        dozoom = .FALSE.   
+        dozoom = .FALSE.
         exit
       end if
-      
+
       a2 = min(a1 + 4.0*(a1-a0),amax)
       a0 = a1
       a1 = a2
@@ -4378,15 +4378,15 @@ end function func_wrapper
       !call print(a1)
 
     end do
-   
-    
+
+
     if ( dozoom ) then
-      
+
       !ls_it = ls_it+1
       do
         at = cubic_min(alo,flo,dlo,ahi,fhi,dhi)
-        
-	call system_timer("preconminim/linesearch_standard/func")
+
+        call system_timer("preconminim/linesearch_standard/func")
 #ifndef _OPENMP
         call verbosity_push_decrement()
 #endif
@@ -4394,29 +4394,29 @@ end function func_wrapper
 #ifndef _OPENMP
         call verbosity_pop()
 #endif
-	call system_timer("preconminim/linesearch_standard/func")
-        
+        call system_timer("preconminim/linesearch_standard/func")
+
         ls_it = ls_it + 1
         call print("linesearch_standard zoom "//" iter = "//ls_it//" f = "//ft// ' |g|^2 = '// normsq(gt)//' last alpha = '//at)
 
         deltaET = calcdeltaE(doefunc,ft,f0,local_energyT,local_energy0)
         deltaETlo = calcdeltaE(doefunc,ft,flo,local_energyT,local_energylo)
-      
+
         if ( deltaET >  C1*at*d .OR. deltaETlo >= 0.0) then
-          
+
           ahi = at
           fhi = ft
           local_energyhi = local_energyT
 
-        else 
+        else
          dt = dot_product(gt,s)
-         
-          
+
+
           if ( abs(dt) <= C2*abs(d) ) then
 
             a1 = at
             f1 = ft
-	    g1 = gt
+            g1 = gt
             local_energy1 = local_energyT
             exit
 
@@ -4427,30 +4427,30 @@ end function func_wrapper
             ahi = alo
             fhi = flo
             local_energyhi = local_energylo
- 
+
           end if
-           
+
           alo = at
           flo = ft
           local_energylo = local_energyT
-  
+
         end if
 
         if (abs(ahi - alo) < amin) then
           call print('Bracket got small without satisfying curvature condition')
-          
+
           deltaET = calcdeltaE(doefunc,ft,f,local_energyT,local_energy)
           if ( deltaET < C1*at*d) then
             call print('Bracket lowpoint satisfies sufficient decrease, using that')
             a1 = at
-	    f1 = ft
-	    g1 = gt
+            f1 = ft
+            g1 = gt
             exit
           else
             call print('Bracket lowpoint no good, doing a step of basic linesearch with original initial inputs')
             a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-	    f1 = ft
-	    g1 = gt
+            f1 = ft
+            g1 = gt
             n_iter_final = n_iter_final + ls_it
             exit
           end if
@@ -4459,15 +4459,15 @@ end function func_wrapper
         if(ls_it>ls_it_max) then
           call print('Ran out of line search iterations in phase 2')
           a1 = linesearch_basic(x,s,f,g,local_energy,alpha,func,doefunc,data,d,n_iter_final,amax)
-	  f1 = f
-	  g1 = g
-	  local_energy1 = local_energy
+          f1 = f
+          g1 = g
+          local_energy1 = local_energy
           n_iter_final = n_iter_final + ls_it
           exit
         end if
 
-        
-      end do  ! zoom loop 
+
+      end do  ! zoom loop
     end if
 
     call print("linesearch_standard returning "//" iter = "//ls_it//" f = "//f1// ' |g|^2 = '// normsq(g1)//' last alpha = '//a1)
@@ -4487,7 +4487,7 @@ end function func_wrapper
     real(dp), intent(inout) :: finit
     real(dp), intent(inout) :: local_energy(:)
     real(dp) :: alpha
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -4509,10 +4509,10 @@ end function func_wrapper
     real(dp), parameter :: ftol = 10.0_dp**(-4.0) ! sufficient decrease
     real(dp), parameter :: gtol = 0.9 ! curvature
     real(dp), parameter :: xtol = 10.0_dp**(-5.0) ! bracket size
-    real(dp) :: amax 
+    real(dp) :: amax
     real(dp), parameter :: amin = 10.0_dp**(-10.0)
-  
-   
+
+
     logical :: brackt
     integer :: nfev,stage
     real(dp) :: f, g, ftest, fm, fx, fxm, fy, fym, ginit, gtest, gm, gx, gxm, gy, gym, stx, sty, stmin, stmax, width, width1,stp
@@ -4529,7 +4529,7 @@ end function func_wrapper
     else
       stpmax = 100.0_dp*stp
     end if
-    
+
 
     brackt = .false.
     stage = 1
@@ -4538,7 +4538,7 @@ end function func_wrapper
     gtest = ftol*d
     width = stpmax-stpmin
     width1 = width/p5
-    
+
     stx = 0.0_dp
     fx = finit
     gx = ginit
@@ -4547,12 +4547,12 @@ end function func_wrapper
     gy = ginit
     stmin = 0.0_dp
     stmax = stp + xtrapu*stp
-    
-    ls_it = 0   
+
+    ls_it = 0
     do
-      
+
       ftest = finit + stp*gtest
-    
+
       ls_it = ls_it + 1
       call system_timer("preconminim/linesearch_morethuente/func")
 #ifndef _OPENMP
@@ -4566,10 +4566,10 @@ end function func_wrapper
 
       f = calcE(doefunc,f1,local_energy1)
       g = smartdotproduct(g1,s,doefunc)
-     
+
       ftest = finit + stp*gtest
       if (stage .eq. 1 .and. f .le. ftest .and. g .ge. 0.0_dp) stage = 2
-      
+
       if (brackt .and. (stp .le. stmin .or. stp .ge. stmax)) then
         call print("Rounding errors in linesearch")
         exit
@@ -4585,30 +4585,30 @@ end function func_wrapper
       if (stp .eq. stpmin .and. (f .gt. ftest .or. g .ge. gtest)) then
         call print("Minimum stepsize reached")
         exit
-      end if 
-      
+      end if
+
       if (f .le. ftest .and. abs(g) .le. gtol*(-ginit)) exit
-       
+
       if (stage .eq. 1 .and. f .le. fx .and. f .gt. ftest) then
-        
+
         fm = f - stp*gtest
         fxm = fx - stx*gtest
         fym = fy - sty*gtest
         gm = g - gtest
         gxm = gx - gtest
         gym = gy - gtest
-        
+
         call cstep(stx,fxm,gxm,sty,fym,gym,stp,fm,gm,brackt,stmin,stmax)
-              
+
         fx = fxm + stx*gtest
         fy = fym + sty*gtest
         gx = gxm + gtest
         gy = gym + gtest
-      
-      else  
-      
+
+      else
+
         call cstep(stx,fx,gx,sty,fy,gy,stp,f,g,brackt,stmin,stmax)
-      
+
       end if
 
       if (brackt) then
@@ -4619,27 +4619,27 @@ end function func_wrapper
         stmin = stp + xtrapl*(stp-stx)
         stmax = stp + xtrapu*(stp-stx)
       end if
-        
+
       stp = max(stp,stpmin)
       stp = min(stp,stpmax)
-      
-      if (brackt .and. (stp .le. stmin .or. stp .ge. stmax) .or. (brackt .and. stmax-stmin .le. xtol*stmax)) stp = stx   
-        
-      call print(stx// ' '//sty// ' '//stp) 
+
+      if (brackt .and. (stp .le. stmin .or. stp .ge. stmax) .or. (brackt .and. stmax-stmin .le. xtol*stmax)) stp = stx
+
+      call print(stx// ' '//sty// ' '//stp)
     end do
     finit = f
     linesearch_morethuente = stp
-  end function 
+  end function
 
   subroutine cstep(stx,fx,dx,sty,fy,dy,stp,fp,dpp,brackt,stpmin,stpmax)
     implicit none
-    
+
     real(dp),intent(inout) :: stx,fx,dx,sty,fy,dy,stp,fp,dpp
     logical, intent(inout) :: brackt
     real(dp), intent(in) :: stpmin,stpmax
 
     integer :: info
-    real(dp), parameter :: p66 = 0.66 
+    real(dp), parameter :: p66 = 0.66
     logical :: bound
     real(dp) :: sgnd,theta,s,gamm,p,q,r,stpc,stpq,stpf
 
@@ -4674,7 +4674,7 @@ end function func_wrapper
       stpq = stx + ((dx/((fx-fp)/(stp-stx)+dx))/2.0)*(stp-stx)
       if( abs(stpc-stx) .lt. abs(stpq-stx)) then
         stpf = stpc
-      else 
+      else
         stpf = stpc + (stpq-stpc)/2.0
       end if
       brackt = .true.
@@ -4694,8 +4694,8 @@ end function func_wrapper
       stpq = stp + (dpp/(dpp-dx))*(stx-stp)
       if( abs(stpc-stp) .gt. abs(stpq-stp)) then
         stpf = stpc
-      else 
-        stpf = stpq 
+      else
+        stpf = stpq
       end if
       brackt = .true.
     elseif (abs(dpp) .lt. abs(dx))then
@@ -4704,7 +4704,7 @@ end function func_wrapper
       theta = 3.0*(fx - fp)/(stp - stx) + dx + dpp
       s = max(abs(theta),abs(dx),abs(dpp))
       gamm = s*sqrt(max(0.0,(theta/s)**2.0 - (dx/s)*(dpp/s)))
-      if (stp .gt. stx) then 
+      if (stp .gt. stx) then
         gamm = -gamm
       end if
       p = (gamm - dpp) + theta
@@ -4721,7 +4721,7 @@ end function func_wrapper
       if (brackt) then
         if(abs(stpc-stp) .lt. abs(stpq-stp))then
           stpf = stpc
-        else 
+        else
           stpf = stpq
         end if
         if(stp .gt. stx) then
@@ -4755,16 +4755,16 @@ end function func_wrapper
         stpf = stpc
       elseif(stp.gt.stx)then
         stpf = stpmax
-      else 
+      else
         stpf = stpmin
       end if
     end if
-    
+
     if (fp .gt. fx) then
       sty = stp
       fy = fp
       dy = dpp
-    else 
+    else
       if (sgnd .lt. 0.0) then
         sty = stx
         fy = fx
@@ -4778,9 +4778,9 @@ end function func_wrapper
     stpf = min(stpmax,stpf)
     stpf = max(stpmin,stpf)
     stp = stpf
-     
+
   end subroutine
-  
+
   function cubic_min(a0,f0,d0,a1,f1,d1)
     implicit none
 
@@ -4796,18 +4796,18 @@ end function func_wrapper
       !call print ('Line search routine cubic_min failed, crit1, will do a linear backtracking (linminroutine=basic) step')
       cubic_min = (a0 + a1)/2.0_dp
     else
-      
+
       h2 = sign(1.0_dp,a1-a0)*sqrt(h1**2.0 - d0*d1)
       if ( abs(d1-d0+2.0*h2) <= 10.0**(-8.0)*abs(d1+h2-h1) ) then
         !call print ('cubic min failed, crit2, will do a linear backtracking (linminroutine=basic) step')
         cubic_min = (a0 + a1)/2.0_dp
-      else 
+      else
         cubic_min = a1 - (a1-a0)*((d1+h2-h1)/(d1-d0+2.0*h2))
       end if
     end if
 
   end function cubic_min
- 
+
   function quad_min(a1,a2,f1,f2,g1)
     implicit none
 
@@ -4824,12 +4824,12 @@ end function func_wrapper
     quad_min = y/(2.0_dp*x)
 
   end function quad_min
-  
+
   !function to choose initial guess of steplength
   function init_alpha(alpvec,dirderivvec,n_iter)
-    
+
     implicit none
-    
+
     real(dp) :: alpvec(:)
     real(dp) :: dirderivvec(:)
     integer :: n_iter
@@ -4841,21 +4841,21 @@ end function func_wrapper
       touse = min(n_iter-1,5)
       init_alpha = 0.0
       do I =1,touse
-      init_alpha = init_alpha+alpvec(n_iter-I)*dirderivvec(n_iter-I)/dirderivvec(n_iter-I+1)        
+      init_alpha = init_alpha+alpvec(n_iter-I)*dirderivvec(n_iter-I)/dirderivvec(n_iter-I+1)
       end do
       init_alpha = init_alpha/touse
     else
       init_alpha = 0.01_dp
-    end if 
-      
-  
+    end if
+
+
   end function
 
 
   recursive function apply_precon(g,pr,doefunc,init,res2,max_iter,init_k,max_sub_iter,k_out,force_k) result (ap_result)
-   
+
     implicit none
-    
+
     real(dp) :: g(:) !to apply to
     type (precon_data) :: pr
     integer :: doefunc
@@ -4868,26 +4868,26 @@ end function func_wrapper
     integer,optional :: force_k
     real(dp) :: ap_result(size(g))
     integer :: k_out_internal
-    
+
     logical :: do_force_k
-    
+
     real(dp) :: x(size(g))
     real(dp) :: r(size(g))
     real(dp) :: p(size(g))
     real(dp) :: Ap(size(g))
     real(dp) :: passx(size(g))
     real(dp) :: alpn,alpd,alp,betn,bet,betnold
-    
+
     real(dp) :: my_res2
     integer :: my_max_iter, gs, my_max_sub
 
-    integer :: k,subk 
+    integer :: k,subk
     real(dp),parameter :: betnstop = 10.0_dp**(-10)
     real(dp),parameter :: alpdstop = 10.0_dp**(-14)
     real(dp),parameter :: alpdsubbstop = 10.0_dp**(-1)
-   
+
     call system_timer("apply_precon")
-    
+
     do_force_k = .false.
     if(present(force_k)) then
       do_force_k = .true.
@@ -4896,7 +4896,7 @@ end function func_wrapper
     subk = 0
     k = 0
     if ( present(init_k) ) k = init_k
-  
+
     !call print(pr%mat_mult_max_iter)
     gs = size(g)
     my_res2 = optional_default(pr%res2,res2)
@@ -4906,25 +4906,25 @@ end function func_wrapper
       x = init
       r =  g - do_mat_mult_vec(pr,x,doefunc)
       p = r
-    else 
+    else
       x = 0.0_dp
       r = g
       p = r
     end if
-    
+
     betn = smartdotproduct(r,r,doefunc)
     !call print(p)
     !call print(pr%preconrowlengths)
     !call exit()
     do
-         
+
       Ap = do_mat_mult_vec(pr,p,doefunc)
-    
+
       !call print(' ')
       !call print(Ap)
       alpn = smartdotproduct(r,r,doefunc)
       alpd = smartdotproduct(p,Ap,doefunc)
-      
+
       if (alpd <= alpdstop) then
         if ( betn < alpdsubbstop) then
           call print("Gave up inverting matrix due to lack of precision, result may be of some use though")
@@ -4942,7 +4942,7 @@ end function func_wrapper
       r = r - alp*Ap
       betnold = betn
       betn = smartdotproduct(r,r,doefunc)
-      !Usual exit condition 
+      !Usual exit condition
       if ( ((betn < my_res2 .and. k >= 10) .or. betn < my_res2 .and. betn > betnold) .and. .not. do_force_k ) then
         ap_result = x
         if(present(k_out)) k_out = k
@@ -4953,7 +4953,7 @@ end function func_wrapper
       if (do_force_k) then
         if(k == force_k) then
           ap_result = x
-          exit 
+          exit
         endif
       endif
 
@@ -4971,7 +4971,7 @@ end function func_wrapper
 !        call print("CG failed to invert the preconditioner and aborted with |r|^2 = " // betn)
 !        exit
 !      end if
-    
+
       bet = betn/alpn
       p = r + bet*p
       k = k+1
@@ -5000,42 +5000,42 @@ end function func_wrapper
         end if
         exit
       end if
-      
+
 
     end do
-    
+
     !call print(k)
     call system_timer("apply_precon")
 
   end function apply_precon
-  
+
   function apply_precon_gs(b,pr,doefunc,init,res2,max_iter,k_out,force_k) result (ap_result)
- 
+
     real(dp) :: b(:)
     type(precon_data) :: pr
     integer :: doefunc
     real(dp), optional :: init(:), res2
     integer, optional :: max_iter, k_out, force_k
     real(dp) :: ap_result(size(b))
-    
+
     integer :: my_max_iter, N, I, J, thisind, k
     real(dp) :: my_res2, scoeff, r2
     real(dp) :: x(size(b)), r(size(b))
     integer :: target_elements(3), row_elements(3)
     real(dp) :: Y(3),T(3),C(3)
     logical :: do_force_k
-    
+
     N = size(b)
     my_res2 = optional_default(pr%res2,res2)
     my_max_iter = optional_default(pr%mat_mult_max_iter,max_iter)
-  
+
     if ( present(init) ) then
       if (size(init) == size(b)) then
         x = init
       else
         call print("init vector of incorrect dimension")
       endif
-    else 
+    else
       x = 0.0_dp
     end if
 
@@ -5043,37 +5043,37 @@ end function func_wrapper
     if(present(force_k)) then
       do_force_k = .true.
     end if
-    
-    k=0 
-    x(1:9) = b(1:9) 
+
+    k=0
+    x(1:9) = b(1:9)
    do
-      
+
       do I = 1,size(pr%preconindices,DIM=2)
-        C = 0.0    
+        C = 0.0
         target_elements = (/ I*3-2+9, I*3-1+9, I*3+9 /)
-        
+
         if (pr%multI) then
-          x(target_elements) = b(target_elements)/pr%preconcoeffs(1,I,1) 
+          x(target_elements) = b(target_elements)/pr%preconcoeffs(1,I,1)
         end if
-       !call print(pr%preconcoeffs(1,I,1)) 
+       !call print(pr%preconcoeffs(1,I,1))
         do J = 2,(pr%preconrowlengths(I))
-        
+
           thisind = pr%preconindices(J,I)
           row_elements = (/ thisind*3-2+9, thisind*3-1+9, thisind*3+9/)
-        
+
           if (pr%multI) then
-          
-            scoeff = pr%preconcoeffs(J,I,1)  
-          
+
+            scoeff = pr%preconcoeffs(J,I,1)
+
             if(doefunc == E_FUNC_BASIC) then
               x(target_elements) = x(target_elements) - scoeff*x(row_elements)/pr%preconcoeffs(1,I,1)
             else
               Y = -scoeff*x(row_elements)/pr%preconcoeffs(1,I,1) - C
               T = x(target_elements) + Y
               C = (T - x(target_elements)) - Y
-              x(target_elements) = T 
+              x(target_elements) = T
             endif
-            
+
           endif
         end do
       end do
@@ -5111,11 +5111,11 @@ end function func_wrapper
         exit
       end if
     end do
- 
+
   end function
-  
+
   function apply_precon_csi(b,pr,doefunc,init,res2,max_iter,iter_out,force_iter) result (ap_result)
-  
+
     implicit none
 
     real(dp) :: b(:)
@@ -5128,14 +5128,14 @@ end function func_wrapper
     integer :: iter = 1
     real(dp) :: ykp1(size(b)), yk(size(b)), ykm1(size(b)), zk(size(b))
     real(dp) :: omega, gamm, alpha, beta
-    
+
     alpha = 0.0
 
     do
       zk = b - do_mat_mult_vec(pr,yk,doefunc)
       gamm = 1.0
       ykp1 = omega*(yk - ykm1 + gamm*zk) + ykm1
-  
+
     end do
 
     ap_result = ykp1
@@ -5194,9 +5194,9 @@ end function func_wrapper
   end function
 
   function do_mat_mult_vec(pr,x,doefunc)
-  
+
     implicit none
-   
+
     real(dp) :: x(:)
     type(precon_data) :: pr
     integer :: doefunc
@@ -5210,38 +5210,38 @@ end function func_wrapper
 
     do_mat_mult_vec = 0.0_dp
     do_mat_mult_vec(1:9) = pr%cell_coeff*x(1:9)
-     
+
     do I = 1,size(pr%preconindices,DIM=2)
-      
+
       !call print(pr%preconindices(1:pr%preconrowlengths(I),I))
       target_elements = (/ I*3-2+9, I*3-1+9, I*3+9 /)
       C = 0.0_dp
       if (pr%preconrowlengths(I) >= 1) then
-            
+
       do J = 1,(pr%preconrowlengths(I))
-        
+
         thisind = pr%preconindices(J,I)
         row_elements = (/ thisind*3-2+9, thisind*3-1+9, thisind*3+9/)
         !call print(target_elements)
-       
-        
+
+
         if (pr%multI) then
           !call print(target_elements)
           !call print(row_elements)
           !call print(I // ' ' // thisind)
-          !call exit() 
-          scoeff = pr%preconcoeffs(J,I,1)   
+          !call exit()
+          scoeff = pr%preconcoeffs(J,I,1)
           if(doefunc == E_FUNC_BASIC) then
             do_mat_mult_vec(target_elements) = do_mat_mult_vec(target_elements) + scoeff*x(row_elements)
           else
             Y = scoeff*x(row_elements) - C
             T = do_mat_mult_vec(target_elements) + Y
             C = (T - do_mat_mult_vec(target_elements)) - Y
-            do_mat_mult_vec(target_elements) = T 
+            do_mat_mult_vec(target_elements) = T
           endif
 
         elseif(pr%dense) then
-          
+
           !call print(size(pr%preconcoeffs(J,I,1:)))
           !call exit()
 
@@ -5251,34 +5251,34 @@ end function func_wrapper
           dcoeffs(4) = pr%preconcoeffs(J,I,4)
           dcoeffs(5) = pr%preconcoeffs(J,I,5)
           dcoeffs(6) = pr%preconcoeffs(J,I,6)
-          
+
           !dcoeffs(6) =0.0! pr%preconcoeffs(J,I,6)
-          
+
           !call print(dcoeffs)
           !call exit()
           !call writevec(dcoeffs,'dcoeffs.dat')
           !call writevec(do_mat_mult(target_elements),'t1.dat')
           !call writevec(x(row_elements),'r1.dat')
-          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(1)*x(row_elements(1))     
-          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(2)*x(row_elements(2))     
-          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(3)*x(row_elements(3))     
-       
-          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(2)*x(row_elements(1))     
-          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(4)*x(row_elements(2))     
-          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(5)*x(row_elements(3))     
-        
-          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(3)*x(row_elements(1))     
-          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(5)*x(row_elements(2))     
-          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(6)*x(row_elements(3))     
-       
+          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(1)*x(row_elements(1))
+          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(2)*x(row_elements(2))
+          do_mat_mult_vec(target_elements(1)) = do_mat_mult_vec(target_elements(1)) + dcoeffs(3)*x(row_elements(3))
+
+          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(2)*x(row_elements(1))
+          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(4)*x(row_elements(2))
+          do_mat_mult_vec(target_elements(2)) = do_mat_mult_vec(target_elements(2)) + dcoeffs(5)*x(row_elements(3))
+
+          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(3)*x(row_elements(1))
+          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(5)*x(row_elements(2))
+          do_mat_mult_vec(target_elements(3)) = do_mat_mult_vec(target_elements(3)) + dcoeffs(6)*x(row_elements(3))
+
           !call writevec(do_mat_mult(target_elements),'t2.dat')
 
           !call exit()
-        
+
         end if
       end do
-      
-      else 
+
+      else
         do_mat_mult_vec(target_elements) = x(target_elements)
       end if
     end do
@@ -5294,15 +5294,15 @@ end function func_wrapper
     logical :: diag = .FALSE.
     logical :: dense = .FALSE.
     integer, allocatable ::   preconrowlengths(:)
-    integer, allocatable ::  preconindices(:,:) 
-    real(dp), allocatable ::  preconcoeffs(:,:,:) 
+    integer, allocatable ::  preconindices(:,:)
+    real(dp), allocatable ::  preconcoeffs(:,:,:)
     character(10) :: precon_id
     integer :: nneigh,mat_mult_max_iter,max_sub
     real(dp) :: energy_scale,length_scale,cutoff,res2
     logical :: has_fixed = .FALSE.
-    
+
     integer :: M,N
-  
+
     prout%dense = .true.
     prout%precon_id = "genericdense"
     prout%nneigh = pr%nneigh
@@ -5313,7 +5313,7 @@ end function func_wrapper
     prout%cutoff = pr%cutoff
     prout%res2 = pr%res2
     prout%has_fixed = pr%has_fixed
-     
+
     M = size(pr%preconrowlengths)
     allocate(prout%preconrowlengths(M))
     prout%preconrowlengths(1:M) = pr%preconrowlengths(1:M)
@@ -5327,20 +5327,20 @@ end function func_wrapper
     N = size(pr%preconcoeffs,dim=2)
     allocate(prout%preconcoeffs(M,N,6))
     prout%preconcoeffs = 0.0
-    prout%preconcoeffs(1:M,1:N,1) = pr%preconcoeffs(1:M,1:N,1)   
-    prout%preconcoeffs(1:M,1:N,4) = pr%preconcoeffs(1:M,1:N,1)   
-    prout%preconcoeffs(1:M,1:N,6) = pr%preconcoeffs(1:M,1:N,1)   
+    prout%preconcoeffs(1:M,1:N,1) = pr%preconcoeffs(1:M,1:N,1)
+    prout%preconcoeffs(1:M,1:N,4) = pr%preconcoeffs(1:M,1:N,1)
+    prout%preconcoeffs(1:M,1:N,6) = pr%preconcoeffs(1:M,1:N,1)
 
   end function
 
-  function calcdeltaE(doefunc,f1,f0,le1,le0)  
+  function calcdeltaE(doefunc,f1,f0,le1,le0)
     integer :: doefunc
     real(dp) :: f1, f0
     real(dp) :: le1(:), le0(:)
-    
+
     real(dp) :: sorted1(size(le1)),sorted0(size(le0))
-    real(dp) :: calcdeltaE 
-    
+    real(dp) :: calcdeltaE
+
     if (doefunc == E_FUNC_BASIC) then
       calcdeltaE = f1 - f0
     elseif (doefunc == E_FUNC_KAHAN) then
@@ -5351,14 +5351,14 @@ end function func_wrapper
     endif
   end function
 
-  function calcE(doefunc,f0,le0)  
+  function calcE(doefunc,f0,le0)
     integer :: doefunc
     real(dp) :: f0
     real(dp) :: le0(:)
-    
+
     real(dp) :: sorted0(size(le0))
-    real(dp) :: calcE 
-    
+    real(dp) :: calcE
+
     if (doefunc == E_FUNC_BASIC) then
       calcE =  f0
     elseif (doefunc == E_FUNC_KAHAN) then
@@ -5370,19 +5370,19 @@ end function func_wrapper
   end function
 
 
- 
+
   function smartdotproduct(v1,v2,doefunc)
     integer :: doefunc
     real(dp) :: v1(:),v2(:)
-    
+
     real(dp) :: vec(size(v1)),sorted(size(v1))
     real(dp) :: smartdotproduct
-    
+
     if(size(v1) .ne. size(v2)) then
       call print("Dot Product called with mismatching vector sizes, exiting")
       call exit()
     end if
-     
+
     vec = v1*v2
 
     if (doefunc == E_FUNC_BASIC) then
@@ -5393,11 +5393,11 @@ end function func_wrapper
       sorted = qsort(vec)
       smartdotproduct = DoubleKahanSum(sorted)
     endif
-  
+
   end function
- 
+
   function smartmatmulmat(m1,m2,doefunc) result(prod)
-    
+
     real(dp) :: m1(:,:), m2(:,:)
     integer :: doefunc
     real(dp) :: prod(size(m1,dim=1),size(m2,dim=2))
@@ -5412,24 +5412,24 @@ end function func_wrapper
       end do
     end do
   end function
- 
+
   function smartmatmulvec(m1,m2,doefunc) result(prod)
-    
+
     real(dp) :: m1(:,:), m2(:)
     integer :: doefunc
     real(dp) :: prod(size(m1,dim=1))
 
     integer :: I,M
     !call print(size(m1,dim=1) // ' ' // size(m1,dim=2) // ' '// size(m2))
-    
+
     M = size(m1,dim=1)
     do I = 1,M
       prod(I) = smartdotproduct(m1(I,1:),m2,doefunc)
     end do
   end function
-  
+
   function KahanSum(vec)
-    
+
     real(dp) :: vec(:)
     real(dp) :: KahanSum
 
@@ -5446,11 +5446,11 @@ end function func_wrapper
       C = (T - KahanSum) - Y
       KahanSum = T
     end do
-  
+
   end function
 
   function DoubleKahanSum(vec)
-    
+
     real(dp) :: vec(:)
     real(dp) :: DoubleKahanSum
 
@@ -5470,24 +5470,24 @@ end function func_wrapper
       DoubleKahanSum = T + Z
       C = Z - (DoubleKahanSum - T)
     end do
-  
+
   end function
-  
-  recursive function qsort( data ) result( sorted ) 
-    real(dp), dimension(:), intent(in) :: data 
-    real(dp), dimension(1:size(data))  :: sorted 
-    if ( size(data) > 1 ) then 
-      sorted = (/ qsort( pack( data(2:), abs(data(2:)) > abs(data(1)) )  ), & 
-               data(1), & 
-               qsort( pack( data(2:), abs(data(2:)) <= abs(data(1)) ) ) /) 
-    else 
-      sorted = data    
-    endif 
-  end function 
+
+  recursive function qsort( data ) result( sorted )
+    real(dp), dimension(:), intent(in) :: data
+    real(dp), dimension(1:size(data))  :: sorted
+    if ( size(data) > 1 ) then
+      sorted = (/ qsort( pack( data(2:), abs(data(2:)) > abs(data(1)) )  ), &
+               data(1), &
+               qsort( pack( data(2:), abs(data(2:)) <= abs(data(1)) ) ) /)
+    else
+      sorted = data
+    endif
+  end function
 
   subroutine precongradcheck(x,func,dfunc,data)
     real(dp) :: x(:)
-    INTERFACE 
+    INTERFACE
       function func(x,data,local_energy)
         use system_module
         real(dp)::x(:)
@@ -5505,7 +5505,7 @@ end function func_wrapper
       end function dfunc
     END INTERFACE
     character(len=1) :: data(:)
- 
+
     integer :: N, I, J, levels
     real(dp) :: eps,initeps
     real(dp) :: f1,f2,deltaE
@@ -5513,8 +5513,8 @@ end function func_wrapper
 
     initeps = 1.0
     levels = 10
-    
-    
+
+
     N = size(x)
     allocate(grads(levels+1,N))
     allocate(le1( (size(x) - 9)/3))
@@ -5523,10 +5523,10 @@ end function func_wrapper
     allocate(xm(N))
     grads(1,1:N) = dfunc(x,data)
     do I = 1,N
-      
+
       eps = initeps
       do J = 1,levels
-        
+
         call print(I // " of "//N//  ';    '//J // ' of ' //levels)
         xp = x
         xm = x
@@ -5537,21 +5537,21 @@ end function func_wrapper
         f2 =  func(xm,data,le2)
 
         deltaE = calcdeltaE(E_FUNC_KAHAN ,f1,f2,le1,le2)
-        
+
         grads(J+1,I) = deltaE/(2.0*eps)
 
         eps = eps/10.0
       end do
-       
+
     end do
 
     call writemat(grads,'gradsGab.dat')
 
   end subroutine
-  
+
    subroutine sanity(x,func,dfunc,data)
     real(dp) :: x(:)
-    INTERFACE 
+    INTERFACE
       function func(x,data,local_energy,gradient)
         use system_module
         real(dp)::x(:)
@@ -5570,16 +5570,16 @@ end function func_wrapper
       end function dfunc
     END INTERFACE
     character(len=1) :: data(:)
-  
+
     real(dp), allocatable :: output(:),le(:)
-    integer :: I 
+    integer :: I
     real(dp),parameter :: stepsize = 10**(-3.0)
     integer :: N = 1000
     real(dp) :: g(size(x))
     real(dp) :: f
 
     g = dfunc(x,data)
-    
+
     allocate(le( (size(x)-9)/3 ))
     allocate(output(N))
     do I = 1,N
@@ -5590,13 +5590,13 @@ end function func_wrapper
 
     call writevec(output,'sanity.dat')
 
-  
-  end subroutine 
+
+  end subroutine
 
   function infnorm(v)
-    
+
     real(dp) :: v(:)
-    
+
     real(dp) :: infnorm, temp
     integer :: l, I
 
@@ -5620,7 +5620,7 @@ end function func_wrapper
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) vec
     close(outid)
-  
+
   end subroutine
 
   subroutine writeveci(vec,filename)
@@ -5631,9 +5631,9 @@ end function func_wrapper
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) vec
     close(outid)
-  
+
   end subroutine
- 
+
   subroutine writemat(mat,filename)
     real(dp) :: mat(:,:)
     character(*) :: filename
@@ -5642,9 +5642,9 @@ end function func_wrapper
     open(unit=outid,file=filename,action="write",status="replace")
     write(outid,*) mat
     close(outid)
-  
+
   end subroutine
- 
+
   subroutine writeprecon(precon,filename)
     type(precon_data) :: precon
     character(*) :: filename
@@ -5653,7 +5653,7 @@ end function func_wrapper
     call writepreconindices(precon,filename // 'indices')
     call writepreconrowlengths(precon,filename // 'lengths')
   end subroutine
-  
+
   subroutine writepreconcoeffs(precon,filename)
     type(precon_data) :: precon
     character(*) :: filename
@@ -5695,7 +5695,7 @@ end function func_wrapper
     integer :: outid2 = 11
     integer :: M
     M = size(LBFGSs,dim=2)
-    
+
     open(unit=outid1,file=(filename//'s'),action="write",status="replace")
     write(outid1,*) LBFGSs(1:,(M-n_back+1):)
     close(outid1)
@@ -5705,16 +5705,16 @@ end function func_wrapper
     close(outid2)
 
 
-  
+
   end subroutine
- 
+
   function precondimer(x_in,v_in,func,dfunc,build_precon,pr,method,convergence_tol,max_steps,efuncroutine,LM, linminroutine, hook, hook_print_interval, am_data, status,writehessian,gethessian,infoverride)
-    
+
     implicit none
-    
+
     real(dp),     intent(inout) :: x_in(:) !% Starting position
     real(dp),     intent(inout) :: v_in(:) !% Starting dimer orientation
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -5739,25 +5739,25 @@ end function func_wrapper
         type(precon_data),intent(inout) ::pr
         character(len=1)::am_data(:)
       end subroutine
-    END INTERFACE 
+    END INTERFACE
     type(precon_data):: pr
     character(*), intent(in)    :: method !% 'cg' for conjugate gradients or 'sd' for steepest descent
     real(dp),     intent(in)    :: convergence_tol !% Minimisation is treated as converged once $|\mathbf{\nabla}f|^2 <$
-    !% 'convergence_tol'. 
+    !% 'convergence_tol'.
     integer,      intent(in)    :: max_steps  !% Maximum number of 'cg' or 'sd' steps
     integer::precondimer
     character(*), intent(in), optional :: efuncroutine !% Control of the objective function evaluation
-    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use. 
+    character(*), intent(in), optional :: linminroutine !% Name of the line minisation routine to use.
     integer, optional :: LM
     optional :: hook
-    INTERFACE 
+    INTERFACE
        subroutine hook(x,dx,E,done,do_print,data)
          use system_module
          real(dp), intent(in) ::x(:)
          real(dp), intent(in) ::dx(:)
          real(dp), intent(in) ::E
          logical, intent(out) :: done
-	 logical, optional, intent(in) :: do_print
+         logical, optional, intent(in) :: do_print
    character(len=1),optional, intent(in) ::data(:)
        end subroutine hook
     end INTERFACE
@@ -5765,7 +5765,7 @@ end function func_wrapper
     character(len=1), optional, intent(inout) :: am_data(:)
     integer, optional, intent(out) :: status
     optional :: writehessian
-    INTERFACE 
+    INTERFACE
        subroutine writehessian(x,data,filename)
          use system_module
          real(dp) :: x(:)
@@ -5774,7 +5774,7 @@ end function func_wrapper
        end subroutine writehessian
     end INTERFACE
     optional :: gethessian
-    INTERFACE 
+    INTERFACE
          subroutine gethessian(x,data,FDHess)
          use system_module
          real(dp),intent(in):: x(:)
@@ -5788,15 +5788,15 @@ end function func_wrapper
     real(dp) :: h = 1e-3_dp
     real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
     real(dp), parameter :: TOLvdefault = 10.0_dp**(-1)
-   
+
     real(dp), allocatable :: x(:), F1(:), F2(:), F10(:), F20(:), v(:), vstar(:), Gd(:), s(:), sl2(:), Gv(:), Gvp(:), Gx(:), Gxp(:), Gdl2(:), Gvpold(:), Gxpold(:), Gs(:), Qx(:)
     real(dp), allocatable :: local_energy1(:),local_energy2(:),local_energy10(:),local_energy20(:),alpvec(:),dirderivvec(:)
     real(dp) :: alpha_x,crit,avn,dC,delE,e1,e10,e2,e20,lam,res_v,res_v_rot,res_x,rotC,traC,TOLv,dt
     logical :: rotationfailed, totalfailure
-    
+
     logical :: doLSbasic, doLSstandard
     integer :: doefunc
-    
+
     logical :: noimprove
     real(dp) :: res_x_hist(5) = 1000.0_dp
 
@@ -5809,7 +5809,7 @@ end function func_wrapper
 
     kmax = max_steps
     k2max = 5
-    
+
     if ( present(linminroutine) ) then
       call print('linmin options not currently supported by dimer')
 !    if (trim(linminroutine) == 'basic') then
@@ -5825,16 +5825,16 @@ end function func_wrapper
     end if
 
     N = size(x_in)
-        
+
     allocate(local_energy1((N-9)/3),local_energy2((N-9)/3),local_energy10((N-9)/3),local_energy20((N-9)/3))
-    allocate(x(N),F1(N),F2(N),F10(N),F20(N),v(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N),Qx(N),gs(N))  
-    
+    allocate(x(N),F1(N),F2(N),F10(N),F20(N),v(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N),Qx(N),gs(N))
+
     allocate(alpvec(max_steps))
     allocate(dirderivvec(max_steps))
 
 
     !open(1,file='dimerplot.dat',status='replace',access='stream',action='write')
-    
+
     doefunc = E_FUNC_BASIC
     if ( present(efuncroutine) ) then
       if (trim(efuncroutine) == 'basic') then
@@ -5849,24 +5849,24 @@ end function func_wrapper
 !        allocate(local_energycand((size(x)-9)/3))
         call print('Using double Kahan summation of local energies with quicksort')
       end if
-    else 
+    else
       doefunc = E_FUNC_BASIC
        call print('Using naive summation of local energies by default')
     end if
     x = x_in
     v = v_in
     !call random_number(d)
-   
-    avn = pi/4.0    
+
+    avn = pi/4.0
     k = 0
     do
-      
+
       call build_precon(pr,am_data)
       v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
-  
+
       call writeprecon(pr,'dimerpr')
 
-      
+
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
@@ -5876,14 +5876,14 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
- 
+
       Gxpold = Gxp
       Gx = 0.5_dp*(F1 + F2)
-      
-      
-      if (k > 0) then  
-        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
-      else 
+
+
+      if (k > 0) then
+        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold)
+      else
         Gxp = apply_precon(Gx,pr,doefunc)
         !call exit()
       end if
@@ -5891,7 +5891,7 @@ end function func_wrapper
 
       res_x_hist(1:4) = res_x_hist(2:5)
       res_x_hist(5) = res_x
-     
+
       !call print(abs(sum(res_x_hist)/5.0_dp)  )
 
 !      noimprove = .false.
@@ -5909,19 +5909,19 @@ end function func_wrapper
 
       Gvpold = Gvp
       Gv = (F1 - F2)/(2.0_dp*h)
-      if (k > 0) then  
-        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+      if (k > 0) then
+        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold)
       else
         Gvp = apply_precon(Gv,pr,doefunc)
       end if
 
-      lam = smartdotproduct(Gv,v,doefunc) 
+      lam = smartdotproduct(Gv,v,doefunc)
       Gd = Gvp - lam*v
       Gdl2 = Gv - lam*v
       res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
       call print('precon_dimer n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x // ', nf = '//neval)
       if (res_x < convergence_tol) then
-        call print('Precon Dimer exiting with translation residual = ' //res_x) 
+        call print('Precon Dimer exiting with translation residual = ' //res_x)
         exit
       end if
 
@@ -5931,7 +5931,7 @@ end function func_wrapper
       totalfailure = .false.
       k2 = 0
       ! Do a rotation if necessary
-      do while (res_v > max(TOLv,res_x)) 
+      do while (res_v > max(TOLv,res_x))
 
         s = -Gd
         sl2 = -Gdl2
@@ -5946,13 +5946,13 @@ end function func_wrapper
 
 
         if (rotationfailed .eqv. .false.) then
-        
+
           k3 = 0
           do
             crit = -h*h*rotC*dC*avn
             vstar = cos(avn)*v + sin(avn)*s
             vstar = vstar/sqrt(Pdotproduct(vstar,vstar,pr,doefunc))
- 
+
 #ifndef _OPENMP
             call verbosity_push_decrement(2)
 #endif
@@ -5960,7 +5960,7 @@ end function func_wrapper
 #ifndef _OPENMP
             call verbosity_pop()
 #endif
- 
+
 #ifndef _OPENMP
             call verbosity_push_decrement(2)
 #endif
@@ -5972,15 +5972,15 @@ end function func_wrapper
       neval = neval + 2
             delE = calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20)
             call print("precon_dimer rotation inner, theta = " // avn // ", delE = "// delE//" crit = "//crit)
-            
+
             ! call print(avn // ' '// delE // ' ' //crit//' '//norm(v-vstar))
             !call print(e2// ' '//e20)
-            
+
             if (delE < crit) then
               v = vstar
               exit
             end if
-            
+
             if (abs(delE) < 10.0**(-12) .and. delE < 10.0**(-15)) then
               rotationfailed = .true.
               call print('Ran out of precision in objective based rotation')
@@ -5995,29 +5995,29 @@ end function func_wrapper
         end if
 
         if (rotationfailed .eqv. .false.) then
-          
-          Gvpold = Gvp;   
-          Gv = (F1 - F2)/(2.0_dp*h)
-          Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
 
-          lam = smartdotproduct(Gv,v,doefunc) 
+          Gvpold = Gvp;
+          Gv = (F1 - F2)/(2.0_dp*h)
+          Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold)
+
+          lam = smartdotproduct(Gv,v,doefunc)
           Gd = Gvp - lam*v
           Gdl2 = Gv - lam*v
           res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
-        
+
         end if
-        
+
         call print('precon_dimer rotating, iter = '// k2 //',theta = '//avn// ',delE = ' //delE //',res_v = '//res_v)
         k2 = k2 + 1
         if (res_v < TOLv .or. totalfailure .eqv. .true. .or. k2 > k2max) then
           !call print(res_v // ' ' //k2)
           exit
         end if
-  
+
 
       end do
-      
-      
+
+
 #ifndef _OPENMP
             call verbosity_push_decrement(2)
 #endif
@@ -6025,7 +6025,7 @@ end function func_wrapper
 #ifndef _OPENMP
             call verbosity_pop()
 #endif
- 
+
 #ifndef _OPENMP
             call verbosity_push_decrement(2)
 #endif
@@ -6033,12 +6033,12 @@ end function func_wrapper
 #ifndef _OPENMP
             call verbosity_pop()
 #endif
- 
+
       neval = neval + 2
       Gx = 0.5*(F1+F2)
       Gxpold = Gxp
-      Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
-    
+      Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold)
+
       gs = -Gx + 2.0*smartdotproduct(v,Gx,doefunc)*v
       s = -Gxp + 2.0*smartdotproduct(v,Gx,doefunc)*v
       dt = -smartdotproduct(gs,s,doefunc)
@@ -6057,23 +6057,23 @@ end function func_wrapper
       local_energy20 = local_energy2
       res_v_rot = res_v
       k2 = 0
-      do 
-              
-        delE = dimerdelE(x+alpha_x*s,v,h,lam,x,Gx,pr,func,am_data,doefunc,e10,e20,local_energy10,local_energy20) 
+      do
+
+        delE = dimerdelE(x+alpha_x*s,v,h,lam,x,Gx,pr,func,am_data,doefunc,e10,e20,local_energy10,local_energy20)
         crit = dt*traC*alpha_x
-   
+
         neval = neval + 2
         call print('precon_dimer translating, iter = '// k2 //', alpha = '//alpha_x// ', delE = ' //delE)
         if (delE < crit + 10.0**(-14) .and. res_v < 10.0*res_v_rot) then
           x = x + alpha_x*s
-          
+
          exit
         end if
         alpha_x = alpha_x/2.0
         k2 = k2 + 1
       end do
 
-      
+
 
       k = k + 1
       dirderivvec(k) = dt
@@ -6083,17 +6083,17 @@ end function func_wrapper
          exit
       end if
    end do
-   x_in = x 
-  
+   x_in = x
+
  end function
 
  function dimerdelE(x,v,h,lam,x0,gx0,pr,func,am_data,doefunc,e10,e20,local_energy10,local_energy20) result(delE)
- 
+
     real(dp) :: x(:),v(:),x0(:),gx0(:)
     type(precon_data) :: pr
     real(dp) :: h,lam
     character(len=1), intent(inout) :: am_data(:)
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -6123,28 +6123,28 @@ end function func_wrapper
 #ifndef _OPENMP
     call verbosity_pop()
 #endif
-    
+
     delE = (calcdeltaE(doefunc,e1,e10,local_energy1,local_energy10) + calcdeltaE(doefunc,e2,e20,local_energy2,local_energy20))/2.0_dp &
              -2.0*Pdotproduct(v,x-x0,pr,doefunc)*smartdotproduct(v,gx0,doefunc) - lam*Pdotproduct(Qx,Qx,pr,doefunc)
-       
+
  !   Gv = (F1 - F2)/(2.0_dp*h)
- !   if (k > 0) then  
- !     Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+ !   if (k > 0) then
+ !     Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold)
  !   else
  !     Gvp = apply_precon(Gv,pr,doefunc)
  !   end if
 
- !   lam = smartdotproduct(Gv,v,doefunc) 
+ !   lam = smartdotproduct(Gv,v,doefunc)
  !   Gd = Gvp - lam*v
  !   res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
- !   
+ !
   end function
 
   function simpleprecondimer(x,v,h,func,am_data,build_precon,pr,doefunc,alpha_x,alpha_v) result(k)
 
     real(dp), intent(inout) :: x(:),v(:)
     real(dp) :: h
-    INTERFACE 
+    INTERFACE
        function func(x,data,local_energy,gradient)
          use system_module
          real(dp)::x(:)
@@ -6162,28 +6162,28 @@ end function func_wrapper
         type(precon_data),intent(inout) ::pr
         character(len=1)::am_data(:)
       end subroutine
-    END INTERFACE 
+    END INTERFACE
     type(precon_data):: pr
     integer :: doefunc
     real(dp) :: alpha_x,alpha_v
- 
+
     integer :: k,N
     integer :: kmax = 1000
     real(dp) :: e1,e2,lam,res_x,res_v
-  
+
     real(dp), allocatable :: F1(:), F2(:), F10(:), F20(:), vstar(:), Gd(:), s(:), sl2(:), Gv(:), Gvp(:), Gx(:), Gxp(:), Gdl2(:), Gvpold(:), Gxpold(:), Gs(:), Qx(:)
     real(dp), allocatable :: local_energy1(:),local_energy2(:),local_energy10(:),local_energy20(:),alpvec(:),dirderivvec(:)
-     
+
     N = size(x,1)
     allocate(local_energy1((N-9)/3),local_energy2((N-9)/3))
-    allocate(F1(N),F2(N),F10(N),F20(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N),Qx(N),gs(N))  
-    
+    allocate(F1(N),F2(N),F10(N),F20(N),vstar(N),Gd(N),s(N),sl2(N),Gv(N),Gvp(N),Gx(N),Gxp(N),Gdl2(N),Gvpold(N),Gxpold(N),Qx(N),gs(N))
+
 
     k = 0
     do
       call build_precon(pr,am_data)
       v = v/sqrt(Pdotproduct(v,v,pr,doefunc))
-    
+
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
@@ -6191,7 +6191,7 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
- 
+
 #ifndef _OPENMP
       call verbosity_push_decrement(2)
 #endif
@@ -6199,30 +6199,30 @@ end function func_wrapper
 #ifndef _OPENMP
       call verbosity_pop()
 #endif
-      
+
       Gxpold = Gxp
       Gx = 0.5_dp*(F1 + F2);
-      if (k > 1) then  
-        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold) 
-      else 
+      if (k > 1) then
+        Gxp = apply_precon(Gx,pr,doefunc,init=Gxpold)
+      else
         Gxp = apply_precon(Gx,pr,doefunc)
       end if
       res_x = sqrt(smartdotproduct(Gxp,Gx,doefunc))
-  
+
       Gvpold = Gvp
       Gv = (F1 - F2)/(2.0_dp*h)
-      if (k > 1) then  
-        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold) 
+      if (k > 1) then
+        Gvp = apply_precon(Gv,pr,doefunc,init=Gvpold)
       else
         Gvp = apply_precon(Gv,pr,doefunc)
       end if
 
-      lam = smartdotproduct(Gv,v,doefunc) 
+      lam = smartdotproduct(Gv,v,doefunc)
       Gd = Gvp - lam*v
       Gdl2 = Gv - lam*v
       res_v = sqrt(Pdotproduct(Gd,Gd,pr,doefunc))
       call print('n_iter = ' // k // ', res_x = '  // res_x // ', res_v = ' // res_v // ', lam = ' // lam //', alpha = '// alpha_x)
-      
+
       v = v - alpha_v*Gvp
       x = x - alpha_x*(Gxp - 2.0*smartdotproduct(v,Gx,doefunc)*v)
 
@@ -6237,10 +6237,10 @@ end function func_wrapper
 
   subroutine printlikematlab(x)
     real(dp) :: x(:)
-    integer :: vl 
-    vl = size(x) 
+    integer :: vl
+    vl = size(x)
     call print(reshape(x(10:vl),(/ 3 , (vl-9)/3 /)))
-    
+
   end subroutine
 end module minimization_module
 

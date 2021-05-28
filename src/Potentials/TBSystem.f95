@@ -93,14 +93,14 @@ character(len=30), parameter :: scf_names(0:8) = (/ &
 'SPIN_DIR                      ', &
 'SPIN_STONER                   ' /)
 
-! LOCAL_U 		F = sum_a U_a (n_a-n0_a)^2
-! GLOBAL_U 		F = U (sum_a n_a-n0_a)^2
+! LOCAL_U                 F = sum_a U_a (n_a-n0_a)^2
+! GLOBAL_U                 F = U (sum_a n_a-n0_a)^2
 ! LCN
 ! GCN
-! NONLOCAL_U_DFTB 	F = sum_ab (n_a-n0_a) gamma_ab (n_b-n0_b)
-! NONLOCAL_U_NRL_TB 	F = sum_ab (n_a-n0_a) gamma_ab (n_b-n0_b)
-! SPIN_DIR		F = -0.5 sum_a splitting_a | atomic_mom_a(i) |
-! SPIN_STONER		F = -0.25 sum_a stoner_param_a | atomic_mom_a(i) | ^2
+! NONLOCAL_U_DFTB         F = sum_ab (n_a-n0_a) gamma_ab (n_b-n0_b)
+! NONLOCAL_U_NRL_TB         F = sum_ab (n_a-n0_a) gamma_ab (n_b-n0_b)
+! SPIN_DIR                F = -0.5 sum_a splitting_a | atomic_mom_a(i) |
+! SPIN_STONER                F = -0.25 sum_a stoner_param_a | atomic_mom_a(i) | ^2
 
 public :: Self_Consistency_Term
 type Self_Consistency_Term
@@ -417,11 +417,11 @@ subroutine check_dipole_model_consistency(dipole_model, tbm, Z)
     i_type = dipole_model%type_of_atomic_num(Z(i_at))
     if (dipole_model%n_orb_sets(i_type) /= n_orb_sets_of_Z(tbm, Z(i_at))) &
       call system_abort("check_dipole_model_consistency found mismatch in number of orbitals sets for Z="//Z(i_at) // &
-	" dipole_model " // dipole_model%n_orb_sets(i_type) // " tbmodel " // n_orb_sets_of_Z(tbm, Z(i_at)) )
+        " dipole_model " // dipole_model%n_orb_sets(i_type) // " tbmodel " // n_orb_sets_of_Z(tbm, Z(i_at)) )
     do i_orb_set=1, dipole_model%n_orb_sets(i_type)
       if (dipole_model%orb_set_type(i_orb_set,i_type) /= orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set)) &
-	call system_abort("check_dipole_model_consistency found mismatch in orbital set type  for Z="//Z(i_at) // &
-	  " i_orb_set="//i_orb_set// " dipole_model " // dipole_model%orb_set_type(i_orb_set,i_type) // " tbmodel " // orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set) )
+        call system_abort("check_dipole_model_consistency found mismatch in orbital set type  for Z="//Z(i_at) // &
+          " i_orb_set="//i_orb_set// " dipole_model " // dipole_model%orb_set_type(i_orb_set,i_type) // " tbmodel " // orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set) )
     end do
   end do
 end subroutine check_dipole_model_consistency
@@ -438,12 +438,12 @@ subroutine check_spin_orbit_coupling_consistency(spin_orbit_coupling, tbm, Z)
     i_type = spin_orbit_coupling%type_of_atomic_num(Z(i_at))
     if (spin_orbit_coupling%n_orb_sets(i_type) /= n_orb_sets_of_Z(tbm, Z(i_at))) &
       call system_abort("check_spin_orbit_coupling_consistency found mismatch in number of orbitals sets for Z="//Z(i_at) // &
-	" spin_orbit_coupling " // spin_orbit_coupling%n_orb_sets(i_type) // " tbmodel " // n_orb_sets_of_Z(tbm, Z(i_at)) )
+        " spin_orbit_coupling " // spin_orbit_coupling%n_orb_sets(i_type) // " tbmodel " // n_orb_sets_of_Z(tbm, Z(i_at)) )
     do i_orb_set=1, spin_orbit_coupling%n_orb_sets(i_type)
       if (spin_orbit_coupling%orb_set_type(i_orb_set,i_type) /= orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set)) &
-	call system_abort("check_spin_orbit_coupling_consistency found mismatch in orbital set type  for Z="//Z(i_at) // &
-	  " i_orb_set="//i_orb_set// " spin_orbit_coupling " // spin_orbit_coupling%orb_set_type(i_orb_set,i_type) // " tbmodel " // &
-	  orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set) )
+        call system_abort("check_spin_orbit_coupling_consistency found mismatch in orbital set type  for Z="//Z(i_at) // &
+          " i_orb_set="//i_orb_set// " spin_orbit_coupling " // spin_orbit_coupling%orb_set_type(i_orb_set,i_type) // " tbmodel " // &
+          orb_type_of_orb_set_of_Z(tbm, Z(i_at), i_orb_set) )
     end do
   end do
 end subroutine check_spin_orbit_coupling_consistency
@@ -556,9 +556,9 @@ function TBSystem_n_elec(this, at, w_n)
   do i=1, this%N_atoms
     if (present(w_n)) then
       if (associated(w_n)) then
-	TBSystem_n_elec = TBSystem_n_elec + w_n(i)*n_elecs_of_Z(this%tbmodel, at%Z(i))
+        TBSystem_n_elec = TBSystem_n_elec + w_n(i)*n_elecs_of_Z(this%tbmodel, at%Z(i))
       else
-	TBSystem_n_elec = TBSystem_n_elec + n_elecs_of_Z(this%tbmodel, at%Z(i))
+        TBSystem_n_elec = TBSystem_n_elec + n_elecs_of_Z(this%tbmodel, at%Z(i))
       end if
     else
       TBSystem_n_elec = TBSystem_n_elec + n_elecs_of_Z(this%tbmodel, at%Z(i))
@@ -632,9 +632,9 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spin
   this%first_manifold_of_atom(1) = 1
   do i_at=2, this%N_atoms+1
     this%first_orb_of_atom(i_at) = this%first_orb_of_atom(i_at-1) + &
-				n_mag*n_orbs_of_Z(this%tbmodel, at_Z(i_at-1))
+                                n_mag*n_orbs_of_Z(this%tbmodel, at_Z(i_at-1))
     this%first_manifold_of_atom(i_at) = this%first_manifold_of_atom(i_at-1) + &
-				        n_orb_sets_of_Z(this%tbmodel, at_Z(i_at-1))
+                                        n_orb_sets_of_Z(this%tbmodel, at_Z(i_at-1))
   end do
 
   this%N = this%first_orb_of_atom(this%N_atoms+1)-1
@@ -659,15 +659,15 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spin
       man_offset = i_man - this%first_manifold_of_atom(i_at) + 1
 
       if (man_offset == 1) then
-	! first manifold of this atom
-	! first orb is first orb of first manifold of previous atom + number of orbs in that manifold
-	this%first_orb_of_manifold(i_man) = this%first_orb_of_manifold(i_man-1) + &
-					    n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(i_at-1), last_man_offset)
+        ! first manifold of this atom
+        ! first orb is first orb of first manifold of previous atom + number of orbs in that manifold
+        this%first_orb_of_manifold(i_man) = this%first_orb_of_manifold(i_man-1) + &
+                                            n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(i_at-1), last_man_offset)
       else
-	! second or later manifold of this atom
-	! first orb is first orb of previous manifold + number of orbs in that manifold
-	this%first_orb_of_manifold(i_man) = this%first_orb_of_manifold(i_man-1) + &
-					    n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(i_at), man_offset-1)
+        ! second or later manifold of this atom
+        ! first orb is first orb of previous manifold + number of orbs in that manifold
+        this%first_orb_of_manifold(i_man) = this%first_orb_of_manifold(i_man-1) + &
+                                            n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(i_at), man_offset-1)
       endif
       if (i_at == this%N_atoms+1) exit
     end do
@@ -678,7 +678,7 @@ subroutine TBSystem_Setup_atoms_from_arrays(this, at_N, at_Z, noncollinear, spin
     n_mag*n_orbs_of_orb_set_of_Z(this%tbmodel, at_Z(this%N_atoms), n_orb_sets_of_Z(this%tbmodel, at_Z(this%N_atoms)))
 
   this%max_block_size = maxval(this%first_orb_of_atom(2:this%N_atoms+1) - &
-			       this%first_orb_of_atom(1:this%N_atoms))
+                               this%first_orb_of_atom(1:this%N_atoms))
 
   this%complex_matrices = this%kpoints%non_gamma .or. this%noncollinear
   call Initialise(this%H, this%N, this%n_matrices, this%complex_matrices, this%scalapack_my_matrices)
@@ -845,25 +845,25 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
 
       ! do our own direction cosine, since atom_neighbour() result isn't antisymmetric enough
       if (i == j) then
-	dv_hat = at%lattice .mult. shift
+        dv_hat = at%lattice .mult. shift
       else
-	dv_hat_ij = at%pos(:,j) - at%pos(:,i) + (at%lattice .mult. shift)
-	dv_hat_ji = at%pos(:,i) - at%pos(:,j) - (at%lattice .mult. shift)
-	dv_hat = 0.5_dp*(dv_hat_ij - dv_hat_ji)
+        dv_hat_ij = at%pos(:,j) - at%pos(:,i) + (at%lattice .mult. shift)
+        dv_hat_ji = at%pos(:,i) - at%pos(:,j) - (at%lattice .mult. shift)
+        dv_hat = 0.5_dp*(dv_hat_ij - dv_hat_ji)
       endif
       if (maxval(abs(dv_hat)) .feq. 0.0_dp) then
-	dv_hat = 0.0_dp
+        dv_hat = 0.0_dp
       else
-	dv_hat = dv_hat / norm(dv_hat)
+        dv_hat = dv_hat / norm(dv_hat)
       endif
 
       block_nc = this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
 
       if (this%noncollinear) then
         if (.not. this%complex_matrices) call system_abort("noncollinear supported for complex matrices only")
-	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
-	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
-	block_H_z = 0.0_dp
+        call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_up, block_S, i_mag=1)
+        call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H_down, block_S, i_mag=2)
+        block_H_z = 0.0_dp
         if (this%spinpol_no_scf) then
             block_H_z(1:block_nr:2,1:block_nc:2) = block_H_up(1:block_nr/2,1:block_nc/2)
             block_H_z(2:block_nr:2,2:block_nc:2) = block_H_down(1:block_nr/2,1:block_nc/2)
@@ -871,124 +871,124 @@ subroutine TBSystem_fill_these_matrices(this, at, do_H, H, do_S, S, no_S_spin, d
             block_H_z(1:block_nr:2,1:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
             block_H_z(2:block_nr:2,2:block_nc:2) = 0.5_dp*(block_H_up(1:block_nr/2,1:block_nc/2)+block_H_down(1:block_nr/2,1:block_nc/2))
         endif
-	block_S_z = 0.0_dp
-	block_S_z(1:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
-	block_S_z(2:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
-	if (u_no_S_spin) then
-	  block_S_z(1:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
-	  block_S_z(2:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
-	endif
-	if (this%SO%active .and. (i == j) .and. (dv_mag .feq. 0.0_dp)) then
-	  call get_SO_block(this%SO, this%tbmodel, at%Z(i), block_SO)
-	  block_H_z = block_H_z + block_SO
-	endif
-	if (u_do_dipole) call system_abort("No dipole for noncollinear magnetism yet")
+        block_S_z = 0.0_dp
+        block_S_z(1:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+        block_S_z(2:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+        if (u_no_S_spin) then
+          block_S_z(1:block_nr:2,2:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+          block_S_z(2:block_nr:2,1:block_nc:2) = block_S(1:block_nr/2,1:block_nc/2)
+        endif
+        if (this%SO%active .and. (i == j) .and. (dv_mag .feq. 0.0_dp)) then
+          call get_SO_block(this%SO, this%tbmodel, at%Z(i), block_SO)
+          block_H_z = block_H_z + block_SO
+        endif
+        if (u_do_dipole) call system_abort("No dipole for noncollinear magnetism yet")
       else ! not noncollinear
-	call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H, block_S)
-	if (this%complex_matrices) then
-	  block_H_z = block_H
-	  block_S_z = block_S
-	endif
-	if (u_do_dipole) then
-	  call get_dipole_block(this%dipole_model, at, i, j, dv_hat, dv_mag, block_dipole)
-	  if (this%complex_matrices) then
-	    block_dipole_z = block_dipole
-	  endif
-	endif
+        call get_HS_blocks(this%tbmodel, at, i, j, dv_hat, dv_mag, block_H, block_S)
+        if (this%complex_matrices) then
+          block_H_z = block_H
+          block_S_z = block_S
+        endif
+        if (u_do_dipole) then
+          call get_dipole_block(this%dipole_model, at, i, j, dv_hat, dv_mag, block_dipole)
+          if (this%complex_matrices) then
+            block_dipole_z = block_dipole
+          endif
+        endif
       endif
 
       if (u_do_H) then
-	if (this%scf%active) then
-	  do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
-	  do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
-	    if (this%complex_matrices) then
-	      block_H_z(ii,jj) = block_H_z(ii,jj) + &
-		0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-			 this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_S_z(ii,jj)
-	    else
-	      block_H(ii,jj) = block_H(ii,jj) + &
-		0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
-			 this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_S(ii,jj)
-	    endif
-	  end do
-	  end do
+        if (this%scf%active) then
+          do ii=1, this%first_orb_of_atom(i+1)-this%first_orb_of_atom(i)
+          do jj=1, this%first_orb_of_atom(j+1)-this%first_orb_of_atom(j)
+            if (this%complex_matrices) then
+              block_H_z(ii,jj) = block_H_z(ii,jj) + &
+                0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                         this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_S_z(ii,jj)
+            else
+              block_H(ii,jj) = block_H(ii,jj) + &
+                0.5_dp*( this%scf%orb_local_pot(this%first_orb_of_atom(i)+ii-1) + &
+                         this%scf%orb_local_pot(this%first_orb_of_atom(j)+jj-1) ) * block_S(ii,jj)
+            endif
+          end do
+          end do
 
-	  if (this%noncollinear) then
-	    do ii=1, block_nr, 2
-	    do jj=1, block_nc, 2
-		iii = (ii-1)/2+1
-		jjj = (jj-1)/2+1
-		call add_exch_field_local_pot(0.5_dp*(this%scf%orb_exch_field(1:3,this%first_orb_of_atom(i)+ii-1) + &
-						      this%scf%orb_exch_field(1:3,this%first_orb_of_atom(j)+jj-1)), &
-					      block_S(iii,jjj), block_H_z(ii:ii+1,jj:jj+1) )
-	    end do
-	    end do
-	  endif
+          if (this%noncollinear) then
+            do ii=1, block_nr, 2
+            do jj=1, block_nc, 2
+                iii = (ii-1)/2+1
+                jjj = (jj-1)/2+1
+                call add_exch_field_local_pot(0.5_dp*(this%scf%orb_exch_field(1:3,this%first_orb_of_atom(i)+ii-1) + &
+                                                      this%scf%orb_exch_field(1:3,this%first_orb_of_atom(j)+jj-1)), &
+                                              block_S(iii,jjj), block_H_z(ii:ii+1,jj:jj+1) )
+            end do
+            end do
+          endif
 
-	endif
+        endif
       endif
 
       if (this%complex_matrices) then
-	if (this%kpoints%non_gamma) then
-	  do ik=1, this%kpoints%N
-	    expf = calc_phase(this%kpoints, ik, shift)
-	    if (u_do_H) then
-	      block_H_z_phase = block_H_z*expf
-	      call add_block(H, ik, block_H_z_phase, block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    endif
-	    if (u_do_S) then
-	      block_S_z_phase = block_S_z*expf
-	      call add_block(S, ik, block_S_z_phase, block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    endif
-	    if (u_do_dipole) then
-	      block_dipole_z_phase = block_dipole_z*expf
-	      call add_block(dipole(1), ik, block_dipole_z_phase(:,:,1), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(dipole(2), ik, block_dipole_z_phase(:,:,2), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(dipole(3), ik, block_dipole_z_phase(:,:,3), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    endif
-	  end do
-	else ! gamma-point
-	  if (u_do_H) then
-	    call add_block(H, 1, block_H_z, block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	  if (u_do_S) then
-	    call add_block(S, 1, block_S_z, block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	  if (u_do_dipole) then
-	    call add_block(dipole(1), 1, block_dipole_z(:,:,1), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(dipole(2), 1, block_dipole_z(:,:,2), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(dipole(3), 1, block_dipole_z(:,:,3), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	endif ! non gamma
+        if (this%kpoints%non_gamma) then
+          do ik=1, this%kpoints%N
+            expf = calc_phase(this%kpoints, ik, shift)
+            if (u_do_H) then
+              block_H_z_phase = block_H_z*expf
+              call add_block(H, ik, block_H_z_phase, block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            endif
+            if (u_do_S) then
+              block_S_z_phase = block_S_z*expf
+              call add_block(S, ik, block_S_z_phase, block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            endif
+            if (u_do_dipole) then
+              block_dipole_z_phase = block_dipole_z*expf
+              call add_block(dipole(1), ik, block_dipole_z_phase(:,:,1), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(dipole(2), ik, block_dipole_z_phase(:,:,2), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(dipole(3), ik, block_dipole_z_phase(:,:,3), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            endif
+          end do
+        else ! gamma-point
+          if (u_do_H) then
+            call add_block(H, 1, block_H_z, block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+          if (u_do_S) then
+            call add_block(S, 1, block_S_z, block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+          if (u_do_dipole) then
+            call add_block(dipole(1), 1, block_dipole_z(:,:,1), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(dipole(2), 1, block_dipole_z(:,:,2), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(dipole(3), 1, block_dipole_z(:,:,3), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+        endif ! non gamma
       else ! real matrices
-	do ik=1, this%n_matrices
-	  if (u_do_H) then
-	    call add_block(H, ik, block_H, block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	  if (u_do_S) then
-	    call add_block(S, ik, block_S, block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	  if (u_do_dipole) then
-	    call add_block(dipole(1), ik, block_dipole(:,:,1), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(dipole(2), ik, block_dipole(:,:,2), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(dipole(3), ik, block_dipole(:,:,3), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	end do
+        do ik=1, this%n_matrices
+          if (u_do_H) then
+            call add_block(H, ik, block_H, block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+          if (u_do_S) then
+            call add_block(S, ik, block_S, block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+          if (u_do_dipole) then
+            call add_block(dipole(1), ik, block_dipole(:,:,1), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(dipole(2), ik, block_dipole(:,:,2), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(dipole(3), ik, block_dipole(:,:,3), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+        end do
       endif ! complex matrices
 
     end do
@@ -1109,8 +1109,8 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
 
 
       if ((i == j .and. .not. d_mask(i)) .or. &
-	  (i /= j .and. .not. od_mask(i) .and. .not. od_mask(j))) then
-	cycle
+          (i /= j .and. .not. od_mask(i) .and. .not. od_mask(j))) then
+        cycle
       endif
 
       if (this%noncollinear) then
@@ -1148,63 +1148,63 @@ subroutine TBSystem_fill_dmatrices(this, at, at_ind, need_S, dense, diag_mask, o
           endif
         end do
         end do
-	! need to add noncollinear stuff here !!!
+        ! need to add noncollinear stuff here !!!
       endif
 
       if (block_active) then
-	if (this%complex_matrices) then
-	  if (this%kpoints%non_gamma) then
-	    do ik=1, this%kpoints%N
-	      expf = calc_phase(this%kpoints, ik, shift)
-	      block_dH_z_phase = block_dH_z*expf
-	      call add_block(this%dH(1), ik, block_dH_z_phase(:,:,1), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(this%dH(2), ik, block_dH_z_phase(:,:,2), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(this%dH(3), ik, block_dH_z_phase(:,:,3), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      if (do_S) then
-		block_dS_z_phase = block_dS_z*expf
-		call add_block(this%dS(1), ik, block_dS_z_phase(:,:,1), block_nr, block_nc, &
-		  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-		call add_block(this%dS(2), ik, block_dS_z_phase(:,:,2), block_nr, block_nc, &
-		  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-		call add_block(this%dS(3), ik, block_dS_z_phase(:,:,3), block_nr, block_nc, &
-		  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      endif
-	    end do
-	  else ! gamma
-	    call add_block(this%dH(1), 1, block_dH_z(:,:,1), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(this%dH(2), 1, block_dH_z(:,:,2), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(this%dH(3), 1, block_dH_z(:,:,3), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    if (do_S) then
-	      call add_block(this%dS(1), 1, block_dS_z(:,:,1), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(this%dS(2), 1, block_dS_z(:,:,2), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	      call add_block(this%dS(3), 1, block_dS_z(:,:,3), block_nr, block_nc, &
-		this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    endif
-	  endif ! non_gamma
-	else ! real matrices
-	  call add_block(this%dH(1), 1, block_dH(:,:,1), block_nr, block_nc, &
-	    this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  call add_block(this%dH(2), 1, block_dH(:,:,2), block_nr, block_nc, &
-	    this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  call add_block(this%dH(3), 1, block_dH(:,:,3), block_nr, block_nc, &
-	    this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  if (do_S) then
-	    call add_block(this%dS(1), 1, block_dS(:,:,1), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(this%dS(2), 1, block_dS(:,:,2), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	    call add_block(this%dS(3), 1, block_dS(:,:,3), block_nr, block_nc, &
-	      this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
-	  endif
-	endif ! complex_matrices
+        if (this%complex_matrices) then
+          if (this%kpoints%non_gamma) then
+            do ik=1, this%kpoints%N
+              expf = calc_phase(this%kpoints, ik, shift)
+              block_dH_z_phase = block_dH_z*expf
+              call add_block(this%dH(1), ik, block_dH_z_phase(:,:,1), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(this%dH(2), ik, block_dH_z_phase(:,:,2), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(this%dH(3), ik, block_dH_z_phase(:,:,3), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              if (do_S) then
+                block_dS_z_phase = block_dS_z*expf
+                call add_block(this%dS(1), ik, block_dS_z_phase(:,:,1), block_nr, block_nc, &
+                  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+                call add_block(this%dS(2), ik, block_dS_z_phase(:,:,2), block_nr, block_nc, &
+                  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+                call add_block(this%dS(3), ik, block_dS_z_phase(:,:,3), block_nr, block_nc, &
+                  this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              endif
+            end do
+          else ! gamma
+            call add_block(this%dH(1), 1, block_dH_z(:,:,1), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(this%dH(2), 1, block_dH_z(:,:,2), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(this%dH(3), 1, block_dH_z(:,:,3), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            if (do_S) then
+              call add_block(this%dS(1), 1, block_dS_z(:,:,1), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(this%dS(2), 1, block_dS_z(:,:,2), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+              call add_block(this%dS(3), 1, block_dS_z(:,:,3), block_nr, block_nc, &
+                this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            endif
+          endif ! non_gamma
+        else ! real matrices
+          call add_block(this%dH(1), 1, block_dH(:,:,1), block_nr, block_nc, &
+            this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          call add_block(this%dH(2), 1, block_dH(:,:,2), block_nr, block_nc, &
+            this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          call add_block(this%dH(3), 1, block_dH(:,:,3), block_nr, block_nc, &
+            this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          if (do_S) then
+            call add_block(this%dS(1), 1, block_dS(:,:,1), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(this%dS(2), 1, block_dS(:,:,2), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+            call add_block(this%dS(3), 1, block_dS(:,:,3), block_nr, block_nc, &
+              this%first_orb_of_atom(i), this%first_orb_of_atom(j), i, j)
+          endif
+        endif ! complex_matrices
       endif ! block_active
 
     end do ! i
@@ -1645,32 +1645,32 @@ subroutine TBSystem_scf_set_atomic_n_mom(this, atomic_n, atomic_mom, atomic_pot)
   do i_term=1, size(this%scf%terms)
     if (allocated(this%scf%terms(i_term)%atomic_n)) then
       if (associated(atomic_n)) then
-	this%scf%terms(i_term)%atomic_n = atomic_n
+        this%scf%terms(i_term)%atomic_n = atomic_n
       else
-	this%scf%terms(i_term)%atomic_n = this%scf%terms(i_term)%atomic_n0
+        this%scf%terms(i_term)%atomic_n = this%scf%terms(i_term)%atomic_n0
       endif
     end if
     if (allocated(this%scf%terms(i_term)%manifold_mom)) then
       if (associated(atomic_mom)) then
-	this%scf%terms(i_term)%manifold_mom = 0.0_dp
-	do i_at=1, this%N_atoms
-	  do i_man = this%first_manifold_of_atom(i_at), this%first_manifold_of_atom(i_at+1)-1
-	    if (i_man == this%first_manifold_of_atom(i_at+1)-1) then
-	      this%scf%terms(i_term)%manifold_mom(:,i_man) = atomic_mom(:,i_at)
-	    else
-	      this%scf%terms(i_term)%manifold_mom(:,i_man) = 1.0e-6_dp*atomic_mom(:,i_at)
-	    endif
-	  end do
-	end do
+        this%scf%terms(i_term)%manifold_mom = 0.0_dp
+        do i_at=1, this%N_atoms
+          do i_man = this%first_manifold_of_atom(i_at), this%first_manifold_of_atom(i_at+1)-1
+            if (i_man == this%first_manifold_of_atom(i_at+1)-1) then
+              this%scf%terms(i_term)%manifold_mom(:,i_man) = atomic_mom(:,i_at)
+            else
+              this%scf%terms(i_term)%manifold_mom(:,i_man) = 1.0e-6_dp*atomic_mom(:,i_at)
+            endif
+          end do
+        end do
       else
-	this%scf%terms(i_term)%manifold_mom = 0.0_dp
+        this%scf%terms(i_term)%manifold_mom = 0.0_dp
       endif
     end if ! manifold_mom is allocated
     if (allocated(this%scf%terms(i_term)%atomic_local_pot)) then
       if (associated(atomic_pot)) then
-	this%scf%terms(i_term)%atomic_local_pot = atomic_pot
+        this%scf%terms(i_term)%atomic_local_pot = atomic_pot
       else
-	this%scf%terms(i_term)%atomic_local_pot = 0.0_dp
+        this%scf%terms(i_term)%atomic_local_pot = 0.0_dp
       endif
     end if
   end do ! atomic_local_pot is allocated
@@ -1708,35 +1708,35 @@ subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom, atomic_pot)
     got_atomic_n = .false.
     do i_term=1, size(this%scf%terms)
       if (allocated(this%scf%terms(i_term)%atomic_n)) then
-	if (got_atomic_n) &
-	  call system_abort("TBSystem_scf_get_atomic_n_mom found atomic_n allocated in more than 1 term")
-	atomic_n = this%scf%terms(i_term)%atomic_n
-	got_atomic_n = .true.
+        if (got_atomic_n) &
+          call system_abort("TBSystem_scf_get_atomic_n_mom found atomic_n allocated in more than 1 term")
+        atomic_n = this%scf%terms(i_term)%atomic_n
+        got_atomic_n = .true.
       end if
     end do
 
     if (.not. got_atomic_n) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_n but didn't find " // &
-		 "atomic_n allocated in any terms", PRINT_ALWAYS)
+                 "atomic_n allocated in any terms", PRINT_ALWAYS)
   end if
 
   if (associated(atomic_mom)) then
     got_manifold_mom = .false.
     do i_term=1, size(this%scf%terms)
       if (allocated(this%scf%terms(i_term)%manifold_mom)) then
-	if (got_manifold_mom) &
-	  call system_abort("TBSystem_scf_get_atomic_n_mom found manifold_mom allocated in more than 1 term")
-	do i_at=1, this%N_atoms
-	  i_man = this%first_manifold_of_atom(i_at+1)-1
-	  atomic_mom(:,i_at) = this%scf%terms(i_term)%manifold_mom(:,i_man)
-	end do
-	got_manifold_mom = .true.
+        if (got_manifold_mom) &
+          call system_abort("TBSystem_scf_get_atomic_n_mom found manifold_mom allocated in more than 1 term")
+        do i_at=1, this%N_atoms
+          i_man = this%first_manifold_of_atom(i_at+1)-1
+          atomic_mom(:,i_at) = this%scf%terms(i_term)%manifold_mom(:,i_man)
+        end do
+        got_manifold_mom = .true.
       end if
     end do
 
     if (.not. got_manifold_mom) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_mom but didn't find " // &
-		"manifold_mom allocated in any terms", PRINT_ALWAYS)
+                "manifold_mom allocated in any terms", PRINT_ALWAYS)
   end if
 
   if (associated(atomic_pot)) then
@@ -1744,16 +1744,16 @@ subroutine TBSystem_scf_get_atomic_n_mom(this, atomic_n, atomic_mom, atomic_pot)
     got_atomic_pot = .false.
     do i_term=1, size(this%scf%terms)
       if (allocated(this%scf%terms(i_term)%atomic_local_pot)) then
-	if (got_atomic_pot) &
-	  call system_abort("TBSystem_scf_get_atomic_n_mom found atomic_pot allocated in more than 1 term")
-	atomic_pot = this%scf%terms(i_term)%atomic_local_pot
-	got_atomic_pot = .true.
+        if (got_atomic_pot) &
+          call system_abort("TBSystem_scf_get_atomic_n_mom found atomic_pot allocated in more than 1 term")
+        atomic_pot = this%scf%terms(i_term)%atomic_local_pot
+        got_atomic_pot = .true.
       end if
     end do
 
     if (.not. got_atomic_pot) &
       call print("WARNING: TBSystem_scf_get_atomic_n_mom was passed atomic_pot but didn't find " // &
-		 "atomic_pot allocated in any terms", PRINT_ALWAYS)
+                 "atomic_pot allocated in any terms", PRINT_ALWAYS)
   end if
 
 end subroutine TBSystem_scf_get_atomic_n_mom
@@ -1769,7 +1769,7 @@ subroutine TBSystem_scf_get_global_N(this, global_N)
   do i_term=1, size(this%scf%terms)
     if (this%scf%terms(i_term)%global_U > 0.0_dp) then
       if (got_global_N) &
-	call system_abort("TBSystem_scf_get_global_N found global_N allocated in more than 1 term")
+        call system_abort("TBSystem_scf_get_global_N found global_N allocated in more than 1 term")
       global_N = this%scf%terms(i_term)%global_N
       got_global_N = .true.
     endif
@@ -1849,10 +1849,10 @@ subroutine SC_startElement_handler(URI, localname, name, attributes)
     if (status == 0) then
       read (value, *) n_stoner_params
       if (n_stoner_params > 0) then
-	call QUIP_FoX_get_value(attributes, 'stoner_params', value, status)
-	if (status /= 0) &
-	  call system_abort("parse self consistency got n_stoner_params " // n_stoner_params // " for Z=" // atnum  // " but can't find actual stoner_params")
-	read (value, *) parse_self_consistency%stoner_param(1:n_stoner_params,atnum)
+        call QUIP_FoX_get_value(attributes, 'stoner_params', value, status)
+        if (status /= 0) &
+          call system_abort("parse self consistency got n_stoner_params " // n_stoner_params // " for Z=" // atnum  // " but can't find actual stoner_params")
+        read (value, *) parse_self_consistency%stoner_param(1:n_stoner_params,atnum)
       end if
     end if
   endif
@@ -1941,11 +1941,11 @@ subroutine DM_startElement_handler(URI, localname, name, attributes)
     read (value, *) orb_set_types_str
     do i=1, parse_dipole_model%n_orb_sets(i_type)
       if (orb_set_types_str(i) == 's' .or. orb_set_types_str(i) == 'S') then
-	parse_dipole_model%orb_set_type(i,i_type) = ORB_S
+        parse_dipole_model%orb_set_type(i,i_type) = ORB_S
       else if (orb_set_types_str(i) == 'p' .or. orb_set_types_str(i) == 'P') then
-	parse_dipole_model%orb_set_type(i,i_type) = ORB_P
+        parse_dipole_model%orb_set_type(i,i_type) = ORB_P
       else if (orb_set_types_str(i) == 'd' .or. orb_set_types_str(i) == 'D') then
-	parse_dipole_model%orb_set_type(i,i_type) = ORB_D
+        parse_dipole_model%orb_set_type(i,i_type) = ORB_D
       endif
     end do
 
@@ -2020,11 +2020,11 @@ subroutine SO_startElement_handler(URI, localname, name, attributes)
     read (value, *) orb_set_types_str
     do i=1, parse_spin_orbit_coupling%n_orb_sets(i_type)
       if (orb_set_types_str(i) == 's' .or. orb_set_types_str(i) == 'S') then
-	parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_S
+        parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_S
       else if (orb_set_types_str(i) == 'p' .or. orb_set_types_str(i) == 'P') then
-	parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_P
+        parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_P
       else if (orb_set_types_str(i) == 'd' .or. orb_set_types_str(i) == 'D') then
-	parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_D
+        parse_spin_orbit_coupling%orb_set_type(i,i_type) = ORB_D
       endif
     end do
 
@@ -2146,7 +2146,7 @@ subroutine Self_Consistency_Term_setup_system(this, N, tbm, at_N, at_Z, global_U
       this%n_dof = 1
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
       this%global_pot = 0.0_dp
       return
@@ -2155,14 +2155,14 @@ subroutine Self_Consistency_Term_setup_system(this, N, tbm, at_N, at_Z, global_U
       this%global_U = global_U
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
       return
     case(SCF_LCN)
       this%n_dof = this%N_atoms
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
       allocate(this%atomic_n(this%N_atoms))
       allocate(this%atomic_local_pot(this%N_atoms))
@@ -2175,7 +2175,7 @@ subroutine Self_Consistency_Term_setup_system(this, N, tbm, at_N, at_Z, global_U
       allocate(this%atomic_n(this%N_atoms))
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
       return
     case(SCF_NONLOCAL_U_DFTB)
@@ -2185,7 +2185,7 @@ subroutine Self_Consistency_Term_setup_system(this, N, tbm, at_N, at_Z, global_U
       allocate(this%atomic_n(this%N_atoms))
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
     case(SCF_NONLOCAL_U_NRL_TB)
       this%n_dof = this%N_atoms
@@ -2194,7 +2194,7 @@ subroutine Self_Consistency_Term_setup_system(this, N, tbm, at_N, at_Z, global_U
       allocate(this%atomic_n(this%N_atoms))
       allocate(this%atomic_n0(this%N_atoms))
       do i=1, at_N
-	this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
+        this%atomic_n0(i) = n_elecs_of_Z(tbm,at_Z(i))
       end do
       return
     case(SCF_SPIN_DIR)
@@ -2227,10 +2227,10 @@ subroutine TB_Dipole_Model_Print(this,file)
   call Print('TB_Dipole_Model : n_types='//this%n_types, file=file)
   do i_type = 1, this%n_types
     call print('TB_Dipole_Model : type ' // i_type // ' atomic_num ' // this%atomic_num(i_type) // &
-	       ' n_orb_sets ' // this%n_orb_sets(i_type), file=file)
+               ' n_orb_sets ' // this%n_orb_sets(i_type), file=file)
     do i_orb_set = 1, this%n_orb_sets(i_type)
       call print('TB_Dipole_model:     i_orb_set ' // i_orb_set // ' orb_type ' // this%orb_set_type(i_orb_set,i_type) // &
-		 ' width ' // this%gaussian_width(i_orb_set, i_type) // ' phase ' // this%orb_set_phase(i_orb_set, i_type), file=file)
+                 ' width ' // this%gaussian_width(i_orb_set, i_type) // ' phase ' // this%orb_set_phase(i_orb_set, i_type), file=file)
     end do
   end do
 
@@ -2248,10 +2248,10 @@ subroutine TB_Spin_Orbit_Coupling_Print(this,file)
   call Print('TB_Spin_Orbit_Coupling : n_types='//this%n_types, file=file)
   do i_type = 1, this%n_types
     call print('TB_Spin_Orbit_Coupling : type ' // i_type // ' atomic_num ' // this%atomic_num(i_type) // &
-	       ' n_orb_sets ' // this%n_orb_sets(i_type), file=file)
+               ' n_orb_sets ' // this%n_orb_sets(i_type), file=file)
     do i_orb_set = 1, this%n_orb_sets(i_type)
       call print('TB_Spin_Orbit_Coupling:     i_orb_set ' // i_orb_set // ' orb_type ' // this%orb_set_type(i_orb_set,i_type) // &
-		 ' SO_param ' // this%SO_param(i_orb_set, i_type), file=file)
+                 ' SO_param ' // this%SO_param(i_orb_set, i_type), file=file)
     end do
   end do
 
@@ -2427,51 +2427,51 @@ subroutine Self_Consistency_Term_fill_sc_matrices(this, at, U, stoner_param, fir
       return
     case (SCF_LOCAL_U)
       if (.not. allocated(U)) &
-	call system_abort("self_consistency_term_fill_sc_matrices called with SCF_LOCAL_U but U not allocated")
+        call system_abort("self_consistency_term_fill_sc_matrices called with SCF_LOCAL_U but U not allocated")
       if (minval(at%Z) < 1 .or. maxval(at%Z) > size(U)) &
-	call system_abort("self_consistency_term_fill_scf_matrices SCF_LOCAL_U called with at%Z element out of range 1.."//size(U))
+        call system_abort("self_consistency_term_fill_scf_matrices SCF_LOCAL_U called with at%Z element out of range 1.."//size(U))
       if (minval(U(at%Z)) <= 0) &
-	call system_abort("Tried to do a local U for atom " // minloc(U(at%Z)) // " Z " // at%Z(minloc(U(at%Z))) // " which has nonsense U")
+        call system_abort("Tried to do a local U for atom " // minloc(U(at%Z)) // " Z " // at%Z(minloc(U(at%Z))) // " which has nonsense U")
       this%U = U(at%Z)
     case (SCF_NONLOCAL_U_DFTB)
       if (.not. allocated(U)) &
-	call system_abort("self_consistency_term_fill_sc_matrices called with SCF_NONLOCAL_U_DFTB but U not allocated")
+        call system_abort("self_consistency_term_fill_sc_matrices called with SCF_NONLOCAL_U_DFTB but U not allocated")
       if (minval(at%Z) < 1 .or. maxval(at%Z) > size(U)) &
-	call system_abort("self_consistency_term_fill_scf_matrices SCF_NONLOCAL_U_DFTB called with at%Z element out of range 1.." // size(U))
+        call system_abort("self_consistency_term_fill_scf_matrices SCF_NONLOCAL_U_DFTB called with at%Z element out of range 1.." // size(U))
       call calc_gamma_dftb(at, U, this%gamma)
     case (SCF_NONLOCAL_U_NRL_TB)
       if (.not. allocated(U)) &
-	call system_abort("self_consistency_term_fill_sc_matrices called with SCF_NONLOCAL_U_NRL_TB but U not allocated")
+        call system_abort("self_consistency_term_fill_sc_matrices called with SCF_NONLOCAL_U_NRL_TB but U not allocated")
       if (minval(at%Z) < 1 .or. maxval(at%Z) > size(U)) &
-	call system_abort("self_consistency_term_fill_scf_matrices SCF_NONLOCAL_U_NRL_TB called with at%Z element out of range 1.." // size(U))
+        call system_abort("self_consistency_term_fill_scf_matrices SCF_NONLOCAL_U_NRL_TB called with at%Z element out of range 1.." // size(U))
       call calc_gamma_nrl_tb(at, U, this%gamma)
     case (SCF_SPIN_DIR)
       do i_at=1, at%N
-	n_i = first_orb_of_atom(i_at+1)-first_orb_of_atom(i_at)
-	allocate(block_H_up(n_i,n_i))
-	allocate(block_H_down(n_i,n_i))
-	allocate(block_S(n_i,n_i))
-	call get_HS_blocks(tbm, at, i_at, i_at, (/ 0.0_dp, 0.0_dp, 0.0_dp /), 0.0_dp, block_H_up, block_S, i_mag=1)
-	call get_HS_blocks(tbm, at, i_at, i_at, (/ 0.0_dp, 0.0_dp, 0.0_dp /), 0.0_dp, block_H_down, block_S, i_mag=2)
-	do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
-	  orb_offset = first_orb_of_manifold(i_man)-first_orb_of_atom(i_at)+1
-	  this%spin_splitting(i_man) = -0.5_dp*(block_H_up(orb_offset,orb_offset)-block_H_down(orb_offset,orb_offset))
-	end do
-	deallocate(block_H_up)
-	deallocate(block_H_down)
-	deallocate(block_S)
+        n_i = first_orb_of_atom(i_at+1)-first_orb_of_atom(i_at)
+        allocate(block_H_up(n_i,n_i))
+        allocate(block_H_down(n_i,n_i))
+        allocate(block_S(n_i,n_i))
+        call get_HS_blocks(tbm, at, i_at, i_at, (/ 0.0_dp, 0.0_dp, 0.0_dp /), 0.0_dp, block_H_up, block_S, i_mag=1)
+        call get_HS_blocks(tbm, at, i_at, i_at, (/ 0.0_dp, 0.0_dp, 0.0_dp /), 0.0_dp, block_H_down, block_S, i_mag=2)
+        do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
+          orb_offset = first_orb_of_manifold(i_man)-first_orb_of_atom(i_at)+1
+          this%spin_splitting(i_man) = -0.5_dp*(block_H_up(orb_offset,orb_offset)-block_H_down(orb_offset,orb_offset))
+        end do
+        deallocate(block_H_up)
+        deallocate(block_H_down)
+        deallocate(block_S)
       end do
     case (SCF_SPIN_STONER)
       if (.not. allocated(stoner_param)) &
-	call system_abort("self_consistency_term_fill_sc_matrices called with SCF_SPIN_STONER but stoner_param not allocated")
+        call system_abort("self_consistency_term_fill_sc_matrices called with SCF_SPIN_STONER but stoner_param not allocated")
       if (minval(at%Z) < 1 .or. maxval(at%Z) > size(stoner_param)) &
-	call system_abort("self_consistency_term_fill_scf_matrices SCF_SPIN_STONER called with at%Z element out of range 1.."//size(stoner_param))
+        call system_abort("self_consistency_term_fill_scf_matrices SCF_SPIN_STONER called with at%Z element out of range 1.."//size(stoner_param))
       do i_at=1, at%N
-	do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
-	  man_offset = i_man - first_manifold_of_atom(i_at) + 1
-	  this%stoner_param(i_man) = stoner_param(man_offset, at%Z(i_at))
-	  this%stoner_param(i_man) = stoner_param(man_offset, at%Z(i_at))
-	end do
+        do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
+          man_offset = i_man - first_manifold_of_atom(i_at) + 1
+          this%stoner_param(i_man) = stoner_param(man_offset, at%Z(i_at))
+          this%stoner_param(i_man) = stoner_param(man_offset, at%Z(i_at))
+        end do
       end do
     case default
       call system_abort("Self_Consistency_Term_fill_sc_matrices confused by this%type="//this%type)
@@ -2487,7 +2487,7 @@ subroutine realloc_dgamma_dr(this)
 
   if (allocated(this%dgamma_dr)) then
     if (size(this%dgamma_dr,1) /= size(this%gamma,1) .or. &
-	size(this%dgamma_dr,2) /= size(this%gamma,2)) then
+        size(this%dgamma_dr,2) /= size(this%gamma,2)) then
       deallocate(this%dgamma_dr)
     endif
   endif
@@ -2649,46 +2649,46 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n0
       control_vec = this%atomic_local_pot
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_LCN delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_LCN delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case(SCF_GCN)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_GCN")
       if (.not. associated(global_at_weight)) &
-	call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
+        call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
       to_zero_vec = sum(global_at_weight*(atom_orbital_sum(tbsys, new_orbital_n)-this%atomic_n0))
       control_vec = this%global_pot
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_GCN delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_GCN delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case(SCF_GLOBAL_U)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_GLOBAL_U")
       if (.not. associated(global_at_weight)) &
-	call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
+        call system_abort("Self_Consistency_Term_get_vecs SCF_GCN but no global_at_weight")
       to_zero_vec = sum(global_at_weight*(atom_orbital_sum(tbsys, new_orbital_n)))-this%global_N
       control_vec = this%global_N
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_GLOBAL_U delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_GLOBAL_U delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_LOCAL_U)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_LOCAL_U")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_LOCAL_U delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_LOCAL_U delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_NONLOCAL_U_DFTB)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_NONLOCAL_U_DFTB")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_NONLOCAL_U_DFTB delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_NONLOCAL_U_DFTB delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_NONLOCAL_U_NRL_TB)
       if (.not. associated(new_orbital_n)) call system_abort("get_vecs needs new_orbital_n for SCF_NONLOCAL_U_NRL_TB")
       to_zero_vec = atom_orbital_sum(tbsys, new_orbital_n) - this%atomic_n
       control_vec = this%atomic_n
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_NONLOCAL_U_NRL_TB delta_n" // to_zero_vec, PRINT_NERD)
+        call print("get_vecs SCF_NONLOCAL_U_NRL_TB delta_n" // to_zero_vec, PRINT_NERD)
       endif
     case (SCF_SPIN_DIR)
       if (.not. associated(new_orbital_m)) call system_abort("get_vecs needs new_orbital_m for SCF_SPIN_DIR")
@@ -2702,10 +2702,10 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       control_vec(2:3*N_mom:3) = this%manifold_mom(2,1:N_mom)
       control_vec(3:3*N_mom:3) = this%manifold_mom(3,1:N_mom)
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_SPIN_DIR current manifold moment", PRINT_NERD)
-	do i=1, tbsys%N_manifolds
-	  call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
-	end do
+        call print("get_vecs SCF_SPIN_DIR current manifold moment", PRINT_NERD)
+        do i=1, tbsys%N_manifolds
+          call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
+        end do
       endif
       deallocate(new_manifold_m)
     case (SCF_SPIN_STONER)
@@ -2714,10 +2714,10 @@ subroutine get_vecs(this, tbsys, to_zero_vec, control_vec, global_at_weight, new
       N_mom = tbsys%N_manifolds
       new_manifold_m = manifold_orbital_sum(tbsys, new_orbital_m)
       if (current_verbosity() >= PRINT_NERD) then
-	call print("get_vecs SCF_SPIN_STONER current manifold moment", PRINT_NERD)
-	do i=1, tbsys%N_manifolds
-	  call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
-	end do
+        call print("get_vecs SCF_SPIN_STONER current manifold moment", PRINT_NERD)
+        do i=1, tbsys%N_manifolds
+          call print("  " // i // " " // new_manifold_m(:,i), PRINT_NERD)
+        end do
       endif
       to_zero_vec(1:3*N_mom:3) = new_manifold_m(1,1:N_mom) - this%manifold_mom(1,1:N_mom)
       to_zero_vec(2:3*N_mom:3) = new_manifold_m(2,1:N_mom) - this%manifold_mom(2,1:N_mom)
@@ -2781,10 +2781,10 @@ subroutine TBSystem_calc_orb_local_pot(this, global_at_weight)
 
   if (allocated(this%scf%terms)) then
      do i_term=1, size(this%scf%terms)
-	if (allocated(this%scf%orb_local_pot)) &
-	  call add_term_dSCFE_dn(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_local_pot)
-	if (allocated(this%scf%orb_exch_field)) &
-	  call add_term_dSCFE_dm(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_exch_field)
+        if (allocated(this%scf%orb_local_pot)) &
+          call add_term_dSCFE_dn(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_local_pot)
+        if (allocated(this%scf%orb_exch_field)) &
+          call add_term_dSCFE_dm(this%scf%terms(i_term), this, global_at_weight, this%scf%orb_exch_field)
      end do
   end if
 
@@ -2805,11 +2805,11 @@ subroutine add_term_dSCFE_dn(this, tbsys, global_at_weight, dSCFE_dn)
       dSCFE_dn = atom_orbital_spread(tbsys, this%atomic_local_pot)
     case (SCF_GCN)
       if (.not. associated(global_at_weight)) &
-	call system_abort("add_term_dSCFE_dn  with SCF_GCN but no global_at_weight")
+        call system_abort("add_term_dSCFE_dn  with SCF_GCN but no global_at_weight")
       dSCFE_dn = atom_orbital_spread(tbsys, global_at_weight*this%global_pot)
     case (SCF_GLOBAL_U)
       if (.not. associated(global_at_weight)) &
-	call system_abort("add_term_dSCFE_dn with SCF_GLOBAL_U but no global_at_weight")
+        call system_abort("add_term_dSCFE_dn with SCF_GLOBAL_U but no global_at_weight")
       dSCFE_dn = atom_orbital_spread(tbsys, global_at_weight*this%global_U*(this%global_N-sum(global_at_weight*this%atomic_n0)))
     case (SCF_LOCAL_U)
       dSCFE_dn = atom_orbital_spread(tbsys, this%U*(this%atomic_n-this%atomic_n0))
@@ -2854,29 +2854,29 @@ subroutine add_term_dSCFE_dm(this, tbsys, global_at_weight, dSCFE_dm)
       return
     case (SCF_SPIN_DIR)
       do i_man=1, tbsys%N_manifolds
-	e = this%manifold_mom(:,i_man)
-	if (norm(e) .feq. 0.0_dp) then
-	  e = (/ 0.0_dp, 0.0_dp, 1.0_dp /)
-	else
-	  e = e / norm(e)
-	endif
-	do i_orb = tbsys%first_orb_of_manifold(i_man), tbsys%first_orb_of_manifold(i_man+1)-1
-	  ! F = -0.5 sum_a spin_split_a |m_a|
-	  ! dF/dm_i = -0.5 spin_split_a (|m_a| 2*m_a - |m_a|^2 m_a/|m_a|) / |m_a|^2
-	  !         = -0.5 spin_split_a ( 2*m_a/|m_a| - m_a/|m_a| )
-	  !         = -0.5 spin_split_a m_a/|m_a|
-	  dSCFE_dm(1:3,i_orb) = -0.5_dp * this%spin_splitting(i_man)*e(1:3)
-	end do
+        e = this%manifold_mom(:,i_man)
+        if (norm(e) .feq. 0.0_dp) then
+          e = (/ 0.0_dp, 0.0_dp, 1.0_dp /)
+        else
+          e = e / norm(e)
+        endif
+        do i_orb = tbsys%first_orb_of_manifold(i_man), tbsys%first_orb_of_manifold(i_man+1)-1
+          ! F = -0.5 sum_a spin_split_a |m_a|
+          ! dF/dm_i = -0.5 spin_split_a (|m_a| 2*m_a - |m_a|^2 m_a/|m_a|) / |m_a|^2
+          !         = -0.5 spin_split_a ( 2*m_a/|m_a| - m_a/|m_a| )
+          !         = -0.5 spin_split_a m_a/|m_a|
+          dSCFE_dm(1:3,i_orb) = -0.5_dp * this%spin_splitting(i_man)*e(1:3)
+        end do
       end do
       return
     case (SCF_SPIN_STONER)
       do i_man=1, tbsys%N_manifolds
-	do i_orb=tbsys%first_orb_of_manifold(i_man), tbsys%first_orb_of_manifold(i_man+1)-1
-	  ! F = -0.25 sum_a stoner_param_a * |m_a|^2
-	  ! dF/dm_i = -0.25 stoner_param_a 2 |m_a| m_a/|m_a|
-	  !         = -0.5 stoner_param_a m_a
-	  dSCFE_dm(1:3,i_orb) = -0.5_dp * this%stoner_param(i_man)*this%manifold_mom(1:3,i_man)
-	end do
+        do i_orb=tbsys%first_orb_of_manifold(i_man), tbsys%first_orb_of_manifold(i_man+1)-1
+          ! F = -0.25 sum_a stoner_param_a * |m_a|^2
+          ! dF/dm_i = -0.25 stoner_param_a 2 |m_a| m_a/|m_a|
+          !         = -0.5 stoner_param_a m_a
+          dSCFE_dm(1:3,i_orb) = -0.5_dp * this%stoner_param(i_man)*this%manifold_mom(1:3,i_man)
+        end do
       end do
       return
     case default
@@ -2958,23 +2958,23 @@ subroutine calc_gamma_dftb(at, U, gamma)
     do s2 = -s_range, s_range
     do s3 = -s_range, s_range
       if ((s_range > 1) .and. &
-	  (s1 /= -s_range) .and. (s1 /= s_range) .and. &
-	  (s2 /= -s_range) .and. (s2 /= s_range) .and. &
-	  (s3 /= -s_range) .and. (s3 /= s_range)) cycle
+          (s1 /= -s_range) .and. (s1 /= s_range) .and. &
+          (s2 /= -s_range) .and. (s2 /= s_range) .and. &
+          (s3 /= -s_range) .and. (s3 /= s_range)) cycle
       do i=1, at%N
-	U_i = U(at%Z(i))
-	pi = at%pos(1:3,i)
-	do j=i, at%N
-	  if (i == j .and. s1 == 0 .and. s2 == 0 .and. s3 == 0) cycle
-	  U_j = U(at%Z(j))
-	  pj = at%pos(1:3,j)
-	  o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
-	  dr = (pi - pj - o)
-	  val = Hartree*dftb_s(U_i/Hartree, U_j/Hartree, sqrt(sum(dr*dr))/Bohr)
-	  if (abs(val) > max_val) max_val = abs(val)
-	  gamma(i,j) = gamma(i,j) - val
-	  gamma(j,i) = gamma(j,i) - val
-	end do
+        U_i = U(at%Z(i))
+        pi = at%pos(1:3,i)
+        do j=i, at%N
+          if (i == j .and. s1 == 0 .and. s2 == 0 .and. s3 == 0) cycle
+          U_j = U(at%Z(j))
+          pj = at%pos(1:3,j)
+          o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
+          dr = (pi - pj - o)
+          val = Hartree*dftb_s(U_i/Hartree, U_j/Hartree, sqrt(sum(dr*dr))/Bohr)
+          if (abs(val) > max_val) max_val = abs(val)
+          gamma(i,j) = gamma(i,j) - val
+          gamma(j,i) = gamma(j,i) - val
+        end do
       end do
     end do
     end do
@@ -3015,31 +3015,31 @@ subroutine calc_dgamma_dr_dftb(at, U, dgamma_dr, virial_component)
     do s2=-s_range,s_range
     do s3=-s_range,s_range
       if ((s_range > 1) .and. &
-	  (s1 /= -s_range) .and. (s1 /= s_range) .and. &
-	  (s2 /= -s_range) .and. (s2 /= s_range) .and. &
-	  (s3 /= -s_range) .and. (s3 /= s_range)) cycle
+          (s1 /= -s_range) .and. (s1 /= s_range) .and. &
+          (s2 /= -s_range) .and. (s2 /= s_range) .and. &
+          (s3 /= -s_range) .and. (s3 /= s_range)) cycle
       do i=1, at%N
-	if (U(at%Z(i)) <= 0) call system_abort("Tried to do a local U for atom " // i // " Z " // at%Z(i) // " which has nonsense U")
-	U_i = U(at%Z(i))
-	pi = at%pos(1:3,i)
-	do j=i+1, at%N
-	  if (U(at%Z(j)) <= 0) call system_abort("Tried to do a local U for atom " // j // " Z " // at%Z(j) // " which has nonsense U")
-	  U_j = U(at%Z(j))
-	  pj = at%pos(1:3,j)
-	  o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
-	  dr = (pi - pj - o)
-	  dr_mag = sqrt(sum(dr*dr))
-	  dr = dr/dr_mag
-	  dval = Hartree/Bohr * dftb_s_deriv(U_i/Hartree, U_j/Hartree, dr_mag/Bohr)
-	  if (abs(dval) > max_val) max_val = abs(dval)
-	  if (my_virial_component > 0) then
-	    dgamma_dr(i,j,:) = dgamma_dr(i,j,:) + dval*dr*dr_mag*dr(my_virial_component)
-	    dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr*dr_mag*dr(my_virial_component)
-	  else
-	    dgamma_dr(i,j,:) = dgamma_dr(i,j,:) - dval*dr
-	    dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr
-	  endif
-	end do
+        if (U(at%Z(i)) <= 0) call system_abort("Tried to do a local U for atom " // i // " Z " // at%Z(i) // " which has nonsense U")
+        U_i = U(at%Z(i))
+        pi = at%pos(1:3,i)
+        do j=i+1, at%N
+          if (U(at%Z(j)) <= 0) call system_abort("Tried to do a local U for atom " // j // " Z " // at%Z(j) // " which has nonsense U")
+          U_j = U(at%Z(j))
+          pj = at%pos(1:3,j)
+          o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
+          dr = (pi - pj - o)
+          dr_mag = sqrt(sum(dr*dr))
+          dr = dr/dr_mag
+          dval = Hartree/Bohr * dftb_s_deriv(U_i/Hartree, U_j/Hartree, dr_mag/Bohr)
+          if (abs(dval) > max_val) max_val = abs(dval)
+          if (my_virial_component > 0) then
+            dgamma_dr(i,j,:) = dgamma_dr(i,j,:) + dval*dr*dr_mag*dr(my_virial_component)
+            dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr*dr_mag*dr(my_virial_component)
+          else
+            dgamma_dr(i,j,:) = dgamma_dr(i,j,:) - dval*dr
+            dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr
+          endif
+        end do
       end do
     end do
     end do
@@ -3087,23 +3087,23 @@ subroutine calc_gamma_nrl_tb(at, U, gamma)
     do s2=-s_range,s_range
     do s3=-s_range,s_range
       if ((s_range > 1) .and. &
-	  (s1 /= -s_range) .and. (s1 /= s_range) .and. &
-	  (s2 /= -s_range) .and. (s2 /= s_range) .and. &
-	  (s3 /= -s_range) .and. (s3 /= s_range)) cycle
+          (s1 /= -s_range) .and. (s1 /= s_range) .and. &
+          (s2 /= -s_range) .and. (s2 /= s_range) .and. &
+          (s3 /= -s_range) .and. (s3 /= s_range)) cycle
       do i=1, at%N
-	U_i = U(at%Z(i))
-	pi = at%pos(1:3,i)
-	do j=i, at%N
-	  if (i == j .and. s1 == 0 .and. s2 == 0 .and. s3 == 0) cycle
-	  U_j = U(at%Z(j))
-	  pj = at%pos(1:3,j)
-	  o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
-	  dr = (pi - pj - o)
-	  val = Hartree*nrl_tb_s(U_i/Hartree, U_j/Hartree, sqrt(sum(dr*dr))/Bohr)
-	  if (abs(val) > max_val) max_val = abs(val)
-	  gamma(i,j) = gamma(i,j) - val
-	  gamma(j,i) = gamma(j,i) - val
-	end do
+        U_i = U(at%Z(i))
+        pi = at%pos(1:3,i)
+        do j=i, at%N
+          if (i == j .and. s1 == 0 .and. s2 == 0 .and. s3 == 0) cycle
+          U_j = U(at%Z(j))
+          pj = at%pos(1:3,j)
+          o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
+          dr = (pi - pj - o)
+          val = Hartree*nrl_tb_s(U_i/Hartree, U_j/Hartree, sqrt(sum(dr*dr))/Bohr)
+          if (abs(val) > max_val) max_val = abs(val)
+          gamma(i,j) = gamma(i,j) - val
+          gamma(j,i) = gamma(j,i) - val
+        end do
       end do
     end do
     end do
@@ -3143,31 +3143,31 @@ subroutine calc_dgamma_dr_nrl_tb(at, U, dgamma_dr, virial_component)
     do s2=-s_range,s_range
     do s3=-s_range,s_range
       if ((s_range > 1) .and. &
-	  (s1 /= -s_range) .and. (s1 /= s_range) .and. &
-	  (s2 /= -s_range) .and. (s2 /= s_range) .and. &
-	  (s3 /= -s_range) .and. (s3 /= s_range)) cycle
+          (s1 /= -s_range) .and. (s1 /= s_range) .and. &
+          (s2 /= -s_range) .and. (s2 /= s_range) .and. &
+          (s3 /= -s_range) .and. (s3 /= s_range)) cycle
       do i=1, at%N
-	if (U(at%Z(i)) <= 0) call system_abort("Tried to do a local U for atom " // i // " Z " // at%Z(i) // " which has nonsense U")
-	U_i = U(at%Z(i))
-	pi = at%pos(1:3,i)
-	do j=i+1, at%N
-	  if (U(at%Z(j)) <= 0) call system_abort("Tried to do a local U for atom " // j // " Z " // at%Z(j) // " which has nonsense U")
-	  U_j = U(at%Z(j))
-	  pj = at%pos(1:3,j)
-	  o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
-	  dr = (pi - pj - o)
-	  dr_mag = sqrt(sum(dr*dr))
-	  dr = dr/dr_mag
-	  dval = Hartree/Bohr * nrl_tb_s_deriv(U_i/Hartree, U_j/Hartree, dr_mag/Bohr)
-	  if (abs(dval) > max_val) max_val = abs(dval)
-	  if (my_virial_component > 0) then
-	    dgamma_dr(i,j,:) = dgamma_dr(i,j,:) + dval*dr*dr_mag*dr(my_virial_component)
-	    dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr*dr_mag*dr(my_virial_component)
-	  else
-	    dgamma_dr(i,j,:) = dgamma_dr(i,j,:) - dval*dr
-	    dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr
-	  endif
-	end do
+        if (U(at%Z(i)) <= 0) call system_abort("Tried to do a local U for atom " // i // " Z " // at%Z(i) // " which has nonsense U")
+        U_i = U(at%Z(i))
+        pi = at%pos(1:3,i)
+        do j=i+1, at%N
+          if (U(at%Z(j)) <= 0) call system_abort("Tried to do a local U for atom " // j // " Z " // at%Z(j) // " which has nonsense U")
+          U_j = U(at%Z(j))
+          pj = at%pos(1:3,j)
+          o = s1*at%lattice(:,1) + s2*at%lattice(:,2) + s3*at%lattice(:,3)
+          dr = (pi - pj - o)
+          dr_mag = sqrt(sum(dr*dr))
+          dr = dr/dr_mag
+          dval = Hartree/Bohr * nrl_tb_s_deriv(U_i/Hartree, U_j/Hartree, dr_mag/Bohr)
+          if (abs(dval) > max_val) max_val = abs(dval)
+          if (my_virial_component > 0) then
+            dgamma_dr(i,j,:) = dgamma_dr(i,j,:) + dval*dr*dr_mag*dr(my_virial_component)
+            dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr*dr_mag*dr(my_virial_component)
+          else
+            dgamma_dr(i,j,:) = dgamma_dr(i,j,:) - dval*dr
+            dgamma_dr(j,i,:) = dgamma_dr(j,i,:) + dval*dr
+          endif
+        end do
       end do
     end do
     end do
@@ -3196,13 +3196,13 @@ function dftb_s(u_a, u_b, R)
   if (tau_a /= tau_b) then
     dftb_s = &
       exp(-tau_a*R)* ( (tau_b**4 * tau_a) / (2.0_dp * (tau_a**2 - tau_b**2)**2) -  &
-		       (tau_b**6 - 3.0_dp*tau_b**4*tau_a**2) / (R * (tau_a**2-tau_b**2)**3) ) + &
+                       (tau_b**6 - 3.0_dp*tau_b**4*tau_a**2) / (R * (tau_a**2-tau_b**2)**3) ) + &
       exp(-tau_b*R)* ( (tau_a**4 * tau_b) / (2.0_dp * (tau_b**2 - tau_a**2)**2) -  &
-		       (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3) )
+                       (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3) )
   else
     dftb_s = &
       exp(-tau_a*R) * (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) / &
-		      (48.0_dp * R)
+                      (48.0_dp * R)
   endif
 end function dftb_s
 
@@ -3220,14 +3220,14 @@ function dftb_s_deriv(u_a, u_b, R)
     exp_v = exp(-tau_a*R)
     exp_v_deriv = -tau_a*exp_v
     rat_v = (tau_b**4 * tau_a) / (2.0_dp * (tau_a**2 - tau_b**2)**2) -  &
-	    (tau_b**6 - 3.0_dp*tau_b**4*tau_a**2) / (R * (tau_a**2-tau_b**2)**3)
+            (tau_b**6 - 3.0_dp*tau_b**4*tau_a**2) / (R * (tau_a**2-tau_b**2)**3)
     rat_v_deriv = (tau_b**6 - 3.0_dp*tau_b**4*tau_a**2) / (R**2 * (tau_a**2-tau_b**2)**3)
     dftb_s_deriv = exp_v*rat_v_deriv + exp_v_deriv*rat_v
 
     exp_v = exp(-tau_b*R)
     exp_v_deriv = -tau_b*exp_v
     rat_v = (tau_a**4 * tau_b) / (2.0_dp * (tau_b**2 - tau_a**2)**2) -  &
-	    (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3)
+            (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R * (tau_b**2-tau_a**2)**3)
     rat_v_deriv = (tau_a**6 - 3.0_dp*tau_a**4*tau_b**2) / (R**2 * (tau_b**2-tau_a**2)**3)
 
     dftb_s_deriv = dftb_s_deriv + exp_v*rat_v_deriv + exp_v_deriv*rat_v
@@ -3237,8 +3237,8 @@ function dftb_s_deriv(u_a, u_b, R)
     exp_v_deriv = -tau_a*exp_v
     rat_v = (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) / (48.0_dp * R)
     rat_v_deriv = ( (48.0_dp*R) * (33.0_dp * tau_a + 18.0_dp * tau_a**2 * R + 3*(tau_a*R)**2 * tau_a) - &
-		    (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) * 48.0_dp ) / &
-		    ((48.0_dp*R)**2)
+                    (48.0_dp + 33.0_dp * tau_a * R + 9.0_dp * (tau_a*R)**2 + (tau_a*R)**3) * 48.0_dp ) / &
+                    ((48.0_dp*R)**2)
 
     dftb_s_deriv = exp_v*rat_v_deriv + exp_v_deriv*rat_v
   endif
@@ -3350,25 +3350,25 @@ subroutine add_term_local_scf_e_correction(this, local_e, global_E, N_atoms, fir
       if (.not. associated(global_at_weight)) &
         call system_abort ("local_scf_e_correction with SCF_GLOBAL_U but with unassociated global_at_weight")
       global_e = global_e + 0.5_dp*this%global_U*(this%global_N-sum(global_at_weight*this%atomic_n0))**2 - &
-			    this%global_U*(this%global_N-sum(global_at_weight*this%atomic_n0))*this%global_N
+                            this%global_U*(this%global_N-sum(global_at_weight*this%atomic_n0))*this%global_N
     case (SCF_LOCAL_U)
       local_e = local_e + 0.5_dp*this%U*(this%atomic_n-this%atomic_n0)**2 - this%U*(this%atomic_n-this%atomic_n0)*this%atomic_n
     case (SCF_NONLOCAL_U_DFTB)
       local_e = local_e + 0.5_dp*((this%atomic_n-this%atomic_n0) * matmul(this%gamma, this%atomic_n-this%atomic_n0)) - &
-			  (this%atomic_n * matmul(this%gamma,this%atomic_n-this%atomic_n0))
+                          (this%atomic_n * matmul(this%gamma,this%atomic_n-this%atomic_n0))
     case (SCF_NONLOCAL_U_NRL_TB)
       local_e = local_e + 0.5_dp*((this%atomic_n-this%atomic_n0) * matmul(this%gamma, this%atomic_n-this%atomic_n0)) - &
-			  (this%atomic_n * matmul(this%gamma,this%atomic_n-this%atomic_n0))
+                          (this%atomic_n * matmul(this%gamma,this%atomic_n-this%atomic_n0))
     case (SCF_SPIN_DIR)
       return
     case (SCF_SPIN_STONER)
       do i_at=1, N_atoms
-	do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
-	  ! add F({m_i})
-	  local_e(i_at) = local_e(i_at) - 0.25_dp*this%stoner_param(i_man)*norm(this%manifold_mom(1:3,i_man))**2
-	  ! subtract dF/dm_i . m_i
-	  local_e(i_at) = local_e(i_at) + 0.5_dp*this%stoner_param(i_man)*norm(this%manifold_mom(1:3,i_man))**2
-	end do
+        do i_man=first_manifold_of_atom(i_at), first_manifold_of_atom(i_at+1)-1
+          ! add F({m_i})
+          local_e(i_at) = local_e(i_at) - 0.25_dp*this%stoner_param(i_man)*norm(this%manifold_mom(1:3,i_man))**2
+          ! subtract dF/dm_i . m_i
+          local_e(i_at) = local_e(i_at) + 0.5_dp*this%stoner_param(i_man)*norm(this%manifold_mom(1:3,i_man))**2
+        end do
       end do
     case default
       call system_abort("add_term_local_scf_e_correction confused by this%type="//this%type)
@@ -3614,28 +3614,28 @@ subroutine get_dipole_block(this, at, i, j, dv_hat, dv_mag, block_dipole)
       W_T(1:9,1:9,3) = matmul(matmul(transpose(trans_mat_i),W(1:10,1:10,3)),trans_mat_j)
 
       if (this%orb_set_type(i_orb_set,i_type) == ORB_S) then
-	first_i = 1
-	last_i = 1
+        first_i = 1
+        last_i = 1
       else if (this%orb_set_type(i_orb_set,i_type) == ORB_P) then
-	first_i = 2
-	last_i = 4
+        first_i = 2
+        last_i = 4
       else if (this%orb_set_type(i_orb_set,i_type) == ORB_D) then
-	first_i = 5
-	last_i = 9
+        first_i = 5
+        last_i = 9
       else
-	call system_abort("get_dipole_block got unknown orb_set_type for i_orb_set " // this%orb_set_type(i_orb_set,i_type))
+        call system_abort("get_dipole_block got unknown orb_set_type for i_orb_set " // this%orb_set_type(i_orb_set,i_type))
       endif
       if (this%orb_set_type(j_orb_set,j_type) == ORB_S) then
-	first_j = 1
-	last_j = 1
+        first_j = 1
+        last_j = 1
       else if (this%orb_set_type(j_orb_set,j_type) == ORB_P) then
-	first_j = 2
-	last_j = 4
+        first_j = 2
+        last_j = 4
       else if (this%orb_set_type(j_orb_set,j_type) == ORB_D) then
-	first_j = 5
-	last_j = 9
+        first_j = 5
+        last_j = 9
       else
-	call system_abort(" get_dipole_block got unknown orb_set_type for j_orb_set " // this%orb_set_type(j_orb_set,j_type))
+        call system_abort(" get_dipole_block got unknown orb_set_type for j_orb_set " // this%orb_set_type(j_orb_set,j_type))
       endif
       block_dipole(i_offset:i_offset+N_ORBS_OF_SET(this%orb_set_type(i_orb_set,i_type))-1, &
                    j_offset:j_offset+N_ORBS_OF_SET(this%orb_set_type(j_orb_set,j_type))-1, 1:3) = W_T(first_i:last_i,first_j:last_j,1:3)
@@ -3717,12 +3717,12 @@ subroutine realloc_dipole_model(this, new_n_types, new_n_orb_sets)
       allocate(t_atomic_num(this%n_types))
       t_atomic_num = this%atomic_num(1:this%n_types)
       if (max_n_orb_sets > 0) then
-	allocate(t_orb_set_type(max_n_orb_sets,this%n_types))
-	allocate(t_gaussian_width(max_n_orb_sets,this%n_types))
-	allocate(t_orb_set_phase(max_n_orb_sets,this%n_types))
-	t_orb_set_type = this%orb_set_type(1:max_n_orb_sets,1:this%n_types)
-	t_gaussian_width = this%gaussian_width(1:max_n_orb_sets,1:this%n_types)
-	t_orb_set_phase = this%orb_set_phase(1:max_n_orb_sets,1:this%n_types)
+        allocate(t_orb_set_type(max_n_orb_sets,this%n_types))
+        allocate(t_gaussian_width(max_n_orb_sets,this%n_types))
+        allocate(t_orb_set_phase(max_n_orb_sets,this%n_types))
+        t_orb_set_type = this%orb_set_type(1:max_n_orb_sets,1:this%n_types)
+        t_gaussian_width = this%gaussian_width(1:max_n_orb_sets,1:this%n_types)
+        t_orb_set_phase = this%orb_set_phase(1:max_n_orb_sets,1:this%n_types)
       endif
     endif
 
@@ -3748,9 +3748,9 @@ subroutine realloc_dipole_model(this, new_n_types, new_n_orb_sets)
       this%atomic_num(1:this%n_types) = t_atomic_num(1:this%n_types)
       this%n_orb_sets(1:this%n_types) = t_n_orb_sets(1:this%n_types)
       if (max_n_orb_sets > 0) then
-	this%orb_set_type(1:max_n_orb_sets,1:this%n_types) = t_orb_set_type(1:max_n_orb_sets, 1:this%n_types)
-	this%gaussian_width(1:max_n_orb_sets,1:this%n_types) = t_gaussian_width(1:max_n_orb_sets, 1:this%n_types)
-	this%orb_set_phase(1:max_n_orb_sets,1:this%n_types) = t_orb_set_phase(1:max_n_orb_sets, 1:this%n_types)
+        this%orb_set_type(1:max_n_orb_sets,1:this%n_types) = t_orb_set_type(1:max_n_orb_sets, 1:this%n_types)
+        this%gaussian_width(1:max_n_orb_sets,1:this%n_types) = t_gaussian_width(1:max_n_orb_sets, 1:this%n_types)
+        this%orb_set_phase(1:max_n_orb_sets,1:this%n_types) = t_orb_set_phase(1:max_n_orb_sets, 1:this%n_types)
       endif
     endif
     this%n_types = max(this%n_types, new_n_types)
@@ -3784,10 +3784,10 @@ subroutine realloc_spin_orbit_coupling(this, new_n_types, new_n_orb_sets)
       allocate(t_atomic_num(this%n_types))
       t_atomic_num = this%atomic_num(1:this%n_types)
       if (max_n_orb_sets > 0) then
-	allocate(t_orb_set_type(max_n_orb_sets,this%n_types))
-	allocate(t_SO_param(max_n_orb_sets,this%n_types))
-	t_orb_set_type = this%orb_set_type(1:max_n_orb_sets,1:this%n_types)
-	t_SO_param = this%SO_param(1:max_n_orb_sets,1:this%n_types)
+        allocate(t_orb_set_type(max_n_orb_sets,this%n_types))
+        allocate(t_SO_param(max_n_orb_sets,this%n_types))
+        t_orb_set_type = this%orb_set_type(1:max_n_orb_sets,1:this%n_types)
+        t_SO_param = this%SO_param(1:max_n_orb_sets,1:this%n_types)
       endif
     endif
 
@@ -3810,8 +3810,8 @@ subroutine realloc_spin_orbit_coupling(this, new_n_types, new_n_orb_sets)
       this%atomic_num(1:this%n_types) = t_atomic_num(1:this%n_types)
       this%n_orb_sets(1:this%n_types) = t_n_orb_sets(1:this%n_types)
       if (max_n_orb_sets > 0) then
-	this%orb_set_type(1:max_n_orb_sets,1:this%n_types) = t_orb_set_type(1:max_n_orb_sets, 1:this%n_types)
-	this%SO_param(1:max_n_orb_sets,1:this%n_types) = t_SO_param(1:max_n_orb_sets, 1:this%n_types)
+        this%orb_set_type(1:max_n_orb_sets,1:this%n_types) = t_orb_set_type(1:max_n_orb_sets, 1:this%n_types)
+        this%SO_param(1:max_n_orb_sets,1:this%n_types) = t_SO_param(1:max_n_orb_sets, 1:this%n_types)
       endif
     endif
     this%n_types = max(this%n_types, new_n_types)

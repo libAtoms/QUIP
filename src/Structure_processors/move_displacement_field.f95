@@ -96,7 +96,7 @@ implicit none
 
     if (current_verbosity() >= PRINT_VERBOSE) then
       if (shifted_i > 0) then
-	call print("mapping displacement cur " // i // " " // config%pos(:,i) // " to " // shifted_i // " " // config%pos(:,shifted_i) // " dist " // dist)
+        call print("mapping displacement cur " // i // " " // config%pos(:,i) // " to " // shifted_i // " " // config%pos(:,shifted_i) // " dist " // dist)
       endif
     endif
 
@@ -107,7 +107,7 @@ implicit none
       new_pos(:,shifted_i) = ref_config%pos(:,shifted_i) + cur_displacement
     else
       if (current_verbosity() >= PRINT_VERBOSE) then
-	call print("no mapping for " // i // " " // config%pos(:,i))
+        call print("no mapping for " // i // " " // config%pos(:,i))
       endif
     endif
 

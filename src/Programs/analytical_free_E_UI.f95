@@ -28,13 +28,13 @@ implicit none
    do i=1, n_samples
       x = min_x + real(i-1,dp)*dx
       if (spline_value(V0_spline,x) < min_V0) then
-	 min_V0_x = x
-	 min_V0 = spline_value(V0_spline, x)
+         min_V0_x = x
+         min_V0 = spline_value(V0_spline, x)
       endif
       if (i > 1 .and. i < n_samples) then
-	 if (spline_value(V0_spline,x) > spline_value(V0_spline,x-dx) .and. spline_value(V0_spline,x) > spline_value(V0_spline,x+dx)) then
-	    max_V0_x = x
-	 endif
+         if (spline_value(V0_spline,x) > spline_value(V0_spline,x-dx) .and. spline_value(V0_spline,x) > spline_value(V0_spline,x+dx)) then
+            max_V0_x = x
+         endif
       endif
       call print ("V0 "// x//" " // spline_value(V0_spline, x) //" " // spline_deriv(V0_spline, x))
    end do
@@ -49,17 +49,17 @@ implicit none
       dF_dl_x(i) = l
 
       do j=1, 3*n_samples
-	 x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
-	 integrand_x(j) = x
-	 integrand_y(j) = dVr_dl(x,l,k) * exp(-beta*(spline_value(V0_spline,x)+Vr(x,l,k)))
+         x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
+         integrand_x(j) = x
+         integrand_y(j) = dVr_dl(x,l,k) * exp(-beta*(spline_value(V0_spline,x)+Vr(x,l,k)))
 ! call print("dF_dl integrand_y " // (-beta*(spline_value(V0_spline,x)+Vr(x,l,k))) // " " // integrand_y(j))
       end do
       dF_dl_y(i) = TrapezoidIntegral(integrand_x, integrand_y)
 
       do j=1, 3*n_samples
-	 x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
-	 integrand_x(j) = x
-	 integrand_y(j) = exp(-beta*(spline_value(V0_spline,x)+Vr(x,l,k)))
+         x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
+         integrand_x(j) = x
+         integrand_y(j) = exp(-beta*(spline_value(V0_spline,x)+Vr(x,l,k)))
       end do
       dF_dl_y(i) = dF_dl_y(i) / TrapezoidIntegral(integrand_x, integrand_y)
 
@@ -84,20 +84,20 @@ implicit none
       x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
       integrand_x(j) = x
       if (x <= max_V0_x) then
-	 integrand_y(j) = exp(-beta*spline_value(V0_spline,x))
+         integrand_y(j) = exp(-beta*spline_value(V0_spline,x))
       else
-	 integrand_y(j) = 0.0_dp
+         integrand_y(j) = 0.0_dp
       endif
    end do
    prob_left = TrapezoidIntegral(integrand_x, integrand_y)/normalization
-   
+
    do j=1, 3*n_samples
       x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
       integrand_x(j) = x
       if (x > max_V0_x) then
-	 integrand_y(j) = exp(-beta*spline_value(V0_spline,x))
+         integrand_y(j) = exp(-beta*spline_value(V0_spline,x))
       else
-	 integrand_y(j) = 0.0_dp
+         integrand_y(j) = 0.0_dp
       endif
    end do
    prob_right = TrapezoidIntegral(integrand_x, integrand_y)/normalization
@@ -113,16 +113,16 @@ implicit none
       integrand_x(j) = x
       F = spline_nintegrate(dF_dl_spline, min_V0_x, x)
       if (j > 1 .and. j < 3*n_samples) then
-	 if (F > spline_nintegrate(dF_dl_spline, min_V0_x, x-dx) .and. F > spline_nintegrate(dF_dl_spline, min_V0_x, x+dx)) then
-	    max_F = F
-	 endif
-	 if (F < spline_nintegrate(dF_dl_spline, min_V0_x, x-dx) .and. F < spline_nintegrate(dF_dl_spline, min_V0_x, x+dx)) then
-	    if (min_F_1 < 1e37_dp) then
-	       min_F_2 = F
-	    else
-	       min_F_1 = F
-	    endif
-	 endif
+         if (F > spline_nintegrate(dF_dl_spline, min_V0_x, x-dx) .and. F > spline_nintegrate(dF_dl_spline, min_V0_x, x+dx)) then
+            max_F = F
+         endif
+         if (F < spline_nintegrate(dF_dl_spline, min_V0_x, x-dx) .and. F < spline_nintegrate(dF_dl_spline, min_V0_x, x+dx)) then
+            if (min_F_1 < 1e37_dp) then
+               min_F_2 = F
+            else
+               min_F_1 = F
+            endif
+         endif
       endif
       integrand_y(j) = exp(-beta*F)
    end do
@@ -132,20 +132,20 @@ implicit none
       x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
       integrand_x(j) = x
       if (x <= max_V0_x) then
-	 integrand_y(j) = exp(-beta*spline_nintegrate(dF_dl_spline, min_V0_x, x))
+         integrand_y(j) = exp(-beta*spline_nintegrate(dF_dl_spline, min_V0_x, x))
       else
-	 integrand_y(j) = 0.0_dp
+         integrand_y(j) = 0.0_dp
       endif
    end do
    prob_left = TrapezoidIntegral(integrand_x, integrand_y)/normalization
-   
+
    do j=1, 3*n_samples
       x = min_x-(max_x-min_x) + 3*(max_x-min_x)*real(j-1,dp)/real(3*n_samples-1,dp)
       integrand_x(j) = x
       if (x > max_V0_x) then
-	 integrand_y(j) = exp(-beta*spline_nintegrate(dF_dl_spline, min_V0_x, x))
+         integrand_y(j) = exp(-beta*spline_nintegrate(dF_dl_spline, min_V0_x, x))
       else
-	 integrand_y(j) = 0.0_dp
+         integrand_y(j) = 0.0_dp
       endif
    end do
    prob_right = TrapezoidIntegral(integrand_x, integrand_y)/normalization

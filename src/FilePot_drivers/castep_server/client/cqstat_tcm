@@ -21,8 +21,8 @@ done
 
 # Schwartian transform to sort by PC number
 [[ $sorted == 1 ]] && hosts=`awk '
-{ 
-   match($0,/tcmpc([0-9]+)/,a); 
+{
+   match($0,/tcmpc([0-9]+)/,a);
    print a[1], $0
 }' $CS_ACTIVE | sort -g | awk '{print $2}' ` || hosts=`cat $CS_ACTIVE`
 
@@ -30,15 +30,15 @@ done
 for CS_HOST in $hosts; do
 
     status=`$CS_RSH $CS_HOST $CS_HOME/bin/status`
-    
-    if [[ $busy_only == 0 || ($busy_only  == 1 && $status == "UP_BUSY") ]]; then
-	printf "%-7s %s\n" $CS_HOST $status
 
-	if [[ $long_out == 1 ]]; then
-	    echo 
-	    $CS_RSH $CS_HOST $CS_HOME/bin/qstat
-	    echo
-	fi
+    if [[ $busy_only == 0 || ($busy_only  == 1 && $status == "UP_BUSY") ]]; then
+        printf "%-7s %s\n" $CS_HOST $status
+
+        if [[ $long_out == 1 ]]; then
+            echo
+            $CS_RSH $CS_HOST $CS_HOME/bin/qstat
+            echo
+        fi
     fi
 
 done

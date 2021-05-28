@@ -118,7 +118,7 @@ contains
       if(allocated(this%eigenvector)) deallocate( this%eigenvector )
       if(allocated(this%hessian)) deallocate( this%hessian )
       this%n_qvectors = 0
-      
+
       this%initialised = .false.
 
    endsubroutine Phonon_fine_finalise
@@ -142,7 +142,7 @@ contains
       else
          my_file => mainlog
       endif
-      
+
       t_real_precision = my_file%default_real_precision
       call print("PHONON results begin", file=my_file)
       call print("                   q-vector (1/Angstrom)                                     frequency (THz)", file=my_file)
@@ -176,12 +176,12 @@ contains
       real(dp), dimension(3), intent(in), optional :: phonons_path_start, phonons_path_end
       integer, intent(in), optional :: phonons_path_steps
       integer, intent(out), optional :: error
-    
+
       type(Atoms) :: at, at_fine
       integer :: i, j, k, alpha, beta, n, n1, n2, n3, jn, j_fine
       integer, dimension(3) :: do_phonon_supercell, do_phonon_supercell_fine
       integer, dimension(:,:,:,:), allocatable :: map_at_fine
-    
+
       real(dp) :: r_ij, dm(3), at_max_cutoff
       complex(dp) :: exp_I_k_R
       real(dp), dimension(3) :: pp, diff_ij
@@ -192,7 +192,7 @@ contains
       complex(dp), dimension(:,:), allocatable :: dmft, evecs
       integer, dimension(:,:), pointer :: phonons_SI, phonons_fine_SI
       logical, dimension(:), allocatable :: at_fine_mapped
-    
+
       real(dp), dimension(:,:), allocatable :: frac
       integer :: do_phonons_path_steps
 
@@ -201,54 +201,54 @@ contains
       real(dp), dimension(3,3) :: super_cell_lattice,fract_matrix
       !character(2), dimension(1,len(at_in%species)) :: species_array
       integer :: i_species
-    
+
       INIT_ERROR(error)
-    
+
       call finalise(this, error)
 
       my_phonopy_force_const_mat = optional_default(.false., do_phonopy_force_const_mat)
 
       do_phonon_supercell = optional_default((/1,1,1/),phonon_supercell)
       do_phonon_supercell_fine = optional_default(do_phonon_supercell,phonon_supercell_fine)
-    
+
       if( any( do_phonon_supercell_fine < do_phonon_supercell ) ) then
          RAISE_ERROR("phonons_fine: phonon_supercell = ("//phonon_supercell//") greater than phonon_supercell_fine =("//phonon_supercell_fine//")",error)
       endif
-    
+
       call supercell(at,at_in,do_phonon_supercell(1),do_phonon_supercell(2),do_phonon_supercell(3),supercell_index_name="phonons_SI")
-    
+
       if (present(phonons_path_start) .and. present(phonons_path_end)) then
          do_phonons_path_steps = optional_default(3, phonons_path_steps)
          call Phonon_fine_allocate(this,at_in%N*3,do_phonons_path_steps + 2,error)
-    
+
          do i = 1, this%n_qvectors
             this%q(:, i) = 2.0_dp * PI * matmul((phonons_path_start + ((phonons_path_end - phonons_path_start) * (real((i - 1), dp) / real((this%n_qvectors - 1), dp)))), at_in%g)
          enddo
       else
          call Phonon_fine_allocate(this,at_in%N*3,product(do_phonon_supercell_fine),error)
-    
+
          i = 0
          do n1 = 0, do_phonon_supercell_fine(1)-1
             do n2 = 0, do_phonon_supercell_fine(2)-1
                do n3 = 0, do_phonon_supercell_fine(3)-1
                   i = i + 1
-    
+
                   this%q(:,i) = 2*PI*matmul( ( (/real(n1,dp),real(n2,dp),real(n3,dp)/) / do_phonon_supercell_fine ), at_in%g )
                enddo
             enddo
          enddo
       endif
-    
+
       allocate(pos0(3,at%N))
-    
+
       if (dx == 0.0_dp) then
          RAISE_ERROR("phonons called with dx == 0.0",error)
       endif
-    
+
       call set_cutoff(at, cutoff(pot), cutoff_skin=0.5_dp)
-    
+
       pos0 = at%pos
-    
+
       allocate(fp0(3,at%N,3,at_in%N),fm0(3,at%N,3,at_in%N))
 
       if(allocated(this%hessian)) deallocate(this%hessian)
@@ -256,7 +256,7 @@ contains
 
       fp0 = 0.0_dp
       fm0 = 0.0_dp
-    
+
       call system_timer("Phonon_fine_calc/force")
       call print("Starting force calculations")
       do i = 1, at_in%N
@@ -266,7 +266,7 @@ contains
             at%pos(alpha,i) = at%pos(alpha,i) + dx
             call calc_dists(at)
             call calc(pot, at, force=fp0(:,:,alpha,i), args_str=calc_args)
-    
+
             at%pos = pos0
             at%pos(alpha,i) = at%pos(alpha,i) - dx
             call calc_dists(at)
@@ -275,7 +275,7 @@ contains
       enddo
       call print("Finished force calculations")
       call system_timer("Phonon_fine_calc/force")
-    
+
       do i = 1, at_in%N
          do alpha = 1, 3
             do j = 1, at%N
@@ -289,13 +289,13 @@ contains
       at%pos = pos0
       call calc_dists(at)
       deallocate(pos0)
-    
+
       call supercell(at_fine,at_in,do_phonon_supercell_fine(1),do_phonon_supercell_fine(2),do_phonon_supercell_fine(3),supercell_index_name="phonons_fine_SI")
 
       if(.not. assign_pointer(at,"phonons_SI",phonons_SI) .or. .not. assign_pointer(at_fine,"phonons_fine_SI",phonons_fine_SI)) then
          RAISE_ERROR("phonons_fine: couldn't assign phonons_SI and phonons_fine_SI pointers",error)
       endif
-    
+
       allocate(fp0_fine(3,at_fine%N,3,at_in%N),fm0_fine(3,at_fine%N,3,at_in%N))
       fp0_fine = 0.0_dp
       fm0_fine = 0.0_dp
@@ -338,7 +338,7 @@ contains
          enddo
 
       endif
-    
+
       call system_timer("Phonon_fine_calc/phonon")
       call print("Starting phonon calculations")
 
@@ -436,7 +436,7 @@ contains
 
          fract_matrix = transpose(super_cell_lattice)
          call inverse(fract_matrix)
-         
+
 
          do j = 1, at_in%N
             do n3= 0, do_phonon_supercell_fine(3)-1
@@ -455,7 +455,7 @@ contains
       endif if_my_phonopy_force_const_mat
 ! Finished phonopy force constant and atom positions
 
-    
+
       allocate(at_in_sqrt_mass(at_in%N))
       do i = 1, at_in%N
          at_in_sqrt_mass(i) = sqrt(ElementMass(at_in%Z(i)))
@@ -512,10 +512,10 @@ contains
       !$omp end do
       deallocate(dmft)
       deallocate(evecs,evals)
-      !$omp end parallel  
+      !$omp end parallel
       call print("Finished phonon calculations")
       call system_timer("Phonon_fine_calc/phonon")
-      
+
       deallocate(fp0, fp0_fine, fm0, fm0_fine, at_in_sqrt_mass)
       deallocate(map_at_fine)
       call finalise(at,at_fine)
@@ -601,7 +601,7 @@ function eval_frozen_phonon(pot, at, dx, evec, calc_args)
 ! more accurate 4th order fit.
 !
 !   at%pos = pos0 + 2.0_dp*dx*dpos
-! 
+!
 !   call calc_dists(at)
 !   call calc(pot, at, energy=Ep2, args_str=calc_args)
 !   mainlog%prefix="FROZ_EP2"
@@ -609,9 +609,9 @@ function eval_frozen_phonon(pot, at, dx, evec, calc_args)
 !   call print_xyz(at, mainlog, real_format='f14.6', properties="pos:phonon")
 !   call remove_value(at%params, "frozen_phonon_Ep2")
 !   mainlog%prefix=""
-! 
+!
 !   at%pos = pos0 - 2.0_dp*dx*dpos
-! 
+!
 !   call calc_dists(at)
 !   call calc(pot, at, energy=Em2, args_str=calc_args)
 !   mainlog%prefix="FROZ_EM2"
@@ -657,7 +657,7 @@ subroutine dynamical_matrix_solve(at, fc_mat, evals, evecs, zero_translation, ze
   do i=1, at%N
     do j=1, at%N
 fc_mat((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = fc_mat((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) / &
-					sqrt(ElementMass(at%Z(i))*ElementMass(at%Z(j)))
+                                        sqrt(ElementMass(at%Z(i))*ElementMass(at%Z(j)))
     end do
   end do
 
@@ -672,22 +672,22 @@ fc_mat((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = fc_mat((i-1)*3+1:(i-1)*3+3,(j-
     allocate(phonon(3,at%N))
     do i=1, n_zero
       if (do_zero_translation .and. i <= 3) then ! if zeroing both, then 1st 3 are translation
-	beta = i
-	phonon = 0.0_dp
-	phonon(beta,:) = 1.0_dp
+        beta = i
+        phonon = 0.0_dp
+        phonon(beta,:) = 1.0_dp
       else ! rotation
-	if (i > 3) then ! must have already done zero_rotation
-	  beta = i-3
-	else
-	  beta = i
-	end if
-	CoM = centre_of_mass(at)
-	axis = 0.0_dp; axis(beta) = 1.0_dp
-	do j=1, at%N
-	  dr_proj = at%pos(:,j)-CoM
-	  dr_proj(beta) = 0.0_dp
-	  phonon(:,j) = dr_proj .cross. axis
-	end do
+        if (i > 3) then ! must have already done zero_rotation
+          beta = i-3
+        else
+          beta = i
+        end if
+        CoM = centre_of_mass(at)
+        axis = 0.0_dp; axis(beta) = 1.0_dp
+        do j=1, at%N
+          dr_proj = at%pos(:,j)-CoM
+          dr_proj(beta) = 0.0_dp
+          phonon(:,j) = dr_proj .cross. axis
+        end do
       endif
       phonon_norm=sqrt(sum(ElementMass(at%Z)*sum(phonon**2,1)))
       zero_phonon(:,i) = reshape(phonon/phonon_norm, (/ 3*at%N /) )
@@ -703,7 +703,7 @@ fc_mat((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = fc_mat((i-1)*3+1:(i-1)*3+3,(j-
     ! project out zero frequency modes
     do i=1, n_zero
       do j=1, n_zero
-	zero_overlap_inv(i,j) = sum(zero_phonon(:,i)*zero_phonon(:,j))
+        zero_overlap_inv(i,j) = sum(zero_phonon(:,i)*zero_phonon(:,j))
       end do
     end do
     call inverse(zero_overlap_inv)
@@ -757,7 +757,7 @@ fc_mat((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = fc_mat((i-1)*3+1:(i-1)*3+3,(j-
 end subroutine dynamical_matrix_solve
 
 subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, IR_intensities, do_parallel, &
-		   zero_translation, zero_rotation, force_const_mat)
+                   zero_translation, zero_rotation, force_const_mat)
   type(Potential), intent(inout) :: pot
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: dx
@@ -806,7 +806,7 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
   if (present(force_const_mat)) then
     if (size(force_const_mat,1) /= size(dm,1) .or. size(force_const_mat,2) /= size(dm,2)) &
       call system_abort("phonons received force_const_mat, shape="//shape(force_const_mat) // &
-			" which doesn't match shape(dm)="//shape(dm))
+                        " which doesn't match shape(dm)="//shape(dm))
   endif
 
   if (present(IR_intensities)) then
@@ -835,7 +835,7 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
     do alpha=1,3
       ind = ind + 1
       if (my_do_parallel) then
-	if (mod(ind, mpi_glob%n_procs) /= mpi_glob%my_proc) cycle
+        if (mod(ind, mpi_glob%n_procs) /= mpi_glob%my_proc) cycle
       endif
 
       at%pos = pos0
@@ -843,9 +843,9 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
       call calc_dists(at)
       call calc(pot, at, energy=Ep, force=fp, args_str=calc_args)
       if (present(IR_intensities)) then
-	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
-	  call system_abort("phonons impossible failure to assign pointer for local_dn")
-	mu_p = dipole_moment(at%pos, local_dn)
+        if (.not. assign_pointer(at, 'local_dn', local_dn)) &
+          call system_abort("phonons impossible failure to assign pointer for local_dn")
+        mu_p = dipole_moment(at%pos, local_dn)
       endif
 
       at%pos = pos0
@@ -853,23 +853,23 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
       call calc_dists(at)
       call calc(pot, at, energy=Em, force=fm, args_str=calc_args)
       if (present(IR_intensities)) then
-	if (.not. assign_pointer(at, 'local_dn', local_dn)) &
-	  call system_abort("phonons impossible failure to assign pointer for local_dn")
-	mu_m = dipole_moment(at%pos, local_dn)
+        if (.not. assign_pointer(at, 'local_dn', local_dn)) &
+          call system_abort("phonons impossible failure to assign pointer for local_dn")
+        mu_m = dipole_moment(at%pos, local_dn)
       endif
 
       call print("dynamical matrix energy check (Em-E0) " // (Em-E0) // " (Ep-E0) " // (Ep-E0), PRINT_NERD)
       call print("dynamical matrix magnitude check |fp-f0| " // sqrt(sum(normsq(fp-f0,2))) // " |fm-f0| " // sqrt(sum(normsq(fm-f0,2))) // &
-	" |fp-f0|-|fm-f0| " // (sqrt(sum(normsq(fp-f0,2)))-sqrt(sum(normsq(fm-f0,2)))), PRINT_NERD)
+        " |fp-f0|-|fm-f0| " // (sqrt(sum(normsq(fp-f0,2)))-sqrt(sum(normsq(fm-f0,2)))), PRINT_NERD)
       call print("dynamical matrix harmonicity check (|fp+fm|/2 - f0)/(0.5*(|fp-f0|+|fm-f0|)) "// &
-	(sqrt(sum(normsq(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(normsq(fp-f0,2)))+sqrt(sum(normsq(fm-f0,2)))))) , PRINT_NERD)
+        (sqrt(sum(normsq(0.5_dp*(fp+fm)-f0,2)))/(0.5_dp*(sqrt(sum(normsq(fp-f0,2)))+sqrt(sum(normsq(fm-f0,2)))))) , PRINT_NERD)
 
       dmu_dr(alpha, i, :) = (mu_p-mu_m)/(2.0_dp*dx)
 
       do j=1, at%N
-	do beta=1,3
-	  dm((i-1)*3+alpha,(j-1)*3+beta) = -((fp(beta,j)-fm(beta,j))/(2.0_dp*dx))
-	end do
+        do beta=1,3
+          dm((i-1)*3+alpha,(j-1)*3+beta) = -((fp(beta,j)-fm(beta,j))/(2.0_dp*dx))
+        end do
       end do
 
     end do
@@ -900,7 +900,7 @@ subroutine phonons_all(pot, at, dx, evals, evecs, effective_masses, calc_args, I
   ! transform from evecs of regular eigenproblem to evecs of original generalized eigenproblem
   if (present(evecs)) then
     do i=1, at%N
-      evecs((i-1)*3+1:(i-1)*3+3,:) = evecs((i-1)*3+1:(i-1)*3+3,:) / sqrt(ElementMass(at%Z(i))) 
+      evecs((i-1)*3+1:(i-1)*3+3,:) = evecs((i-1)*3+1:(i-1)*3+3,:) / sqrt(ElementMass(at%Z(i)))
     end do
   endif
 
@@ -1034,9 +1034,9 @@ end subroutine phonons_all
 !!      call calc(pot, at, force=fm, args_str=calc_args)
 !!
 !!      do j=1, at%N
-!!	do beta=1,3
-!!	  dm((i-1)*3+alpha,(j-1)*3+beta) = -((fp(beta,j)-fm(beta,j))/(2.0_dp*dx))
-!!	end do
+!!        do beta=1,3
+!!          dm((i-1)*3+alpha,(j-1)*3+beta) = -((fp(beta,j)-fm(beta,j))/(2.0_dp*dx))
+!!        end do
 !!      end do
 !!
 !!    end do
@@ -1069,7 +1069,7 @@ end subroutine phonons_all
 !!        do ni2 = 0, do_phonon_supercell(2)-1
 !!           do ni3= 0, do_phonon_supercell(3)-1
 !!              ni = ((ni1*do_phonon_supercell(2)+ni2)*do_phonon_supercell(3)+ni3)*at_in%N+i
-!!           
+!!
 !!              do alpha = 1, 3
 !!                 do j = 1, at_in%N  ! force on atom j
 !!                    do nj1 = 0, do_phonon_supercell(1)-1
@@ -1081,7 +1081,7 @@ end subroutine phonons_all
 !!                             shift(3) = mod(shift(3),do_phonon_supercell(3))
 !!                             nj = ((nj1*do_phonon_supercell(2)+nj2)*do_phonon_supercell(3)+nj3)*at_in%N+j
 !!                             nj_orig = ((shift(1)*do_phonon_supercell(2)+shift(2))*do_phonon_supercell(3)+shift(3))*at_in%N+j
-!!	                     do beta = 1, 3
+!!                             do beta = 1, 3
 !!                                dm((ni-1)*3+alpha,(nj-1)*3+beta) = &
 !!                                & -((fp0(beta,nj_orig,alpha,i)-fm0(beta,nj_orig,alpha,i))/(2.0_dp*dx))
 !!                             enddo
@@ -1094,7 +1094,7 @@ end subroutine phonons_all
 !!        enddo
 !!     enddo
 !!  enddo
-!              
+!
 !!  deallocate(fp0,fm0)
 !
 !  at%pos = pos0
@@ -1128,7 +1128,7 @@ end subroutine phonons_all
 !!  do i = 1, at%N
 !!    do j = 1, at%N
 !!      dm((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) = dm((i-1)*3+1:(i-1)*3+3,(j-1)*3+1:(j-1)*3+3) / &
-!!					sqrt(ElementMass(at%Z(i))*ElementMass(at%Z(j)))
+!!                                        sqrt(ElementMass(at%Z(i))*ElementMass(at%Z(j)))
 !!    enddo
 !!  enddo
 !
@@ -1147,9 +1147,9 @@ end subroutine phonons_all
 !     do i = 1, at_in%N
 !        do alpha = 1, 3
 !           do j = 1, at_in%N
-!              diff_ij = at_in%pos(:,j) - at_in%pos(:,i) 
+!              diff_ij = at_in%pos(:,j) - at_in%pos(:,i)
 !              do beta = 1, 3
-!  
+!
 !                 do n1 = 0, do_phonon_supercell_fine(1)-1
 !                    do n2 = 0, do_phonon_supercell_fine(2)-1
 !                       do n3= 0, do_phonon_supercell_fine(3)-1
@@ -1179,8 +1179,8 @@ end subroutine phonons_all
 !  enddo
 !!$omp end do
 !deallocate(dmft)
-!!$omp end parallel  
-!  
+!!$omp end parallel
+!
 !  t_real_precision = mainlog%default_real_precision
 !  do k = 1, nk
 !!     call print('q: '//q(:,k)*a/(2*PI))
