@@ -51,9 +51,11 @@ GAP_FILES = $(addprefix ../../src/GAP/,${GAP_SOURCES})
 WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
 WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
 
+PROGRAMS = quip
 ifeq (${HAVE_GAP},1)
 	WRAP_SOURCES +=  ${GAP_SOURCES}
 	WRAP_FILES +=  ${GAP_FILES}
+	PROGRAMS += gap_fit
 endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
@@ -112,7 +114,6 @@ build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	cp ../../README.md .
-	cp ../../quippy/setup.py .
+	cp ../../README.md ../../quippy/setup.py .
+	cp ${PROGRAMS} quippy/
 	${PIP} install ${QUIPPY_INSTALL_OPTS} .
-	rm setup.py README.md

@@ -64,7 +64,11 @@ setup(
     install_requires=['numpy>=1.13', 'f90wrap', 'ase'],
     python_requires=">=3.6",
     packages=['quippy'],
-#    package_data={'quippy': [f'../_quippy{ext_suffix}']},
+    package_data={'quippy': ['gap_fit', 'quip']},
     cmdclass={'build_ext': my_build_ext },
     ext_modules=[Extension('quippy._quippy', [])],
+    entry_points={
+        'console_scripts': ['gap_fit=quippy.cli:gap_fit',
+                            'quip=quippy.cli:quip']
+    }
 )
