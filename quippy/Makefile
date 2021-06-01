@@ -106,7 +106,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 _quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
 		-L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
-	if [[ ! -f _quippy${EXT_SUFFIX} ]]; mv $(basename _quippy${EXT_SUFFIX} .dylib).so _quippy${EXT_SUFFIX}; fi
+	if [[ ! -f _quippy${EXT_SUFFIX} ]]; then mv $(basename _quippy${EXT_SUFFIX} .dylib).so _quippy${EXT_SUFFIX}; fi
 
 build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
