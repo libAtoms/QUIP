@@ -1,6 +1,9 @@
-import sysconfig
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
+import sysconfig
 import re
+import os
+import shutil
 
 major_version = '0.9'
 
@@ -24,6 +27,12 @@ ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
+class my_build_ext(build_ext):
+    def build_extension(self, ext):
+        if not os.path.exists(os.path.dirname(self.get_ext_fullpath(ext.name))):
+            os.makedirs(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        shutil.copyfile(os.path.join(this_directory, f'_quippy{ext_suffix}'), self.get_ext_fullpath(ext.name))
 
 setup(
     name='quippy-ase',
@@ -55,6 +64,7 @@ setup(
     install_requires=['numpy>=1.13', 'f90wrap', 'ase'],
     python_requires=">=3.6",
     packages=['quippy'],
-    package_data={'quippy': [f'../_quippy{ext_suffix}']},
-    ext_modules=[Extension('_quippy', [])],
+#    package_data={'quippy': [f'../_quippy{ext_suffix}']},
+    cmdclass={'build_ext': my_build_ext },
+    ext_modules=[Extension('quippy._quippy', [])],
 )

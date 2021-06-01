@@ -93,7 +93,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	f90wrap -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	f90wrap -m quippy --f90-mod-name 'quippy._quippy' ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
@@ -106,7 +106,6 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 _quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
 		-L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
-	if [[ ! -f _quippy${EXT_SUFFIX} ]]; then mv $(basename _quippy${EXT_SUFFIX} .dylib).so _quippy${EXT_SUFFIX}; fi
 
 build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
