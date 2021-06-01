@@ -292,7 +292,7 @@ else
 	fi
 endif
 
-test: quippy
+test: install-quippy
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/ThirdParty
