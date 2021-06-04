@@ -38,15 +38,12 @@ before_install:
   # Copy the rules file (rather than make config)
   - cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
 
-install:
-  - pip install ase
-  - pip install src/f90wrap
-
 script: # Compile QUIP, libquip and quippy.
   # Quippy should have built successfully -> start tests
   - make
   - make libquip
   - make quippy
+  - make install-quippy
 
   # Sometimes file limit is 64000 and read_loop reads and writes this many
   # files causing the build to time out
