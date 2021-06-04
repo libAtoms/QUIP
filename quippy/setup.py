@@ -61,7 +61,7 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     url='https://github.com/libAtoms/QUIP',
-    install_requires=['numpy>=1.13', 'f90wrap', 'ase'],
+    install_requires=['numpy>=1.13', 'f90wrap>=0.2.6', 'ase>=3.17.0'],
     python_requires=">=3.6",
     packages=['quippy'],
     package_data={'quippy': ['gap_fit', 'quip']},
