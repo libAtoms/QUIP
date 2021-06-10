@@ -24,9 +24,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+        submodules: 'recursive'
 
       # Runs a set of commands using the runners shell
-      - name: build-test
+      - name: build-and-test
         run: |
           export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
