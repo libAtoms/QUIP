@@ -28,7 +28,7 @@ jobs:
           submodules: 'recursive'
 
       # Runs a set of commands using the runners shell
-      - name: build-and-test
+      - name: Build and test QUIP
         run: |
           export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
           sudo apt-get update -y
@@ -43,3 +43,16 @@ jobs:
           make install-quippy
           ulimit -n 256
           make test
+
+      - name: Build documentation  
+        run:
+          sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
+          cd doc
+          make html
+          
+      - name: Deploy documentation
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/public'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_build/html    
