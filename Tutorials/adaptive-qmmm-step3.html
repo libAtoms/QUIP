@@ -4,10 +4,11 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy ef3334d+ documentation</title>
+  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy b78ef0b+ documentation</title>
   
 
   
@@ -73,7 +74,7 @@
             
             
               <div class="version">
-                ef3334d+
+                b78ef0b+
               </div>
             
           
@@ -227,7 +228,7 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="step-3-lotf-hybrid-md-simulation-of-fracture-in-si">
+<section id="step-3-lotf-hybrid-md-simulation-of-fracture-in-si">
 <span id="step3"></span><h1>Step 3: LOTF hybrid MD simulation of fracture in Si<a class="headerlink" href="#step-3-lotf-hybrid-md-simulation-of-fracture-in-si" title="Permalink to this headline">¶</a></h1>
 <p>In the final part of this tutorial, we will be extending our previous script for
 classical molecular dynamics to carry out an adaptive QM/MM simulation of
@@ -236,9 +237,9 @@ fracture using the ‘Learn on the Fly’ (LOTF) scheme.</p>
 don’t have it, you can <a class="reference download internal" download="" href="../_downloads/2f1bd5e02625bc83627720d105242e35/run_crack_classical.py"><code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></code></a>,
 and the <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code> input file from <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a>, which you
 can <code class="xref download docutils literal notranslate"><span class="pre">also</span> <span class="pre">download</span> <span class="pre">here</span></code>.</p>
-<div class="section" id="initialisation-of-the-qm-mm-atomic-system-20-minutes">
+<section id="initialisation-of-the-qm-mm-atomic-system-20-minutes">
 <h2>3.1 Initialisation of the QM/MM atomic system (20 minutes)<a class="headerlink" href="#initialisation-of-the-qm-mm-atomic-system-20-minutes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="import-the-relevant-modules">
+<section id="import-the-relevant-modules">
 <h3>Import the relevant modules<a class="headerlink" href="#import-the-relevant-modules" title="Permalink to this headline">¶</a></h3>
 <p>Make a copy of your <code class="docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code> script and name it
 <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code>. Add the following extra import statements after those
@@ -247,8 +248,8 @@ that are already there:</p>
 <span class="kn">from</span> <span class="nn">quippy.lotf</span> <span class="kn">import</span> <span class="n">LOTFDynamics</span><span class="p">,</span> <span class="n">update_hysteretic_qm_region</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="definition-of-the-simulation-parameters">
+</section>
+<section id="definition-of-the-simulation-parameters">
 <h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline">¶</a></h3>
 <p id="parameters3">Next, we need to add some additional parameters specifically for the
 QM/MM simulation. Again, insert them in <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code>, below the
@@ -262,7 +263,7 @@ existing parameters</p>
 </div>
 <p>The setup of the atomic structure and of the constraints is exactly the same as
 before, so leave these sections of your script unchanged.</p>
-<div class="section" id="setup-of-the-qm-and-qm-mm-potentials">
+<section id="setup-of-the-qm-and-qm-mm-potentials">
 <h4>Setup of the QM and QM/MM potentials<a class="headerlink" href="#setup-of-the-qm-and-qm-mm-potentials" title="Permalink to this headline">¶</a></h4>
 <p>For the QM/MM simulation, we first need to initialise the classical SW potential
 (<cite>mm_pot</cite>) and the quantum-mechanical one (<cite>qm_pot</cite>). The two Hamiltonians then need
@@ -309,9 +310,9 @@ of the outer layer of buffer atoms are not randomised.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span> <span class="o">...</span>  <span class="c1"># Set the calculator</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="set-up-the-initial-qm-region">
+</section>
+</section>
+<section id="set-up-the-initial-qm-region">
 <h3>Set up the initial QM region<a class="headerlink" href="#set-up-the-initial-qm-region" title="Permalink to this headline">¶</a></h3>
 <p>Now, we can set up the list of atoms in the initial QM region using
 the <code class="xref py py-func docutils literal notranslate"><span class="pre">update_hysteretic_qm_region()</span></code> function, defined
@@ -328,8 +329,8 @@ region. Note that the <cite>old_qm_list</cite> attribute must be an empty list
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qmmm_pot</span><span class="o">.</span> <span class="o">...</span>             <span class="c1"># Attach QM list to calculator</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="milestone-3-1">
+</section>
+<section id="milestone-3-1">
 <h3>Milestone 3.1<a class="headerlink" href="#milestone-3-1" title="Permalink to this headline">¶</a></h3>
 <p>Your <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code> script should look something
 like <a class="reference download internal" download="" href="../_downloads/1a5305c5a3067a9c0063f6bfee99a2e0/run_crack_lotf_1.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_lotf_1.py</span></code></a>.</p>
@@ -351,11 +352,11 @@ haven’t already):</p>
 <p>In the image above, the red atoms are QM and the blue atom classical.
 Internally, this list is actually saved as a <code class="xref py py-attr docutils literal notranslate"><span class="pre">property</span></code> inside the Atoms object named <code class="docutils literal notranslate"><span class="pre">&quot;hybrid&quot;</span></code>,
 which can also be displayed with <code class="docutils literal notranslate"><span class="pre">aux_property_coloring(&quot;hybrid&quot;)</span></code></p>
-</div>
-</div>
-<div class="section" id="setup-and-run-the-adaptive-qm-mm-md-20-minutes">
+</section>
+</section>
+<section id="setup-and-run-the-adaptive-qm-mm-md-20-minutes">
 <h2>3.2 Setup and run the adaptive QM/MM MD (20 minutes)<a class="headerlink" href="#setup-and-run-the-adaptive-qm-mm-md-20-minutes" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="initialising-the-dynamics">
+<section id="initialising-the-dynamics">
 <h3>Initialising the Dynamics<a class="headerlink" href="#initialising-the-dynamics" title="Permalink to this headline">¶</a></h3>
 <p>The definition of the initial temperature of the system should be left as
 in <a class="reference internal" href="adaptive-qmmm-step2.html#step2"><span class="std std-ref">Step 2</span></a>. Don’t forget to remove the temporary lines added above which
@@ -384,8 +385,8 @@ interpolation:</p>
 <p>This uses the <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_label</span></code> attribute to print
 an <code class="docutils literal notranslate"><span class="pre">&quot;E&quot;</span></code> at the beginning of the logger lines for extrapolation and an <code class="docutils literal notranslate"><span class="pre">&quot;I&quot;</span></code>
 for interpolation.</p>
-</div>
-<div class="section" id="updating-the-qm-region">
+</section>
+<section id="updating-the-qm-region">
 <h3>Updating the QM region<a class="headerlink" href="#updating-the-qm-region" title="Permalink to this headline">¶</a></h3>
 <p>We need to define a function that updates the QM region at the
 beginning of each extrapolation cycle. As before, we need to find the
@@ -409,8 +410,8 @@ sufficiently accurate for locating the crack tip):</p>
 <span class="n">dynamics</span><span class="o">.</span><span class="n">set_qm_update_func</span><span class="p">(</span><span class="n">update_qm_region</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="writing-the-trajectory">
+</section>
+<section id="writing-the-trajectory">
 <h3>Writing the trajectory<a class="headerlink" href="#writing-the-trajectory" title="Permalink to this headline">¶</a></h3>
 <p>Finally, we want to save frames to the trajectory every <cite>traj_interval</cite> time
 steps but, this time, only during the interpolation phase of the
@@ -439,18 +440,18 @@ method):</p>
 <p>If you are interested in seeing how the LOTF predictor-corrector cycle is
 implemented, look at the documentation and <a class="reference external" href="_modules/quippy/lotf.html#LOTFDynamics.step">source code</a> for the
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">quippy.lotf.LOTFDynamics.step()</span></code> routine.</p>
-</div>
-<div class="section" id="milestone-3-2">
+</section>
+<section id="milestone-3-2">
 <h3>Milestone 3.2<a class="headerlink" href="#milestone-3-2" title="Permalink to this headline">¶</a></h3>
 <p>The finished version of the <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code> script should look something
 like <a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-lotf"><span class="std std-ref">Step 3 solution — run_crack_lotf.py</span></a>. To clearly show the differences with respect to the
 classical MD script, here is a <code class="xref download docutils literal notranslate"><span class="pre">patch</span></code> which could be used to convert the classical
 script into the LOTF one.</p>
-</div>
-</div>
-<div class="section" id="visualisation-and-analysis-as-time-permits">
+</section>
+</section>
+<section id="visualisation-and-analysis-as-time-permits">
 <h2>3.3 Visualisation and Analysis (as time permits)<a class="headerlink" href="#visualisation-and-analysis-as-time-permits" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="predictor-corrector-dynamics-output-file">
+<section id="predictor-corrector-dynamics-output-file">
 <h3>Predictor/corrector dynamics output file<a class="headerlink" href="#predictor-corrector-dynamics-output-file" title="Permalink to this headline">¶</a></h3>
 <p>Let’s first take a moment to look at the output of the script for the first
 predictor/corrector cycle. Here we go through some example output, yours should
@@ -542,11 +543,11 @@ extrapolation and interpolation):</p>
 </div>
 <p>To continue from here, we simply go back to the extrapolation phase and then
 repeat the entire cycle.</p>
-</div>
-<div class="section" id="qm-active-and-buffer-regions">
+</section>
+<section id="qm-active-and-buffer-regions">
 <h3>QM active and buffer regions<a class="headerlink" href="#qm-active-and-buffer-regions" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="trajectory-analysis">
+</section>
+<section id="trajectory-analysis">
 <h3>Trajectory analysis<a class="headerlink" href="#trajectory-analysis" title="Permalink to this headline">¶</a></h3>
 <p>Open your new trajectory <a class="reference internal" href="adaptive-qmmm-step2.html#visualisation2"><span class="std std-ref">as before</span></a>, using the
 <code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code> function from within a new <cite>ipython</cite> session, and
@@ -575,8 +576,8 @@ function together with the same <cite>args_str</cite> cluster options defined ab
 <p>Colouring the cluster by coordination (press <cite>k</cite>) can be useful to check that
 all cut bonds have been correctly passivated by hydrogen atoms:</p>
 <a class="reference internal image-reference" href="../_images/lotf-crack-cluster.png"><img alt="../_images/lotf-crack-cluster.png" class="align-center" src="../_images/lotf-crack-cluster.png" style="width: 600px;" /></a>
-</div>
-<div class="section" id="comparison-between-classical-and-lotf-dynamics">
+</section>
+<section id="comparison-between-classical-and-lotf-dynamics">
 <h3>Comparison between classical and LOTF dynamics<a class="headerlink" href="#comparison-between-classical-and-lotf-dynamics" title="Permalink to this headline">¶</a></h3>
 <p>Step through your trajectory with the <cite>Insert</cite> and <cite>Delete</cite> keys to see what
 happens in the LOTF dynamics. As before, you can jump to the end with
@@ -657,8 +658,8 @@ pentagons and heptagons:</p>
   <a href="http://www.jrkermode.co.uk/_movies/silicon-111-dft-1400.mp4">Download</a> the video instead.
   </b></p>
 </video>
-</center></div>
-<div class="section" id="evolution-of-energy-release-rate-and-crack-position">
+</center></section>
+<section id="evolution-of-energy-release-rate-and-crack-position">
 <span id="plot-g-and-crack-pos-x-lotf"></span><h3>Evolution of energy release rate and crack position<a class="headerlink" href="#evolution-of-energy-release-rate-and-crack-position" title="Permalink to this headline">¶</a></h3>
 <p>If you follow the <a class="reference internal" href="adaptive-qmmm-step2.html#plot-g-and-crack-pos-x"><span class="std std-ref">previous approach</span></a> to plot the
 energy release rate <cite>G</cite> and crack position <cite>crack_pos_x</cite> variables during your
@@ -674,8 +675,8 @@ crack tip is closer to the energy consumed by creating the new surfaces. Some
 heat is generated at the QM/MM border; usually this would be controlled with a
 gentle Langevin thermostat, which we have omitted here in the interests of
 simplicity.</p>
-</div>
-<div class="section" id="low-speed-instability-on-the-111-cleavage-plane">
+</section>
+<section id="low-speed-instability-on-the-111-cleavage-plane">
 <span id="low-speed-instability"></span><h3>Low speed instability on the (111) cleavage plane<a class="headerlink" href="#low-speed-instability-on-the-111-cleavage-plane" title="Permalink to this headline">¶</a></h3>
 <p>If you are lucky, you may see the formation of a crack tip reconstruction
 consisting of a 5 and a 7 membered ring on the lower fracture surface,
@@ -685,9 +686,9 @@ related to the Pandey surface reconstruction.</p>
 which over time can build up via positive feedback mechanism into an
 experimentally observable phenomena <a class="reference internal" href="adaptive-qmmm-references.html#kermode2008" id="id2"><span>[Kermode2008]</span></a>.</p>
 <a class="reference internal image-reference" href="../_images/lotf-crack-step-2.png"><img alt="../_images/lotf-crack-step-2.png" class="align-center" src="../_images/lotf-crack-step-2.png" style="width: 400px;" /></a>
-</div>
-</div>
-<div class="section" id="checking-the-predictor-corrector-force-errors-optional">
+</section>
+</section>
+<section id="checking-the-predictor-corrector-force-errors-optional">
 <span id="pred-corr-error"></span><span id="extension-tasks"></span><h2>3.4 Checking the predictor/corrector force errors (optional)<a class="headerlink" href="#checking-the-predictor-corrector-force-errors-optional" title="Permalink to this headline">¶</a></h2>
 <p>Add <cite>check_force_error=True</cite> to the <code class="xref py py-class docutils literal notranslate"><span class="pre">LOTFDynamics</span></code>
 constructor. This causes the LOTF routines to do a reference QM force evaluation
@@ -731,40 +732,40 @@ force errors is. What is the largest acceptable value? You could also try
 changing the <cite>lotf_spring_hops</cite> and <cite>fit_hops</cite> parameters, which control the
 maximum length of the corrective springs added to the potential and the size of
 the fit region, respectively.</p>
-<div class="section" id="milestone-3-4">
+<section id="milestone-3-4">
 <h3>Milestone 3.4<a class="headerlink" href="#milestone-3-4" title="Permalink to this headline">¶</a></h3>
 <p>Here is a final version of the <code class="docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code> script including
 checking of the force errors: <a class="reference download internal" download="" href="../_downloads/54c03243463ecb2f49c51879e05d7b94/run_crack_lotf.py"><code class="xref download docutils literal notranslate"><span class="pre">run_crack_lotf.py</span></code></a>.</p>
-</div>
-</div>
-<div class="section" id="further-extension-tasks">
+</section>
+</section>
+<section id="further-extension-tasks">
 <h2>Further extension tasks<a class="headerlink" href="#further-extension-tasks" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="qm-region-size">
+<section id="qm-region-size">
 <span id="id3"></span><h3>QM region size<a class="headerlink" href="#qm-region-size" title="Permalink to this headline">¶</a></h3>
 <p>Investigate the effect of increasing the QM region size, controlled by the
 <cite>qm_inner_radius</cite> and <cite>qm_outer_radius</cite> parameters. When does the behaviour
 converge qualitatively? What does this say about the size of the ‘process zone’
 in silicon?</p>
-</div>
-<div class="section" id="buffer-region-size">
+</section>
+<section id="buffer-region-size">
 <span id="id4"></span><h3>Buffer region size<a class="headerlink" href="#buffer-region-size" title="Permalink to this headline">¶</a></h3>
 <p>We have used a hysteretic buffer region from 7 A to 9 A. How would you check if
 this is sufficient? What criteria need to be satisfied for our results to be
 considered to be converged with respect to buffer region size?</p>
-</div>
-<div class="section" id="crack-energy-speed-relationship">
+</section>
+<section id="crack-energy-speed-relationship">
 <span id="freund"></span><h3>Crack energy-speed relationship<a class="headerlink" href="#crack-energy-speed-relationship" title="Permalink to this headline">¶</a></h3>
 <p>Try varying the flow of energy to the crack tip by changing the <cite>initial_G</cite>
 parameter used when making the crack system in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a>. How does this
 affect the speed of the crack?</p>
-</div>
-<div class="section" id="other-crack-orientations">
+</section>
+<section id="other-crack-orientations">
 <span id="other-orientations"></span><h3>Other crack orientations<a class="headerlink" href="#other-crack-orientations" title="Permalink to this headline">¶</a></h3>
 <p>Return to the beginning of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a> and try classical and/or LOTF dynamics
 (which will actually probably be faster!) on the <span class="math notranslate nohighlight">\((110)\)</span> surface. Do you
 see any major differences? Can you find any dynamic fracture instabilities?</p>
-</div>
-<div class="section" id="system-size-and-strain-rate-effects">
+</section>
+<section id="system-size-and-strain-rate-effects">
 <span id="system-size-and-strain-rate"></span><h3>System size and strain rate effects<a class="headerlink" href="#system-size-and-strain-rate-effects" title="Permalink to this headline">¶</a></h3>
 <p>What is the effect of changing the system size on the critical energy
 release rate for fracture? How would you converge with respect to this
@@ -776,9 +777,9 @@ time scales that can be accessed by our fracture simulations, especially when
 using a QM method to describe the crack tip processes. Are there any scaling
 relations that can help us out here? How would you estimate the effect of the
 artificially high strain rate we have been forced to impose here.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
