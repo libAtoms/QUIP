@@ -31,6 +31,7 @@ jobs:
       - name: build-and-test
         run: |
           export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+          sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
             python-numpy
