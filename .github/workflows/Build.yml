@@ -45,7 +45,7 @@ jobs:
           make test
 
       - name: Build documentation  
-        run:
+        run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
           cd doc
           make html
@@ -55,4 +55,4 @@ jobs:
         if: github.ref == 'refs/heads/public'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/html    
+          publish_dir: doc/_build/html    
