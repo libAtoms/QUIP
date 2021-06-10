@@ -47,6 +47,8 @@ jobs:
       - name: Build documentation  
         run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
+          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2
+          pip install nbconvert[execute] ipython
           cd doc
           make html
           
