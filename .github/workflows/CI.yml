@@ -30,7 +30,7 @@ jobs:
         run: |
           export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
-            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev
+            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
             python-numpy
           mkdir -p build/${QUIP_ARCH}
           cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
