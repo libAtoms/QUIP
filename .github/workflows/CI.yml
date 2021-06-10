@@ -29,14 +29,14 @@ jobs:
       - name: build-test
         run: |
           export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
-          apt-get install -y  gfortran libblas-dev liblapack-dev \
+          sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev
             python-numpy
-            mkdir -p build/${QUIP_ARCH}
-            cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
-            make
-            make libquip
-            make quippy
-            make install-quippy
-            ulimit -n 256
-            make test
+          mkdir -p build/${QUIP_ARCH}
+          cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
+          make
+          make libquip
+          make quippy
+          make install-quippy
+          ulimit -n 256
+          make test
