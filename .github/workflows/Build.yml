@@ -61,7 +61,7 @@ jobs:
           
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@v3
-        if: matrix.arch == linux_x86_64_gfortran && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
+        if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: doc/_build/html    
