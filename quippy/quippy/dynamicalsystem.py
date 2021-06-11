@@ -28,7 +28,7 @@ from quippy import dynamicalsystem_module
 import quippy.convert
 import quippy.atoms_types_module
 
-import _quippy
+import quippy._quippy as _quippy
 
 import f90wrap.runtime
 

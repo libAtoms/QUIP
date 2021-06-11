@@ -51,9 +51,11 @@ GAP_FILES = $(addprefix ../../src/GAP/,${GAP_SOURCES})
 WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
 WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
 
+PROGRAMS = quip
 ifeq (${HAVE_GAP},1)
 	WRAP_SOURCES +=  ${GAP_SOURCES}
 	WRAP_FILES +=  ${GAP_FILES}
+	PROGRAMS += gap_fit
 endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
@@ -75,7 +77,7 @@ F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg i
 all: build
 
 f90wrap:
-	${PIP} install ${QUIP_ROOT}/src/f90wrap ${QUIPPY_INSTALL_OPTS}
+	${PIP} install "f90wrap>=0.2.6"
 
 clean:
 	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -93,7 +95,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	f90wrap -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	f90wrap -m quippy --f90-mod-name 'quippy._quippy' ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
@@ -112,6 +114,6 @@ build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	cp ../../quippy/setup.py .
+	cp ../../README.md ../../quippy/setup.py .
+	cp ${PROGRAMS} quippy/
 	${PIP} install ${QUIPPY_INSTALL_OPTS} .
-	rm setup.py

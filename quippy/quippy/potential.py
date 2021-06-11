@@ -73,8 +73,8 @@ class Potential(ase.calculators.calculator.Calculator):
         self._default_properties = ['energy', 'forces']
         self.calculation_always_required = calculation_always_required
 
-        ase.calculators.calculator.Calculator.__init__(self, restart=None, ignore_bad_restart_file=False, label=None,
-                                                       atoms=atoms, **kwargs)
+        ase.calculators.calculator.Calculator.__init__(self, restart=None, label=None,
+                                                       atoms=atoms, directory='.', **kwargs)
         # init the quip potential
         if param_filename is not None and isinstance(param_filename, str):
             # from a param filename
@@ -99,7 +99,7 @@ class Potential(ase.calculators.calculator.Calculator):
 
         # from old
         if atoms is not None:
-            atoms.set_calculator(self)
+            atoms.calc = self
         self.name = args_str
         if isinstance(calc_args, dict):
             calc_args = key_val_dict_to_str(calc_args)

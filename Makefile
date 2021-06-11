@@ -219,7 +219,7 @@ libquip_nostub.a: libquip.a
 ${BUILDDIR}:
 	@if [ ! -d build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ] ; then mkdir -p build/${QUIP_ARCH}${QUIP_ARCH_SUFFIX} ; fi
 
-quippy: libquip_nostub.a ${GAP_PROGRAMS}
+quippy: libquip_nostub.a ${PROGRAMS} ${GAP_PROGRAMS}
 	@echo "********************************************"
 	@echo ""
 	@echo " Making quippy "
@@ -292,7 +292,7 @@ else
 	fi
 endif
 
-test: quippy
+test: install-quippy
 	${MAKE} -C tests -I${PWD} -I${PWD}/arch -I${BUILDDIR}
 
 GIT_SUBDIRS=src/GAP src/ThirdParty

@@ -56,7 +56,7 @@ ATOMEYE_LIBS = -L/usr/lib -Wl,-Bstatic  -lm \
    -llapack -lblas -Wl,-Bdynamic
 
 QUIPPY_FCOMPILER = gnu95
-QUIPPY_F90FLAGS = -ffree-line-length-none
+QUIPPY_F90FLAGS = -ffree-line-length-none -fPIC
 QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
 QUIPPY_CPP = gfortran -E -x f95-cpp-input
 QUIPPY_DEBUG = 0
