@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build
 
 # Controls when the action will run. 
@@ -19,6 +17,11 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [linux_x86_64_gfortran, linux_x86_64_gfortran_openmp]
+        have_gap: [0, 1]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -29,14 +32,17 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Build and test QUIP
+        env:
+          QUIP_ARCH: ${{ arch }}
+          HAVE_GAP: ${{ have_gap }}
         run: |
-          export QUIP_ARCH=linux_x86_64_gfortran QUIP_INC=Makefile.inc
+          export 
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
             python-numpy
           mkdir -p build/${QUIP_ARCH}
-          cp travis/${QUIP_INC} build/${QUIP_ARCH}/Makefile.inc
+          cp .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
           make
           make libquip
           make quippy
@@ -45,6 +51,7 @@ jobs:
           make test
 
       - name: Build documentation  
+        if: matrix.arch == linux_x86_64_gfortran && matrix.have_gap == 1
         run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
           pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2
@@ -54,7 +61,7 @@ jobs:
           
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/public'
+        if: matrix.arch == linux_x86_64_gfortran && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: doc/_build/html    
