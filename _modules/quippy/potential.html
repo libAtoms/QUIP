@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>quippy.potential &mdash; quippy 00427c2+ documentation</title>
+  <title>quippy.potential &mdash; quippy f7ecab0+ documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                00427c2+
+                f7ecab0+
               </div>
             
           
@@ -248,8 +248,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_default_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calculation_always_required</span> <span class="o">=</span> <span class="n">calculation_always_required</span>
 
-        <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_bad_restart_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                                       <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ase</span><span class="o">.</span><span class="n">calculators</span><span class="o">.</span><span class="n">calculator</span><span class="o">.</span><span class="n">Calculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                       <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># init the quip potential</span>
         <span class="k">if</span> <span class="n">param_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param_filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># from a param filename</span>
@@ -274,7 +274,7 @@
 
         <span class="c1"># from old</span>
         <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">args_str</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calc_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">calc_args</span> <span class="o">=</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">calc_args</span><span class="p">)</span>
