@@ -32,7 +32,8 @@ Copyright 2006-2019.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
-domain.
+domain. The GAP code, included as a submodule, is distributed under
+a non-commerical [academic source license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md)
 
 ## Features
 
@@ -44,7 +45,7 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
  - GAP (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
- - Guggenheim-!McGlashan
+ - Guggenheim-McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
  - Lennard-Jones
@@ -84,11 +85,35 @@ will not be competitive in terms of performance with codes such as LAMMPS
 and Gromacs. The Atomic Simulation Environment also does does this, and
 is much more widely used, but QUIP has a number of unique features:
 
-- Deep access to most of the Fortran types and routines from Python via the
+- Access to Fortran types and routines from Python via the
   `quippy` package
 - Support for Gaussian Approximation Potentials (GAP) - [online docs](https://libatoms.github.io/GAP)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
+  
+## Binary Installation of QUIP and quippy
+
+Binary wheels for QUIP and the associated quippy Python bindings 
+that provide interopability with the Atomic Simulation Environment (ASE) are
+available from the [Python package index](https://pypi.org/project/quippy-ase/)
+(PyPI) under the package name `quippy-ase`.
+This means you can install the latest release with:
+
+```bash
+pip install quippy-ase
+```
+
+Installing via `pip` also makes the `quip` and `gap_fit` command line 
+programs available (providing the [directory that pip installs scripts 
+to](https://stackoverflow.com/questions/62162970/programmatically-determine-pip-user-install-location-scripts-directory/62167797#62167797) is on your `PATH`).
+
+Currently, wheels are available for `x86_64` architectures
+with Python 3.6+ on Mac OS X and glibc-based Linux distributions
+(e.g. Ubuntu, CentOS). The wheels are updated periodically
+using the [quippy-wheels](https://github.com/libAtoms/quippy-wheels) 
+repository using GitHub Actions CI. Please open 
+[issues](https://github.com/libAtoms/quippy-wheels/issues)
+there if you have problems installing with `pip`.
 
 ## Precompiled Containers
 
