@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Potential objects &mdash; quippy 0dd1c60+ documentation</title>
+  <title>Potential objects &mdash; quippy 81cc7a9+ documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                0dd1c60+
+                81cc7a9+
               </div>
             
           
@@ -221,7 +221,7 @@
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">quippy.potential.</span></span><span class="sig-name descname"><span class="pre">Potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculation_always_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ase.calculators.calculator.Calculator</span></code></a></p>
 <p>Module potential_module</p>
-<p>Defined at Potential.fpp lines 201-3716</p>
+<p>Defined at Potential.fpp lines 201-3752</p>
 <p>This module encapsulates all the interatomic potentials implemented in QUIP</p>
 <p>A Potential object represents an interatomic potential, a
 tight binding model or an interface to an external code used to
@@ -315,7 +315,7 @@ found in the <a class="reference external" href="https://github.com/libAtoms/QUI
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.potential.Potential.calculate">
 <span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self</span></em>, <em class="sig-param"><span class="pre">at</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">energy</span></em>, <em class="sig-param"><span class="pre">force</span></em>, <em class="sig-param"><span class="pre">virial</span></em>, <em class="sig-param"><span class="pre">local_energy</span></em>, <em class="sig-param"><span class="pre">local_virial</span></em>, <em class="sig-param"><span class="pre">args_str</span></em>, <em class="sig-param"><span class="pre">error</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential.calculate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defined at Potential.fpp lines 928-1093</p>
+<dd><p>Defined at Potential.fpp lines 933-1098</p>
 <p>Pythonic wrapper to <cite>quippy.potential_module.Potential.calc()</cite></p>
 <dl>
 <dt>atoms: ase.atoms.Atoms object</dt><dd><p>Atoms object with which to calculate. This is converted to

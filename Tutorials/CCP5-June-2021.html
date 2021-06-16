@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Motivation &mdash; quippy 0dd1c60+ documentation</title>
+  <title>Motivation &mdash; quippy 81cc7a9+ documentation</title>
   
 
   
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                0dd1c60+
+                81cc7a9+
               </div>
             
           
@@ -485,12 +485,12 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<center><p><img alt="f33aca996fe042db905903c6e81669c2" src="../_images/warwick-logo.png" /></p>
+<center><p><img alt="a88d36e42576409ba7491de8332d7866" src="../_images/warwick-logo.png" /></p>
 <h1><p>Quantum Mechanics and Interatomic Potentials – the QUIP code</p>
 </h1><h3><p>James Kermode</p>
 </h3><p>Warwick Centre for Predictive Modelling / School of Engineering University of Warwick</p>
 <h4><p>CCP5++ Software Seminar - 17th June 2021</p>
-</h4><p><a href="#id1"><span class="problematic" id="id2">|5470a1188ff7490bb58f3a388cf80799||09dc0b755d6e4049a810daf56379cdb4|</span></a></p>
+</h4><p><a href="#id1"><span class="problematic" id="id2">|9104915c393b4ef098621df202acac9e||d5e4ebf7dba74c4189690960def460f0|</span></a></p>
 </center><p><em>These slides are available in Jupyter notebook form at https://libatoms.github.io/QUIP/Tutorials</em></p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -524,8 +524,8 @@ div.rendered_html tbody tr:hover {
         <span class="n">in_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">S</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="n">in_cell</span><span class="p">]</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">j</span><span class="p">[</span><span class="n">in_cell</span><span class="p">]</span>
-    <span class="n">bonds</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[</span><span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">I</span><span class="p">,</span> <span class="p">:],</span>
-                     <span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">J</span><span class="p">,</span> <span class="p">:]]]</span> <span class="k">for</span> <span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span>
+    <span class="n">bonds</span> <span class="o">=</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[[</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">I</span><span class="p">,</span> <span class="p">:],</span>
+                     <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">J</span><span class="p">,</span> <span class="p">:]]]</span> <span class="k">for</span> <span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span>
     <span class="k">return</span> <span class="n">bonds</span>
 </pre></div>
 </div>
@@ -534,7 +534,7 @@ div.rendered_html tbody tr:hover {
 <h1>Motivation<a class="headerlink" href="#Motivation" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p>Many of the activities our community is interested in require <em>robust</em>, <em>automated</em> coupling of two or more codes</p></li>
-<li><p>For example, my current projects include:</p>
+<li><p>For example, current projects include:</p>
 <ul>
 <li><p>developing and applying multiscale methods</p></li>
 <li><p>generating interatomic potentials</p></li>
@@ -542,7 +542,7 @@ div.rendered_html tbody tr:hover {
 </ul>
 </li>
 </ul>
-<p><img alt="2e66a17022ee4a6fb04dfb270e80c145" class="no-scaled-link" src="../_images/multiscale.png" style="width: 70%;" /></p>
+<p><img alt="d0f86ee679d342c8b903e22441029f31" class="no-scaled-link" src="../_images/multiscale.png" style="width: 70%;" /></p>
 </section>
 <section id="The-QUIP-code">
 <h1>The QUIP code<a class="headerlink" href="#The-QUIP-code" title="Permalink to this headline">¶</a></h1>
@@ -583,9 +583,9 @@ div.rendered_html tbody tr:hover {
 <ul class="simple">
 <li><p>QUIP now comprises ~200 kLOC of Fortran 95 code</p></li>
 <li><p>Fortran to Python interface generation now separated out into <a class="reference external" href="https://github.com/jameskermode/f90wrap">f90wrap</a> standalone package</p></li>
-<li><p>Code is now ~80% Fortran with minimal Python high-level interfacs</p></li>
+<li><p>Code is now ~80% Fortran with minimal Python high-level interface to ASE</p></li>
 <li><p>Unit tests have reasonable coverage of public API via <code class="docutils literal notranslate"><span class="pre">quippy</span></code> Python package</p></li>
-<li><p>Continuous integration runs unit tests on GitHub Actions (recently migrated from Travis-CI) before PRs are merged</p></li>
+<li><p>Continuous integration runs unit tests on GitHub Actions (recently migrated from Travis-CI) before PRs are merged, and also builds <a class="reference external" href="https://libatoms.github.io/QUIP">documentation</a></p></li>
 <li><p>Generic functionality has been moved out of QUIP and contributed to more widely used codes, e.g. the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html#preconditioned-optimizers">preconditioned optimizers</a> in ASE were originally prototyped in QUIP</p></li>
 </ul>
 </section>
@@ -639,40 +639,19 @@ make
 <li><p>GSP</p></li>
 <li><p>NRL-TB</p></li>
 </ul>
-<p># QUIP data model</p>
-<p>Central to QUIP is the <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> type.</p>
-<p>Basic structure mirrors XYZ format, which is simple and widely used, with chemical species and atomic positions plus a free-form comment line. Multiple frames can be included simply by concatination.</p>
-<p>Limitations: - no specification of lattice or periodic boundary conditions - no support for additional properties</p>
-<p>Example:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>8
-Cubic bulk silicon cell
-Si       0.00000000       0.00000000       0.00000000
-Si       1.35750000       1.35750000       1.35750000
-Si       0.00000000       2.71500000       2.71500000
-Si       1.35750000       4.07250000       4.07250000
-Si       2.71500000       0.00000000       2.71500000
-Si       4.07250000       1.35750000       4.07250000
-Si       2.71500000       2.71500000       0.00000000
-Si       4.07250000       4.07250000       1.35750000
-</pre></div>
-</div>
 </section>
 <section id="QUIP-data-model">
 <h1>QUIP data model<a class="headerlink" href="#QUIP-data-model" title="Permalink to this headline">¶</a></h1>
-<p>Extended XYZ format adds lattice, additional columns</p>
-<p>This provides QUIP’s flexible (but not too flexible) data model for atomic per-configuration and per-atom properties, analogous to <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.arrays</span></code> and <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.info</span></code> dictionaries in ASE.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>8
-Lattice=&quot;5.43 0.0 0.0 0.0 5.43 0.0 0.0 0.0 5.43&quot; Properties=species:S:1:pos:R:3:forces:R:3 energy=-0.2888604432355295 pbc=&quot;T T T&quot;
-Si       0.00049671      -0.00013826       0.00064769      -0.00019048      -0.00007069       0.00012357
-Si       1.35902303       1.35726585       1.35726586       0.00036285       0.00019557      -0.00030723
-Si       0.00157921       2.71576743       2.71453053       0.00042937       0.00025671       0.00002537
-Si       1.35804256       4.07203658       4.07203427      -0.00013491      -0.00014413      -0.00033551
-Si       2.71524196      -0.00191328       2.71327508      -0.00005628      -0.00013472      -0.00023919
-Si       4.07193771       1.35648717       4.07281425      -0.00003996      -0.00017582       0.00031515
-Si       2.71409198       2.71358770       0.00146565      -0.00016209      -0.00022996       0.00038124
-Si       4.07227422       4.07256753       1.35607525      -0.00020849       0.00030304       0.00003659
+<p>Central to QUIP is the <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> type.</p>
+<p>Basic structure mirrors XYZ format, which is simple and widely used, with chemical species and atomic positions plus a free-form comment line.</p>
+<p>Extended XYZ format adds lattice, PBC and additional columns:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>2
+Lattice=&quot;0.0 2.715 2.715 2.715 0.0 2.715 2.715 2.715 0.0&quot; Properties=species:S:1:pos:R:3:forces:R:3 energy=-0.07221481569985196 pbc=&quot;T T T&quot;
+Si       0.00049671      -0.00013826       0.00064769      -0.00017116       0.00001541       0.00014705
+Si       1.35902303       1.35726585       1.35726586       0.00017116      -0.00001541      -0.00014705
 </pre></div>
 </div>
+<p>This maps onto QUIP’s flexible (but not too flexible) data model for atomic per-configuration and per-atom properties, analogous to <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.arrays</span></code> and <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.info</span></code> dictionaries in ASE.</p>
 <ul class="simple">
 <li><p>Extended XYZ now quite widely used and supported, e.g. in <a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">ASE</a> and the <a class="reference external" href="https://www.ovito.org">OVITO</a> visualisation package.</p></li>
 <li><p>Specification has recently been formalised to tidy up what’s allowed in the <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pairs. A canonical parser with C, Fortran, Python and Julia bindings will shortly be released at <a class="reference external" href="https://github.com/libAtoms/extxyz">https://github.com/libAtoms/extxyz</a>.</p></li>
@@ -780,7 +759,7 @@ lmp_mpi &lt; lammps.in
 <li><p><a class="reference external" href="https://jupyter.org/">jupyter</a>/IPython notebooks encourage reproducible research</p></li>
 <li><p><a class="reference external" href="https://jupyter.org/">anaconda</a> distribution and package management system</p></li>
 </ul>
-<center><p><img alt="e7d9495709534e7fbf0fdf689f05db14" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
+<center><p><img alt="2890e66f185747d4bd64ed669ca85abe" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
 </center><p><a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a></p>
 <p># Atomic Simulation Environment (ASE)</p>
 <ul class="simple">
@@ -788,7 +767,7 @@ lmp_mpi &lt; lammps.in
 <li><p>Wide range of calculators, flexible (but not too flexible) data model for Atoms objects</p></li>
 <li><p>Can use many codes as drop-in replacements:</p></li>
 </ul>
-<center><p><img alt="c01f374dae0346e7b7a6d7f53869efdd" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
+<center><p><img alt="f2b247217d7a4d3f8bd7b2e0bd47917e" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
 </center><p><a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a></p>
 </section>
 <section id="Demo:-analysing-GAP-models-with-predictive-variance">
@@ -827,8 +806,8 @@ lmp_mpi &lt; lammps.in
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PreconLBFGS:   0  12:51:22    -1305.407858       0.0000       0.0097
-PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
+PreconLBFGS:   0  15:00:50    -1305.407858       0.0000       0.0097
+PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 </pre></div></div>
 </div>
 <p>Now we make a supercell, choose an atom near the centre and delete it:</p>
@@ -837,18 +816,18 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">si</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a0</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="n">si</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">pot</span>
+<span></span><span class="n">si_vac</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a0</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="n">si_vac</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">pot</span>
 
 <span class="c1"># find an atom near the middle of the cell and delete it</span>
-<span class="n">vac_idx</span> <span class="o">=</span> <span class="p">((</span><span class="n">si</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
-<span class="n">vac_pos</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
-<span class="k">del</span> <span class="n">si</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
+<span class="n">vac_idx</span> <span class="o">=</span> <span class="p">((</span><span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">si_vac</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="n">vac_pos</span> <span class="o">=</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
+<span class="k">del</span> <span class="n">si_vac</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
 
 <span class="c1"># displace atoms from equilibrium</span>
-<span class="n">si</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">si_vac</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 
-<span class="n">local_energy</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">get_potential_energies</span><span class="p">()</span> <span class="o">-</span> <span class="n">e0</span> <span class="c1"># get the per-atom energies</span>
+<span class="n">local_energy</span> <span class="o">=</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">get_potential_energies</span><span class="p">()</span> <span class="o">-</span> <span class="n">e0</span> <span class="c1"># get the per-atom energies</span>
 
 <span class="c1"># additional quantities returned by the Potential are stored in `extra_results` dictionary</span>
 <span class="n">local_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_gap_variance&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="c1"># to meV</span>
@@ -864,11 +843,11 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">get_bonds</span><span class="p">(</span><span class="n">si</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">get_bonds</span><span class="p">(</span><span class="n">si_vac</span><span class="p">):</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bond</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">bond</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">bond</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 
-<span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">si</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
-           <span class="n">s</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">local_sigma</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted error (meV/atom)&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+               <span class="n">s</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">local_sigma</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Predicted error (meV/atom)&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">vac_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">vac_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">vac_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="n">s</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Vacancy position&#39;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
@@ -881,7 +860,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_24_0.png" src="../_images/Tutorials_CCP5-June-2021_24_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_23_0.png" src="../_images/Tutorials_CCP5-June-2021_23_0.png" />
 </div>
 </div>
 <p>Unsurprisingly, the predicted errors rise in the vicinity of the vacancy; even though vacancies are accurately predicted by this GAP model, they are still less well covered by the training database than bulk-like configurations.</p>
@@ -903,7 +882,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_26_0.png" src="../_images/Tutorials_CCP5-June-2021_26_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_25_0.png" src="../_images/Tutorials_CCP5-June-2021_25_0.png" />
 </div>
 </div>
 </section>
@@ -920,14 +899,14 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 
 <span class="n">desc</span> <span class="o">=</span> <span class="n">Descriptor</span><span class="p">(</span><span class="s2">&quot;soap l_max=6 n_max=12 cutoff=5.0 atom_sigma=0.5&quot;</span><span class="p">)</span>
 
-<span class="n">D1</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">si</span><span class="p">)[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+<span class="n">D1</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">si_vac</span><span class="p">)[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
 <span class="n">si_fcc</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="s1">&#39;fcc&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">a0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
 <span class="n">si_fcc</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">D2</span> <span class="o">=</span> <span class="n">desc</span><span class="o">.</span><span class="n">calc</span><span class="p">(</span><span class="n">si_fcc</span><span class="p">)[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
 <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">D1</span><span class="p">,</span> <span class="n">D2</span><span class="p">]</span> <span class="c1"># stack arrays in shape N_atoms x N_desc</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_fcc</span><span class="p">))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_vac</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_fcc</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -949,7 +928,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_30_0.png" src="../_images/Tutorials_CCP5-June-2021_30_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_29_0.png" src="../_images/Tutorials_CCP5-June-2021_29_0.png" />
 </div>
 </div>
 </section>
@@ -962,6 +941,11 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eigh</span>
+
+<span class="c1"># centre K</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">one_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="o">/</span> <span class="n">N</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">K</span> <span class="o">-</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">-</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span> <span class="o">+</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span>
 
 <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
 <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">eigvals</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">eigvecs</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># reverse order</span>
@@ -988,12 +972,12 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_33_0.png" src="../_images/Tutorials_CCP5-June-2021_33_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_32_0.png" src="../_images/Tutorials_CCP5-June-2021_32_0.png" />
 </div>
 </div>
-<p>If we zoom in just on the diamond configurations, and see that the kPCA also highlights the atoms near the vacancy</p>
+<p>If we zoom in just on the diamond configurations, and see that the kPCA also identifies the atoms near the vacancy as outliers</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1011,7 +995,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_35_0.png" src="../_images/Tutorials_CCP5-June-2021_35_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_34_0.png" src="../_images/Tutorials_CCP5-June-2021_34_0.png" />
 </div>
 </div>
 </section>
@@ -1019,7 +1003,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <h1>Deep wrapping demo: Tight Binding matrix elements<a class="headerlink" href="#Deep-wrapping-demo:-Tight-Binding-matrix-elements" title="Permalink to this headline">¶</a></h1>
 <p>Sometimes it’s useful to get interactive access to Fortran arrays, for example the tight binding Hamiltonian and Overlap matrices, either for post-processing, training other models or simply during debugging. The <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code>-generated interface makes this possible, but it helps to have knowledge of the underlying Fortran code to know where to look.</p>
 <p>Here we do this just at the <span class="math notranslate nohighlight">\(\Gamma\)</span>-point, but the complex-valued <span class="math notranslate nohighlight">\(H\)</span> and <span class="math notranslate nohighlight">\(S\)</span> at all <span class="math notranslate nohighlight">\(k-\)</span>points are also available (as are their derivatives, needed for computing forces).</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
@@ -1028,13 +1012,29 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 
 <span class="c1"># size of matrices is N_orb x N_atoms</span>
 <span class="n">N_orb</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="n">N_atoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_fcc</span><span class="p">)</span>
+<span class="n">N_atoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_vac</span><span class="p">)</span>
 
 <span class="c1"># allocate memory from Python - note it is Fortran contigous</span>
-<span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">,</span> <span class="n">norb</span> <span class="o">*</span> <span class="n">nat</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-<span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">,</span> <span class="n">norb</span> <span class="o">*</span> <span class="n">nat</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+<span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">,</span> <span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">,</span> <span class="n">N_orb</span> <span class="o">*</span> <span class="n">N_atoms</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
 
+<span class="n">tb_pot</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">(</span><span class="n">si_vac</span><span class="p">)</span> <span class="c1"># trigger a calculation</span>
+
+<span class="c1"># now we can poke around inside</span>
 <span class="n">tb_pot</span><span class="o">.</span><span class="n">_quip_potential</span><span class="o">.</span><span class="n">calc_tb_matrices</span><span class="p">(</span><span class="n">tb_pot</span><span class="o">.</span><span class="n">_quip_atoms</span><span class="p">,</span> <span class="n">hd</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="n">S</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># show Hamiltonian and Overlap matrices</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mat</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="p">[</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Hamiltonian&#39;</span><span class="p">,</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">]):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1042,29 +1042,7 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-13-79fbc8e795c4&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      6</span>
-<span class="ansi-green-intense-fg ansi-bold">      7</span> <span class="ansi-red-fg"># allocate memory from Python - note it is Fortran contigous</span>
-<span class="ansi-green-fg">----&gt; 8</span><span class="ansi-red-fg"> </span>H <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>zeros<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">(</span>N_orb <span class="ansi-blue-fg">*</span> N_atoms<span class="ansi-blue-fg">,</span> norb <span class="ansi-blue-fg">*</span> nat<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> order<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;F&#39;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      9</span> S <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>zeros<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">(</span>N_orb <span class="ansi-blue-fg">*</span> N_atoms<span class="ansi-blue-fg">,</span> norb <span class="ansi-blue-fg">*</span> nat<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> order<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;F&#39;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     10</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;norb&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mat</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="p">[</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Hamiltonian&#39;</span><span class="p">,</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">]):</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">);</span>
-</pre></div>
+<img alt="../_images/Tutorials_CCP5-June-2021_37_0.png" src="../_images/Tutorials_CCP5-June-2021_37_0.png" />
 </div>
 </div>
 <section id="Post-processing-example:-density-of-states">
@@ -1074,15 +1052,33 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 \[H \phi_i = \epsilon_i S \phi_i\]</div>
 <p>and use the results to plot the bandstructure or the density of states.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">E</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span class="n">E_F</span> <span class="o">=</span> <span class="n">tb_pot</span><span class="o">.</span><span class="n">_quip_potential</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">tb</span><span class="o">.</span><span class="n">fermi_e</span> <span class="c1"># extract Fermi energy from inside QUIP</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Density of states plot</span>
-<span class="n">E</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Eigenvalue $\epsilon$ / eV&#39;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">E</span> <span class="o">-</span> <span class="n">E_F</span><span class="p">,</span> <span class="n">bw_method</span><span class="o">=</span><span class="mf">0.07</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Energy $\epsilon - \epsilon_F$ / eV&#39;</span><span class="p">);</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;DOS&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">);</span>
 </pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/Tutorials_CCP5-June-2021_40_0.png" src="../_images/Tutorials_CCP5-June-2021_40_0.png" />
 </div>
 </div>
 </section>
@@ -1100,16 +1096,16 @@ PreconLBFGS:   1  12:51:23    -1305.421024       0.0000       0.0003
 <section id="Interoperability-with-Julia">
 <h1>Interoperability with Julia<a class="headerlink" href="#Interoperability-with-Julia" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><p>Growing interest in Julia to solve the “two-language problem” of efficiency vs. expressability</p></li>
+<li><p>Growing interest in Julia to solve the “two-language problem” of efficiency vs. expressability. Multiple dispatch paradigm also provides excellent composability.</p></li>
 <li><p>Rewriting codes is a big job, although there’s already a quite complete pure Julia DFT code, <a class="reference external" href="https://github.com/JuliaMolSim/DFTK.jl">DFTK.jl</a></p></li>
 <li><p>To ease transition, Julia has excellent interoperabilty with Python packages via <a class="reference external" href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a></p></li>
 <li><p>Christoph Ortner maintains <a class="reference external" href="https://github.com/JuliaMolSim/JuLIP.jl">JulIP.jl</a> which also has an <a href="#id3"><span class="problematic" id="id4">`interface to ASE &lt;&gt;`__</span></a> through which QUIP can be accessed, i.e. <code class="docutils literal notranslate"><span class="pre">&#64;pyimport</span> <span class="pre">quippy</span></code> and off you go.</p></li>
-<li><p>Atomic Cluster Expansion (ACE) descriptor for data-driven potentials implemented in <a class="reference external" href="https://github.com/ACEsuit/ACE.jl">ACE.jl</a> (and also in LAMMPS directly in C++ via a new <a class="reference external" href="https://docs.lammps.org/pair_pace.html">pair_style pace</a>).</p></li>
+<li><p>Across machine learning potential community, we see some recent developments such as Atomic Cluster Expansion (ACE) being directly implemented in Julia in <a class="reference external" href="https://github.com/ACEsuit/ACE.jl">ACE.jl</a>, although there’s also a C++ LAMMPS implementation via a new <a class="reference external" href="https://docs.lammps.org/pair_pace.html">pair_style pace</a>.</p></li>
 </ul>
 </section>
 <section id="Generalisation:-f90wrap-can-wrap-other-Fortran-codes">
 <h1>Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> can wrap other Fortran codes<a class="headerlink" href="#Generalisation:-f90wrap-can-wrap-other-Fortran-codes" title="Permalink to this headline">¶</a></h1>
-<p><img alt="683b4e2eb4eb457d9f671ef872d43b26" src="../_images/f90wrap.png" /></p>
+<p><img alt="dbcd4f7631034e89ad08a1bd440dfeae" src="../_images/f90wrap.png" /></p>
 <ul class="simple">
 <li><p>Writing deep Python interfaces ‘by hand’ is possible but tedious</p></li>
 <li><p>There are good automatic interface generators for C++ codes (e.g. SWIG or Boost.Python), but none support modern Fortran</p>
