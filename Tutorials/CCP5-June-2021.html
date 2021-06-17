@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Motivation &mdash; quippy 81cc7a9+ documentation</title>
+  <title>Motivation &mdash; quippy 920a6a3+ documentation</title>
   
 
   
@@ -47,7 +47,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Interoperability with Atomic Simulation Environment" href="quippy-ase-interoperability.html" />
-    <link rel="prev" title="Tutorials" href="index.html" /> 
+    <link rel="prev" title="QUIP Overview Tutorial" href="overview.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                81cc7a9+
+                920a6a3+
               </div>
             
           
@@ -103,35 +103,35 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Motivation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#The-QUIP-code">The QUIP code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Code-philosophy-and-goals">Code philosophy and goals</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#History">History</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Current-status">Current status</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="overview.html">QUIP Overview Tutorial</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Motivation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#The-QUIP-code">The QUIP code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Code-philosophy-and-goals">Code philosophy and goals</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#History">History</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Current-status">Current status</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Code-Availability">Code Availability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#QUIP-Features">QUIP Features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#QUIP-data-model">QUIP data model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Binary-Installation">Binary Installation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Docker-and-Singularity-containers">Docker and Singularity containers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Code-Availability">Code Availability</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Binary-Installation">Binary Installation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Docker-and-Singularity-containers">Docker and Singularity containers</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Standalone-QUIP-usage">Standalone QUIP usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Usage-with-LAMMPS">Usage with LAMMPS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Usage-with-Python-and-the-Atomic-Simulation-Environment">Usage with Python and the Atomic Simulation Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Python-scripting-for-interoperability">Python scripting for interoperability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Demo:-analysing-GAP-models-with-predictive-variance">Demo: analysing GAP models with predictive variance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Atomic-Environment-Descriptors">Atomic Environment Descriptors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Kernel-PCA">Kernel PCA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Deep-wrapping-demo:-Tight-Binding-matrix-elements">Deep wrapping demo: Tight Binding matrix elements</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Post-processing-example:-density-of-states">Post-processing example: density of states</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#QUIP-Features">QUIP Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#QUIP-data-model">QUIP data model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Standalone-QUIP-usage">Standalone QUIP usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Usage-with-LAMMPS">Usage with LAMMPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Using-QUIP-with-Python-and-the-Atomic-Simulation-Environment">Using QUIP with Python and the Atomic Simulation Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quippy-demo:-analysing-GAP-models-with-predictive-variance"><code class="docutils literal notranslate"><span class="pre">quippy</span></code> demo: analysing GAP models with predictive variance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Atomic-Environment-Descriptors">Atomic Environment Descriptors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Kernel-PCA">Kernel PCA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Deep-wrapping-demo:-Tight-Binding-matrix-elements">Deep wrapping demo: Tight Binding matrix elements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Post-processing-example:-density-of-states">Post-processing example: density of states</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Integration-with-other-Python-packages">Integration with other Python packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Interoperability-with-Julia">Interoperability with Julia</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Generalisation:-f90wrap-can-wrap-other-Fortran-codes">Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> can wrap other Fortran codes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Future-Roadmap">Future Roadmap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Integration-with-other-Python-packages">Integration with other Python packages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Generalisation:-f90wrap-wraps-other-Fortran-codes">Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> wraps other Fortran codes</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a></li>
@@ -195,6 +195,8 @@
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">Tutorials</a> &raquo;</li>
+        
+          <li><a href="overview.html">QUIP Overview Tutorial</a> &raquo;</li>
         
       <li>Motivation</li>
     
@@ -485,19 +487,21 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<center><p><img alt="a88d36e42576409ba7491de8332d7866" src="../_images/warwick-logo.png" /></p>
+<center><p><img alt="27424c7aa6094b709fe245001bb903f5" src="../_images/warwick-logo.png" /></p>
 <h1><p>Quantum Mechanics and Interatomic Potentials – the QUIP code</p>
 </h1><h3><p>James Kermode</p>
 </h3><p>Warwick Centre for Predictive Modelling / School of Engineering University of Warwick</p>
 <h4><p>CCP5++ Software Seminar - 17th June 2021</p>
-</h4><p><a href="#id1"><span class="problematic" id="id2">|9104915c393b4ef098621df202acac9e||d5e4ebf7dba74c4189690960def460f0|</span></a></p>
-</center><p><em>These slides are available in Jupyter notebook form at https://libatoms.github.io/QUIP/Tutorials</em></p>
+</h4><table bgcolor="#ffffff"><tr><td><p><img alt="c5cfe37ece08496ab06c2d4feb2e7b4c" class="no-scaled-link" src="../_images/WCPM_logo_text.png" style="width: 100%;" /></p>
+</td><td><p><img alt="8edc7a6631094235aa22554e7d26bdd2" class="no-scaled-link" src="../_images/hybrid.png" style="width: 100%;" /></p>
+</td></tr></table></center><p><em>These slides will subsequently be made available at https://libatoms.github.io/QUIP/Tutorials</em></p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">quippy</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
@@ -510,11 +514,11 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">ase.neighborlist</span> <span class="kn">import</span> <span class="n">neighbor_list</span>
 
@@ -542,13 +546,14 @@ div.rendered_html tbody tr:hover {
 </ul>
 </li>
 </ul>
-<p><img alt="d0f86ee679d342c8b903e22441029f31" class="no-scaled-link" src="../_images/multiscale.png" style="width: 70%;" /></p>
+<center><p><img alt="46d5f09ba79241a7807bdcc05f2085e7" class="no-scaled-link" src="../_images/multiscale.png" style="width: 80%;" /></p>
+</center><p><em>Image credit: Gábor Csányi</em></p>
 </section>
 <section id="The-QUIP-code">
 <h1>The QUIP code<a class="headerlink" href="#The-QUIP-code" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="https://libatoms.github.io/QUIP">QUIP</a> is a collection of software tools to carry out molecular dynamics simulations in non-standard ways, in particular:</p>
 <ul class="simple">
-<li><p>Gaussian Approximation Potential (GAP) framework for data-driven potentials</p></li>
+<li><p>Using the Gaussian Approximation Potential (GAP) framework for data-driven potentials</p></li>
 <li><p>Hybrid combinations in the style of QM/MM with a particular focus on materials systems such as metals and semiconductors</p></li>
 </ul>
 <p>Long-term support of the package is ensured by: - James Kermode (Warwick) - Gabor Csanyi (Cambridge) - Noam Bernstein (Naval Research Lab)</p>
@@ -558,35 +563,41 @@ div.rendered_html tbody tr:hover {
 <section id="Code-philosophy-and-goals">
 <h1>Code philosophy and goals<a class="headerlink" href="#Code-philosophy-and-goals" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li><p>QUIP was born because of the need to efficiently tie together a wide variety of different models, both empirical and quantum mechanical. It is not competitive in terms of performance with codes such as LAMMPS and Gromacs. The Atomic Simulation Environment also does does this, and is much more widely used, but QUIP has a number of unique features:</p></li>
+<li><p>QUIP was born because of the need to efficiently tie together a wide variety of different models, both empirical and quantum mechanical.</p></li>
+<li><p>It is not intended to be competitive in terms of performance with codes such as LAMMPS and Gromacs.</p></li>
+<li><p>The Atomic Simulation Environment (ASE) also does does this, and is much more widely used, but QUIP has a number of unique features:</p>
+<ul>
 <li><p>Access to Fortran types and routines from Python via the quippy package</p></li>
 <li><p>Support for Gaussian Approximation Potentials (GAP)</p></li>
 <li><p>Does not assume minimum image convention, so interatomic potentials can have cutoffs that are larger than the periodic unit cell size</p></li>
 </ul>
+</li>
+</ul>
 <section id="History">
 <h2>History<a class="headerlink" href="#History" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>QUIP began as rewrite of earlier C++ and Fortran 77 codes 2005</p></li>
-<li><p>Coded in modern Fortran (Fortran 95 plus allocatable array extensions, but none of the object-oriented features from 2003/2008 (mostly because of limited compiler support historically)</p></li>
+<li><p>QUIP began as rewrite of earlier C++ and Fortran 77 codes in ca. 2005</p></li>
+<li><p>Coded in modern Fortran (Fortran 95 plus allocatable array extensions, but none of the object-oriented features from 2003/2008, mostly because of limited compiler support historically)</p></li>
 <li><p><a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">Expressive Programming</a>, where code is as close as possible to abstract algorithm, without sacrificing (too much) performance</p>
 <ul>
 <li><p>e.g. we have a <code class="docutils literal notranslate"><span class="pre">type(Atoms)</span></code> with components <code class="docutils literal notranslate"><span class="pre">Atoms%positions</span></code>, etc</p></li>
-<li><p>not a full OO approach with where arrays of individual <code class="docutils literal notranslate"><span class="pre">Atom</span></code> objects would reduce cache efficiency</p></li>
+<li><p>not a full OO approach with arrays of individual <code class="docutils literal notranslate"><span class="pre">Atom</span></code> objects, which would risk reducing cache efficiency</p></li>
 </ul>
 </li>
-<li><p>OpenMP and MPI parallelisation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">quippy</span></code> deep Python bindings provided full acccess to elements within derived types</p></li>
+<li><p>OpenMP and MPI parallelisation for potential evaluation (although LAMMPS <code class="docutils literal notranslate"><span class="pre">pair_style</span> <span class="pre">quip</span></code> will be faster)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quippy</span></code> deep Python bindings provided acccess to elements within derived types</p></li>
 </ul>
 </section>
 <section id="Current-status">
 <h2>Current status<a class="headerlink" href="#Current-status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>QUIP now comprises ~200 kLOC of Fortran 95 code</p></li>
+<li><p>Main use is as GAP driver and for fitting GAP models</p></li>
 <li><p>Fortran to Python interface generation now separated out into <a class="reference external" href="https://github.com/jameskermode/f90wrap">f90wrap</a> standalone package</p></li>
 <li><p>Code is now ~80% Fortran with minimal Python high-level interface to ASE</p></li>
-<li><p>Unit tests have reasonable coverage of public API via <code class="docutils literal notranslate"><span class="pre">quippy</span></code> Python package</p></li>
-<li><p>Continuous integration runs unit tests on GitHub Actions (recently migrated from Travis-CI) before PRs are merged, and also builds <a class="reference external" href="https://libatoms.github.io/QUIP">documentation</a></p></li>
-<li><p>Generic functionality has been moved out of QUIP and contributed to more widely used codes, e.g. the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html#preconditioned-optimizers">preconditioned optimizers</a> in ASE were originally prototyped in QUIP</p></li>
+<li><p>Unit tests, driven via <code class="docutils literal notranslate"><span class="pre">quippy</span></code> Python package, have reasonable coverage of public API</p></li>
+<li><p>Continuous integration runs unit tests on GitHub Actions (recently migrated from Travis-CI) on all commits and before PRs get merged, and also builds <a class="reference external" href="https://libatoms.github.io/QUIP">documentation</a></p></li>
+<li><p>High-level generic functionality has (mostly) been moved out of QUIP and contributed to more widely used codes, e.g. the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html#preconditioned-optimizers">preconditioned optimizers</a> in ASE were first prototyped in QUIP</p></li>
 </ul>
 </section>
 </section>
@@ -594,7 +605,7 @@ div.rendered_html tbody tr:hover {
 <h1>Code Availability<a class="headerlink" href="#Code-Availability" title="Permalink to this headline">¶</a></h1>
 <p>Most of QUIP is licensed under the GPLv2, with some code in the public domain. Submodules have different licences, e.g. GAP has a non-commerical <a class="reference external" href="https://github.com/libAtoms/GAP/blob/main/LICENSE.md">academic software license</a>.</p>
 <p>Quick start:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/libAtoms/QUIP
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git clone --recursive https://github.com/libAtoms/QUIP
 cd QUIP
 export QUIP_ARCH=gfortran_linux_x86_64_openmp # for example
 make config # answer some y/n questions
@@ -603,6 +614,25 @@ make
 </div>
 <p>Required: - recent <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> or <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler - LAPACK/BLAS linear algebra libraries (e.g. <code class="docutils literal notranslate"><span class="pre">libblas-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">liblapack-dev</span></code> on Ubuntu or Intel MKL)</p>
 <p>See the GitHub <a class="reference external" href="https://github.com/libAtoms/QUIP">README</a> for detailed instructions, or try one of the pre-compiled binary releases.</p>
+<section id="Binary-Installation">
+<h2>Binary Installation<a class="headerlink" href="#Binary-Installation" title="Permalink to this headline">¶</a></h2>
+<p>I have very recently added binary wheels for Python on x86_64 Linux and Mac OS X machines:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install quippy-ase
+</pre></div>
+</div>
+<p>Python dependencies (<code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> and <code class="docutils literal notranslate"><span class="pre">ase</span></code>) are installed automatically, and you get the <code class="docutils literal notranslate"><span class="pre">quip</span></code> and <code class="docutils literal notranslate"><span class="pre">gap_fit</span></code> command line programs as a bonus. <a class="reference external" href="https://github.com/libAtoms/quippy-wheels/issues">Open issues</a> in <code class="docutils literal notranslate"><span class="pre">quippy-wheels</span></code> with problems.</p>
+</section>
+<section id="Docker-and-Singularity-containers">
+<h2>Docker and Singularity containers<a class="headerlink" href="#Docker-and-Singularity-containers" title="Permalink to this headline">¶</a></h2>
+<p>For a quick start, a pre-compiled <a class="reference external" href="https://hub.docker.com/r/libatomsquip/quip/">Docker image</a> is also available:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>docker pull libatomsquip/quip
+</pre></div>
+</div>
+<p>This includes QUIP, GAP and LAMMPS setup to work with QUIP, and also works with Singularity for use on machines where you are not root:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>singularity pull docker://libatomsquip/quip
+</pre></div>
+</div>
+</section>
 </section>
 <section id="QUIP-Features">
 <h1>QUIP Features<a class="headerlink" href="#QUIP-Features" title="Permalink to this headline">¶</a></h1>
@@ -614,7 +644,7 @@ make
 <li><p>Finnis-Sinclair (bcc metals)</p></li>
 <li><p>Flikkema-Bromley</p></li>
 <li><p>GAP (Gaussian Approximation Potentials)</p></li>
-<li><p>Guggenheim-!McGlashan</p></li>
+<li><p>Guggenheim-McGlashan</p></li>
 <li><p>Brenner (carbon)</p></li>
 <li><p>OpenKIM (general interface)</p></li>
 <li><p>Lennard-Jones</p></li>
@@ -626,9 +656,9 @@ make
 <li><p>Morse</p></li>
 <li><p>Partridge-Schwenke (water monomer)</p></li>
 <li><p>Stillinger-Weber (carbon, silicon, germanium)</p></li>
-<li><p>SiMEAM (silicon)</p></li>
+<li><p>Si MEAM (silicon)</p></li>
 <li><p>Sutton-Chen</p></li>
-<li><p>Tangney-Scandolo (silica, titania etc)</p></li>
+<li><p>Tangney-Scandolo (silica, titania etc) - including short-ranged reparamaterisation</p></li>
 <li><p>Tersoff (silicon, carbon)</p></li>
 <li><p>Tkatchenko-Sheffler pairwise dispersion correction</p></li>
 </ul>
@@ -643,60 +673,39 @@ make
 <section id="QUIP-data-model">
 <h1>QUIP data model<a class="headerlink" href="#QUIP-data-model" title="Permalink to this headline">¶</a></h1>
 <p>Central to QUIP is the <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> type.</p>
-<p>Basic structure mirrors XYZ format, which is simple and widely used, with chemical species and atomic positions plus a free-form comment line.</p>
+<p>Basic structure mirrors XYZ format with chemical species and atomic positions plus a free-form comment line.</p>
 <p>Extended XYZ format adds lattice, PBC and additional columns:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>2
 Lattice=&quot;0.0 2.715 2.715 2.715 0.0 2.715 2.715 2.715 0.0&quot; Properties=species:S:1:pos:R:3:forces:R:3 energy=-0.07221481569985196 pbc=&quot;T T T&quot;
-Si       0.00049671      -0.00013826       0.00064769      -0.00017116       0.00001541       0.00014705
-Si       1.35902303       1.35726585       1.35726586       0.00017116      -0.00001541      -0.00014705
+Si  0.00049671 -0.00013826  0.00064769 -0.00017116   0.00001541   0.00014705
+Si  1.35902303  1.35726585  1.35726586  0.00017116  -0.00001541  -0.00014705
 </pre></div>
 </div>
 <p>This maps onto QUIP’s flexible (but not too flexible) data model for atomic per-configuration and per-atom properties, analogous to <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.arrays</span></code> and <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.info</span></code> dictionaries in ASE.</p>
 <ul class="simple">
 <li><p>Extended XYZ now quite widely used and supported, e.g. in <a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">ASE</a> and the <a class="reference external" href="https://www.ovito.org">OVITO</a> visualisation package.</p></li>
-<li><p>Specification has recently been formalised to tidy up what’s allowed in the <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pairs. A canonical parser with C, Fortran, Python and Julia bindings will shortly be released at <a class="reference external" href="https://github.com/libAtoms/extxyz">https://github.com/libAtoms/extxyz</a>.</p></li>
-<li><p>QUIP, ASE, OVITO etc will all be converted to use this parser.</p></li>
+<li><p>Specification has recently been formalised to tidy up what’s allowed in the <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pairs. A canonical parser with C, Fortran, Python and Julia bindings will shortly be <a class="reference external" href="https://github.com/libAtoms/extxyz">released</a>, and integration with all dependencies.</p></li>
 </ul>
-<section id="Binary-Installation">
-<h2>Binary Installation<a class="headerlink" href="#Binary-Installation" title="Permalink to this headline">¶</a></h2>
-<p>I have very recently added binary wheels for Python on x86_64 Linux and Mac OS X machines:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install quippy-ase
-</pre></div>
-</div>
-<p>Python dependencies (<code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> and <code class="docutils literal notranslate"><span class="pre">ase</span></code>) are installed automatically, and you get the <code class="docutils literal notranslate"><span class="pre">quip</span></code> and <code class="docutils literal notranslate"><span class="pre">gap_fit</span></code> commandl line programs as a bonus. Let me know of problems by opening issues at <a class="reference external" href="https://github.com/libAtoms/quippy-wheels">https://github.com/libAtoms/quippy-wheels</a></p>
-</section>
-<section id="Docker-and-Singularity-containers">
-<h2>Docker and Singularity containers<a class="headerlink" href="#Docker-and-Singularity-containers" title="Permalink to this headline">¶</a></h2>
-<p>For a quick start, a pre-compiled <a class="reference external" href="https://hub.docker.com/r/libatomsquip/quip/">Docker image</a> is available:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>docker pull libatomsquip/quip
-</pre></div>
-</div>
-<p>This includes QUIP, GAP and LAMMPS setup to work with QUIP, and also works with Singularity for use on machines where you are not root:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>singularity pull docker://libatomsquip/quip
-</pre></div>
-</div>
-</section>
 </section>
 <section id="Standalone-QUIP-usage">
 <h1>Standalone QUIP usage<a class="headerlink" href="#Standalone-QUIP-usage" title="Permalink to this headline">¶</a></h1>
-<p>However you have installed QUIP, you should have a <code class="docutils literal notranslate"><span class="pre">quip</span></code> executable which can be used for basic tasks such as evaluating forces, energies and virials. For example, to use the Tangney-Scandolo potential to evaluate the energy of a quartz unit cell:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>quip <span class="nv">init_args</span><span class="o">=</span><span class="s2">&quot;IP TS&quot;</span> <span class="nv">param_filename</span><span class="o">=</span>TS_params.xml <span class="nv">atoms_filename</span><span class="o">=</span>quartz.xyz E <span class="p">|</span> grep Energy
+<p>However you have installed QUIP, you will have a <code class="docutils literal notranslate"><span class="pre">quip</span></code> executable which can be used for basic tasks such as evaluating forces, energies and virials. For example, to use the Tangney-Scandolo potential to evaluate the energy of a quartz unit cell:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>quip <span class="nv">init_args</span><span class="o">=</span><span class="s2">&quot;IP TS&quot;</span> <span class="nv">param_filename</span><span class="o">=</span>TS_params.xml <span class="nv">atoms_filename</span><span class="o">=</span>quartz.xyz E
 </pre></div>
 </div>
 <p>Potential parameters are stored in XML files, and can be initialised either by name as above or by XML label, e.g.:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>quip <span class="nv">init_args</span><span class="o">=</span><span class="s2">&quot;xml_label=TS_potential&quot;</span> <span class="nv">param_filename</span><span class="o">=</span>TS_params.xml <span class="nv">atoms_filename</span><span class="o">=</span>quartz.xyz E <span class="p">|</span> grep Energy
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>quip <span class="nv">init_args</span><span class="o">=</span><span class="s2">&quot;xml_label=TS_potential&quot;</span> <span class="nv">param_filename</span><span class="o">=</span>TS_params.xml <span class="nv">atoms_filename</span><span class="o">=</span>quartz.xyz E
 </pre></div>
 </div>
-<p>The latter is more flexible as it supports potentials which are themselves made up of a combination of other potentials, e.g. a GAP with a 2-body and manybody contributions which must be summed to get the total potential.</p>
-<p>There is also a built in MD code which has some specialised features, such as an advanced Nose-Hoover-Langevin chain thermostat, but for generalise usage we recommend doing MD from either ASE or LAMMPS.</p>
+<p>The latter is more flexible as it supports potentials which are a combination of other potentials (e.g. a GAP with a 2-body and manybody contributions which must be summed to get the total potential).</p>
+<p>There is also a built in MD code which has some specialised features, such as a Nose-Hoover-Langevin chain thermostat, but for general usage we recommend driving MD from either ASE or LAMMPS.</p>
 </section>
 <section id="Usage-with-LAMMPS">
 <h1>Usage with LAMMPS<a class="headerlink" href="#Usage-with-LAMMPS" title="Permalink to this headline">¶</a></h1>
 <p>The LAMMPS MD code comes with a <a class="reference external" href="https://docs.lammps.org/Build_extras.html#user-quip-package">USER-QUIP</a> package which can be turned out to provide a <a class="reference external" href="https://docs.lammps.org/pair_quip.html">pair_style quip</a> command that allows QUIP potentials to be used within LAMMPS simulations.</p>
-<p>While QUIP has both OpenMP and MPI parallelisation internally, LAMMPS gives better performance on very large domains. Mixing QUIP OpenMP with LAMMPS MPI parallelisation works fine, but avoid mixing QUIP and LAMMPS MPI.</p>
 <p>For example, to use the Si GAP potential from LAMMPS, use a script simliar to <a class="reference external" href="quip_lammps_example.sh">this one</a>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -741,41 +750,32 @@ lmp_mpi &lt; lammps.in
 </pre></div></div>
 </div>
 </section>
-<section id="Usage-with-Python-and-the-Atomic-Simulation-Environment">
-<h1>Usage with Python and the Atomic Simulation Environment<a class="headerlink" href="#Usage-with-Python-and-the-Atomic-Simulation-Environment" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><p>Interfacing codes allows existing tools to be combined</p></li>
-<li><p>Produce something that is more than the sum of the constituent parts</p></li>
-<li><p>General feature of modern scientific computing: many well-documented libraries available</p></li>
-<li><p>Python has emerged as the <em>de facto</em> standard “glue” language</p></li>
-<li><p>Codes that have a Python interface can be combined in complex ways</p></li>
-</ul>
-</section>
-<section id="Python-scripting-for-interoperability">
-<h1>Python scripting for interoperability<a class="headerlink" href="#Python-scripting-for-interoperability" title="Permalink to this headline">¶</a></h1>
+<section id="Using-QUIP-with-Python-and-the-Atomic-Simulation-Environment">
+<h1>Using QUIP with Python and the Atomic Simulation Environment<a class="headerlink" href="#Using-QUIP-with-Python-and-the-Atomic-Simulation-Environment" title="Permalink to this headline">¶</a></h1>
+<p>Python has emerged as the <em>de facto</em> standard “glue” language: codes that have a Python interface can be combined in complex ways</p>
 <ul class="simple">
 <li><p><a class="reference external" href="http://www.numpy.org/">numpy</a>/<a class="reference external" href="http://scipy.org/">scipy</a> ecosystem</p></li>
 <li><p><a class="reference external" href="http://matplotlib.org/">matplotlib</a> plotting and interactive graphics</p></li>
 <li><p><a class="reference external" href="https://jupyter.org/">jupyter</a>/IPython notebooks encourage reproducible research</p></li>
 <li><p><a class="reference external" href="https://jupyter.org/">anaconda</a> distribution and package management system</p></li>
 </ul>
-<center><p><img alt="2890e66f185747d4bd64ed669ca85abe" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
+<center><p><img alt="b9d6f99fe520402fb128ee9f092aa72b" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
 </center><p><a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a></p>
 <p># Atomic Simulation Environment (ASE)</p>
 <ul class="simple">
 <li><p>Within atomistic modelling, emerging standard for scripting interfaces is ASE</p></li>
-<li><p>Wide range of calculators, flexible (but not too flexible) data model for Atoms objects</p></li>
+<li><p>Wide range of calculators, very similar data model for Atoms objects to QUIP</p></li>
 <li><p>Can use many codes as drop-in replacements:</p></li>
 </ul>
-<center><p><img alt="f2b247217d7a4d3f8bd7b2e0bd47917e" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
+<center><p><img alt="df0dc2269c554ffc8e9dbf5c0cb052f9" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
 </center><p><a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a></p>
 </section>
-<section id="Demo:-analysing-GAP-models-with-predictive-variance">
-<h1>Demo: analysing GAP models with predictive variance<a class="headerlink" href="#Demo:-analysing-GAP-models-with-predictive-variance" title="Permalink to this headline">¶</a></h1>
+<section id="quippy-demo:-analysing-GAP-models-with-predictive-variance">
+<h1><code class="docutils literal notranslate"><span class="pre">quippy</span></code> demo: analysing GAP models with predictive variance<a class="headerlink" href="#quippy-demo:-analysing-GAP-models-with-predictive-variance" title="Permalink to this headline">¶</a></h1>
 <p>As well as energy, force and virial stress, GAP potentials can be used to predict the uncertainty in the local energy due to limited training data by passing the <code class="docutils literal notranslate"><span class="pre">local_gap_variance</span></code> calculation argument, either when constructing the potential or for specific calls.</p>
 <p>We can use this to understand when and where more training data is needed. Let’s try it out near a vacancy. First we build a bulk cell and relax it to get the correct lattice constant:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -797,7 +797,7 @@ lmp_mpi &lt; lammps.in
 <span class="n">opt</span> <span class="o">=</span> <span class="n">PreconLBFGS</span><span class="p">(</span><span class="n">ecf</span><span class="p">,</span> <span class="n">precon</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># too small for preconditioning</span>
 <span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span> <span class="c1"># optimize cell and positions (although positions won&#39;t change here)</span>
 <span class="n">a0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">si</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">e0</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">si</span><span class="p">)</span> <span class="c1"># ground state energy per atom</span>
+<span class="n">e0</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">si</span><span class="p">)</span> <span class="c1"># ground state energy per atom®</span>
 </pre></div>
 </div>
 </div>
@@ -806,13 +806,13 @@ lmp_mpi &lt; lammps.in
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PreconLBFGS:   0  15:00:50    -1305.407858       0.0000       0.0097
-PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
+PreconLBFGS:   0  14:26:21    -1305.407858       0.0000       0.0097
+PreconLBFGS:   1  14:26:23    -1305.421024       0.0000       0.0003
 </pre></div></div>
 </div>
 <p>Now we make a supercell, choose an atom near the centre and delete it:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -820,7 +820,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <span class="n">si_vac</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">pot</span>
 
 <span class="c1"># find an atom near the middle of the cell and delete it</span>
-<span class="n">vac_idx</span> <span class="o">=</span> <span class="p">((</span><span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">si_vac</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="n">vac_idx</span> <span class="o">=</span> <span class="p">((</span><span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">si_vac</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
 <span class="n">vac_pos</span> <span class="o">=</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">positions</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
 <span class="k">del</span> <span class="n">si_vac</span><span class="p">[</span><span class="n">vac_idx</span><span class="p">]</span>
 
@@ -830,16 +830,38 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <span class="n">local_energy</span> <span class="o">=</span> <span class="n">si_vac</span><span class="o">.</span><span class="n">get_potential_energies</span><span class="p">()</span> <span class="o">-</span> <span class="n">e0</span> <span class="c1"># get the per-atom energies</span>
 
 <span class="c1"># additional quantities returned by the Potential are stored in `extra_results` dictionary</span>
-<span class="n">local_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_gap_variance&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="c1"># to meV</span>
+<span class="n">local_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">extra_results</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;local_gap_variance&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="c1"># convert to meV</span>
+<span class="n">local_sigma</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([1.09028249, 1.06446493, 1.08042361, 1.09726393, 1.04964909,
+       1.07696073, 1.04253642, 1.05756564, 1.07986555, 1.21075713,
+       1.08904488, 1.06067924, 1.03184873, 1.0483741 , 1.50264259,
+       8.82800571, 1.13526427, 1.07445902, 1.06308149, 1.05085032,
+       1.36672006, 7.41051599, 1.07830702, 1.05714689, 1.07577689,
+       1.11775393, 1.02777397, 1.03472811, 1.37581384, 1.07758179,
+       1.40593821, 1.11762489, 1.02609731, 1.0472251 , 1.6245512 ,
+       9.00662199, 1.07141401, 1.07419136, 1.04675406, 1.09336236,
+       1.02187833, 1.09920161, 1.635866  , 1.07518514, 1.03719514,
+       1.035885  , 1.60476878, 1.11706124, 1.03425407, 1.09399015,
+       1.33701387, 1.06056646, 1.55086343, 1.16445632, 1.08280879,
+       1.07055096, 8.81939969, 1.39563815, 1.07894506, 1.62557041,
+       1.13917427, 1.38065722, 1.03189404])
+</pre></div></div>
+</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># plotting code hidden</span>
+<span></span><span class="c1"># plot predicted errors</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
 
@@ -860,16 +882,16 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_23_0.png" src="../_images/Tutorials_CCP5-June-2021_23_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_22_0.png" src="../_images/Tutorials_CCP5-June-2021_22_0.png" />
 </div>
 </div>
-<p>Unsurprisingly, the predicted errors rise in the vicinity of the vacancy; even though vacancies are accurately predicted by this GAP model, they are still less well covered by the training database than bulk-like configurations.</p>
+<p>Unsurprisingly, the predicted errors rise near the vacancy; even though vacancies are accurately predicted by this GAP model, they are still less well covered by the training database than bulk-like configurations.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># hide plotting code</span>
+<span></span><span class="c1"># plot local_energy vs local_sigma</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">local_energy</span><span class="p">,</span> <span class="n">local_sigma</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">local_energy</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
@@ -882,7 +904,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_25_0.png" src="../_images/Tutorials_CCP5-June-2021_25_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_24_0.png" src="../_images/Tutorials_CCP5-June-2021_24_0.png" />
 </div>
 </div>
 </section>
@@ -890,8 +912,8 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <h1>Atomic Environment Descriptors<a class="headerlink" href="#Atomic-Environment-Descriptors" title="Permalink to this headline">¶</a></h1>
 <p>The descriptors used for training GAP models are also available through the <code class="docutils literal notranslate"><span class="pre">quippy</span></code> Python wrapper (and also through the <code class="docutils literal notranslate"><span class="pre">quip</span></code> command line tool, if you prefer). This is very useful for interactive analysis or for prototyping new approaches before implementing them in Fortran.</p>
 <p>For example, to compare the atoms in our vacancy structure with one another and also with a very different structure (fcc), we can use the <code class="docutils literal notranslate"><span class="pre">Descriptor</span></code> wrapper class:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -907,14 +929,24 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 
 <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">D1</span><span class="p">,</span> <span class="n">D2</span><span class="p">]</span> <span class="c1"># stack arrays in shape N_atoms x N_desc</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_vac</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">si_fcc</span><span class="p">))</span>
+<span class="n">D</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(90, 547)
+</pre></div></div>
 </div>
 <p>The kernel matrix can be computed from the descriptor arrays via</p>
 <div class="math notranslate nohighlight">
 \[K_{ij} = [(D D^T)]_{ij}^\zeta\]</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -928,37 +960,32 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_29_0.png" src="../_images/Tutorials_CCP5-June-2021_29_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_28_0.png" src="../_images/Tutorials_CCP5-June-2021_28_0.png" />
 </div>
 </div>
 </section>
 <section id="Kernel-PCA">
 <h1>Kernel PCA<a class="headerlink" href="#Kernel-PCA" title="Permalink to this headline">¶</a></h1>
-<p>We can use this kernel matrix between atomic environments to perform kernel principal component analysis to map out clusters of similar environments</p>
+<p>We can use this kernel matrix to map environments:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eigh</span>
-
-<span class="c1"># centre K</span>
-<span class="n">N</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">one_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="o">/</span> <span class="n">N</span>
-<span class="n">K</span> <span class="o">=</span> <span class="n">K</span> <span class="o">-</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">-</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span> <span class="o">+</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span>
-
-<span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+<span></span><span class="n">N</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">one_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">))</span> <span class="o">/</span> <span class="n">N</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">K</span> <span class="o">-</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">-</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span> <span class="o">+</span> <span class="n">one_n</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">one_n</span> <span class="c1"># centre K</span>
+<span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
 <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigvecs</span> <span class="o">=</span> <span class="n">eigvals</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">eigvecs</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># reverse order</span>
 <span class="n">X_pca</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[[</span><span class="n">eigvecs</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]]</span>   <span class="c1"># select first 2 components</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># hide plotting code</span>
+<span></span><span class="c1"># plot kPCA map</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">X_pca</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Diamond&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">],</span> <span class="n">X_pca</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;FCC&#39;</span><span class="p">)</span>
@@ -972,16 +999,16 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_32_0.png" src="../_images/Tutorials_CCP5-June-2021_32_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_31_0.png" src="../_images/Tutorials_CCP5-June-2021_31_0.png" />
 </div>
 </div>
 <p>If we zoom in just on the diamond configurations, and see that the kPCA also identifies the atoms near the vacancy as outliers</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># hide plotting code</span>
+<span></span><span class="c1"># plot zoomed in kPCA map</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">X_pca</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">local_energy</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Local energy $e-e_0$ / eV&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;kPCA component 1&#39;</span><span class="p">)</span>
@@ -995,7 +1022,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_34_0.png" src="../_images/Tutorials_CCP5-June-2021_34_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_33_0.png" src="../_images/Tutorials_CCP5-June-2021_33_0.png" />
 </div>
 </div>
 </section>
@@ -1004,7 +1031,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <p>Sometimes it’s useful to get interactive access to Fortran arrays, for example the tight binding Hamiltonian and Overlap matrices, either for post-processing, training other models or simply during debugging. The <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code>-generated interface makes this possible, but it helps to have knowledge of the underlying Fortran code to know where to look.</p>
 <p>Here we do this just at the <span class="math notranslate nohighlight">\(\Gamma\)</span>-point, but the complex-valued <span class="math notranslate nohighlight">\(H\)</span> and <span class="math notranslate nohighlight">\(S\)</span> at all <span class="math notranslate nohighlight">\(k-\)</span>points are also available (as are their derivatives, needed for computing forces).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1026,11 +1053,11 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># show Hamiltonian and Overlap matrices</span>
+<span></span><span class="c1"># visualise Hamiltonian and Overlap matrices</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">mat</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="p">[</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Hamiltonian&#39;</span><span class="p">,</span> <span class="s1">&#39;Overlap&#39;</span><span class="p">]):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -1042,32 +1069,29 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_37_0.png" src="../_images/Tutorials_CCP5-June-2021_37_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_36_0.png" src="../_images/Tutorials_CCP5-June-2021_36_0.png" />
 </div>
 </div>
 <section id="Post-processing-example:-density-of-states">
 <h2>Post-processing example: density of states<a class="headerlink" href="#Post-processing-example:-density-of-states" title="Permalink to this headline">¶</a></h2>
-<p>Given <span class="math notranslate nohighlight">\(H\)</span> and <span class="math notranslate nohighlight">\(S\)</span>, we can look solve the eigenvalue problem</p>
-<div class="math notranslate nohighlight">
-\[H \phi_i = \epsilon_i S \phi_i\]</div>
-<p>and use the results to plot the bandstructure or the density of states.</p>
+<p>Given <span class="math notranslate nohighlight">\(H\)</span> and <span class="math notranslate nohighlight">\(S\)</span>, we can solve the eigenvalue problem <span class="math notranslate nohighlight">\(H \phi_i = \epsilon_i S \phi_i\)</span> and plot the bandstructure or DoS</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">E</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">eigh</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span></span><span class="n">E_vac</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
 <span class="n">E_F</span> <span class="o">=</span> <span class="n">tb_pot</span><span class="o">.</span><span class="n">_quip_potential</span><span class="o">.</span><span class="n">simple</span><span class="o">.</span><span class="n">tb</span><span class="o">.</span><span class="n">fermi_e</span> <span class="c1"># extract Fermi energy from inside QUIP</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Density of states plot</span>
-<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">E</span> <span class="o">-</span> <span class="n">E_F</span><span class="p">,</span> <span class="n">bw_method</span><span class="o">=</span><span class="mf">0.07</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">E_vac</span> <span class="o">-</span> <span class="n">E_F</span><span class="p">,</span> <span class="n">bw_method</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Vacancy&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Energy $\epsilon - \epsilon_F$ / eV&#39;</span><span class="p">);</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;DOS&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">);</span>
@@ -1078,7 +1102,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/Tutorials_CCP5-June-2021_40_0.png" src="../_images/Tutorials_CCP5-June-2021_40_0.png" />
+<img alt="../_images/Tutorials_CCP5-June-2021_39_0.png" src="../_images/Tutorials_CCP5-June-2021_39_0.png" />
 </div>
 </div>
 </section>
@@ -1093,53 +1117,16 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
 <li><p><a class="reference external" href="https://github.com/libAtoms/pymatnest">pymatnest</a> is a package for carrying out nested sampling to explore the energy landscape of materials. It has efficient interfaces to both QUIP and LAMMPS.</p></li>
 </ul>
 </section>
-<section id="Interoperability-with-Julia">
-<h1>Interoperability with Julia<a class="headerlink" href="#Interoperability-with-Julia" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><p>Growing interest in Julia to solve the “two-language problem” of efficiency vs. expressability. Multiple dispatch paradigm also provides excellent composability.</p></li>
-<li><p>Rewriting codes is a big job, although there’s already a quite complete pure Julia DFT code, <a class="reference external" href="https://github.com/JuliaMolSim/DFTK.jl">DFTK.jl</a></p></li>
-<li><p>To ease transition, Julia has excellent interoperabilty with Python packages via <a class="reference external" href="https://github.com/JuliaPy/PyCall.jl">PyCall.jl</a></p></li>
-<li><p>Christoph Ortner maintains <a class="reference external" href="https://github.com/JuliaMolSim/JuLIP.jl">JulIP.jl</a> which also has an <a href="#id3"><span class="problematic" id="id4">`interface to ASE &lt;&gt;`__</span></a> through which QUIP can be accessed, i.e. <code class="docutils literal notranslate"><span class="pre">&#64;pyimport</span> <span class="pre">quippy</span></code> and off you go.</p></li>
-<li><p>Across machine learning potential community, we see some recent developments such as Atomic Cluster Expansion (ACE) being directly implemented in Julia in <a class="reference external" href="https://github.com/ACEsuit/ACE.jl">ACE.jl</a>, although there’s also a C++ LAMMPS implementation via a new <a class="reference external" href="https://docs.lammps.org/pair_pace.html">pair_style pace</a>.</p></li>
-</ul>
-</section>
-<section id="Generalisation:-f90wrap-can-wrap-other-Fortran-codes">
-<h1>Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> can wrap other Fortran codes<a class="headerlink" href="#Generalisation:-f90wrap-can-wrap-other-Fortran-codes" title="Permalink to this headline">¶</a></h1>
-<p><img alt="dbcd4f7631034e89ad08a1bd440dfeae" src="../_images/f90wrap.png" /></p>
-<ul class="simple">
+<section id="Generalisation:-f90wrap-wraps-other-Fortran-codes">
+<h1>Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> wraps other Fortran codes<a class="headerlink" href="#Generalisation:-f90wrap-wraps-other-Fortran-codes" title="Permalink to this headline">¶</a></h1>
+<!-- <img src="f90wrap.png" align="left"> --><ul class="simple">
 <li><p>Writing deep Python interfaces ‘by hand’ is possible but tedious</p></li>
-<li><p>There are good automatic interface generators for C++ codes (e.g. SWIG or Boost.Python), but none support modern Fortran</p>
-<ul>
-<li><p>There’s still lots of high-quality Fortran code around…</p></li>
-<li><p><a class="reference external" href="https://sysbio.ioc.ee/projects/f2py2e/">f2py</a> scans Fortran 77/90/95 codes, generates Python interfaces for individual routines</p></li>
-<li><p>No support for modern Fortran features: derived types, overloaded interfaces</p></li>
-</ul>
-</li>
-<li><p>My <a class="reference external" href="https://github.com/jameskermode/f90wrap">f90wrap</a> package addresses this by generating an additional layer of wrappers, adding support for derived types, module data, efficient array access, Python 3.6+</p></li>
+<li><p>There are good automatic interface generators for C++ codes (e.g. SWIG or Boost.Python), but nothing support modern Fortran.</p></li>
+<li><p>NumPy’s <code class="docutils literal notranslate"><span class="pre">f2py</span></code> tool provides basic Fortran wrapping</p></li>
+<li><p>My <a class="reference external" href="https://github.com/jameskermode/f90wrap">f90wrap</a> package adds an additional layer of wrappers, giving support for derived types, module data, efficient array access</p></li>
 <li><p>As well as <code class="docutils literal notranslate"><span class="pre">quippy</span></code>, <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> provides a deep <a class="reference external" href="http://wrap.warwick.ac.uk/67696/2/18112256">Python interface</a> to CASTEP (named <code class="docutils literal notranslate"><span class="pre">CasPyTep</span></code>) which allows in-place modification of data, efficient continuation of electronic calculations , etc.</p></li>
 </ul>
-<p>J.R. Kermode, <a class="reference external" href="https://iopscience.iop.org/article/10.1088/1361-648X/ab82d2">f90wrap: an automated tool for constructing depp Python interfaces to modern fortran codes</a>, J. Phys.: Condens. Matter <strong>32</strong> 305901 (2020)</p>
-</section>
-<section id="Future-Roadmap">
-<h1>Future Roadmap<a class="headerlink" href="#Future-Roadmap" title="Permalink to this headline">¶</a></h1>
-<p>QUIP:</p>
-<ul class="simple">
-<li><p>QUIP’s primary use now is as for fitting and evaluating GAP models</p></li>
-<li><p>New high-level algorithms mostly best implemented generically in high-level languages (Python, and increasingly also Julia)</p></li>
-<li><p>New features restricted to code that is best written in Fortran for performance or convenience reasons</p></li>
-<li><p>Good example: development work ongoing by Sascha Klawohn (postdoc at Warwick within NOMAD project) to make <code class="docutils literal notranslate"><span class="pre">gap_fit</span></code> code data-parallel using ScaLAPACK to lift current memory constraints fitting potentials to large training databases</p></li>
-</ul>
-<p>More generally, adding deep scripting interfaces to C/Fortran codes can give them a new lease of life via:</p>
-<ul class="simple">
-<li><p>automating calculations, or connecting components in new ways</p></li>
-<li><p>provide interactive environment for testing, debugging, development and visualisation</p></li>
-<li><p>maximise overall efficiency through an appropriate mix of high- and low-level languages</p></li>
-<li><p>expand access to advanced feautures for less experienced programmers</p></li>
-<li><p>simplify top-level programs</p></li>
-<li><p>enable unit and regression testing framework</p></li>
-<li><p>encourage good software engineering in main code: modularity, well defined APIs</p></li>
-<li><p><em>But:</em> two-language problem remains: Julia may be providing a solution to this</p></li>
-</ul>
+<p>J.R. Kermode, <a class="reference external" href="https://iopscience.iop.org/article/10.1088/1361-648X/ab82d2">f90wrap: an automated tool for constructing deep Python interfaces to modern fortran codes</a>, J. Phys.: Condens. Matter <strong>32</strong> 305901 (2020)</p>
 </section>
 
 
@@ -1149,7 +1136,7 @@ PreconLBFGS:   1  15:00:51    -1305.421024       0.0000       0.0003
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="quippy-ase-interoperability.html" class="btn btn-neutral float-right" title="Interoperability with Atomic Simulation Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="index.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="overview.html" class="btn btn-neutral float-left" title="QUIP Overview Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
