@@ -46,7 +46,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
             
         print(command_line)
         stat = os.system('gap_fit '+command_line)
-        print('status', stat)
+        assert stat == 0
         
         tree = ET.parse('gp.xml')
         root = tree.getroot()
