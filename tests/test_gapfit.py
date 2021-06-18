@@ -371,7 +371,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
                         "energy_parameter_name=dft_energy force_parameter_name=dft_force "
                         "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
                         "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
-        os.system('gap_fit '+command_line)
+        # os.system('gap_fit '+command_line)
         
         tree = ET.parse('gp.xml')
         root = tree.getroot()
@@ -382,13 +382,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
         idx -= 1 # convert from one- to zero-based indexing
         alpha = np.array([float(tag.attrib['alpha']) for tag in root[1][1][0].findall('sparseX')])
         alpha = alpha[idx] # reorder correctly
-        
-        with open('alpha.txt', 'w') as f:
-            f.write(repr(alpha))
-        # print(alpha - alpha_ref)
-        # print(np.abs(alpha - alpha_ref).max())
-        print(np.abs((alpha - alpha_ref) / alpha_ref).max())
-        assert np.abs((alpha - alpha_ref) / alpha_ref).max() < 1e-2
+        assert np.abs((alpha - alpha_ref) / alpha_ref).max() < 1e-5
         
         pot = Potential(f'xml_label={gp_label}', param_filename='gp.xml')
         
@@ -405,30 +399,12 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
             # check for consistency with reference GAP model        
             assert abs(atoms.info['gap_energy'] - energy) < 1e-6        
             assert np.abs(atoms.arrays['gap_forces'] - forces).max() < 1e-6
-
-            # check error wrt training data
-            de = abs(energy - info['dft_energy']) / len(atoms)
-            print(de)
-            # assert de < 5e-3
-            
-            df = np.sqrt(((forces - arrays['dft_force'])**2).mean())
-            print(df)
-            # assert df < 0.5
             
             if 'dft_virial' in atoms.info:
-                stress = atoms.get_stress()        
+                stress = atoms.get_stress()
                 virial = - voigt_6_to_full_3x3_stress(stress * atoms.get_volume())
                 atoms.info['gap_virial'] = virial
-                assert np.abs(atoms.info['gap_virial'] - virial).max() < 1e-6
-                
-                dft_virial = info['dft_virial'].reshape((3, 3), order='F')
-                dv = np.sqrt(((virial - dft_virial)**2).mean())
-                print(dv)
-                # assert dv < 10.0
-                
-        # from ase.io import write
-        # write('dump.xyz', dataset)
-
+                assert np.abs(atoms.info['gap_virial'] - virial).max() < 1e-6                
 
 if __name__ == '__main__':
     unittest.main()
