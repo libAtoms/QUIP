@@ -29,7 +29,7 @@ from ase.constraints import voigt_6_to_full_3x3_stress
 from ase.io import read
 
 # fixed set of sparse points for training
-sparse_points = [
+si_sparse_points = [
     1, 2, 3, 4, 5, 8, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 29, 30, 
     33, 34, 35, 36, 37, 38, 43, 44, 46, 47, 48, 49, 50, 51, 53, 54, 57, 61, 62,
     63, 64, 65, 66, 68, 70, 71, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 85, 
@@ -102,7 +102,7 @@ sparse_points = [
 
 
 # expected fit coefficients
-alpha_ref = np.array([
+si_alpha_ref = np.array([
        -2.26193663e-02, -1.08708205e+02, -9.30717291e+02, -2.03422539e+02,
        -1.08696877e+02,  2.03893013e+03,  4.77583523e+02, -2.15857386e+02,
        -5.63593208e+02,  2.07441453e+02, -2.49197320e+02, -6.31874413e+02,
@@ -355,22 +355,13 @@ alpha_ref = np.array([
        -2.86845039e+03, -1.50057377e+02, -1.27052860e+03,  1.42613901e-01])
 
 @unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
-class TestGAP_fit_silion(quippytest.QuippyTestCase):
+class TestGAP_fit(quippytest.QuippyTestCase):
     
-    def test_gap_fit(self):
+    def check_gap_fit(self, command_line, sparse_points, alpha_ref, training_filename):
     
         with open('sparse_file', 'w') as fh:
             for sp in sparse_points:
-                fh.write(f'{sp}\n')
-                
-        command_line = ("at_file=train_sub3.xyz gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
-                        "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
-                        "n_sparse=1000 delta=3.0 f0=0.0 covariance_type=dot_product "
-                        "sparse_method=index_file sparse_file=sparse_file} "
-                        "default_sigma={0.001 0.1 0.05 0.0} "
-                        "energy_parameter_name=dft_energy force_parameter_name=dft_force "
-                        "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-                        "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
+                fh.write(f'{sp}\n')                
         os.system('gap_fit '+command_line)
         
         tree = ET.parse('gp.xml')
@@ -386,7 +377,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
         
         pot = Potential(f'xml_label={gp_label}', param_filename='gp.xml')
         
-        dataset = read('train_sub3.xyz@:')
+        dataset = read(f'{training_filename}@:')
         for atoms in dataset:
             atoms.calc = pot
             info = {k.lower(): v for k, v in atoms.info.items() }
@@ -404,7 +395,18 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
                 stress = atoms.get_stress()
                 virial = - voigt_6_to_full_3x3_stress(stress * atoms.get_volume())
                 atoms.info['gap_virial'] = virial
-                assert np.abs(atoms.info['gap_virial'] - virial).max() < 1e-6                
+                assert np.abs(atoms.info['gap_virial'] - virial).max() < 1e-6
+
+    def test_gap_fit_silicon(self):
+        command_line = ("at_file=train_sub3.xyz gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
+                        "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
+                        "n_sparse=1000 delta=3.0 f0=0.0 covariance_type=dot_product "
+                        "sparse_method=index_file sparse_file=sparse_file} "
+                        "default_sigma={0.001 0.1 0.05 0.0} "
+                        "energy_parameter_name=dft_energy force_parameter_name=dft_force "
+                        "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
+                        "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
+        self.check_gap_fit(command_line, si_sparse_points, si_alpha_ref, 'train_sub3.xyz')
 
 if __name__ == '__main__':
     unittest.main()
