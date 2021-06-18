@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Motivation &mdash; quippy 920a6a3+ documentation</title>
+  <title>Motivation &mdash; quippy 39e3530+ documentation</title>
   
 
   
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                920a6a3+
+                39e3530+
               </div>
             
           
@@ -121,6 +121,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#Standalone-QUIP-usage">Standalone QUIP usage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Usage-with-LAMMPS">Usage with LAMMPS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Using-QUIP-with-Python-and-the-Atomic-Simulation-Environment">Using QUIP with Python and the Atomic Simulation Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Atomic-Simulation-Environment-(ASE)">Atomic Simulation Environment (ASE)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quippy-demo:-analysing-GAP-models-with-predictive-variance"><code class="docutils literal notranslate"><span class="pre">quippy</span></code> demo: analysing GAP models with predictive variance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Atomic-Environment-Descriptors">Atomic Environment Descriptors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Kernel-PCA">Kernel PCA</a></li>
@@ -487,13 +488,13 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<center><p><img alt="27424c7aa6094b709fe245001bb903f5" src="../_images/warwick-logo.png" /></p>
+<center><p><img alt="6bba9139218240fd8be7927e9b4e360a" src="../_images/warwick-logo.png" /></p>
 <h1><p>Quantum Mechanics and Interatomic Potentials – the QUIP code</p>
 </h1><h3><p>James Kermode</p>
 </h3><p>Warwick Centre for Predictive Modelling / School of Engineering University of Warwick</p>
 <h4><p>CCP5++ Software Seminar - 17th June 2021</p>
-</h4><table bgcolor="#ffffff"><tr><td><p><img alt="c5cfe37ece08496ab06c2d4feb2e7b4c" class="no-scaled-link" src="../_images/WCPM_logo_text.png" style="width: 100%;" /></p>
-</td><td><p><img alt="8edc7a6631094235aa22554e7d26bdd2" class="no-scaled-link" src="../_images/hybrid.png" style="width: 100%;" /></p>
+</h4><table bgcolor="#ffffff"><tr><td><p><img alt="654df21957b94cc5925aad3fa76371e7" class="no-scaled-link" src="../_images/WCPM_logo_text.png" style="width: 100%;" /></p>
+</td><td><p><img alt="1846601201714de5900e8fe1021512b8" class="no-scaled-link" src="../_images/hybrid.png" style="width: 100%;" /></p>
 </td></tr></table></center><p><em>These slides will subsequently be made available at https://libatoms.github.io/QUIP/Tutorials</em></p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
@@ -546,7 +547,7 @@ div.rendered_html tbody tr:hover {
 </ul>
 </li>
 </ul>
-<center><p><img alt="46d5f09ba79241a7807bdcc05f2085e7" class="no-scaled-link" src="../_images/multiscale.png" style="width: 80%;" /></p>
+<center><p><img alt="b05de22aecb24e949f87c6c17d87efb2" class="no-scaled-link" src="../_images/multiscale.png" style="width: 80%;" /></p>
 </center><p><em>Image credit: Gábor Csányi</em></p>
 </section>
 <section id="The-QUIP-code">
@@ -759,15 +760,17 @@ lmp_mpi &lt; lammps.in
 <li><p><a class="reference external" href="https://jupyter.org/">jupyter</a>/IPython notebooks encourage reproducible research</p></li>
 <li><p><a class="reference external" href="https://jupyter.org/">anaconda</a> distribution and package management system</p></li>
 </ul>
-<center><p><img alt="b9d6f99fe520402fb128ee9f092aa72b" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
+<center><p><img alt="f6786708bc4748eeab5683aba17497cb" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
 </center><p><a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a></p>
-<p># Atomic Simulation Environment (ASE)</p>
+</section>
+<section id="Atomic-Simulation-Environment-(ASE)">
+<h1>Atomic Simulation Environment (ASE)<a class="headerlink" href="#Atomic-Simulation-Environment-(ASE)" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p>Within atomistic modelling, emerging standard for scripting interfaces is ASE</p></li>
 <li><p>Wide range of calculators, very similar data model for Atoms objects to QUIP</p></li>
 <li><p>Can use many codes as drop-in replacements:</p></li>
 </ul>
-<center><p><img alt="df0dc2269c554ffc8e9dbf5c0cb052f9" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
+<center><p><img alt="330728fdf5d14ca8bd250540d83d17f2" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
 </center><p><a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a></p>
 </section>
 <section id="quippy-demo:-analysing-GAP-models-with-predictive-variance">
