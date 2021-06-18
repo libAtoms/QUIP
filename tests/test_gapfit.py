@@ -371,7 +371,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
                         "energy_parameter_name=dft_energy force_parameter_name=dft_force "
                         "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
                         "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
-#        os.system('gap_fit '+command_line)
+        os.system('gap_fit '+command_line)
         
         tree = ET.parse('gp.xml')
         root = tree.getroot()
@@ -398,9 +398,9 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
             info = {k.lower(): v for k, v in atoms.info.items() }
             arrays = {k.lower(): v for k, v in atoms.arrays.items() }
             energy = atoms.get_potential_energy()
-            # atoms.info['gap_energy'] = energy
+            atoms.info['gap_energy'] = energy
             forces = atoms.get_forces()
-            # atoms.arrays['gap_forces'] = forces        
+            atoms.arrays['gap_forces'] = forces        
 
             # check for consistency with reference GAP model        
             assert abs(atoms.info['gap_energy'] - energy) < 1e-6        
@@ -418,7 +418,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
             if 'dft_virial' in atoms.info:
                 stress = atoms.get_stress()        
                 virial = - voigt_6_to_full_3x3_stress(stress * atoms.get_volume())
-                # atoms.info['gap_virial'] = virial
+                atoms.info['gap_virial'] = virial
                 assert np.abs(atoms.info['gap_virial'] - virial).max() < 1e-6
                 
                 dft_virial = info['dft_virial'].reshape((3, 3), order='F')
