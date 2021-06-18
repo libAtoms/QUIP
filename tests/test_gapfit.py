@@ -371,7 +371,7 @@ class TestGAP_fit_silion(quippytest.QuippyTestCase):
                         "energy_parameter_name=dft_energy force_parameter_name=dft_force "
                         "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
                         "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
-        # os.system('gap_fit '+command_line)
+        os.system('gap_fit '+command_line)
         
         tree = ET.parse('gp.xml')
         root = tree.getroot()
