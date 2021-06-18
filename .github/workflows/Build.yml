@@ -31,12 +31,11 @@ jobs:
           submodules: 'recursive'
 
       # Runs a set of commands using the runners shell
-      - name: Build and test QUIP
+      - name: Build QUIP
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
         run: |
-          export 
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
@@ -47,6 +46,12 @@ jobs:
           make libquip
           make quippy
           make install-quippy
+
+      - name: Test QUIP
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+        run: |
           ulimit -n 256
           make test
 
