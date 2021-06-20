@@ -14,13 +14,12 @@ jobs:
       
       - name: Build libraries
         id: build-libs
-        
-        if [ ${ matrix.os == 
-        
-        echo ::set-output name=match::${QUIP_ARCH}
+        run : |
+          QUIP_ARCH=linux_x86_64_gfortran_openmp
+          echo ::set-output name=quip_arch::${QUIP_ARCH}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.build-lbs.quip_arch }}
+        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.build-libs.quip_arch }}
         env:
            CIBW_SKIP: cp27-* cp35-*
            CIBW_ARCHS_LINUX: "auto64"
