@@ -42,7 +42,7 @@ CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 # The following files will be wrapped
 LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95 nye_tensor.f95
 POT_SOURCES =  Potential.f95 Potential_simple.f95
-ifeq (${HAVE_GAP},1)
+ifeq (${HAVE_TB},1)
 	POT_SOURCES += TB.f95
 endif
 GAP_SOURCES =  descriptors.f95
