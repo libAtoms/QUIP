@@ -218,24 +218,24 @@ subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
   
   implicit none
 
-  integer,                          intent(in)            :: N
-  real(dp),         dimension(3,N), intent(in)            :: frac_pos
-  real(dp),         dimension(3,3), intent(in)            :: lattice
-  character(len=3), dimension(N),   intent(in)            :: symbol
-  integer,                          intent(in)            :: quip_param_file_len
-  character(len=quip_param_file_len)                      :: quip_param_file
-  integer,                          intent(in)            :: init_args_str_len
-  character(len=init_args_str_len)                        :: init_args_str
-  integer,                          intent(in)            :: calc_args_str_len
-  character(len=calc_args_str_len)                        :: calc_args_str
-  real(dp),                         intent(out)           :: energy
-  real(dp),         dimension(3,N), intent(out)           :: force
-  real(dp),         dimension(3,3), intent(out)           :: virial
-  logical,                          intent(in)            :: do_energy
-  logical,                          intent(in)            :: do_force
-  logical,                          intent(in)            :: do_virial
-  integer,                          intent(in),  optional :: output_unit
-  logical,                          intent(in),  optional :: reload_pot                ! reloads the potential
+  integer,                            intent(in)  :: N
+  real(dp),         dimension(3,N),   intent(in)  :: frac_pos
+  real(dp),         dimension(3,3),   intent(in)  :: lattice
+  character(len=3), dimension(N),     intent(in)  :: symbol
+  integer,                            intent(in)  :: quip_param_file_len
+  character(len=quip_param_file_len), intent(in)  :: quip_param_file
+  integer,                            intent(in)  :: init_args_str_len
+  character(len=init_args_str_len),   intent(in)  :: init_args_str
+  integer,                            intent(in)  :: calc_args_str_len
+  character(len=calc_args_str_len),   intent(in)  :: calc_args_str
+  real(dp),                           intent(out) :: energy
+  real(dp),         dimension(3,N),   intent(out) :: force
+  real(dp),         dimension(3,3),   intent(out) :: virial
+  logical,                            intent(in)  :: do_energy
+  logical,                            intent(in)  :: do_force
+  logical,                            intent(in)  :: do_virial
+  integer,                            intent(in)  :: output_unit
+  logical,                            intent(in)  :: reload_pot            ! reloads the potential
 
   call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
      quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
