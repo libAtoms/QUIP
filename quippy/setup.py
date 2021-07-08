@@ -32,7 +32,7 @@ class my_build_ext(build_ext):
     def build_extension(self, ext):
         if not os.path.exists(os.path.dirname(self.get_ext_fullpath(ext.name))):
             os.makedirs(os.path.dirname(self.get_ext_fullpath(ext.name)))
-         shutil.copyfile(os.path.join(this_directory, f'quippy/_quippy{ext_suffix}'), self.get_ext_fullpath(ext.name))
+        shutil.copyfile(os.path.join(this_directory, f'quippy/_quippy{ext_suffix}'), self.get_ext_fullpath(ext.name))
 
 setup(
     name='quippy-ase',
