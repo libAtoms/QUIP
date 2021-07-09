@@ -28,6 +28,10 @@ this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+# binary exectuables to bundle with distribution
+package_data_files = ['quip', 'libquip.a']
+if os.path.exists('gap_fit'):
+    package_data_files.append('gap_fit')
 class my_build_ext(build_ext):
     def build_extension(self, ext):
         if not os.path.exists(os.path.dirname(self.get_ext_fullpath(ext.name))):
@@ -64,7 +68,7 @@ setup(
     install_requires=['numpy>=1.13', 'f90wrap>=0.2.6', 'ase>=3.17.0'],
     python_requires=">=3.6",
     packages=['quippy'],
-    package_data={'quippy': ['gap_fit', 'quip']},
+    package_data={'quippy': package_data_files},
     cmdclass={'build_ext': my_build_ext },
     ext_modules=[Extension('quippy._quippy', [])],
     entry_points={
