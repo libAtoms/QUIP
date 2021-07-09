@@ -69,6 +69,7 @@ setup(
     ext_modules=[Extension('quippy._quippy', [])],
     entry_points={
         'console_scripts': ['gap_fit=quippy.cli:gap_fit',
-                            'quip=quippy.cli:quip']
+                            'quip=quippy.cli:quip',
+                            'quip-config=quippy.cli:quip_config']
     }
 )
