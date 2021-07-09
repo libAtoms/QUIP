@@ -108,11 +108,12 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
 
-_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
+quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
 		-L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
+	mv _quippy${EXT_SUFFIX} quippy/
 
-build: f90wrap _quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
+build: f90wrap quippy/_quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
 	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 

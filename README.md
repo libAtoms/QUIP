@@ -235,11 +235,14 @@ to get up and running quickly.
     the types of interatomic potentials (IP) that are available.
 
 7.  To compile the Python wrappers (`quippy`), the minimum requirements
-    are:
+    are as follows. `f90wrap` will be installed automatically by the build
+    process, but you might need to check that the directory where `pip`
+    installs executuable scripts to is on your path (e.g. by setting
+    `PATH=~/.local/bin:$PATH`).
     - Python 3
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
-    - [f90wrap](https://github.com/jameskermode/f90wrap) - please use the exact version linked in `src/f90wrap` submodule, which can be installed as described below, rather than the released version that would be obtained with `pip install f90wrap`
+    - [f90wrap](https://github.com/jameskermode/f90wrap)
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
@@ -248,12 +251,6 @@ to get up and running quickly.
     (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of
     your virtual environment) _before_ building `quippy` (otherwise library
     versions may cause unexpected conflicts).
-
-    The required version of `f90wrap` can be installed with:
-    ```bash
-    git submodule update --init --recursive
-    pip install src/f90wrap
-    ```
     
 9.  To compile the Python wrappers (`quippy`), run::
     ```bash
@@ -295,17 +292,17 @@ to get up and running quickly.
 
 # Developer notes:
 
-## Fixing/updating the version of GAP or f90wrap:
+## Fixing/updating the version of GAP:
 
   ```bash
-  cd src/GAP # or src/f90wrap
+  cd src/GAP
   ```
   ```bash 
   git checkout <commit> 
   ```
   OR 
   ```bash 
-  git checkout main # or master, in case of f90wrap
+  git checkout main
 
   ```
   Updating the version in the `QUIP` repository:
