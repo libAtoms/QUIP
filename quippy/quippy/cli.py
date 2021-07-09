@@ -16,10 +16,10 @@ def quip():
 
 def quip_config():
     parser = argparse.ArgumentParser(description='Configuration tool for QUIP')
-    parser.add_argument('libs', action='store_true', help="Arguments to link to libquip")
+    parser.add_argument('--libs', action='store_true', help="Arguments to link to libquip")
     args = parser.parse_args()
     
     if args.libs:        
         libdir = quippy.__path__[0]
-        print(f'-L$libdir -lquip')
+        print(f'-L{libdir} -lquip')
     
