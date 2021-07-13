@@ -1,0 +1,46 @@
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# HQ X
+# H0 X   libAtoms+QUIP: atomistic simulation library
+# HQ X
+# HQ X   Portions of this code were written by
+# HQ X     Tamas K. Stenczel
+# HQ X
+# HQ X   Copyright 2021
+# HQ X
+# HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# ACRHER2 computer cluster, United Kingdom
+#
+# recommended modules to use with this:
+# - GNU compilers version 9, python and FFTW
+# - obtain these with the following on Archer2
+#
+# module restore PrgEnv-gnu
+# module load gcc/9.3.0
+# module load cray-fftw
+# module load cray-python
+
+
+
+# declarations
+
+include arch/Makefile.linux_x86_64_gfortran
+
+# compiler settings, make sure this is GNU!
+F77 = ftn
+F90 = ftn
+F95 = ftn
+CC = cc
+CPLUSPLUS = cc
+LINKER = ftn
+
+# OpenMP
+DEFINES += -D_OPENMP
+F95FLAGS += -fopenmp
+F77FLAGS += -fopenmp
+CFLAGS += -fopenmp
+LINKOPTS += -fopenmp
+
+QUIPPY_F90FLAGS += -fopenmp
+QUIPPY_CFLAGS += -fopenmp
+QUIPPY_LDFLAGS += -fopenmp
