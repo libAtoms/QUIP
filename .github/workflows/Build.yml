@@ -1,0 +1,72 @@
+name: Build
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the public branch
+  push:
+    branches: [ public ]
+  pull_request:
+    branches: [ public ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [linux_x86_64_gfortran, linux_x86_64_gfortran_openmp]
+        have_gap: [0, 1]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+
+      # Runs a set of commands using the runners shell
+      - name: Build QUIP
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
+            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
+            python-numpy
+          mkdir -p build/${QUIP_ARCH}
+          cp .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+          make
+          make libquip
+          make quippy
+          make install-quippy
+
+      - name: Test QUIP
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+        run: |
+          ulimit -n 256
+          make test
+
+      - name: Build documentation  
+        if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1
+        run: |
+          sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
+          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2
+          pip install nbconvert[execute] ipython
+          cd doc
+          make html
+          
+      - name: Deploy documentation
+        uses: peaceiris/actions-gh-pages@v3
+        if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: doc/_build/html    

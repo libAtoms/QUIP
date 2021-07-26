@@ -117,11 +117,11 @@ include 'mpif.h'
      end function quippy_running
   end interface quippy_running
 
-  interface quippy_error_abort
-     subroutine quippy_error_abort(message)
+  interface f90wrap_abort
+     subroutine f90wrap_abort(message)
        character(*), intent(in) :: message
-     end subroutine quippy_error_abort
-  end interface quippy_error_abort
+     end subroutine f90wrap_abort
+  end interface f90wrap_abort
 
   public :: error_abort
   interface error_abort
@@ -305,7 +305,7 @@ contains
     integer::PRINT_ALWAYS
 #endif
 
-    if (quippy_running()) call quippy_error_abort(message)
+    if (quippy_running()) call f90wrap_abort(message)
 
 #ifdef _MPI
     write(unit=error_unit, fmt='(a,i0," ",a)') 'SYSTEM ABORT: proc=',error_mpi_myid,error_linebreak_string(trim(message),100)

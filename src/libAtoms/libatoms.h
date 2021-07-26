@@ -51,7 +51,7 @@
 #define c_mem_info_ c_mem_info
 #define register_callbackpot_sub_ register_callbackpot_sub
 #define call_callbackpot_sub_ call_callbackpot_sub
-#define quippy_error_abort_ quippy_error_abort
+// #define quippy_error_abort_ quippy_error_abort
 #define c_push_error_with_info_ c_push_error_with_info
 #define c_push_error_ c_push_error
 #define c_error_abort_ c_error_abort

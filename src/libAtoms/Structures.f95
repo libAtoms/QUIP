@@ -38,6 +38,7 @@
 #include "error.inc"
 
 module  structures_module
+  use error_module
   use system_module
   use units_module
   use periodictable_module

@@ -40,8 +40,11 @@ CFLAGS = -fPIC ${QUIPPY_CFLAGS}
 
 
 # The following files will be wrapped
-LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95
-POT_SOURCES =  Potential.f95
+LIBATOMS_SOURCES =  Atoms_types.f95 Atoms.f95 System.f95 Dictionary.f95 DynamicalSystem.f95 nye_tensor.f95
+POT_SOURCES =  Potential.f95 Potential_simple.f95
+ifeq (${HAVE_TB},1)
+	POT_SOURCES += TB.f95
+endif
 GAP_SOURCES =  descriptors.f95
 
 LIBATOMS_FILES = $(addprefix ../../src/libAtoms/,${LIBATOMS_SOURCES})
@@ -51,60 +54,70 @@ GAP_FILES = $(addprefix ../../src/GAP/,${GAP_SOURCES})
 WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
 WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
 
+PROGRAMS = quip
 ifeq (${HAVE_GAP},1)
 	WRAP_SOURCES +=  ${GAP_SOURCES}
 	WRAP_FILES +=  ${GAP_FILES}
+	PROGRAMS += gap_fit
 endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
 
 F90WRAP_FILES = $(addsuffix .f90,$(addprefix f90wrap_,$(basename ${WRAP_SOURCES})))
 
-F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")]))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
+EXT_SUFFIX=$(shell ${PYTHON} -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
+PLATFORM=$(shell ${PYTHON} -c 'import sysconfig; print(sysconfig.get_platform()+"-"+sysconfig.get_python_version())')
 
-F90WRAP_PATH = $(shell ${PIP} show f90wrap | grep Location | sed -e 's/Location: //' -e 's/lib.*/bin/')
+F90WRAP_OBJS= $(addsuffix .o,$(basename ${F90WRAP_FILES})) src.${PLATFORM}/_quippymodule.o src.${PLATFORM}/src.${PLATFORM}/fortranobject.o
 
-F90WRAP = ${F90WRAP_PATH}/f90wrap
-F2PY_F90WRAP = ${F90WRAP_PATH}/f2py-f90wrap
+F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg in sys.argv if arg.startswith("-l") or arg.startswith("-L")] or arg == "-fopenmp"))' ${SYSLIBS} ${QUIPPY_LDFLAGS})
+
 
 #################################
-.PHONY: all build install clean
+.PHONY: all build install clean f90wrap
 
 
 all: build
 
+f90wrap:
+	${PIP} install "f90wrap>=0.2.6"
+
 clean:
-	rm -f _quippy.so _quippy.*.so ${F90WRAP_FILES} ${WRAP_FPP_FILES}
+	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
 	rm -f f90wrap_*.o
 	rm -rf src.*
 	rm -rf build dist quippy quippy.egg-info
 
 ${WRAP_FPP_FILES}: ${WRAP_FILES}
 	for f in ${WRAP_FILES}; do \
-	    echo ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
-	    ${FPP} -D'SIZEOF_FORTRAN_T=2' $$f > $$(basename $${f%.*}).fpp ; \
+	    echo ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
+	    ${FPP} ${DEFINES} $$f > $$(basename $${f%.*}).fpp ; \
 	done
 
-_quippy.so: ${WRAP_FPP_FILES}
-	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi	
+${F90WRAP_FILES}: ${WRAP_FPP_FILES}
+	@if [ ${HAVE_PYTHON3} != 1 ] ; then echo "make quippy: Error: python3 needed. current version: ${PY_VERSION}."; exit 1; fi
 	if [ -d "quippy" ] ; then rm -r quippy; fi
 	mkdir quippy
-	${F90WRAP} -m quippy ${WRAP_FPP_FILES} -P -a c_error_abort \
+	f90wrap -m quippy --f90-mod-name 'quippy._quippy' ${WRAP_FPP_FILES} -P -a c_error_abort \
 		--init-file ${QUIPPY_SRC_DIR}/init.py  --move-methods \
 		--shorten-routine-names -k ${QUIPPY_SRC_DIR}/KIND_MAP -s ${QUIPPY_SRC_DIR}/STRING_LENGTHS -S 10240 \
 		--skip atoms_shallowcopy atoms_initialise_ptr atoms_finalise_multi \
 		potential_initialise_inoutput cplx_2d  cplx_2d_array1_finalise \
-		--skip-types spherical_harmonics_type --force-public set_cutoff \
+                potential_local_e_mix_initialise potential_local_e_mix_finalise \
+                --skip-types spherical_harmonics_type potential_local_e_mix --force-public set_cutoff \
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
 
-	F90=${F90} ${F2PY_F90WRAP} --build-dir . -c -m _quippy ${F90WRAP_FILES} ${F2PY_LINK_ARGS} \
-		-L. -lquip ${QUIPPY_LIBS} --link-lapack --f90flags="${QUIPPY_F90FLAGS}" -lgomp
-	if [ -d "_quippy.so" ] ; then rm _quippy.so; fi
-	ln -s _quippy.*.so _quippy.so
+quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
+	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
+		-L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
+	mv _quippy${EXT_SUFFIX} quippy/
 
-build: _quippy.so ${QUIPPY_SRC_DIR}/quippy/*.py
+build: f90wrap quippy/_quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
+	${QUIP_ROOT}/bin/gitversion --hash-only > VERSION
 	cp -r ${QUIPPY_SRC_DIR}/quippy/*.py quippy
 
 install: build
-	${PYTHON} ../../quippy/setup.py install ${QUIPPY_INSTALL_OPTS}
+	cp ../../README.md ../../quippy/setup.py .
+	cp ${PROGRAMS} quippy/
+	${PIP} install ${QUIPPY_INSTALL_OPTS} .

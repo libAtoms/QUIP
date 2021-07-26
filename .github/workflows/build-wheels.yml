@@ -1,0 +1,40 @@
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-10.15]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Build libraries
+        id: build-libs
+        run : |
+          QUIP_ARCH=linux_x86_64_gfortran_openmp
+          echo ::set-output name=quip_arch::${QUIP_ARCH}
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.build-libs.quip_arch }}
+        env:
+           CIBW_SKIP: cp27-* cp35-*
+           CIBW_ARCHS_LINUX: "auto64"
+           CIBW_ARCHS_MACOS: "x86_64 arm64"           
+           CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
+           CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
+           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
+           CIBW_TEST_COMMAND: "cd {project}/tests; HAVE_GAP=1 python run_all.py -v"
+           
+      # Uncomment to get SSH access for testing
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 15
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl

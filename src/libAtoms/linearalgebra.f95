@@ -30,10 +30,10 @@
 
 !X
 !X  Linear algebra module
-!X  
+!X
 !%  This is a general purpose linear algebra module, extending
 !%  the Fortran intrinsics
-!%  This module defines dot products between matrices and vectors, 
+!%  This module defines dot products between matrices and vectors,
 !%  wrappers to \textsc{lapack} for matrix diagonalisation and inversion,
 !%  as well as array searching, sorting and averaging.
 !X
@@ -117,7 +117,7 @@ module linearalgebra_module
   public :: is_diagonal, integerDigits
   public :: make_hermitian
 
-  logical :: use_intrinsic_blas = .false. 
+  logical :: use_intrinsic_blas = .false.
   !% If set to true, use internal routines instead of \textsc{blas} calls for matrix
   !% multiplication. Can be changed at runtime. The default is true.
   integer, parameter :: NOT_FACTORISED = 0
@@ -237,7 +237,7 @@ module linearalgebra_module
   private :: vect_asdiagonal_product_matrix_sub_zdz
   private :: vect_asdiagonal_product_matrix_sub_zzz
   interface matrix_product_vect_asdiagonal_sub
-#ifdef HAVE_QP  
+#ifdef HAVE_QP
     module procedure matrix_product_vect_asdiagonal_sub_qqq
 #endif
     module procedure matrix_product_vect_asdiagonal_sub_ddd
@@ -264,9 +264,9 @@ module linearalgebra_module
   interface matrix_mvmt
      module procedure matrix_cfct
   end interface
-  
+
   ! vector.vector , matrix.matrix
-  !% Inner product of two vectors or two matrices. For two vectors $\mathbf{v}$ and 
+  !% Inner product of two vectors or two matrices. For two vectors $\mathbf{v}$ and
   !% $\mathbf{w}$ this is simply:
   !%\begin{displaymath}
   !% d = \sum_{i=1}^N v_i w_i
@@ -282,7 +282,7 @@ module linearalgebra_module
 
   !% Floating point equality testing. Returns false if
   !% '(abs(x-y) > NUMERICAL_ZERO * abs(x))', and true otherwise.
-  private :: real_feq,complex_feq,matrix_feq,vector_feq  
+  private :: real_feq,complex_feq,matrix_feq,vector_feq
   interface operator(.feq.)
      module procedure real_feq,real_integer_feq,integer_real_feq,complex_feq,matrix_feq,vector_feq
   end interface
@@ -339,7 +339,7 @@ module linearalgebra_module
   private :: outer, z_outer_zz
   interface operator(.outer.)
      module procedure outer, z_outer_zz
-#ifdef HAVE_QP  
+#ifdef HAVE_QP
     module procedure outer_qq
 #endif
   end interface
@@ -374,7 +374,7 @@ module linearalgebra_module
      module procedure matrix_z_make_hermitian, matrix_d_make_hermitian
   end interface
 
-  !% Test if matrix is square 
+  !% Test if matrix is square
   private :: matrix_square, matrix_z_square, int_matrix_square, logical_matrix_square
   interface is_square
      module procedure matrix_square, matrix_z_square, int_matrix_square, logical_matrix_square
@@ -397,7 +397,7 @@ module linearalgebra_module
   private :: matrix_trace
   interface trace
      module procedure matrix_trace
-#ifdef HAVE_QP  
+#ifdef HAVE_QP
     module procedure matrix_trace_q
 #endif
   end interface
@@ -423,7 +423,7 @@ module linearalgebra_module
   !% For a single vector 'x', 'norm(x)' is equal to 'sqrt(x .dot. x)'
   !% A two-dimensional array is treated as a list of vectors in either
   !% Fortran ('dir=1') or C ('dir=2') style-ordering.
-  !% The result is then a one-dimensional array of the norms of each vector. 
+  !% The result is then a one-dimensional array of the norms of each vector.
   private :: vector_norm, array_norm
   interface norm
      module procedure vector_norm, array_norm
@@ -434,12 +434,12 @@ module linearalgebra_module
   private :: vector_normsq, array_normsq
   interface normsq
      module procedure vector_normsq, array_normsq
-#ifdef HAVE_QP  
+#ifdef HAVE_QP
     module procedure vector_normsq_q
 #endif
   end interface
 
-  !% Randomise the elements of an array. Uniformly distributed random quantities in the range 
+  !% Randomise the elements of an array. Uniformly distributed random quantities in the range
   !% $(-\frac{a}{2},\frac{a}{2})$ are added to each element of the vector or matrix.
   private :: vector_randomise, matrix_randomise, matrix_randomise_vweight, matrix_z_randomise, vector_z_randomise
   interface randomise
@@ -458,7 +458,7 @@ module linearalgebra_module
      module procedure rms_diff1, rms_diff2
   end interface rms_diff
 
-  
+
   !% Returns a vector, contining a histogram of frequencies.
   private :: vector_histogram
   interface histogram
@@ -500,9 +500,9 @@ module linearalgebra_module
   ! in the following you can specify the direction of matrix, as optional argument,
   !    which the operation will be performed along.
   !
-  ! maxval: return maximum in the matrix 
+  ! maxval: return maximum in the matrix
   ! minval: return minimum in the matrix
-  ! sum  : return sum of matrix or vector elements  
+  ! sum  : return sum of matrix or vector elements
   ! product  : return product of matrix or vector elements
   ! reshape(matrix,newshape) : to change shape
   !       (the order of elements in memory will not change)
@@ -517,24 +517,24 @@ module linearalgebra_module
   ! Usage: call check_size(name,array,sizes,calling routine)
   ! e.g. check_size('Velocity',velo,(/3,ds%N/),'DS_Add_Atom')
 
-  !% Overloaded interface to assert that the size of an array is correct. 
+  !% Overloaded interface to assert that the size of an array is correct.
   !% If the test fails 'system_abort' is called with an appropriate error message
   !% constructed from the 'arrayname' and 'caller' arguments.
-  private :: check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
+  private :: check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2
   private :: check_size_real_dim1,check_size_real_dim1_s, check_size_real_dim2
 #ifdef HAVE_QP
   private :: check_size_quad_dim1,check_size_quad_dim1_s, check_size_quad_dim2
 #endif
   private :: check_size_complex_dim1,check_size_complex_dim1_s, check_size_complex_dim2
-  private :: check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
+  private :: check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2
   interface check_size
-     module procedure check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2  
+     module procedure check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2
      module procedure check_size_real_dim1, check_size_real_dim1_s, check_size_real_dim2, check_size_real_dim3
 #ifdef HAVE_QP
      module procedure check_size_quad_dim1, check_size_quad_dim1_s, check_size_quad_dim2
 #endif
      module procedure check_size_complex_dim1, check_size_complex_dim1_s, check_size_complex_dim2
-     module procedure check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2  
+     module procedure check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2
   end interface check_size
 
   !% Update a measure of a recent average by decaying its current value and adding on a new sample
@@ -567,12 +567,12 @@ CONTAINS
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  function int_sign(n) 
+  function int_sign(n)
     integer::n, int_sign
     int_sign = sign(1, n)
   end function int_sign
 
-  function real_sign(n) 
+  function real_sign(n)
     real(dp)::n, real_sign
     real_sign = sign(1.0_dp, n)
   end function real_sign
@@ -598,7 +598,7 @@ CONTAINS
 
   ! diag(v)
   !
-  ! return a matrix with the vector as its diagonal 
+  ! return a matrix with the vector as its diagonal
   function   vector_as_diag_matrix_r(vect) result(matrix)
     real(dp),intent(in), dimension(:) :: vect
     real(dp), dimension(size(vect),size(vect)) :: matrix
@@ -614,7 +614,7 @@ CONTAINS
 
   ! diag(v)
   !
-  ! return a matrix with the vector as its diagonal 
+  ! return a matrix with the vector as its diagonal
   function   vector_as_diag_matrix_c(vect) result(matrix)
     complex(dp),intent(in), dimension(:) :: vect
     complex(dp), dimension(size(vect),size(vect)) :: matrix
@@ -632,10 +632,10 @@ CONTAINS
   !
   ! returns the diagonal of a matrix as a vector
   function matrix_diagonal_r(matrix) result (vect)
-    real(dp),intent(in), dimension(:,:) ::matrix 
+    real(dp),intent(in), dimension(:,:) ::matrix
     real(dp), dimension(size(matrix,1)) ::vect
     integer::I
-    
+
     if (.NOT.is_square(matrix)) call system_abort('Matrix_diagonal: matrix not squared')
 
     do i=1,size(matrix,1)
@@ -648,10 +648,10 @@ CONTAINS
   !
   ! returns the diagonal of a matrix as a vector
   function matrix_diagonal_c(matrix) result (vect)
-    complex(dp),intent(in), dimension(:,:) ::matrix 
+    complex(dp),intent(in), dimension(:,:) ::matrix
     complex(dp), dimension(size(matrix,1)) ::vect
     integer::I
-    
+
     if (.NOT.is_square(matrix)) call system_abort('Matrix_diagonal: matrix not squared')
 
     do i=1,size(matrix,1)
@@ -725,148 +725,148 @@ CONTAINS
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
 #ifdef HAVE_QP
-   subroutine matrix_product_vect_asdiagonal_sub_qqq(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_sub_qqq(lhs, matrix, vect)
     real(qp), dimension(:,:), intent(out) :: lhs
     real(qp), dimension(:,:), intent(in) :: matrix
     real(qp), dimension(:), intent(in) :: vect
 
     integer  :: i
-     
+
 !$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
-     
+
    endsubroutine matrix_product_vect_asdiagonal_sub_qqq
 #endif
 
-   subroutine matrix_product_vect_asdiagonal_sub_ddd(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_sub_ddd(lhs, matrix, vect)
     real(dp), dimension(:,:), intent(out) :: lhs
     real(dp), dimension(:,:), intent(in) :: matrix
     real(dp), dimension(:), intent(in) :: vect
 
     integer  :: i
-     
+
 !$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
-     
+
    endsubroutine matrix_product_vect_asdiagonal_sub_ddd
 
    ! subroutine form of m(:,:) .multd. v(:) for complex = real * complex
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine matrix_product_vect_asdiagonal_sub_zdz(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_sub_zdz(lhs, matrix, vect)
     complex(dp), dimension(:,:), intent(out) :: lhs
     real(dp), dimension(:,:), intent(in) :: matrix
     complex(dp), dimension(:), intent(in) :: vect
 
     integer  :: i
-     
+
 !$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
-     
+
    endsubroutine matrix_product_vect_asdiagonal_sub_zdz
 
    ! subroutine form of m(:,:) .multd. v(:) for complex = complex * real
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine matrix_product_vect_asdiagonal_sub_zzd(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_sub_zzd(lhs, matrix, vect)
     complex(dp), dimension(:,:), intent(out) :: lhs
     complex(dp), dimension(:,:), intent(in) :: matrix
     real(dp), dimension(:), intent(in) :: vect
 
     integer :: i
-     
+
 !$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i) = vect(i) * matrix(:,i)
     enddo
-     
+
    endsubroutine matrix_product_vect_asdiagonal_sub_zzd
 
    ! subroutine form of m(:,:) .multd. v(:) for complex = complex * complex
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine matrix_product_vect_asdiagonal_sub_zzz(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_sub_zzz(lhs, matrix, vect)
     complex(dp), dimension(:,:), intent(out) :: lhs
     complex(dp), dimension(:,:), intent(in) :: matrix
     complex(dp), dimension(:), intent(in) :: vect
 
     integer :: i
-     
+
 !$omp parallel do private(i) shared(lhs,vect,matrix)
     do i = 1, size(vect)
        lhs(:,i)=vect(i)*matrix(:,i)
     end do
-     
+
    endsubroutine matrix_product_vect_asdiagonal_sub_zzz
 
    ! subroutine form of v(:) .multd. m(:,:) for real = real * real
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine vect_asdiagonal_product_matrix_sub_ddd(lhs, vectL, matrix) 
+   subroutine vect_asdiagonal_product_matrix_sub_ddd(lhs, vectL, matrix)
      real(dp), dimension(:,:), intent(out) :: lhs
      real(dp), dimension(:), intent(in) :: vectL
      real(dp), dimension(:,:), intent(in) :: matrix
 
      integer :: i
-     
+
      do i = 1, size(matrix,2)
        lhs(:,i)=vectL(:)*matrix(:,i)
      end do
-     
+
    end subroutine vect_asdiagonal_product_matrix_sub_ddd
 
    ! subroutine form of v(:) .multd. m(:,:) for complex = complex * real
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine vect_asdiagonal_product_matrix_sub_zzd(lhs, vectL, matrix) 
+   subroutine vect_asdiagonal_product_matrix_sub_zzd(lhs, vectL, matrix)
      complex(dp), dimension(:,:), intent(out) :: lhs
      complex(dp), dimension(:), intent(in) :: vectL
      real(dp), dimension(:,:), intent(in) :: matrix
 
      integer :: i
-     
+
      do i = 1, size(matrix,2)
        lhs(:,i)=vectL(:)*matrix(:,i)
      end do
-     
+
    end subroutine vect_asdiagonal_product_matrix_sub_zzd
 
    ! subroutine form of v(:) .multd. m(:,:) for complex = real * complex
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine vect_asdiagonal_product_matrix_sub_zdz(lhs, vectL, matrix) 
+   subroutine vect_asdiagonal_product_matrix_sub_zdz(lhs, vectL, matrix)
      complex(dp), dimension(:,:), intent(out) :: lhs
      real(dp), dimension(:), intent(in) :: vectL
      complex(dp), dimension(:,:), intent(in) :: matrix
 
      integer :: i
-     
+
      do i = 1, size(matrix,2)
        lhs(:,i)=vectL(:)*matrix(:,i)
      end do
-     
+
    end subroutine vect_asdiagonal_product_matrix_sub_zdz
 
    ! subroutine form of v(:) .multd. m(:,:) for complex = complex * complex
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine vect_asdiagonal_product_matrix_sub_zzz(lhs, vectL, matrix) 
+   subroutine vect_asdiagonal_product_matrix_sub_zzz(lhs, vectL, matrix)
      complex(dp), dimension(:,:), intent(out) :: lhs
      complex(dp), dimension(:), intent(in) :: vectL
      complex(dp), dimension(:,:), intent(in) :: matrix
 
      integer :: i
-     
+
      do i = 1, size(matrix,2)
        lhs(:,i)=vectL(:)*matrix(:,i)
      end do
-     
+
    end subroutine vect_asdiagonal_product_matrix_sub_zzz
 
    ! m(:,:) .multd. v(:)
@@ -893,55 +893,55 @@ CONTAINS
 
    end function matrix_product_vect_asdiagonal_zz
 
-   ! multiply a matrix by a vector, interepreted as a diagonal matrix, on 
+   ! multiply a matrix by a vector, interepreted as a diagonal matrix, on
    ! the left and right hand sides, weighted by 0.5
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine matrix_product_vect_asdiagonal_RL_sub_ddd(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_RL_sub_ddd(lhs, matrix, vect)
     real(dp), intent(out) :: lhs(:,:)
     real(dp), intent(in) :: matrix(:,:)
     real(dp), intent(in) :: vect(:)
 
      real(dp)::tmp
      integer::i,j,N
-     
+
      N=size(vect)
-     
+
      do j=1,N
         tmp=vect(j)
         do i=1,N
            lhs(i,j)=0.5_dp*(tmp+vect(i))*matrix(i,j)
         end do
      end do
-     
+
    end subroutine matrix_product_vect_asdiagonal_RL_sub_ddd
 
-   ! multiply a matrix by a vector, interepreted as a diagonal matrix, on 
+   ! multiply a matrix by a vector, interepreted as a diagonal matrix, on
    ! the left and right hand sides, weighted by 0.5
    !
    ! first argument set to product of matrix and a vector as a diagonal of another matrix (no temp on stack)
-   subroutine matrix_product_vect_asdiagonal_RL_sub_zzd(lhs, matrix, vect) 
+   subroutine matrix_product_vect_asdiagonal_RL_sub_zzd(lhs, matrix, vect)
     complex(dp), intent(out) :: lhs(:,:)
     complex(dp), intent(in) :: matrix(:,:)
     real(dp), intent(in) :: vect(:)
 
      real(dp)::tmp
      integer::i,j,N
-     
+
      N=size(vect)
-     
+
      do j=1,N
         tmp=vect(j)
         do i=1,N
            lhs(i,j)=0.5_dp*(tmp+vect(i))*matrix(i,j)
         end do
      end do
-     
+
    end subroutine matrix_product_vect_asdiagonal_RL_sub_zzd
 
-   
-   ! multiply matrix C with a diagonal matrix that has vect as diagonal, 
-   ! and then multiply the result and the tranpose of C. 
+
+   ! multiply matrix C with a diagonal matrix that has vect as diagonal,
+   ! and then multiply the result and the tranpose of C.
    ! NEEDS TO BE OPTIMIZED
    function matrix_cfct(matrix,vect) result (prodmatrix)
      real(dp),intent(in),dimension(:) :: vect
@@ -949,9 +949,9 @@ CONTAINS
      real(dp), dimension(size(matrix,1),size(matrix,1)) ::prodmatrix
      integer::i,j,k,N,M
      real(dp)::tmp
-     
+
      N=size(matrix,1)
-     M=size(matrix,2) 
+     M=size(matrix,2)
 
      if(M /= size(vect)) &
           call check_size('Vector',vect,M,'Matrix_CFCT')
@@ -964,26 +964,26 @@ CONTAINS
            end do
            do k=size(vect)/2+1,size(vect)
               if (abs(vect(k)).LT.(real(1.e-10))) cycle
-              
+
               tmp=tmp+matrix(I,K)*vect(k)*matrix(j,K)
            end do
            prodmatrix(I,J)=tmp
         end do
      end do
-     
+
    end function matrix_cfct
 
-   
+
    ! m1(:,:) .dot. m2(:,:)
    !
-   ! scalar product between matrixes 
+   ! scalar product between matrixes
    function matrix_dotproduct_matrix(matrix1,matrix2) result(prod)
      real(dp),intent(in), dimension(:,:) :: matrix1
      real(dp),intent(in), dimension(:,:) :: matrix2
      real(dp)::prod
      integer::i,j
-     
-     if(size(matrix1,1) /= size(matrix2,1) .or. size(matrix1,2) /= size(matrix2,2)) & 
+
+     if(size(matrix1,1) /= size(matrix2,1) .or. size(matrix1,2) /= size(matrix2,2)) &
           call check_size('Matrix2',matrix2,shape(matrix1),'Matrix_Dotproduct_Matrix')
 
      prod = 0.0_dp
@@ -992,7 +992,7 @@ CONTAINS
            prod = prod + matrix1(i,j)*matrix2(i,j)
         end do
      end do
-     
+
    end function matrix_dotproduct_matrix
 
    ! subroutine form of m1(:,:) .mult. m2(:,:)
@@ -1043,7 +1043,7 @@ CONTAINS
      N = size(lhs,1) !# of rows of lhs
      M = size(lhs,2) !# of columns of rhs
      K = size(matrix1,m1_c) !!shared dimension
-     maxd=max(N,M,K) 
+     maxd=max(N,M,K)
 
      if (use_intrinsic_blas) then
         if (m1_transp == 'T') then
@@ -1134,7 +1134,7 @@ CONTAINS
      N = size(lhs,1) !# of rows of lhs
      M = size(lhs,2) !# of columns of rhs
      K = size(matrix1,m1_c) !!shared dimension
-     maxd=max(N,M,K) 
+     maxd=max(N,M,K)
 
      if (use_intrinsic_blas) then
 	if (m1_transp) then
@@ -1198,7 +1198,7 @@ CONTAINS
 
      N = size(lhs) !# of rows of lhs
      M = size(matrix,m_c) !!shared dimension
-     maxd=max(N,M) 
+     maxd=max(N,M)
 
      if (use_intrinsic_blas) then
         if (m_transp == 'T') then
@@ -1214,7 +1214,7 @@ CONTAINS
    end subroutine matrix_vector_product_sub_ddd
    ! m1(:,:) .mult. m2(:,:)
    !
-   ! matrix multiplication (either lapack or intrinsic)                      
+   ! matrix multiplication (either lapack or intrinsic)
    function matrix_product_ddd(matrix1,matrix2) result (prodmatrix)
      real(dp),intent(in), dimension(:,:) :: matrix1
      real(dp),intent(in), dimension(:,:) :: matrix2
@@ -1225,7 +1225,7 @@ CONTAINS
 
    ! m1(:,:) .mult. m2(:,:)
    !
-   ! matrix multiplication (either lapack or intrinsic)                      
+   ! matrix multiplication (either lapack or intrinsic)
    function matrix_product_zzz(matrix1,matrix2) result (prodmatrix)
      complex(dp),intent(in), dimension(:,:) :: matrix1
      complex(dp),intent(in), dimension(:,:) :: matrix2
@@ -1236,7 +1236,7 @@ CONTAINS
 
    ! m1(:,:) .mult. m2'(:,:)
    !
-   !% Calculate matrix product of 'matrix1' and 'matrix2' after transposing matrix2 
+   !% Calculate matrix product of 'matrix1' and 'matrix2' after transposing matrix2
    !% (either using \textsc{lapack} or intrinsic multiplication, depending on the
    !& 'use_intrinsic_blas' setting).
    function matrix_multT(matrix1,matrix2) result (prodmatrix)
@@ -1258,7 +1258,7 @@ CONTAINS
      logical              :: feq
 
      feq = (abs(x-y) <= NUMERICAL_ZERO * (abs(x)+abs(y))/2.0_dp) .or. (abs(x-y) <= NUMERICAL_ZERO)
-     
+
    end function real_feq
 
    pure function real_integer_feq(x,y) result(feq)
@@ -1268,7 +1268,7 @@ CONTAINS
      logical              :: feq
 
      feq = real_feq(real(x,dp),y)
-     
+
    end function real_integer_feq
 
    pure function integer_real_feq(x,y) result(feq)
@@ -1278,7 +1278,7 @@ CONTAINS
      logical              :: feq
 
      feq = real_feq(x,real(y,dp))
-     
+
    end function integer_real_feq
 
    ! a .fne. b
@@ -1288,9 +1288,9 @@ CONTAINS
 
      real(dp), intent(in) :: x, y
      logical              :: fne
-     
-     fne = .not. real_feq(x, y) 
-     
+
+     fne = .not. real_feq(x, y)
+
    end function real_fne
 
    pure function real_fgt(x,y) result(fgt)
@@ -1339,7 +1339,7 @@ CONTAINS
      else
         feq = .true.
      end if
-     
+
    end function complex_feq
 
    ! za .fne. zb
@@ -1349,28 +1349,28 @@ CONTAINS
 
      complex(dp), intent(in) :: x, y
      logical              :: fne
-     
+
      if ( (abs(real(x-y)) > NUMERICAL_ZERO * abs(real(x))) .or. &
           (abs(aimag(x-y)) > NUMERICAL_ZERO * abs(aimag(x))) ) then
         fne = .true.
      else
         fne = .false.
      end if
-     
+
    end function complex_fne
-   
+
    ! m1 .feq. m2
    !
-   ! matrix floating point comparison 
+   ! matrix floating point comparison
    function matrix_feq(matrix1,matrix2) result (feq)
      real(dp),intent(in), dimension(:,:) :: matrix1
      real(dp),intent(in), dimension(:,:) :: matrix2
 
      integer::i,j
      logical::feq
-     
+
      call check_size('Matrix2',matrix2,shape(matrix1),'Matrix_FEQ')
-     
+
      feq =.true.
      do j=1,size(matrix1,2)
         do i=1,size(matrix1,1)
@@ -1380,22 +1380,22 @@ CONTAINS
            end if
         end do
      end do
-     
+
    end function matrix_feq
-   
+
    ! m1 .fne. m2
    !
-   ! matrix floating point comparison 
+   ! matrix floating point comparison
    function matrix_fne(matrix1,matrix2) result (fne)
      real(dp),intent(in), dimension(:,:) :: matrix1
      real(dp),intent(in), dimension(:,:) :: matrix2
 
      integer::i,j
      logical::fne
-     
-     if(size(matrix1,1) /= size(matrix2,1) .or. size(matrix1,2) /= size(matrix2,2)) & 
+
+     if(size(matrix1,1) /= size(matrix2,1) .or. size(matrix1,2) /= size(matrix2,2)) &
           call check_size('Matrix2',matrix2,shape(matrix1),'Matrix_FNE')
-     
+
      fne =.false.
      do j=1,size(matrix1,2)
         do i=1,size(matrix1,1)
@@ -1405,31 +1405,31 @@ CONTAINS
            end if
         end do
      end do
-     
+
    end function matrix_fne
-   
+
    ! is_square(matrix)
    !
    ! tells if the matrix is square
    function matrix_square(matrix) result(sq)
      real(dp),intent(in), dimension(:,:) :: matrix
      logical::sq
-     
+
      if (size(matrix,1).EQ.size(matrix,2)) then
         sq=.true.
      else
         sq=.false.
      end if
-     
+
    end function matrix_square
 
    function int_matrix_square(matrix) result(sq)
 
      integer, intent(in), dimension(:,:) :: matrix
      logical::sq
-     
+
      sq = size(matrix,1) == size(matrix,2)
-     
+
    end function int_matrix_square
 
    function logical_matrix_square(matrix) result(sq)
@@ -1437,9 +1437,9 @@ CONTAINS
      logical, dimension(:,:), intent(in) :: matrix
 
      logical :: sq
-     
+
      sq = size(matrix,1) == size(matrix,2)
-     
+
    end function logical_matrix_square
 
    ! is_square(matrix_z)
@@ -1448,13 +1448,13 @@ CONTAINS
    function matrix_z_square(matrix_z) result(sq)
      complex(dp),intent(in), dimension(:,:) ::matrix_z
      logical::sq
-     
+
      if (size(matrix_z,1).EQ.size(matrix_z,2)) then
         sq=.true.
      else
         sq=.false.
      end if
-     
+
    end function matrix_z_square
 
 
@@ -1463,7 +1463,7 @@ CONTAINS
     real(dp), intent(inout), dimension(:,:) :: matrix
     integer::i,j,n
     real(dp)::tmp
-    
+
     if (.not.is_square(matrix)) call system_abort('Matrix_Symmetrise: Matrix is not square')
 
     n=size(matrix,1)
@@ -1484,7 +1484,7 @@ CONTAINS
     integer::i,N
 
     N = min(size(matrix,1),size(matrix,2))
-   
+
     tr=0.0_dp
     do i=1,N
        tr=tr+matrix(i,i)
@@ -1499,7 +1499,7 @@ CONTAINS
     integer::i,N
 
     N = min(size(matrix,1),size(matrix,2))
-   
+
     tr=0.0_qp
     do i=1,N
        tr=tr+matrix(i,i)
@@ -1517,7 +1517,7 @@ CONTAINS
     N = size(matrixA, 1)
     if(size(matrixB, 2) /= N) call system_abort("matrix_trace_mult: size(matrixB, 2) /= N")
     if(size(matrixA, 2) /= size(matrixB, 1)) call system_abort("size(matrixA, 2) /= size(matrixB, 1)")
-    
+
     trm=0.0_dp
     do i=1,N
        trm=trm + (matrixA(i,:) .dot. matrixB(:,i))
@@ -1575,8 +1575,8 @@ CONTAINS
     end do
   end subroutine matrix_add_xidentity_c
 
-  
-  ! the following stuff only with lapack        
+
+  ! the following stuff only with lapack
   ! diagonalise matrix, only symmetric case
   subroutine matrix_diagonalise(this,evals,evects, ignore_symmetry, error)
     real(dp),intent(in), dimension(:,:) :: this
@@ -1603,7 +1603,7 @@ CONTAINS
     if (use_ignore_symmetry .or. is_symmetric(this)) then
 
        LWORK=3*N
-       allocate(WORK(LWORK))     
+       allocate(WORK(LWORK))
        allocate(r8_evals(N))
 
        if (present(evects) .and. dp == 8) then
@@ -1639,12 +1639,12 @@ CONTAINS
        endif
     else
        ! Why not print a warning then call more general diagonalise?
-       RAISE_ERROR('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',error) 
+       RAISE_ERROR('Matrix_diagonalise: Non symmetric diagonalisation is not permitted',error)
     end if
- 
+
   end subroutine matrix_diagonalise
 
-  ! the following stuff only with lapack        
+  ! the following stuff only with lapack
   ! diagonalise complex matrix, only hermitian positive definite case
   subroutine matrix_z_diagonalise(this,evals,evects,ignore_symmetry, error)
     complex(dp),intent(in), dimension(:,:) :: this
@@ -1676,7 +1676,7 @@ CONTAINS
 
        NB = ILAENV(1, "ZHETRD", "U", N, N, N, N)
        LWORK=(NB+1)*N
-       allocate(WORK(LWORK))     
+       allocate(WORK(LWORK))
        allocate(RWORK(3*N-2))
        allocate(r8_evals(N))
 
@@ -1716,11 +1716,11 @@ CONTAINS
        ! why not print a warning and call more general diagonalise instead?
        RAISE_ERROR ('Matrix_z_diagonalise: Non hermitian diagonalisation is not permitted', error)
     end if
- 
+
   end subroutine matrix_z_diagonalise
 
   ! generalised eigenproblem
-  ! just works for symmetric systems 
+  ! just works for symmetric systems
   subroutine matrix_diagonalise_generalised(this,other,evals,evects,error)
     real(dp),intent(in), dimension(:,:) :: this
     real(dp),intent(in), dimension(:,:) :: other
@@ -1772,7 +1772,7 @@ CONTAINS
   end subroutine matrix_diagonalise_generalised
 
   ! general eigenproblem
-  ! just works for hermitian systems 
+  ! just works for hermitian systems
   subroutine  matrix_z_diagonalise_generalised(this,other,evals,evects, error )
     complex(dp),intent(in), dimension(:,:) :: this
     complex(dp),intent(in), dimension(:,:) :: other
@@ -1791,7 +1791,7 @@ CONTAINS
     INIT_ERROR(error)
 
     if (dp /= 8) call system_abort("matrix_z_diagonalise_generalised: no workaround for LAPACK assuming 8 byte double, but dp(="//dp//") /= 8")
-  
+
     N=size(this,2)
     NB = ILAENV(1, "ZHETRD", "U", N, N, N, N)
     LWORK=(NB+1)*N
@@ -1955,14 +1955,14 @@ CONTAINS
     else
       u_inverse => matrix
     endif
- 
+
     if (present(positive_in)) then
        positive = positive_in
     else
        positive = .true.
     end if
 
-    call check_size('Inverse',u_inverse,shape(matrix),'Matrix_Inverse')   
+    call check_size('Inverse',u_inverse,shape(matrix),'Matrix_Inverse')
 
     N = size(matrix,2)
 
@@ -1970,7 +1970,7 @@ CONTAINS
 
     ! try the symmetric, positive definite case
 
-    if( matrix_is_symmetric(matrix) .and. positive)  then   
+    if( matrix_is_symmetric(matrix) .and. positive)  then
 
        ! cholesky
 
@@ -1994,7 +1994,7 @@ CONTAINS
              write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling DPOTRI (',info,')'
              call system_abort(line)
           end if
-          ! filling the lower part of symmetric matrix   
+          ! filling the lower part of symmetric matrix
           do i=1,N
              do j=i+1,N
                 u_inverse(j,i) = u_inverse(i,j)
@@ -2021,7 +2021,7 @@ CONTAINS
     !inverse
 
     call DGETRI(N, u_inverse, N, IPIV, WORK, LWORK, info)
-    if (INFO /= 0) call system_abort('Error in calling DGETRI (info = '//info//')') 
+    if (INFO /= 0) call system_abort('Error in calling DGETRI (info = '//info//')')
 
     !IMPROVE deallocate(WORK)
     !IMPROVE allocate(b(N,N),ferr(N),berr(N),WORK(3*N),iwork(N))
@@ -2053,14 +2053,14 @@ CONTAINS
     else
       u_inverse => matrix
     endif
- 
+
     if (present(positive_in)) then
        positive = positive_in
     else
        positive = .true.
     end if
 
-    call check_size('Inverse',u_inverse,shape(matrix),'Matrix_Inverse')   
+    call check_size('Inverse',u_inverse,shape(matrix),'Matrix_Inverse')
 
     N = size(matrix,2)
 
@@ -2090,7 +2090,7 @@ CONTAINS
 	    write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling ZPOTRI (',info,')'
 	    call system_abort(line)
 	  end if
-	  ! filling the lower part of hermitian matrix   
+	  ! filling the lower part of hermitian matrix
 	  do i=1,N
 	    do j=i+1,N
 	      u_inverse(j,i) = conjg(u_inverse(i,j))
@@ -2107,13 +2107,13 @@ CONTAINS
 
       ! Bunch-Kaufman factorization
       call ZHETRF('U', N, u_inverse, N, ipiv, work, lwork, info)
-      if (INFO /= 0) call system_abort('Error in calling ZHETRF (info = '//info//')') 
+      if (INFO /= 0) call system_abort('Error in calling ZHETRF (info = '//info//')')
 
       ! inverse
       call ZHETRI('U', N, u_inverse, N, ipiv, work, info)
-      if (INFO /= 0) call system_abort('Error in calling ZHETRI (info = '//info//')') 
+      if (INFO /= 0) call system_abort('Error in calling ZHETRI (info = '//info//')')
 
-      ! filling the lower part of hermitian matrix   
+      ! filling the lower part of hermitian matrix
       do i=1,N
 	do j=i+1,N
 	  u_inverse(j,i) = conjg(u_inverse(i,j))
@@ -2129,13 +2129,13 @@ CONTAINS
 
       ! LU factorization
       call ZSYTRF('U', N, u_inverse, N, ipiv, work, lwork, info)
-      if (INFO /= 0) call system_abort('Error in calling ZSYTRF (info = '//info//')') 
+      if (INFO /= 0) call system_abort('Error in calling ZSYTRF (info = '//info//')')
 
       ! inverse
       call ZSYTRI('U', N, u_inverse, N, ipiv, work, info)
-      if (INFO /= 0) call system_abort('Error in calling ZSYTRI (info = '//info//')') 
+      if (INFO /= 0) call system_abort('Error in calling ZSYTRI (info = '//info//')')
 
-      ! filling the lower part of symmetric matrix   
+      ! filling the lower part of symmetric matrix
       do i=1,N
 	do j=i+1,N
 	  u_inverse(j,i) = u_inverse(i,j)
@@ -2158,7 +2158,7 @@ CONTAINS
 
     !inverse
     call ZGETRI(N, u_inverse, N, IPIV, WORK, LWORK, info)
-    if (INFO /= 0) call system_abort('Error in calling ZGETRI (info = '//info//')') 
+    if (INFO /= 0) call system_abort('Error in calling ZGETRI (info = '//info//')')
 
     deallocate(WORK,IPIV)
     return
@@ -2191,7 +2191,7 @@ CONTAINS
 
      this%n = size(matrix,1)
      this%m = size(matrix,2)
-     
+
      allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
      this%tau(this%m) )
 
@@ -2343,7 +2343,7 @@ CONTAINS
      endif
 
      this%factorised = CHOLESKY
-        
+
   endsubroutine LA_Matrix_Factorise
 
   subroutine qpotrf(this,info)
@@ -2398,18 +2398,18 @@ CONTAINS
            v(k:n) = v(k:n) / sqrt(v(k))
            this(k:n,k) = v(k:n)
         endif
-!$omp barrier        
+!$omp barrier
         v(k+1:n) = this(k+1:n,k)
         do j = k+mu,n,p
            w(j:n) = this(j:n,j)
            w(j:n) = w(j:n) - v(j)*v(j:n)
            this(j:n,j) = w(j:n)
         enddo
-!$omp barrier        
+!$omp barrier
      enddo
      deallocate(v,w)
 !$omp end parallel
-           
+
      do i = 2, n
         do j = 1, i
            this(j,i) = this(i,j)
@@ -2454,7 +2454,7 @@ CONTAINS
            inverse(j,i) = inverse(i,j)
         enddo
      enddo
-     
+
      if(this%equilibrated) then
         do i = 1, this%n
            inverse(:,i) = inverse(:,i)*this%s(:)*this%s(i)
@@ -2482,7 +2482,7 @@ CONTAINS
      deallocate(one)
 
      if(present(info)) info = 0
-     
+
   endsubroutine qpotri
 
   subroutine LA_Matrix_Solve_Vector(this,b,x,refine,error)
@@ -2526,7 +2526,7 @@ CONTAINS
      if( size(b,1) /= this%n ) then
         RAISE_ERROR('LA_Matrix_Solve_Matrix: first dimension of b is not n',error)
      endif
-     
+
      my_refine = optional_default(.false.,refine)
 
      if( this%factorised == NOT_FACTORISED ) then
@@ -2583,7 +2583,7 @@ CONTAINS
      logical :: tmp_equilibrated
 
      INIT_ERROR(error)
-     
+
      if( this%n /= this%m ) then
         RAISE_ERROR('LA_Matrix_Expand_Symmetrically: matrix not square',error)
      endif
@@ -2592,14 +2592,14 @@ CONTAINS
      if( n /= this%n + 1 ) then
         RAISE_ERROR('LA_Matrix_Expand_Symmetrically: expanding vector should be longer by 1 than matrix dimensionality',error)
      endif
-     
+
      allocate(tmp_matrix(this%n+1,this%n+1))
      tmp_matrix(1:this%n,1:this%n) = this%matrix
      tmp_matrix(this%n+1,:) = vector
      tmp_matrix(:,this%n+1) = vector
 
      if(this%factorised == CHOLESKY) then
-        allocate(tmp_factor(this%n,this%n), tmp_s(this%n)) 
+        allocate(tmp_factor(this%n,this%n), tmp_s(this%n))
         tmp_factor = this%factor
         tmp_s = this%s
      endif
@@ -2653,7 +2653,7 @@ CONTAINS
 
     n = size(factor,1)
     m = size(x,2)
-!$omp parallel do    
+!$omp parallel do
     do i = 1, m
        do j = 1, n-1
           x(j,i) = x(j,i)/factor(j,j)
@@ -2667,14 +2667,14 @@ CONTAINS
        enddo
        x(1,i) = x(1,i)/factor(1,1)
     enddo
-    
+
     if( present(info) ) info = 0
 
   endsubroutine qpotrs
 
   function LA_Matrix_LogDet(this,error)
 
-     type(LA_Matrix), intent(inout) :: this         
+     type(LA_Matrix), intent(inout) :: this
      integer, intent(out), optional :: error
      real(qp) :: LA_Matrix_LogDet
      integer :: i
@@ -2704,7 +2704,7 @@ CONTAINS
 
   function LA_Matrix_Det(this,error)
 
-     type(LA_Matrix), intent(inout) :: this         
+     type(LA_Matrix), intent(inout) :: this
      integer, intent(out), optional :: error
      real(qp) :: LA_Matrix_Det
      integer :: i
@@ -2733,7 +2733,7 @@ CONTAINS
   endfunction LA_Matrix_Det
 
   subroutine LA_Matrix_QR_Factorise(this,q,r,error)
-     type(LA_Matrix), intent(inout) :: this         
+     type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: error
 
@@ -2773,7 +2773,7 @@ CONTAINS
   endsubroutine LA_Matrix_QR_Factorise
 
   subroutine LA_Matrix_GetQR(this,q,r,error)
-     type(LA_Matrix), intent(inout) :: this         
+     type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(out), optional :: q, r
      integer, intent(out), optional :: error
 
@@ -2923,7 +2923,7 @@ CONTAINS
 
     call check_size('inverse',inverse,shape(this%factor),'LA_Matrix_QR_Inverse',error=error)
     PASS_ERROR(error)
-   
+
     allocate(Q(this%n, this%n), R(this%n, this%n), R_inv(this%n, this%n), Q_T(this%n, this%n))
 
     if( this%factorised == NOT_FACTORISED ) then
@@ -3073,7 +3073,7 @@ CONTAINS
        ! otherwise just go with the optimum
        lwork = ceiling(work(1))
     endif
-       
+
     deallocate(work)
 
     allocate(work(lwork))
@@ -3178,7 +3178,7 @@ CONTAINS
         beta = 2.0_qp * v(1)**2 / (sigma + v(1)**2)
         v = v / v(1)
      endif
-  
+
   endsubroutine house_qp
 
   subroutine qgeqrf(a,beta,info)
@@ -3202,14 +3202,14 @@ CONTAINS
         do i = j, n
            a(j:m,i) = a(j:m,i) - beta_v(j:m)*vTa(i)
         enddo
-        if (j < m) a(j+1:m,j) = v(j+1:m) 
+        if (j < m) a(j+1:m,j) = v(j+1:m)
      enddo
 
      if( present(info) ) info = 0
      deallocate(v, vTa, beta_v)
-     
+
   endsubroutine qgeqrf
-  
+
   subroutine qormqr(a, beta, c, info)
 
      real(qp), dimension(:,:), intent(in) :: a
@@ -3240,7 +3240,7 @@ CONTAINS
      deallocate(v, vTc, beta_v)
 
   endsubroutine qormqr
-  
+
   subroutine qorgqr(a,beta,q,info)
 
      real(qp), dimension(:,:), intent(in) :: a
@@ -3275,7 +3275,7 @@ CONTAINS
      deallocate(v, vTq, beta_v)
 
   endsubroutine qorgqr
-  
+
   subroutine Matrix_CholFactorise(A,A_factor)
 
      real(dp), dimension(:,:), intent(inout), target :: A
@@ -3387,7 +3387,7 @@ CONTAINS
     integer :: i,j
 
     if (.not. is_square(matrix)) call system_abort('Matrix_diagonal: matrix not squared')
-     
+
     do i=1,size(matrix,1)
        do j=1,size(matrix,2)
           if (i == j) cycle
@@ -3397,7 +3397,7 @@ CONTAINS
           end if
        end do
     end do
-    
+
     is_diagonal = .true.
 
   end function is_diagonal
@@ -3411,7 +3411,7 @@ CONTAINS
     integer::i,j,N
 
     real(dp) :: maxv
-    
+
     if (.not.Is_Square(matrix)) &
          call system_abort('Matrix_Is_Symmetric: Matrix is not square')
 
@@ -3437,7 +3437,7 @@ CONTAINS
     integer, intent(in), dimension(:,:):: matrix
     logical::symm
     integer::i,j,N
-    
+
     if (.not.is_square(matrix)) &
          call system_abort('is_symmetric: Matrix is not square')
 
@@ -3463,7 +3463,7 @@ CONTAINS
     integer::i,j,N
 
     real(dp) :: maxv
-    
+
     if (.not.Is_Square(matrix)) &
          call system_abort('Matrix_Is_Symmetric: Matrix is not square')
 
@@ -3492,7 +3492,7 @@ CONTAINS
     integer::i,j,N
 
     real(dp) :: maxv
-    
+
     if (.not.Is_Square(matrix)) &
          call system_abort('Matrix_Is_Symmetric: Matrix is not square')
 
@@ -3514,7 +3514,7 @@ CONTAINS
     real(dp),intent(in), dimension(:,:):: matrix
     logical :: matrix_is_orthogonal
     real(dp) :: t(size(matrix,1), size(matrix,2)), identity(size(matrix,1),size(matrix,2))
-    
+
     if (.not.Is_Square(matrix)) &
          call system_abort('Matrix_Is_Symmetric: Matrix is not square')
 
@@ -3522,7 +3522,7 @@ CONTAINS
     identity = 0.0_dp
     call add_identity(identity)
     matrix_is_orthogonal = maxval(abs(t - identity)) < maxval(matrix)*NUMERICAL_ZERO
-    
+
   end function matrix_is_orthogonal
 
   ! print(matrix)
@@ -3554,7 +3554,7 @@ CONTAINS
 
     integer :: i,N,M,w
     character(20) :: format
-    
+
     w = int(log10(real(maxval(abs(this))+1,dp)))+3 ! leave at least one space between entries, including room for neg. sign
     N = size(this,1)
     M = size(this,2)
@@ -3567,9 +3567,10 @@ CONTAINS
 
   end subroutine int_matrix_print
 
+  ! print real matrix to file, either one entry per line (always == .true.) or as a block with restrictions
   subroutine matrix_print(this,verbosity,file, always)
+    real(dp),       intent(in), dimension(:,:) :: this
     type(inoutput), intent(in)                 :: file
-    real(dp),       intent(in),dimension(:,:)  :: this
     integer, optional, intent(in)              :: verbosity
     logical, optional, intent(in)              :: always
 
@@ -3585,7 +3586,7 @@ CONTAINS
     if (do_always) then
       do i=1, size(this,2)
 	do j=1, size(this,1)
-	  call print(i // " " // j // " " // this(i,j), verbosity, file)
+	  call print(j // " " // i // " " // this(j,i), verbosity, file)
 	end do
       end do
     else
@@ -3731,7 +3732,7 @@ CONTAINS
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   !
-  !% Fit a cubic polynomial to a function given its values ($y_0$ and $y_1$) and 
+  !% Fit a cubic polynomial to a function given its values ($y_0$ and $y_1$) and
   !% its derivative ($y^\prime_0$ and $y^\prime_1$) at two points ($x_0$ and $x_1$)
   !
   !% \begin{displaymath}
@@ -3745,7 +3746,7 @@ CONTAINS
     real(dp), intent(out)    :: coeffs(4) !% '(/a,b,c,d/)'
     real(dp), dimension(4,4) :: A, invA
     real(dp)                 :: x02, x03, x12, x13 !x0^2, x0^3 ...
-    
+
     x02 = x0*x0; x03 = x02*x0
     x12 = x1*x1; x13 = x12*x1
 
@@ -3770,20 +3771,20 @@ CONTAINS
 
   ! normsq()
   ! returns (X.dot.X)
-  pure function vector_normsq(vector) result(normsq) 
+  pure function vector_normsq(vector) result(normsq)
 
     real(dp), intent(in), dimension(:) :: vector
     real(dp)             :: normsq
-   
+
     normsq = dot_product(vector,vector)
 
   end function vector_normsq
 
-  pure function vector_normsq_q(vector) result(normsq) 
+  pure function vector_normsq_q(vector) result(normsq)
 
     real(qp), intent(in), dimension(:) :: vector
     real(qp)             :: normsq
-   
+
     normsq = dot_product(vector,vector)
 
   end function vector_normsq_q
@@ -3805,9 +3806,9 @@ CONTAINS
 
     real(dp), intent(in), dimension(:) :: this,other
     real(dp)             :: dotpr
-   
+
     dotpr = dot_product(this,other)
- 
+
   end function vector_dotpr
 
 
@@ -3833,64 +3834,64 @@ CONTAINS
 
   end function angle
 
-  ! x .outer. y 
+  ! x .outer. y
   pure function outer(vector1,vector2) result(outr)
     real(dp),intent(in), dimension(:) ::vector1,vector2
     real(dp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
-     
+
     do j=1,size(vector2)
        do i=1,size(vector1)
           outr(i,j)=vector1(i)*vector2(j)
        end do
     end do
-  
+
   end function outer
 
   pure function outer_qq(vector1,vector2) result(outr)
     real(qp),intent(in), dimension(:) ::vector1,vector2
     real(qp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
-     
+
     do j=1,size(vector2)
        do i=1,size(vector1)
           outr(i,j)=vector1(i)*vector2(j)
        end do
     end do
-  
+
   end function outer_qq
 
-  ! x .outer. y 
+  ! x .outer. y
   pure function d_outer_zz(vector1,vector2) result(outr)
     complex(dp),intent(in), dimension(:) ::vector1,vector2
     real(dp), dimension(size(vector1),size(vector2)) ::outr
     integer::i,j
-     
+
     do j=1,size(vector2)
        do i=1,size(vector1)
           outr(i,j)=vector1(i)*conjg(vector2(j))
        end do
     end do
-  
+
   end function d_outer_zz
 
-  ! x .outer. y 
+  ! x .outer. y
   pure function z_outer_zz(vector1,vector2) result(outr)
     complex(dp),intent(in), dimension(:) ::vector1,vector2
     complex(dp), dimension(size(vector1),size(vector2)) :: outr
     integer::i,j
-     
+
     do j=1,size(vector2)
        do i=1,size(vector1)
           outr(i,j)=vector1(i)*conjg(vector2(j))
        end do
     end do
-  
+
   end function z_outer_zz
 
 
-  !% Return the square root of 'r' if it is positive, or zero otherwise. 
-  elemental function sqrt_cut(r) 
+  !% Return the square root of 'r' if it is positive, or zero otherwise.
+  elemental function sqrt_cut(r)
     real(dp),intent(in)::r
     real(dp)::sqrt_cut
     sqrt_cut = sqrt(max(0.0_dp,r))
@@ -3900,17 +3901,17 @@ CONTAINS
   ! v1 .feq. v2
   !
   !floating point logical comparison
-  function vector_feq(vector1,vector2) 
+  function vector_feq(vector1,vector2)
     real(dp),intent(in), dimension(:) ::vector1,vector2
     logical::vector_feq
     integer::i
-   
+
     if(size(vector1) /= size(vector2)) &
          call check_size('Vector2',vector2,size(vector1),'Vector_FEQ')
-  
+
     vector_feq=.true.
     do i=1,size(vector1)
-       if (vector1(i).fne.vector2(i)) then 
+       if (vector1(i).fne.vector2(i)) then
           vector_feq=.false.
           return
        end if
@@ -3920,26 +3921,26 @@ CONTAINS
 
   ! v1 .fne. v2
   !
-  function vector_fne(vector1,vector2) 
+  function vector_fne(vector1,vector2)
     real(dp),intent(in), dimension(:) :: vector1,vector2
     logical::vector_fne
     integer::i
-   
+
     if(size(vector1) /= size(vector2)) &
          call check_size('Vector2',vector2,size(vector1),'Vector_FNE')
 
     vector_fne=.false.
     do i=1,size(vector1)
-       if (vector1(i).fne.vector2(i)) then 
+       if (vector1(i).fne.vector2(i)) then
           vector_fne=.true.
           return
        end if
     end do
-  
+
   end function vector_fne
 
 
-  !printing  
+  !printing
   subroutine vector_print_mainlog(this, verbosity)
     real(dp),intent(in), dimension(:) :: this
     integer, optional::verbosity
@@ -3951,7 +3952,7 @@ CONTAINS
     type(inoutput)                    :: file
     integer, optional                 :: verbosity
     integer                           :: nbloc,i,nrest
-   
+
     nbloc=size(this)/5
     nrest=mod(size(this),5)
 
@@ -3975,7 +3976,7 @@ CONTAINS
     type(inoutput)                       :: file
     integer, optional::verbosity
     integer:: nbloc,i,nrest
-   
+
     nbloc=size(this)/5
     nrest=mod(size(this),5)
 
@@ -4058,7 +4059,7 @@ CONTAINS
 
     integer :: i,N,M
     character(20) :: format
-    
+
     N = size(this,1)
     M = size(this,2)
     write(format,'(a,i0,a)')'(',M,'L3)'
@@ -4070,7 +4071,7 @@ CONTAINS
 
   end subroutine logical_matrix_print
 
-  ! add to vector elements, random quantities in the range(-a/2,a/2)     
+  ! add to vector elements, random quantities in the range(-a/2,a/2)
   subroutine vector_randomise(v,a)
     real(dp), intent(inout), dimension(:)  :: v
     real(dp), intent(in)    :: a
@@ -4081,7 +4082,7 @@ CONTAINS
     end do
   end subroutine vector_randomise
 
-  ! add to complex vector elements, random quantities in the range(-a/2,a/2)     
+  ! add to complex vector elements, random quantities in the range(-a/2,a/2)
   subroutine vector_z_randomise(v,a)
     complex(dp), intent(inout), dimension(:)  :: v
     real(dp), intent(in)    :: a
@@ -4116,7 +4117,7 @@ CONTAINS
     real(dp)                           :: binsize
     integer                            :: i, bin
     logical :: do_drop_outside
-  
+
     if(max_x <= min_x) then
        call system_abort('Vector_Histogram: max_x < min_x')
     end if
@@ -4188,7 +4189,7 @@ CONTAINS
     else
        call system_abort('array_dotprod: dir must be 1 or 2')
     end if
-    
+
   end function array_dotprod
 
 
@@ -4209,7 +4210,7 @@ CONTAINS
        end do
     else
        call system_abort('array_normsq: dir must be 1 or 2')
-    end if 
+    end if
   end function array_normsq
 
   ! norm for each vector
@@ -4258,13 +4259,13 @@ CONTAINS
     real(dp)::a
     !local
     integer::i,j
-   
+
     do i=1,size(m,1)
        do j=1,size(m,2)
           m(i,j)=m(i,j)+(ran_uniform()-0.5_dp)*a
        end do
     end do
-  
+
   end subroutine matrix_randomise
 
   subroutine matrix_z_randomise(m,a)
@@ -4272,16 +4273,16 @@ CONTAINS
     real(dp)::a
     !local
     integer::i,j
-   
+
     do i=1,size(m,1)
        do j=1,size(m,2)
           m(i,j)=m(i,j)+cmplx((ran_uniform()-0.5_dp)*a/sqrt(2.0_dp), (ran_uniform()-0.5_dp)*a/sqrt(2.0_dp))
        end do
     end do
-  
+
   end subroutine matrix_z_randomise
 
-  ! add to matrix elements, random quantities in the range(-a/2,a/2)     
+  ! add to matrix elements, random quantities in the range(-a/2,a/2)
   subroutine matrix_randomise_vweight(m,a)
     real(dp), intent(inout), dimension(:,:)  :: m
     real(dp), intent(in)    :: a(:)
@@ -4392,7 +4393,7 @@ CONTAINS
 
     !z must be uniform in [-1,1]. s is uniform in [0,1]
     z = 2.0_dp * s - 1.0_dp
-    
+
     !x and y are constrained by normalisation
     s = sqrt((1-z*z)/s)
     x = x*s
@@ -4401,7 +4402,7 @@ CONTAINS
     v = (/x,y,z/)
 
   end function random_unit_vector
-  
+
 
   ! INTERPOLATION
 
@@ -4573,7 +4574,7 @@ CONTAINS
     vect1=1.0_dp
 
     call print(matrix_cfct(b,vect1))
-    
+
      write(line,*)'Checking write_file_direct, b:'
     call print(line)
      call print(b)
@@ -4618,15 +4619,15 @@ CONTAINS
     vector2=sqrt_cut(vector1)
     write(line,*)'sqrt_cut:';call print(line)
     call print(vector2)
-    write(line,*)'Vector_reandomise:'; call print(line) 
+    write(line,*)'Vector_reandomise:'; call print(line)
     call vector_randomise(vector1,6.0_dp)
     call print(vector1)
-    if(vector1.FEQ.vector1) then 
-       write(line,*)'FEQ OK' 
+    if(vector1.FEQ.vector1) then
+       write(line,*)'FEQ OK'
        call print(line)
     end if
-    if(vector1.FNE.vector) then  
-       write(line,*)'FNE OK' 
+    if(vector1.FNE.vector) then
+       write(line,*)'FNE OK'
        call print(line)
     end if
     write(line,*)'Checking print:OK if last 2 are different'
@@ -4666,7 +4667,7 @@ CONTAINS
     integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size ! container for the actual size of intarray
-    logical                            :: failed      ! Keeps track of any failures 
+    logical                            :: failed      ! Keeps track of any failures
     integer                            :: i           ! dimension iterator
 
     INIT_ERROR(error)
@@ -4699,12 +4700,12 @@ CONTAINS
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
   subroutine check_size_int_dim1_s(arrayname,intarray,n,caller,error)
-    character(*),           intent(in) :: arrayname 
-    integer, dimension(:),  intent(in) :: intarray  
-    integer,                intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    integer, dimension(:),  intent(in) :: intarray
+    integer,                intent(in) :: n
     character(*),           intent(in) :: caller
     integer, intent(out), optional :: error
-    
+
     INIT_ERROR(error)
     call check_size(arrayname,intarray,(/n/),caller,error)
     PASS_ERROR(error)
@@ -4713,15 +4714,15 @@ CONTAINS
 
   subroutine check_size_int_dim2(arrayname,intarray,n,caller,error)
 
-    character(*),             intent(in) :: arrayname 
-    integer, dimension(:,:),  intent(in) :: intarray  
-    integer, dimension(:),    intent(in) :: n         
+    character(*),             intent(in) :: arrayname
+    integer, dimension(:,:),  intent(in) :: intarray
+    integer, dimension(:),    intent(in) :: n
     character(*),             intent(in) :: caller
     integer, intent(out), optional :: error
 
-    integer, dimension(:), allocatable :: actual_size 
-    logical                            :: failed       
-    integer                            :: i          
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -4753,14 +4754,14 @@ CONTAINS
   subroutine check_size_real_dim1(arrayname,realarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
-    real(dp), dimension(:),  intent(in) :: realarray 
-    integer,  dimension(:),  intent(in) :: n         
+    real(dp), dimension(:),  intent(in) :: realarray
+    integer,  dimension(:),  intent(in) :: n
     character(*),            intent(in) :: caller
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
 
-    integer, dimension(:), allocatable :: actual_size 
-    logical                            :: failed      
-    integer                            :: i           
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -4791,12 +4792,12 @@ CONTAINS
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
   subroutine check_size_real_dim1_s(arrayname,realarray,n,caller,error)
-    character(*),           intent(in) :: arrayname 
-    real(dp), dimension(:), intent(in) :: realarray  
-    integer,                intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    real(dp), dimension(:), intent(in) :: realarray
+    integer,                intent(in) :: n
     character(*),           intent(in) :: caller
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     INIT_ERROR(error)
     call check_size(arrayname,realarray,(/n/),caller,error)
     PASS_ERROR(error)
@@ -4805,15 +4806,15 @@ CONTAINS
 
   subroutine check_size_real_dim2(arrayname,realarray,n,caller, error)
 
-    character(*),              intent(in) :: arrayname 
-    real(dp), dimension(:,:),  intent(in) :: realarray 
-    integer,  dimension(:),    intent(in) :: n        
+    character(*),              intent(in) :: arrayname
+    real(dp), dimension(:,:),  intent(in) :: realarray
+    integer,  dimension(:),    intent(in) :: n
     character(*),              intent(in) :: caller
-    integer, intent(out), optional :: error  
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed      
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -4844,15 +4845,15 @@ CONTAINS
 
   subroutine check_size_real_dim3(arrayname,realarray,n,caller, error)
 
-    character(*),              intent(in) :: arrayname 
-    real(dp), dimension(:,:,:),intent(in) :: realarray 
-    integer,  dimension(:),    intent(in) :: n        
+    character(*),              intent(in) :: arrayname
+    real(dp), dimension(:,:,:),intent(in) :: realarray
+    integer,  dimension(:),    intent(in) :: n
     character(*),              intent(in) :: caller
-    integer, intent(out), optional :: error  
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed      
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -4885,15 +4886,15 @@ CONTAINS
   subroutine check_size_quad_dim1(arrayname,quadarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
-    real(qp), dimension(:),  intent(in) :: quadarray 
-    integer,  dimension(:),  intent(in) :: n         
+    real(qp), dimension(:),  intent(in) :: quadarray
+    integer,  dimension(:),  intent(in) :: n
     character(*),            intent(in) :: caller
     integer, intent(out), optional :: error
 
-    integer, dimension(:), allocatable :: actual_size 
-    logical                            :: failed      
-    integer                            :: i           
-    
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
+
     INIT_ERROR(error)
     failed = .false.
     allocate( actual_size( size(shape(quadarray)) ) )
@@ -4923,11 +4924,11 @@ CONTAINS
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
   subroutine check_size_quad_dim1_s(arrayname,quadarray,n,caller,error)
-    character(*),           intent(in) :: arrayname 
-    real(qp), dimension(:), intent(in) :: quadarray  
-    integer,                intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    real(qp), dimension(:), intent(in) :: quadarray
+    integer,                intent(in) :: n
     character(*),           intent(in) :: caller
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
 
     INIT_ERROR(error)
     call check_size(arrayname,quadarray,(/n/),caller,error)
@@ -4937,15 +4938,15 @@ CONTAINS
 
   subroutine check_size_quad_dim2(arrayname,quadarray,n,caller,error)
 
-    character(*),              intent(in) :: arrayname 
-    real(qp), dimension(:,:),  intent(in) :: quadarray 
-    integer,  dimension(:),    intent(in) :: n        
-    character(*),              intent(in) :: caller   
-    integer, intent(out), optional :: error     
+    character(*),              intent(in) :: arrayname
+    real(qp), dimension(:,:),  intent(in) :: quadarray
+    integer,  dimension(:),    intent(in) :: n
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed      
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -4978,14 +4979,14 @@ CONTAINS
   subroutine check_size_complex_dim1(arrayname,realarray,n,caller,error)
 
     character(*),            intent(in) :: arrayname
-    complex(dp), dimension(:),  intent(in) :: realarray 
-    integer,  dimension(:),  intent(in) :: n         
+    complex(dp), dimension(:),  intent(in) :: realarray
+    integer,  dimension(:),  intent(in) :: n
     character(*),            intent(in) :: caller
-    integer, intent(out), optional :: error     
-   
-    integer, dimension(:), allocatable :: actual_size 
-    logical                            :: failed      
-    integer                            :: i           
+    integer, intent(out), optional :: error
+
+    integer, dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -5016,12 +5017,12 @@ CONTAINS
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
   subroutine check_size_complex_dim1_s(arrayname,realarray,n,caller,error)
-    character(*),           intent(in) :: arrayname 
-    complex(dp), dimension(:), intent(in) :: realarray  
-    integer,                intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    complex(dp), dimension(:), intent(in) :: realarray
+    integer,                intent(in) :: n
     character(*),           intent(in) :: caller
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     INIT_ERROR(error)
     call check_size(arrayname,realarray,(/n/),caller)
     PASS_ERROR(error)
@@ -5030,15 +5031,15 @@ CONTAINS
 
   subroutine check_size_complex_dim2(arrayname,realarray,n,caller, error)
 
-    character(*),              intent(in) :: arrayname 
-    complex(dp), dimension(:,:),  intent(in) :: realarray 
-    integer,  dimension(:),    intent(in) :: n        
-    character(*),              intent(in) :: caller 
-    integer, intent(out), optional :: error     
+    character(*),              intent(in) :: arrayname
+    complex(dp), dimension(:,:),  intent(in) :: realarray
+    integer,  dimension(:),    intent(in) :: n
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error
 
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed      
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -5069,15 +5070,15 @@ CONTAINS
 
   subroutine check_size_log_dim1(arrayname,logarray,n,caller,error)
 
-    character(*),           intent(in) :: arrayname 
-    logical, dimension(:),  intent(in) :: logarray  
-    integer, dimension(:),  intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    logical, dimension(:),  intent(in) :: logarray
+    integer, dimension(:),  intent(in) :: n
     character(*),           intent(in) :: caller
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed     
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -5108,12 +5109,12 @@ CONTAINS
 
   !overloaded subroutine which allows a scalar 'n' in the one dimensional case
   subroutine check_size_log_dim1_s(arrayname,logarray,n,caller,error)
-    character(*),           intent(in) :: arrayname 
-    logical, dimension(:),  intent(in) :: logarray  
-    integer,                intent(in) :: n         
+    character(*),           intent(in) :: arrayname
+    logical, dimension(:),  intent(in) :: logarray
+    integer,                intent(in) :: n
     character(*),           intent(in) :: caller
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     INIT_ERROR(error)
     call check_size(arrayname,logarray,(/n/),caller)
     PASS_ERROR(error)
@@ -5122,15 +5123,15 @@ CONTAINS
 
   subroutine check_size_log_dim2(arrayname,logarray,n,caller,error)
 
-    character(*),             intent(in) :: arrayname 
-    logical, dimension(:,:),  intent(in) :: logarray  
-    integer, dimension(:),    intent(in) :: n         
-    character(*),             intent(in) :: caller    
-    integer, intent(out), optional :: error     
-    
+    character(*),             intent(in) :: arrayname
+    logical, dimension(:,:),  intent(in) :: logarray
+    integer, dimension(:),    intent(in) :: n
+    character(*),             intent(in) :: caller
+    integer, intent(out), optional :: error
+
     integer, dimension(:), allocatable :: actual_size
-    logical                            :: failed     
-    integer                            :: i          
+    logical                            :: failed
+    integer                            :: i
 
     INIT_ERROR(error)
     failed = .false.
@@ -5157,7 +5158,7 @@ CONTAINS
        RAISE_ERROR(trim(caller)//': Size checking failed', error)
     end if
 
-  end subroutine check_size_log_dim2  
+  end subroutine check_size_log_dim2
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -5180,12 +5181,12 @@ CONTAINS
         end if
      end do
    end function find_indices
-   
+
 
    !% Test if a given integer 'val' is in an integer array 'array'.
    pure function is_in_array(this, val)
 
-     
+
      integer, intent(in) :: val
      integer, intent(in), dimension(:) :: this
      logical             :: Is_In_Array
@@ -5373,9 +5374,10 @@ CONTAINS
 
    !% Sort an array of integers into ascending order (slow: scales as N$^2$).
    !% r_data is an accompanying array of reals on which the same reordering is performed
-   subroutine sort_array_i(array, r_data)
+   subroutine sort_array_i(array, i_data, r_data)
 
       integer, dimension(:), intent(inout) :: array
+      integer, dimension(:), intent(inout), optional :: i_data
       real(dp), dimension(:), intent(inout), optional :: r_data
       integer                              :: i,j,minpos
       integer :: min, tmp
@@ -5398,11 +5400,16 @@ CONTAINS
          tmp = array(i)
          array(i) = array(minpos)
          array(minpos) = tmp
-	 if (present(r_data)) then
-	   r_tmp = r_data(i)
-	   r_data(i) = r_data(minpos)
-	   r_data(minpos) = r_tmp
-	 endif
+         if (present(i_data)) then
+            tmp = i_data(i)
+            i_data(i) = i_data(minpos)
+            i_data(minpos) = tmp
+         endif
+      	 if (present(r_data)) then
+            r_tmp = r_data(i)
+            r_data(i) = r_data(minpos)
+            r_data(minpos) = r_tmp
+      	 endif
 
       end do
 
@@ -5438,16 +5445,16 @@ CONTAINS
          tmp = array(i)
          array(i) = array(minpos)
          array(minpos) = tmp
-	 if (present(i_data)) then
-	   i_tmp = i_data(i)
-	   i_data(i) = i_data(minpos)
-	   i_data(minpos) = i_tmp
-	 endif
-	 if (present(r_data)) then
-	   r_tmp = r_data(i)
-	   r_data(i) = r_data(minpos)
-	   r_data(minpos) = r_tmp
-	 endif
+         if (present(i_data)) then
+            i_tmp = i_data(i)
+            i_data(i) = i_data(minpos)
+            i_data(minpos) = i_tmp
+         endif
+         if (present(r_data)) then
+            r_tmp = r_data(i)
+            r_data(i) = r_data(minpos)
+            r_data(minpos) = r_tmp
+         endif
 
       end do
 
@@ -5456,11 +5463,12 @@ CONTAINS
 
    !% Sort an array of integers into ascending order.
    !% The function uses heapsort, which always scales as N log N.
-   !% r_data is an accompanying array of reals on which the same reordering is
-   !% performed
+   !% i_data and r_data are a accompanying arrays of integers and reals
+   !% on which the same reordering is performed
    !% (Initial implementation by Andreas Wonisch)
-   subroutine heap_sort_i(array, r_data)
+   subroutine heap_sort_i(array, i_data, r_data)
      integer,            dimension(:), intent(inout)  :: array
+     integer,  optional, dimension(:), intent(inout)  :: i_data
      real(dp), optional, dimension(:), intent(inout)  :: r_data
 
      ! ---
@@ -5480,11 +5488,16 @@ CONTAINS
      enddo
 
      do i = N, 2, -1
-        
+
         ! Swap
         tmpi       = array(1)
         array(1)   = array(i)
         array(i)   = tmpi
+        if (present(i_data)) then
+           tmpi       = i_data(1)
+           i_data(1)  = i_data(i)
+           i_data(i)  = tmpi
+        endif
         if (present(r_data)) then
            tmpr       = r_data(1)
            r_data(1)  = r_data(i)
@@ -5494,7 +5507,7 @@ CONTAINS
         root = 1
         j = i -1
         call siftdown(root, j)
-    
+
      enddo
 
    contains
@@ -5528,6 +5541,11 @@ CONTAINS
              tmpi              = array(root)
              array(root)       = array(maxchild)
              array(maxchild)   = tmpi
+             if (present(i_data)) then
+                tmpi              = i_data(root)
+                i_data(root)      = i_data(maxchild)
+                i_data(maxchild)  = tmpi
+             endif
              if (present(r_data)) then
                 tmpr              = r_data(root)
                 r_data(root)      = r_data(maxchild)
@@ -5573,7 +5591,7 @@ CONTAINS
      enddo
 
      do i = N, 2, -1
-        
+
         ! Swap
         tmpr       = array(1)
         array(1)   = array(i)
@@ -5592,7 +5610,7 @@ CONTAINS
         root = 1
         j = i -1
         call siftdown(root, j)
-    
+
      enddo
 
    contains
@@ -5673,7 +5691,7 @@ CONTAINS
      enddo
 
      do i = N, 2, -1
-        
+
         ! Swap
         tmp_array(:) = array(:,1)
         array(:,1)   = array(:,i)
@@ -5692,7 +5710,7 @@ CONTAINS
         root = 1
         j = i -1
         call siftdown(root, j)
-    
+
      enddo
 
      deallocate(tmp_array)
@@ -5775,7 +5793,7 @@ CONTAINS
      enddo
 
      do i = N, 2, -1
-        
+
         ! Swap
         tmp_array(:) = array(:,1)
         array(:,1)   = array(:,i)
@@ -5794,7 +5812,7 @@ CONTAINS
         root = 1
         j = i -1
         call siftdown(root, j)
-    
+
      enddo
 
      deallocate(tmp_array)
@@ -5853,8 +5871,8 @@ CONTAINS
    endsubroutine heap_sort_i_2dim
 
    !% Do an in place insertion sort on 'this', in ascending order.
-   !% If 'idx' is present  then on exit it will contain the list 
-   !% of indices into 'this' permuted in the same way as the entries 
+   !% If 'idx' is present  then on exit it will contain the list
+   !% of indices into 'this' permuted in the same way as the entries
    !% have been.
    subroutine insertion_sort_i(this, idx)
      integer, intent(inout), dimension(:) :: this
@@ -5864,14 +5882,14 @@ CONTAINS
      vi = 1
 
      if(present(idx)) idx = (/ (i, i=1,size(this)) /)
-    
+
      do i = 2, size(this)
         if (this(i) >= this(i-1)) cycle
         v = this(i)
         if (present(idx)) vi = idx(i)
-       
+
         j = i-1
-        do while (j >= 1) 
+        do while (j >= 1)
            if (v > this(j)) exit
            this(j+1) = this(j)
            this(j) = v
@@ -5879,7 +5897,7 @@ CONTAINS
               idx(j+1) = idx(j)
               idx(j) = vi
            end if
-           j = j - 1          
+           j = j - 1
         end do
      end do
 
@@ -5894,14 +5912,14 @@ CONTAINS
      vi = 1
 
      if(present(idx)) idx = (/ (i, i=1,size(this)) /)
-    
+
      do i = 2, size(this)
         if (this(i) >= this(i-1)) cycle
         v = this(i)
         if (present(idx)) vi = idx(i)
-       
+
         j = i-1
-        do while (j >= 1) 
+        do while (j >= 1)
            if (v > this(j)) exit
            this(j+1) = this(j)
            this(j) = v
@@ -5909,7 +5927,7 @@ CONTAINS
               idx(j+1) = idx(j)
               idx(j) = vi
            end if
-           j = j - 1          
+           j = j - 1
         end do
      end do
 
@@ -5922,7 +5940,7 @@ CONTAINS
    !% To restrict the search to a subsection of the array supply 'low' and/or 'high'.
 
    function binary_search_i(array,value,first,low,high,error) result(index)
-     
+
      integer, dimension(:), intent(in)   :: array
      integer,               intent(in)   :: value
      integer, optional,     intent(in)   :: first,low,high
@@ -5931,7 +5949,7 @@ CONTAINS
      !local variables
      integer                             :: ilow, ihigh, count, max
      logical                             :: done
-     
+
      INIT_ERROR(error)
      max = size(array)
      ilow = 1; ihigh = max
@@ -5949,7 +5967,7 @@ CONTAINS
 
      index = 0; count = 0
      done = .false.
-     
+
      ASSERT(max >= 1, 'binary_search: Array must have at lease one element!', error)
 
      if ( (array(ilow) > value) .or. (array(ihigh) < value) ) done = .true.
@@ -5961,7 +5979,7 @@ CONTAINS
         index = ihigh
         done = .true.
      end if
-     
+
      do while(.not.done)
         count = count + 1
         index = (ihigh + ilow) / 2
@@ -5977,9 +5995,9 @@ CONTAINS
         end if
         ASSERT(count < max, 'binary_search: Counter hit maximum. Is the array sorted properly?', error)
      end do
-     
+
      if (present(first)) index = index - 1 + first
-     
+
    end function binary_search_i
 
 
@@ -5988,7 +6006,7 @@ CONTAINS
    !% If the array subscripts don't start at 1, then pass the actual index of
    !% the first element as 'first'
    function binary_search_r(array,value,first,low,high,error) result(index)
-     
+
      real(DP), dimension(:), intent(in)   :: array
      real(DP),               intent(in)   :: value
      integer, optional,      intent(in)   :: first,low,high
@@ -6015,7 +6033,7 @@ CONTAINS
 
      index = 0; count = 0
      done = .false.
-     
+
      ASSERT(max >= 1, 'binary_search: Array must have at lease one element!', error)
 
      if (array(ilow) > value) then
@@ -6026,7 +6044,7 @@ CONTAINS
         index = ihigh
         done = .true.
      end if
-     
+
      do while(.not.done)
         count = count + 1
         index = (ihigh + ilow) / 2
@@ -6042,9 +6060,9 @@ CONTAINS
         endif
         ASSERT(count < max, 'binary_search: Counter hit maximum. Is the array sorted properly?', error)
      end do
-     
+
      if (present(first)) index = index - 1 + first
-     
+
    end function binary_search_r
 
 
@@ -6082,14 +6100,14 @@ CONTAINS
 
 
 
-  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  
+  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Linear Least Squares fit using \textsc{lapack} to do singular value decomposition.
   !%
-  !% Fit data 'y' with errors 'sig' to model using parameters 'a', 
+  !% Fit data 'y' with errors 'sig' to model using parameters 'a',
   !% and calculate $\chi^2$ of the fit. The user defined subroutine 'funcs'
   !% should return the model parameters 'a' for the point 'x' in the array 'afunc'.
-  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  
+  ! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine least_squares(x, y, sig, a, chisq, funcs)
 
@@ -6104,7 +6122,7 @@ CONTAINS
     real(dp) :: wmax, thresh, sum, b(size(x)), afunc(size(a))
     real(dp), allocatable, dimension(:) :: work
     integer ::  ndata, ma, lwork
-    interface 
+    interface
        subroutine funcs(x,afunc)
          use system_module
          real(dp) :: x, afunc(:)
@@ -6126,7 +6144,7 @@ CONTAINS
     lwork = 2 * max(3*min(ma,ndata)+max(ma,ndata),5*min(ma,ndata))
     allocate(work(lwork))
     call DGESVD('A','A',ndata,ma,ain,ndata,w,u,ndata,v,ma,work,lwork,info)
-        
+
     if (info/=0) then
        if (info < 0) then
           write(line,'(a,i0)')'least_squares: Problem with argument ',-info
@@ -6174,7 +6192,7 @@ CONTAINS
     integer,  intent(in)    :: N !% The sample number
 
     real(dp)                :: f1, f2, old_av, old_var
-    
+
     f1 = real(N-1,dp) / real(N,dp)
     f2 = 1.0_dp / real(N,dp)
     old_av = average
@@ -6197,7 +6215,7 @@ CONTAINS
 
     !Pack the scalar data into a 1-component vector and call
     !the vector version of this routine
-    
+
     aa(1) = average
     xa(1) = x
     call update_exponential_average(aa,decay,xa)
@@ -6251,7 +6269,7 @@ CONTAINS
   end function bin
 
   !
-  ! Return the coordinate of the centre of the ith bin if we have n bins spanning the range [a,b) 
+  ! Return the coordinate of the centre of the ith bin if we have n bins spanning the range [a,b)
   !
   function bin_centre(a,b,n,i) result(c)
 
@@ -6388,8 +6406,8 @@ CONTAINS
      real_array_le = .not.real_array_gt(array1,array2)
   endfunction real_array_le
 
-  !% compare contents of 2 cells in up to N=2 arrays (int or real), return true if 
-  !% contents in first cell is less than 2nd, with 1st array taking precendence.  
+  !% compare contents of 2 cells in up to N=2 arrays (int or real), return true if
+  !% contents in first cell is less than 2nd, with 1st array taking precendence.
   function arrays_lt(i, j, i_p1, r_p1, i_p2, r_p2, i_p3, r_p3, error)
      integer, intent(in) :: i, j
      integer, intent(in), pointer, optional :: i_p1(:)
@@ -6669,7 +6687,7 @@ CONTAINS
            end do
         end do
      end if
-     
+
      assign(:) = 0
 
      if (trim(do_initialisation) == 'random_partition') then
@@ -6707,7 +6725,7 @@ CONTAINS
                  kmin = kk
               end if
            end do
-           
+
            if (assign(nn) /= kmin) then
               assign(nn) = kmin
               change = .true.
@@ -6828,17 +6846,17 @@ CONTAINS
   !% Calculates integral numerically using the trapezoid formula from (x,y) data
   !% pairs.
   function TrapezoidIntegral(x,y)
-  
+
      real(dp) :: TrapezoidIntegral
      real(dp), dimension(:), intent(in) :: x, y
-  
+
      integer :: n
-  
+
      if( size(x) /= size(y) ) call system_abort('TrapezoidIntegral: dimensions of x and y not the same')
      n = size(x)
-  
+
      TrapezoidIntegral = sum((x(2:n)-x(1:n-1))*(y(2:n)+y(1:n-1)))/2.0_dp
-  
+
   endfunction TrapezoidIntegral
 
   subroutine fill_random_integer(r,n,b)
@@ -6860,7 +6878,7 @@ CONTAINS
      endif
 
      do i = i0, sr
-        do 
+        do
            call random_number(rnd)
            irnd = ceiling(rnd*n)
            if( all(r /= irnd) ) exit
@@ -7053,7 +7071,7 @@ CONTAINS
     deallocate(work)
 
     if (present(result_inv)) then
- 
+
       if (info /= 0) then
         if (info < 0) then
           write(line,'(a,i0)')'SVD: Problem with argument ',-info
@@ -7093,7 +7111,7 @@ CONTAINS
 
       result_inv = transpose(vt) .mult. sigmainv .mult. transpose(u)
 
-    end if ! on condition of matrix inverting  
+    end if ! on condition of matrix inverting
 
     if (present(u_out))    u_out = u
     if (present(vt_out))   vt_out = vt
@@ -7121,7 +7139,7 @@ CONTAINS
     norm = sqrt(norm)
   end function frobenius_norm
 
-  ! polynomial switching function for implementing a cutoff - 
+  ! polynomial switching function for implementing a cutoff -
   ! a sigmoid going from 1 to zero smoothly.
   ! the first three derivatives are exactly zero at the end points
   function poly_switch(r,cutoff_in,transition_width)
@@ -7399,14 +7417,14 @@ CONTAINS
       if( r > cutoff_in ) then
 	  d2coordination_function_upper = 0.0_dp
       elseif( r > (cutoff_in-transition_width) ) then
-	  d2coordination_function_upper = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width) 
+	  d2coordination_function_upper = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width)
       else
 	  d2coordination_function_upper = 0.0_dp
       endif
 
    endfunction d2coordination_function_upper
 
-   !NB this third derivative is not continuous! 
+   !NB this third derivative is not continuous!
    elemental function d3coordination_function_upper(r,cutoff_in,transition_width)
 
       real(dp)             :: d3coordination_function_upper
@@ -7415,7 +7433,7 @@ CONTAINS
       if( r > cutoff_in ) then
 	  d3coordination_function_upper = 0.0_dp
       elseif( r > (cutoff_in-transition_width) ) then
-	  d3coordination_function_upper = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width) 
+	  d3coordination_function_upper = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width)
       else
 	  d3coordination_function_upper = 0.0_dp
       endif
@@ -7471,7 +7489,7 @@ CONTAINS
 !!$
 !!$      real(dp)             :: fermi_dirac_function
 !!$      real(dp), intent(in) :: r, cutoff_in, transition_width
-!!$      real(dp)             :: ex, numerical_zero           
+!!$      real(dp)             :: ex, numerical_zero
 !!$      numerical_zero = 1e-16_dp
 !!$
 !!$      ex = exp((r-cutoff_in)/transition_width)
@@ -7479,7 +7497,7 @@ CONTAINS
 !!$      if( ex < numerical_zero ) then
 !!$          fermi_dirac_function= 1.0_dp
 !!$      elseif( 1/ex < numerical_zero) then
-!!$          fermi_dirac_function = 0.0_dp 
+!!$          fermi_dirac_function = 0.0_dp
 !!$      else
 !!$          fermi_dirac_function = 1.0_dp / (ex + 1.0_dp)
 !!$      endif
@@ -7491,13 +7509,13 @@ CONTAINS
 !!$
 !!$      real(dp)             :: d_ln_fermi_dirac_function
 !!$      real(dp), intent(in) :: r, cutoff_in, transition_width
-!!$      real(dp)             :: ex, numerical_zero           
+!!$      real(dp)             :: ex, numerical_zero
 !!$      numerical_zero = 1e-16_dp
 !!$
 !!$      ex = exp((r-cutoff_in)/transition_width)
 !!$
 !!$      if( ex < numerical_zero ) then
-!!$          d_ln_fermi_dirac_function = 0.0_dp 
+!!$          d_ln_fermi_dirac_function = 0.0_dp
 !!$      else
 !!$          d_ln_fermi_dirac_function = (-1.0_dp/transition_width)* (r) / (1.0_dp + 1/ex)
 !!$      endif

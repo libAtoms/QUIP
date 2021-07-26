@@ -26,6 +26,7 @@ end subroutine lattice_xyz_to_abc
 
 subroutine c_system_initialise(verbosity)
   use system_module
+  implicit none
   integer verbosity
 
   call system_initialise(verbosity)
@@ -34,6 +35,7 @@ end subroutine c_system_initialise
 
 function quippy_running()
   use system_module, only: get_quippy_running
+  implicit none
   logical quippy_running
   quippy_running = get_quippy_running()
 end function quippy_running
@@ -42,6 +44,7 @@ end function quippy_running
 
 subroutine c_push_error_with_info(doc, fn, line, kind)
   use error_module
+  implicit none
   character(*), intent(in)       :: doc
   character(*), intent(in)       :: fn
   integer, intent(in)            :: line
@@ -53,6 +56,7 @@ end subroutine c_push_error_with_info
 
 subroutine c_push_error(fn, line, kind)
   use error_module
+  implicit none
 
   character(*), intent(in)       :: fn
   integer, intent(in)            :: line
@@ -64,6 +68,7 @@ end subroutine c_push_error
 
 subroutine c_error_abort(error)
   use error_module
+  implicit none
   integer, intent(inout), optional :: error
 
   call error_abort(error)
@@ -71,6 +76,7 @@ end subroutine c_error_abort
 
 subroutine c_error_clear_stack()
   use error_module
+  implicit none
   call error_clear_stack
 end subroutine c_error_clear_stack
 
@@ -85,6 +91,7 @@ end subroutine c_error_clear_stack
 
 subroutine c_dictionary_initialise(this)
   use dictionary_module
+  implicit none
   integer, intent(inout) :: this(12)
   type(c_dictionary_ptr_type) :: this_ptr
 
@@ -96,6 +103,7 @@ end subroutine c_dictionary_initialise
 
 subroutine c_dictionary_finalise(this)
   use dictionary_module
+  implicit none
   integer, intent(in) :: this(12)
   type(c_dictionary_ptr_type) :: this_ptr
 
@@ -107,6 +115,7 @@ end subroutine c_dictionary_finalise
 
 subroutine c_dictionary_get_n(this, n)
   use dictionary_module
+  implicit none
   integer, intent(in) :: this(12)
   integer, intent(out) :: n
   type(c_dictionary_ptr_type) :: this_ptr
@@ -119,6 +128,7 @@ end subroutine c_dictionary_get_n
 subroutine c_dictionary_get_key(this, i, key, length, error)
   use error_module
   use dictionary_module
+  implicit none
   integer, intent(in) :: this(12), i
   character(len=*), intent(out) :: key
   integer, intent(out), optional :: length, error
@@ -141,6 +151,7 @@ subroutine c_dictionary_query_key(this, key, type, dshape, dloc, error)
 
   use extendable_str_module
   use system_module
+  implicit none
 
 #ifdef __GFORTRAN__
   INTERFACE
@@ -272,8 +283,10 @@ end subroutine c_dictionary_query_index
 
 subroutine c_dictionary_add_key(this, key, type, dshape, loc, error)
   use system_module
+  use error_module
   use dictionary_module
   use iso_c_binding, only: c_intptr_t
+  implicit none
 
 #ifdef __GFORTRAN__
   INTERFACE

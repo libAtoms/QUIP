@@ -28,6 +28,7 @@ Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 import quippy.convert
 import quippy.potential
 import quippy.descriptors
+import quippy.nye_tensor
 
 import atexit
 

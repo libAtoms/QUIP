@@ -26,7 +26,7 @@ Conversions between ase and fortran atoms objects
 import inspect
 from copy import deepcopy as cp
 
-import _quippy
+import quippy._quippy as _quippy
 import ase
 import f90wrap.runtime
 import numpy as np

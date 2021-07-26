@@ -1,7 +1,7 @@
 #!/bin/bash
 
-e_bulk=$(quip_eval init_args="IP TS" at_file=quartz.xyz param_file=TS_params.xml E | grep Energy | awk -F'=' '{print $2}')
-e_surf=$(quip_eval init_args="IP TS" at_file=quartz_0001.xyz param_file=TS_params.xml E | grep Energy | awk -F'=' '{print $2}')
+e_bulk=$(quip init_args="IP TS" atoms_filename=quartz.xyz param_filename=TS_params.xml E | grep Energy | awk -F'=' '{print $2}')
+e_surf=$(quip init_args="IP TS" atoms_filename=quartz_0001.xyz param_filename=TS_params.xml E | grep Energy | awk -F'=' '{print $2}')
 
 echo e_bulk ${e_bulk}
 echo e_surf ${e_surf}

@@ -74,7 +74,7 @@ pure function dlj(x, data)
         dlj((j-1)*3+1:(j-1)*3+3) = dlj((j-1)*3+1:(j-1)*3+3)-(-12.0_dp*tmp*tmp+6.0_dp*tmp)/r*dr
      end do
   end do
-  
+
 end function dlj
 
 pure function elj(x)
@@ -126,13 +126,13 @@ implicit none
 
 
   call system_initialise()
-  
+
 !  call Initialise(params, "quip_params.xml")
 !  call Initialise(mpot, 'IP LJ', params)
 !  call Initialise(mpot, 'IP LJ', '<LJ_params n_types="1" label="default"><per_type_data type="1" atomic_num="1" /><per_pair_data type1="1" type2="1" sigma="1.0" eps6="1.0" eps12="1.0" cutoff="10.0" shifted="T" /></LJ_params>')
 
   call Initialise(mpot, 'FilePot command=./castep_driver.sh')
-  
+
   call initialise(at, N, reshape((/10.0_dp,0.0_dp,0.0_dp,0.0_dp,10.0_dp,0.0_dp,0.0_dp,0.0_dp, 10.0_dp/), (/3,3/)))
   call set_cutoff(at, cutoff(mpot)+0.2)
   call initialise(movie, 'movie.xyz', OUTPUT)
@@ -149,7 +149,7 @@ implicit none
      call random_initial_pos_chris(at, 5.0_dp)
 
      ! TIMING TEST
-     
+
      !x = reshape(at%pos, (/at%N*3/))
      !eold = 0.0_dp
      !do i=1,1000000
@@ -165,7 +165,7 @@ implicit none
      !x0 = reshape(at%pos, (/at%N*3/))
      !atlocale = elj(x0)
      !call print_xyz(at, movie, ('ljenergy='//sum(atlocale)), all_properties=.true.)
-     
+
      do i=1,10
 !        niter =  minim(mpot, at, 'cg', 1.0e-10_dp, 5000, &
 !             do_pos=.true., do_print=.false., print_inoutput=movie)
@@ -178,7 +178,7 @@ implicit none
         !atlocale = elj(x)
         !at%pos = reshape(x, (/3,at%N/))
         !call print_xyz(at, movie, ('comment="quipcg" Energy='//sum(atlocale)), all_properties=.true.)
- 
+
 
         !at%pos = reshape(x0, (/3,at%N/))
 
@@ -192,26 +192,26 @@ implicit none
 	call set_value(at%properties, "comment", "castepbfgs")
 	call set_value(at%properties, "ljenergy", sum(atlocale))
         call write(at, movie)
-        
+
         !r = 0
         !call randomise(r, 0.7_dp)
         !at%pos(:,maxloc(e)) = at%pos(:,maxloc(e)) + r
-        
-        
+
+
         !do j=1,N
-        !   if(e(j) > minv+(maxv-minv)*0.7) then 
+        !   if(e(j) > minv+(maxv-minv)*0.7) then
         !      r = 0
         !      call randomise(r, 1.0_dp)
         !      at%pos(:,maxloc(e)) = at%pos(:,maxloc(e)) + r
         !   end if
-        !end do     
-        
+        !end do
+
         !find highest energy atoms
         etmp = elj(x)
         idx = (/ (i, i=1,size(etmp)) /)
-        call sort_array(etmp, idx)
+        call sort_array(etmp, i_data=idx)
         rr = 3.0_dp ! randomize by max this amount
-        
+
         do j=1,1
            jj = idx(N-j+1)
            call print('Randomising '//jj)
@@ -224,9 +224,9 @@ implicit none
               atlocale = elj(x)
            end do
         enddo
-        
+
         at%pos = reshape(x, (/3,at%N/))
-        
+
 
      end do
   end do
@@ -248,7 +248,7 @@ subroutine random_initial_pos(at, rad)
   at%pos = 0.0_dp
   call randomise(at%pos, rad)
   !     at%pos = at%pos+50.0_dp
-  
+
   bad = .true.
   do while(bad)
      x = reshape(at%pos, (/at%N*3/))
@@ -257,13 +257,13 @@ subroutine random_initial_pos(at, rad)
      call print (atlocale)
      bad = .false.
      do i=1,at%N
-        if(atlocale(i) > 10.0_dp) then 
+        if(atlocale(i) > 10.0_dp) then
            call randomise(at%pos(:,i), 2.0_dp)
            bad = .true.
         end if
      end do
   end do
-  
+
 end subroutine random_initial_pos
 
 subroutine random_initial_pos_chris(at, rad)

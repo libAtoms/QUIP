@@ -1,0 +1,10 @@
+<RS_params n_types="2" cutoff="10.0" label="default">
+<per_type_data type="1" atomic_num="29" />
+<per_type_data type="2" atomic_num="79" />
+<per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" 
+      sigma1="1.35" k="10" />
+<per_pair_data type1="1" type2="2" sigma="1.0" eps="1.0" 
+      sigma1="1.35" k="10" />
+<per_pair_data type1="2" type2="2" sigma="1.0" eps="1.0" 
+      sigma1="1.35" k="10" />
+</RS_params>

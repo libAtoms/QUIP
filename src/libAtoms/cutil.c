@@ -161,15 +161,16 @@ int fmd5sum_(char* filename, char md5sum[static 33]) {
    strcat(md5_command,filename);
 
    if ((fp = popen(md5_command, "r")) == NULL) {
+      int errsv = errno;
       free(md5_command);
-      return -1;
+      return errsv;
    }
 
    free(md5_command);
 
-   if(fgets(md5sum, 33, fp) == NULL) return -1;
+   if(fgets(md5sum, 33, fp) == NULL) return -2;
 
-   if(pclose(fp)) return -1;
+   if(pclose(fp)) return -3;
 
    return 0;
 }
@@ -479,23 +480,3 @@ void call_callbackpot_sub_(int* i, int* at) {
 char error_h_info[1000];
 int error_h_line;
 int error_h_kind;
-
-// quippy error_abort() handler
-
-#include <setjmp.h>
-jmp_buf environment_buffer;
-char abort_message[1024];
-
-void quippy_error_abort_(char *message, int len)
-{
-  strncpy(abort_message, message, len);
-  abort_message[len] = '\0';
-  longjmp(environment_buffer,0);
-}
-
-void quippy_error_abort_int_handler(int signum)
-{
-  char message[] = "Interrupt occured";
-  quippy_error_abort_(message, strlen(message));
-}
-

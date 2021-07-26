@@ -41,7 +41,9 @@ import quippy
 import numpy as np
 import quippytest
 import ase.build
-import ase
+from ase.atoms import Atoms
+from ase.calculators.emt import EMT
+from quippy.potential import Potential
 
 diamond_pos = np.array([[-0.04999922, 0.01792964, 0.01711494],
                         [1.32315378, 1.40346929, 1.31076982],
@@ -85,9 +87,9 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
       """
 
         quippy.system_module.system_reseed_rng(2065775975)
-        self.pot_calculator = quippy.potential.Potential('IP SW', param_str=self.xml)
+        self.pot_calculator = Potential('IP SW', param_str=self.xml)
 
-        self.at = ase.Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
+        self.at = Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
 
         self.f = np.zeros((3, len(self.at)), order='F')
         self.df = np.zeros((3, len(self.at)), order='F')
@@ -112,7 +114,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
         self.stress_ref = - np.array([-0.34103601, -0.36145702, -0.34640615,
                                       - 0.19375487, -0.02138795, 0.60925144]) / self.at.get_volume()
 
-        self.at.set_calculator(self.pot_calculator)
+        self.at.calc = self.pot_calculator
 
     def test_energy(self):
         self.assertAlmostEqual(self.at.get_potential_energy(), self.energy_ref)
@@ -137,12 +139,12 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
         self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
 
     def test_calc_args_3(self):
-        pot2 = quippy.potential.Potential('IP SW', param_str=self.xml, calc_args="do_rescale_E E_scale=1.01")
+        pot2 = Potential('IP SW', param_str=self.xml, calc_args="do_rescale_E E_scale=1.01")
         f = pot2.get_forces(self.at)
         self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
 
     def test_calc_args_4(self):
-        pot2 = quippy.potential.Potential('IP SW', param_str=self.xml, 
+        pot2 = Potential('IP SW', param_str=self.xml, 
                                           calc_args={'do_rescale_E': True, 'E_scale': 1.01})
         f = pot2.get_forces(self.at)
         self.assertArrayAlmostEqual(f, self.forces_ref*1.01, tol=1E-06)
@@ -151,5 +153,51 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
     #    self.assertArrayAlmostEqual(self.pot.get_numeric_forces(self.at), self.f_ref.T, tol=1e-4)
 
 
+class TestPotential(quippytest.QuippyTestCase):
+
+    def test_get_potential_energy(self):
+        np.random.seed(0)
+        ats = [ Atoms('Al4', cell=(5, 5, 5), 
+                    scaled_positions=np.random.uniform(size=(4, 3)), 
+                    pbc=[True]*3) for _ in range(2) ]
+
+        LJ_str="""<LJ_params n_types="1" label="default">
+        <!-- dummy paramters for testing purposes, no physical meaning -->
+        <per_type_data type="1" atomic_num="13" />
+        <per_pair_data type1="1" type2="1" sigma="2.0" eps6="1.0" eps12="1.0" cutoff="6.0" energy_shift="T" linear_force_shift="F" />
+        </LJ_params>
+        """
+
+        calc = Potential(param_str=LJ_str, args_str='IP LJ')
+        E1 = []
+        for at in ats:
+            at.calc = calc
+            at.calc.calculate(at, properties=['energy'])
+            E1.append(at.calc.results['energy'])
+
+        E2 = []
+        for at in ats:
+            at.calc = calc
+            E2.append(at.get_potential_energy())
+            
+        self.assertAlmostEqual(E1, E2)  
+            
+        RS_str = """
+        <RS_params n_types="1" cutoff="10.0" label="default">
+        <per_type_data type="1" atomic_num="13" />
+        <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0"
+              sigma1="1.45" k="10" />
+        </RS_params>"""
+
+        calc = Potential(param_str=RS_str, args_str='IP RS')
+        E_RS_ref = [2.6570710989046, 1.0933824843445803]
+        
+        E_RS = []
+        for at in ats:
+            at.calc = calc
+            E_RS.append(at.get_potential_energy())
+            
+        self.assertAlmostEqual(E_RS, E_RS_ref)  
+            
 if __name__ == '__main__':
     unittest.main()

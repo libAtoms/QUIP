@@ -22,24 +22,6 @@ import os.path
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_version
 
-if 'QUIP_ROOT' in os.environ:
-    quip_root = os.environ['QUIP_ROOT']
-else:
-    quip_root = os.path.join(os.getcwd(), '..')
-
-try:
-    quip_arch = os.environ['QUIP_ARCH']
-except KeyError:
-    raise RuntimeError('You need to define the architecture using the QUIP_ARCH variable. Check out the arch/ subdirectory.')
-print('QUIP_ARCH', quip_arch)
-
-platform = '{0}-{1}'.format(get_platform(), get_python_version())
-print('platform', platform)
-
-# extend sys.path
-print(os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
-sys.path.insert(0, os.path.join(quip_root, 'build/{0}/'.format(quip_arch)))
-
 import quippy
 print('Successfully imported quippy3')
 

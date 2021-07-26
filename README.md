@@ -1,6 +1,6 @@
 # QUIP - QUantum mechanics and Interatomic Potentials
 [![Build Status](https://img.shields.io/badge/docs-public-brightgreen)](https://libatoms.github.io/QUIP/)
-[![Build Status](https://travis-ci.org/libAtoms/QUIP.svg?branch=public)](https://travis-ci.org/libAtoms/QUIP)
+![build](https://github.com/libAtoms/QUIP/actions/workflows/Build.yml/badge.svg)
 [![Docker Pulls](https://img.shields.io/docker/pulls/libatomsquip/quip)](https://hub.docker.com/r/libatomsquip/quip)
 
 The `QUIP` package is a collection of software tools to carry out
@@ -32,7 +32,8 @@ Copyright 2006-2019.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
-domain.
+domain. The GAP code, included as a submodule, is distributed under
+a non-commerical [academic source license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md)
 
 ## Features
 
@@ -43,8 +44,8 @@ The following interatomic potentials are presently coded or linked in QUIP:
  - Fanourgakis-Xantheas (water)
  - Finnis-Sinclair (bcc metals)
  - Flikkema-Bromley
- - [GAP](http://www.libatoms.org/gap/gap_download.html) (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
- - Guggenheim-!McGlashan
+ - GAP (Gaussian Approximation Potentials) with (growing...) [online documentation](https://libatoms.github.io/GAP)
+ - Guggenheim-McGlashan
  - Brenner (carbon)
  - OpenKIM (general interface)
  - Lennard-Jones
@@ -84,11 +85,35 @@ will not be competitive in terms of performance with codes such as LAMMPS
 and Gromacs. The Atomic Simulation Environment also does does this, and
 is much more widely used, but QUIP has a number of unique features:
 
-- Deep access to most of the Fortran types and routines from Python via the
+- Access to Fortran types and routines from Python via the
   `quippy` package
-- Support for Gaussian Approximation Potentials [GAP](http://www.libatoms.org/gap/gap_download.html) ([online docs](https://libatoms.github.io/GAP))
+- Support for Gaussian Approximation Potentials (GAP) - [online docs](https://libatoms.github.io/GAP)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
+  
+## Binary Installation of QUIP and quippy
+
+Binary wheels for QUIP and the associated quippy Python bindings 
+that provide interopability with the Atomic Simulation Environment (ASE) are
+available from the [Python package index](https://pypi.org/project/quippy-ase/)
+(PyPI) under the package name `quippy-ase`.
+This means you can install the latest release with:
+
+```bash
+pip install quippy-ase
+```
+
+Installing via `pip` also makes the `quip` and `gap_fit` command line 
+programs available (providing the [directory that pip installs scripts 
+to](https://stackoverflow.com/questions/62162970/programmatically-determine-pip-user-install-location-scripts-directory/62167797#62167797) is on your `PATH`).
+
+Currently, wheels are available for `x86_64` architectures
+with Python 3.6+ on Mac OS X and glibc-based Linux distributions
+(e.g. Ubuntu, CentOS). The wheels are updated periodically
+using the [quippy-wheels](https://github.com/libAtoms/quippy-wheels) 
+repository using GitHub Actions CI. Please open 
+[issues](https://github.com/libAtoms/quippy-wheels/issues)
+there if you have problems installing with `pip`.
 
 ## Precompiled Containers
 
@@ -115,6 +140,16 @@ to get up and running quickly.
     ```bash
     git clone --recursive https://github.com/libAtoms/QUIP.git
     ```
+
+    One submodule is the GAP code, which can be found in `src/GAP`.
+    Note that GAP is distributed under a diferent
+    [license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md).
+    
+    GAP is a machine learning method that uses Gaussian process
+    regression, and needs large data files to run. You can find
+    potentials that have been published as well as training data in
+    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+
 3.  Decide your architecture by looking in the `arch/` directory, and
     define an environmental variable `QUIP_ARCH`, e.g.::
     ```bash
@@ -166,8 +201,8 @@ to get up and running quickly.
     calculate the properties of an atomic configuration using a
     variety of models. For example::
     ```bash
-    quip at_file=test.xyz init_args='IP LJ' \
-        param_file=share/Parameters/ip.parms.LJ.xml E
+    quip atoms_filename=test.xyz init_args='IP LJ' \
+        param_filename=share/Parameters/ip.parms.LJ.xml E
     ```
     assuming that you have a file called `test.xyz` with the following
     data in it representing Cu atoms in a cubic fcc lattice::
@@ -200,7 +235,10 @@ to get up and running quickly.
     the types of interatomic potentials (IP) that are available.
 
 7.  To compile the Python wrappers (`quippy`), the minimum requirements
-    are:
+    are as follows. `f90wrap` will be installed automatically by the build
+    process, but you might need to check that the directory where `pip`
+    installs executuable scripts to is on your path (e.g. by setting
+    `PATH=~/.local/bin:$PATH`).
     - Python 3
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
@@ -213,12 +251,6 @@ to get up and running quickly.
     (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of
     your virtual environment) _before_ building `quippy` (otherwise library
     versions may cause unexpected conflicts).
-
-    The required version of `f90wrap` can be installed with:
-    ```bash
-    git submodule update --init --recursive
-    pip install src/f90wrap
-    ```
     
 9.  To compile the Python wrappers (`quippy`), run::
     ```bash
@@ -252,15 +284,7 @@ to get up and running quickly.
     ```
 13. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
-    (DFTB parameters, TTM3f water model), `GAP` (Gaussian
-    Approximation Potential models and training). These packages are
-    not distributed with QUIP because they come with different licensing
-    restrictions, but you can get them [here](http://www.libatoms.org/gap/gap_download.html)
-
-    GAP is a machine learning method that uses Gaussian process
-    regression, and needs large data files to run. You can find
-    potentials that have been published as well as training data in
-    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+    (DFTB parameters, TTM3f water model).
 
 14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
@@ -268,24 +292,24 @@ to get up and running quickly.
 
 # Developer notes:
 
-## Fixing/updating the version f90wrap:
+## Fixing/updating the version of GAP:
 
   ```bash
-  cd src/f90wrap
+  cd src/GAP
   ```
   ```bash 
   git checkout <commit> 
   ```
   OR 
   ```bash 
-  git checkout master
+  git checkout main
 
   ```
   Updating the version in the `QUIP` repository:
   ```
   cd ../..
-  git add src/f90wrap
-  git commit -m "updating the version of f90wrap"
+  git add src/GAP # or src/f90wrap
+  git commit -m "updating the version of GAP"
   ```
 
 

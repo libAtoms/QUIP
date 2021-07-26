@@ -33,6 +33,7 @@
 program quip
 
 use libAtoms_module
+use system_module, only : verbosity_unset_minimum, verbosity_set_minimum
 #ifdef HAVE_TB
 use tb_module
 #endif
@@ -812,6 +813,7 @@ implicit none
         deallocate(descriptor_array)
         if(allocated(grad_descriptor_array)) deallocate(grad_descriptor_array)
         if(allocated(grad_descriptor_index)) deallocate(grad_descriptor_index)
+        if(allocated(grad_descriptor_pos)) deallocate(grad_descriptor_pos)
      end if
 #endif
 

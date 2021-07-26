@@ -59,44 +59,46 @@ module system_module
 include 'mpif.h'
 #endif
 #endif
+  
+private
 
-  logical :: system_always_flush = .false.
+  logical, public :: system_always_flush = .false.
 
-  logical :: system_use_fortran_random = .false.
+  logical, public :: system_use_fortran_random = .false.
 
 #ifdef HAVE_QP
-  integer, parameter :: qp = 16 
+  integer, parameter, public :: qp = 16 
 #elsif TEN_DIGIT_PRECISION
-  integer, parameter :: qp = selected_real_kind(10) !kind(1.0d0)
+  integer, parameter, public :: qp = selected_real_kind(10) !kind(1.0d0)
 #else
-  integer, parameter :: qp = 8
+  integer, parameter, public :: qp = 8
 #endif
   
 #ifdef QUAD_PRECISION
-  integer, parameter :: dp = 16 ! kind(1.0d0)
+  integer, parameter, public :: dp = 16 ! kind(1.0d0)
 #elsif TEN_DIGIT_PRECISION
-  integer, parameter :: dp = selected_real_kind(10) !kind(1.0d0)
+  integer, parameter, public :: dp = selected_real_kind(10) !kind(1.0d0)
 #else
-  integer, parameter :: dp = 8 ! kind(1.0d0)
+  integer, parameter, public :: dp = 8 ! kind(1.0d0)
 #endif
 
-  character :: quip_new_line
+  character, public :: quip_new_line
 
-  integer, parameter :: INTEGER_SIZE = 4
-  integer, parameter :: REAL_SIZE = dp
-  integer, parameter :: COMPLEX_SIZE = 2*dp
-  logical :: trace_memory = .false.
-  integer :: traced_memory = 0
+  integer, parameter, public :: INTEGER_SIZE = 4
+  integer, parameter, public :: REAL_SIZE = dp
+  integer, parameter, public :: COMPLEX_SIZE = 2*dp
+  logical, public :: trace_memory = .false.
+  integer, public :: traced_memory = 0
 
   logical, private :: system_do_timing = .false.
   logical, private :: system_quippy_running = .false.
 
-  type Stack
+  type, public :: Stack
     integer:: pos
     integer, allocatable :: val(:)
   end type Stack
 
-  type InOutput
+  type, public :: InOutput
      integer:: unit
      character(256)::filename
      character(256)::prefix, postfix
@@ -111,83 +113,88 @@ include 'mpif.h'
      logical::initialised = .false.
   end type InOutput
 
-  type allocatable_array_pointers
+  type, public :: allocatable_array_pointers
     integer, allocatable :: i_a(:)
     real(dp), allocatable :: r_a(:)
     complex(dp), allocatable :: c_a(:)
     logical, allocatable :: l_a(:)
   end type allocatable_array_pointers
 
-  public   !standard setting for the module
-  integer,private                  :: mpi_n, mpi_myid    ! Number of processes and local process ID
-  real(dp),private                 :: start_time         ! Initial time
-  integer, parameter, private      :: SYSTEM_STRING_LENGTH = 1024 !max line length read
-  integer, parameter, private      :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
-  character(10240)                 :: line               ! 'line' is global and is used by other modules
-  character(10240),private         :: local_line         ! 'local_line' is private and System should use this instead         
-  type(inoutput),target,save      :: mainlog            !% main output, connected to 'stdout' by default
-  type(inoutput),target,save      :: errorlog           !% error output, connected to 'stderr' by default
-  type(inoutput),target,save      :: mpilog             !% MPI output, written to by each mpi process
-  integer,private                  :: idum               ! used in the random generator
+  integer,private                   :: mpi_n, mpi_myid    ! Number of processes and local process ID
+  real(dp),private                  :: start_time         ! Initial time
+  integer, parameter, private       :: SYSTEM_STRING_LENGTH = 1024 !max line length read
+  integer, parameter, private       :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
+  character(10240),public           :: line               ! 'line' is global and is used by other modules
+  character(10240),private          :: local_line         ! 'local_line' is private and System should use this instead         
+  type(inoutput),target,save,public :: mainlog            !% main output, connected to 'stdout' by default
+  type(inoutput),target,save,public :: errorlog           !% error output, connected to 'stderr' by default
+  type(inoutput),target,save,public :: mpilog             !% MPI output, written to by each mpi process
+  integer,private                   :: idum               ! used in the random generator
   !$omp threadprivate(idum)
-  real(dp),parameter               :: NUMERICAL_ZERO = 1.0e-14_dp
+  real(dp),parameter, public               :: NUMERICAL_ZERO = 1.0e-14_dp
 
   ! system dependent variables 
-  integer::RAN_MAX
+  integer, public::RAN_MAX
 
 
   ! output labels
-  integer,parameter::PRINT_ALWAYS   = -100000
-  integer,parameter::PRINT_SILENT  =  -1
-  integer,parameter::PRINT_NORMAL  =   0
-  integer,parameter::PRINT_VERBOSE =   1
-  integer,parameter::PRINT_NERD    =   1000  ! aleph0
-  integer,parameter::PRINT_ANALYSIS    =   10000 ! aleph1
+  integer,parameter, public::PRINT_ALWAYS   = -100000
+  integer,parameter, public::PRINT_SILENT  =  -1
+  integer,parameter, public::PRINT_NORMAL  =   0
+  integer,parameter, public::PRINT_VERBOSE =   1
+  integer,parameter, public::PRINT_NERD    =   1000  ! aleph0
+  integer,parameter, public::PRINT_ANALYSIS    =   10000 ! aleph1
 
-  integer,parameter::INPUT=0
-  integer,parameter::OUTPUT=1
-  integer,parameter::INOUT=2 
+  integer,parameter, public::INPUT=0
+  integer,parameter, public::OUTPUT=1
+  integer,parameter, public::INOUT=2 
 
 
   ! random number generator parameters
-  integer,parameter::ran_A=16807
-  integer,parameter::ran_M=2147483647
-  integer,parameter::ran_Q=127773
-  integer,parameter::ran_R=2836
+  integer,parameter, public::ran_A=16807
+  integer,parameter, public::ran_M=2147483647
+  integer,parameter, public::ran_Q=127773
+  integer,parameter, public::ran_R=2836
 
   ! System_Timer stack size
-  integer, parameter :: TIMER_STACK  = 500
+  integer, parameter, public :: TIMER_STACK  = 500
 
   ! Command argument variables
-  integer,              save :: NUM_COMMAND_ARGS  = 0  !% The number of arguments on the command line
-  integer, parameter         :: MAX_READABLE_ARGS = 100 !% The maximum number of arguments that will be read
-  character(255),       save :: EXEC_NAME              !% The name of the executable
-  character(2550), dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
+  integer, public,              save :: NUM_COMMAND_ARGS  = 0  !% The number of arguments on the command line
+  integer, parameter, public         :: MAX_READABLE_ARGS = 100 !% The maximum number of arguments that will be read
+  character(255), public,       save :: EXEC_NAME              !% The name of the executable
+  character(2550), public, dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
 
   private :: inoutput_initialise
+  public :: initialise
   interface initialise
      module procedure inoutput_initialise
   end interface initialise
 
   private :: inoutput_finalise
+  public :: finalise
   interface finalise
      module procedure inoutput_finalise
   end interface finalise
 
   private :: inoutput_activate
+  public :: activate
   interface activate
      module procedure inoutput_activate
   end interface activate
 
   private :: inoutput_deactivate
+  public :: deactivate
   interface deactivate
      module procedure inoutput_deactivate
   end interface deactivate
 
+  public :: mpi_all_inoutput
   interface mpi_all_inoutput
      module procedure inoutput_mpi_all_inoutput
   end interface mpi_all_inoutput
 
+  public :: print_mpi_id
   interface print_mpi_id
      module procedure inoutput_print_mpi_id
   end interface print_mpi_id
@@ -202,6 +209,8 @@ include 'mpif.h'
   !% verbosity stack then output is suppressed. Possible verbosity levels
   !% range from 'ERROR' through 'NORMAL', 'VERBOSE', 'NERD' and 'ANALYSIS'.
   !% Other user-defined types define the Print interface in the same way.
+
+  public :: print
   interface print
      module procedure inoutput_print_string
      module procedure inoutput_print_integer, inoutput_print_real, inoutput_print_logical
@@ -209,29 +218,36 @@ include 'mpif.h'
   end interface print
 
   private :: reada_real_dim1, reada_int_dim1
+  public :: read_ascii
   interface read_ascii
     module procedure reada_real_dim1, reada_int_dim1
   end interface read_ascii
 
   private :: inoutput_read_line
+  public :: read_line
   interface read_line
     module procedure inoutput_read_line
   end interface read_line
 
   private :: inoutput_read_file
+  public :: read_file
   interface read_file
     module procedure inoutput_read_file
   end interface read_file
 
   private :: inoutput_parse_line
+  public :: parse_line
   interface parse_line
      module procedure inoutput_parse_line
   end interface parse_line
 
   private :: reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
+  public :: reallocate
   interface reallocate
      module procedure reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   end interface reallocate
+ 
+  public :: operator(//)
 
   interface operator(//)
      module procedure string_cat_logical, string_cat_int, string_cat_real, string_cat_real_array
@@ -243,6 +259,7 @@ include 'mpif.h'
      module procedure real_array_cat_string
   end interface
 
+  public :: system_command
   interface system_command
      !%>   call system_command(command)
      !% Interface to a C wrapper to the 'system(3)' system call for
@@ -266,6 +283,7 @@ include 'mpif.h'
   end INTERFACE
 #endif
 
+  public :: c_mem_info
   interface c_mem_info
      subroutine c_mem_info(total_mem,free_mem)
        real(8), intent(out) :: total_mem, free_mem
@@ -283,16 +301,19 @@ include 'mpif.h'
   end interface Finalise
 
   private :: Stack_push
+  public :: push
   interface push
     module procedure Stack_push
   end interface push
 
   private :: Stack_pop
+  public :: pop
   interface pop
     module procedure Stack_pop
   end interface pop
 
   private :: Stack_value
+  public :: value
   interface value
     module procedure Stack_value
   end interface value
@@ -308,6 +329,7 @@ include 'mpif.h'
   private :: optional_default_l, optional_default_i, optional_default_r
   private :: optional_default_c, optional_default_ca, optional_default_z
   private :: optional_default_ia, optional_default_ra
+  public :: optional_default
   interface optional_default
     module procedure optional_default_l, optional_default_i, optional_default_r
     module procedure optional_default_c, optional_default_ca, optional_default_z
@@ -316,13 +338,72 @@ include 'mpif.h'
 
   private :: string_to_real_sub, string_to_integer_sub, string_to_logical_sub
   private :: string_to_real1d, string_to_integer1d, string_to_logical1d
+  public :: string_to_numerical
   interface string_to_numerical
      module procedure string_to_real_sub, string_to_integer_sub, string_to_logical_sub
      module procedure string_to_real1d, string_to_integer1d, string_to_logical1d
   end interface string_to_numerical
 
   integer, external :: pointer_to
-
+  public :: increase_stack
+  public :: ran_normal
+  public :: ran_uniform
+  public :: ran
+  public :: round
+  public :: current_verbosity
+  public :: string_to_real
+  public :: string_to_int
+  public :: string_to_logical
+  public :: lower_case
+  public :: split_string
+  public :: parse_string
+  public :: linebreak_string
+  public :: cmd_arg_count
+  public :: mpi_id
+  public :: mpi_n_procs
+  public :: a2s, s2a
+  public :: system_get_random_seed 
+  public :: system_abort
+  public :: verbosity_push_decrement
+  public :: verbosity_pop
+  public :: print_warning
+  public :: pad
+  public :: get_quippy_running
+  public :: system_timer
+  public :: split_string_simple
+  public :: num_fields_in_string_simple
+  public :: current_times
+  public :: progress
+  public :: progress_timer
+  public :: system_initialise
+  public :: verbosity_push
+  public :: abort_on_mpi_error
+  public :: verbosity_push_increment
+  public :: verbosity_of_str
+  public :: verbosity_to_str
+  public :: get_env_var
+  public :: system_resync_rng
+  public :: get_mpi_size_rank
+  public :: print_title
+  public :: parallel_print
+  public :: system_reseed_rng
+  public :: get_cmd_arg
+  public :: system_set_random_seeds
+  public :: system_finalise
+  public :: enable_timing
+  public :: verbosity_unset_minimum
+  public :: verbosity_set_minimum
+  public :: rewind
+  public :: th
+  public :: string_cat_string_array
+  public :: reference_true
+  public :: reference_false
+  public :: is_file_readable
+  public :: ALLOC_TRACE
+  public :: DEALLOC_TRACE
+  public :: make_run_directory
+  public :: link_run_directory
+  public :: wait_for_file_to_exist
 contains
 
 #ifdef NO_FORTRAN_ISNAN

@@ -32,7 +32,7 @@ PROGRAMS = minimal_md xyz2pdb convert
 
 .PHONY: default all clean docclean
 
-default: libatoms.a 
+default: libatoms.a
 
 all: default ${PROGRAMS}
 
@@ -94,8 +94,8 @@ LIBATOMS_F95_FILES = \
   partition \
   libAtoms \
   libAtoms_misc_utils \
-  libAtoms_utils_no_module
-
+  libAtoms_utils_no_module \
+  f90wrap_stub
 
 LIBATOMS_F77_FILES= \
    lbfgs	
@@ -139,14 +139,5 @@ ${LIBATOMS_C_OBJS}  : %.o : %.c
 ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  %.o libatoms.a
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
-
-ifeq (${USE_MAKEDEP},1)
-LIBATOMS_F95_FPP_FILES = ${addsuffix .fpp, ${LIBATOMS_F95_FILES}}
-
-libAtoms.depend: ${LIBATOMS_F95_FPP_FILES}
-	${SCRIPT_PATH}/${MAKEDEP} ${MAKEDEP_ARGS} -- ${addprefix ../../src/libAtoms/,${LIBATOMS_F95_SOURCES}} > libAtoms.depend
-
--include libAtoms.depend
-endif
 
 install:

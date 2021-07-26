@@ -35,6 +35,7 @@
 
 program density_1d
 
+    use system_module, only : th
     use libatoms_module
 #ifdef NEED_ERF
     use functions_module, only : erf
