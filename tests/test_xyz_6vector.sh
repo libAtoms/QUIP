@@ -2,10 +2,6 @@
 
 # set -e
 
-if [ -z $QUIP_ROOT ]; then
-   echo "$0: Need QUIP_ROOT defined"
-   exit 1
-fi
 if [ -z $QUIP_ARCH ]; then
    echo "$0: Need QUIP_ARCH defined"
    exit 1
@@ -15,6 +11,8 @@ TEST=`basename $0`
 
 mydir=`dirname $0`
 bindir=$mydir/../build/$QUIP_ARCH
+
+QUIP_ROOT=${mydir}/..
 
 if [ ! -x $bindir/convert ]; then
    (cd $QUIP_ROOT && make Programs) || exit 2
