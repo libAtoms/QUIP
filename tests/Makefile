@@ -28,4 +28,4 @@ include Makefile.rules
 PYTHON := python3
 
 all:
-	HAVE_GAP=${HAVE_GAP} QUIP_ARCH=${QUIP_ARCH} ${PYTHON} run_all.py -vv
+	HAVE_GAP=${HAVE_GAP} QUIP_ARCH=${QUIP_ARCH} ${PYTHON} run_all.py -v
