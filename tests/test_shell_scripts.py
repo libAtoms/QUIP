@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 from subprocess import Popen, PIPE
 
+import quippytest
+
 class TestShellScripts(quippytest.QuippyTestCase):
     def test_shell_scripts():
         for f in Path(__file__).parent.glob('test_*.sh'):
