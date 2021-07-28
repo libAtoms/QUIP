@@ -27,7 +27,7 @@ print('Successfully imported quippy3')
 
 # find tests and run them
 suite = unittest.defaultTestLoader.discover(os.getcwd())
-result = unittest.TextTestRunner().run(suite)
+result = unittest.TextTestRunner(verbosity=2).run(suite)
 if result.wasSuccessful():
     sys.exit(0)
 else:
