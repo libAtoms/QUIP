@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 import quippytest
 
 class TestShellScripts(quippytest.QuippyTestCase):
-    def test_shell_scripts():
+    def test_shell_scripts(self):
         for f in Path(__file__).parent.glob('test_*.sh'):
             print("shell script test", f)
 
