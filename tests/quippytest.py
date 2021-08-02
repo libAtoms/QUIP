@@ -55,6 +55,7 @@ class QuippyTestCase(unittest.TestCase):
         logging.root.setLevel(logging.DEBUG)
         first == second
         logging.root.setLevel(level)
+        print(msg)
         self.fail('%s != %s' % (first, second))
 
     def assertArrayAlmostEqual(self, first, second, tol=1e-7):
