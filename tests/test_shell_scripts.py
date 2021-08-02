@@ -13,8 +13,8 @@ class TestShellScripts(quippytest.QuippyTestCase):
 
             p = Popen([f], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
-            print('stdout': stdout)
-            print('stderr': stderr)
+            print('stdout:', stdout)
+            print('stderr:', stderr)
 
             self.assertEqual(p.returncode, 0, f'Shell script test {f} failed with error code '
                                               f'{p.returncode} stderr {stderr.decode()} stdout {stdout.decode()}')
