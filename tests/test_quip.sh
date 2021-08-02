@@ -10,12 +10,16 @@ fi
 TEST=test_quip.sh
 
 mydir=`dirname $0`
-bindir=$mydir/../build/$QUIP_ARCH
+if which quip; then
+    bindir=$(dirname $(which quip))
+else
+    bindir=$mydir/../build/$QUIP_ARCH
 
-QUIP_ROOT=${mydir}/..
+    QUIP_ROOT=${mydir}/..
 
-if [ ! -x $bindir/quip ]; then
-   (cd $QUIP_ROOT && make Programs) || exit 2
+    if [ ! -x $bindir/quip ]; then
+	(cd $QUIP_ROOT && make Programs) || exit 2
+    fi
 fi
 
 cat<<EOF > ${TEST}.in.xyz
