@@ -14,7 +14,7 @@ class TestShellScripts(quippytest.QuippyTestCase):
             p = Popen([f], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
 
-            if 'QUIP_WHEEL_TEST' in os.env and (p.returncode == 2 and f.endswith('test_xyz_6vector.sh')):
+            if 'QUIP_WHEEL_TEST' in os.environ and (p.returncode == 2 and f.endswith('test_xyz_6vector.sh')):
                 print(f'Skipping {f} when testing built wheels')
                 continue
 
