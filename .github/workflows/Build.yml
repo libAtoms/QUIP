@@ -52,6 +52,7 @@ jobs:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
         run: |
+          export QUIP_ROOT=$PWD
           ulimit -n 256
           make test
 
