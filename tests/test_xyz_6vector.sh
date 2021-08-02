@@ -10,13 +10,11 @@ fi
 TEST=`basename $0`
 
 mydir=`dirname $0`
-
 bindir=$mydir/../build/$QUIP_ARCH
-
 QUIP_ROOT=${mydir}/..
 
 if [ ! -x $bindir/convert ]; then
-    cd $QUIP_ROOT && make Programs) || exit 2
+    (cd $QUIP_ROOT && make Programs) || exit 2
 fi
 
 # set up input file for 6-vector, should be OK
