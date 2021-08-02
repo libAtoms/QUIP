@@ -13,8 +13,10 @@ class TestShellScripts(quippytest.QuippyTestCase):
 
             p = Popen([f], stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
-            print('stdout:', stdout)
-            print('stderr:', stderr)
+
+            if 'QUIP_WHEEL_TEST' in os.env and (p.returncode == 2 and f.endswith('test_xyz_6vector.sh')):
+                print(f'Skipping {f} when testing built wheels')
+                continue
 
             self.assertEqual(p.returncode, 0, f'Shell script test {f} failed with error code '
                                               f'{p.returncode} stderr {stderr.decode()} stdout {stdout.decode()}')

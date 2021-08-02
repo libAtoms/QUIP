@@ -11,16 +11,12 @@ TEST=`basename $0`
 
 mydir=`dirname $0`
 
-if which quip; then
-    bindir=$(dirname $(which quip))
-else
-    bindir=$mydir/../build/$QUIP_ARCH
+bindir=$mydir/../build/$QUIP_ARCH
 
-    QUIP_ROOT=${mydir}/..
+QUIP_ROOT=${mydir}/..
 
-    if [ ! -x $bindir/quip ]; then
-	(cd $QUIP_ROOT && make Programs) || exit 2
-    fi
+if [ ! -x $bindir/convert ]; then
+    cd $QUIP_ROOT && make Programs) || exit 2
 fi
 
 # set up input file for 6-vector, should be OK
