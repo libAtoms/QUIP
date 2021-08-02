@@ -8,7 +8,7 @@ import quippytest
 
 class TestShellScripts(quippytest.QuippyTestCase):
     def test_shell_scripts(self):
-        if 'QUIP_WHEEL_TEST' in os.environ
+        if 'QUIP_WHEEL_TEST' in os.environ:
             print(f'Skipping test when testing built wheels')
             return
         
