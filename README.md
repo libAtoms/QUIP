@@ -308,7 +308,7 @@ to get up and running quickly.
   Updating the version in the `QUIP` repository:
   ```
   cd ../..
-  git add src/GAP # or src/f90wrap
+  git add src/GAP
   git commit -m "updating the version of GAP"
   ```
 
