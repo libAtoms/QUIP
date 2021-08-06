@@ -33,9 +33,9 @@
 include arch/Makefile.linux_x86_64_ifort_gcc
 
 DEFINES += -D_OPENMP
-F95FLAGS += -openmp
-F77FLAGS += -openmp
-LINKOPTS += -openmp
+F95FLAGS += -qopenmp
+F77FLAGS += -qopenmp
+LINKOPTS += -qopenmp
 
-QUIPPY_F90FLAGS += -openmp
+QUIPPY_F90FLAGS += -qopenmp
 QUIPPY_CFLAGS += -openmp

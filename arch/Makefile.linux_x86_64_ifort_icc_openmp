@@ -33,11 +33,11 @@
 include arch/Makefile.linux_x86_64_ifort_icc
 
 DEFINES += -D_OPENMP
-F95FLAGS += -openmp -fPIC
-F77FLAGS += -openmp -fPIC
-CFLAGS += -openmp -fPIC
-CPLUSPLUSFLAGS += -openmp -fPIC
-LINKOPTS += -openmp
+F95FLAGS += -qopenmp -fPIC
+F77FLAGS += -qopenmp -fPIC
+CFLAGS += -qopenmp -fPIC
+CPLUSPLUSFLAGS += -qopenmp -fPIC
+LINKOPTS += -qopenmp
 
 QUIPPY_FCOMPILER = intelem
 QUIPPY_DEFINES = -DGETARG_F2003
