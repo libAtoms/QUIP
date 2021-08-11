@@ -204,7 +204,7 @@ endsubroutine quip_wrapper
 
 subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
       quip_param_file,quip_param_file_len,init_args_str,init_args_str_len,calc_args_str,calc_args_str_len, &
-      energy,force,virial,do_energy,do_force,do_virial,output_unit, reload_pot)
+      energy,force,virial,do_energy,do_force,do_virial,output_unit, reload_pot, mpi_communicator, use_mpi)
 
   !% Castep wrapper for QUIP potentials
   !%
@@ -236,15 +236,28 @@ subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
   logical,                            intent(in)  :: do_virial
   integer,                            intent(in)  :: output_unit
   logical,                            intent(in)  :: reload_pot            ! reloads the potential
+  ! we should not have optional arguments,
+  ! so we get told here if we should use MPI or not
+  integer,                            intent(in)  :: mpi_communicator
+  logical,                            intent(in)  :: use_mpi
 
-  call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
-     quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
-     init_args_str=init_args_str,init_args_str_len=init_args_str_len, &
-     calc_args_str=calc_args_str,calc_args_str_len=calc_args_str_len, &
-     energy=energy,force=force,virial=virial,&
-     do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit, &
-     reload_pot=reload_pot)
-
+  if (use_mpi) then
+    call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
+            quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
+            init_args_str=init_args_str,init_args_str_len=init_args_str_len, &
+            calc_args_str=calc_args_str,calc_args_str_len=calc_args_str_len, &
+            energy=energy,force=force,virial=virial,&
+            do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit, &
+            reload_pot=reload_pot, mpi_communicator=mpi_communicator)
+  else
+    call quip_unified_wrapper(N=N,frac_pos=frac_pos,lattice=lattice,symbol=symbol, &
+            quip_param_file=quip_param_file, quip_param_file_len=quip_param_file_len, &
+            init_args_str=init_args_str,init_args_str_len=init_args_str_len, &
+            calc_args_str=calc_args_str,calc_args_str_len=calc_args_str_len, &
+            energy=energy,force=force,virial=virial,&
+            do_energy=do_energy,do_force=do_force,do_virial=do_virial,output_unit=output_unit, &
+            reload_pot=reload_pot)
+  end if
 
 endsubroutine quip_wrapper_castep
 
