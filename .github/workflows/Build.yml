@@ -18,22 +18,24 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    name: ${{ matrix.arch }} GAP ${{ matrix.have_gap }} GCC v ${{ matrix.gcc_version }}
+
     strategy:
       matrix:
         arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ,
                 linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_openmp,
                 linux_x86_64_ifort_gcc_openmp ]
         gcc_version: [ 9 ]
-        have_gap: [ 0, 1 ]
+        have_gap: [ 1 ]
         include:
           # GCC 10.2 with GAP only
           - arch: linux_x86_64_gfortran_openmp
             have_gap: 1
             gcc_version: 10
-        exclude:
-          # only keep the version with GAP for the intel compilers
-          - arch: [ linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_openmp,
-                    linux_x86_64_ifort_gcc_openmp ]
+          # NO-GAP versions for the GNU ones
+          - arch: linux_x86_64_gfortran
+            have_gap: 0
+          - arch: linux_x86_64_gfortran_openmp
             have_gap: 0
 
 
