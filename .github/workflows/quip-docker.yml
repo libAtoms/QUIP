@@ -18,13 +18,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Pull the latest version of the image
-      # in order to use unchanged layers
-      - name: pull last version of image
-        run: docker pull libatomsquip/quip:latest || true
+#      # Pull the latest version of the image
+#      # in order to use unchanged layers
+#      - name: pull last version of image
+#        run: docker pull libatomsquip/quip:latest || true
 
-      # iwth dev flag for now
+      # with dev tag for now
       - name: Build quip
         run: |
-          docker build --tag libatomsquip/quip:dev --cache-from libatomsquip/quip docker
+#          docker build --tag libatomsquip/quip:dev --cache-from libatomsquip/quip docker
+          docker build --tag libatomsquip/quip:dev docker
           docker push libatomsquip/quip:dev
