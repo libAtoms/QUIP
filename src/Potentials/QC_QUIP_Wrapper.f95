@@ -4,9 +4,10 @@
 ! H0 X
 ! H0 X   Portions of this code were written by
 ! H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
-! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+! H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield,
+! H0 X     Tamas K Stenczel
 ! H0 X
-! H0 X   Copyright 2006-2010.
+! H0 X   Copyright 2006-2021.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
 ! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -36,7 +37,8 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QC_QUIP_Wrapper_module
-use system_module, only : dp, system_initialise, INPUT, system_abort,verbosity_push, verbosity_pop, PRINT_SILENT, operator(//), inoutput, PRINT_ALWAYS
+use system_module, only : dp, system_initialise, INPUT, system_abort,&
+        verbosity_push, verbosity_pop, PRINT_SILENT, operator(//), inoutput, PRINT_ALWAYS
 use extendable_str_module, only : extendable_str, string, read
 use table_module, only : table, wipe, int_part
 use atoms_types_module, only : atoms, assign_pointer, add_property
@@ -117,6 +119,13 @@ contains
 
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
   subroutine QC_QUIP_initialise_hybrid(str_ip, str_qm, str_hybrid, lat, Z, pos, err)
+
+    ! moduel level imports
+    ! gcc10: these are needed to be discovered by the compiler to realise that there
+    !        in indeed no argument mismatch
+    use system_module, only: print
+    use potential_module, only: print
+
     character(len=*), intent(in) :: str_ip, str_qm, str_hybrid
     real(dp), intent(in), optional :: lat(3,3)
     integer, intent(in), optional :: Z(:)
