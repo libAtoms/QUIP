@@ -37,16 +37,16 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 module QC_QUIP_Wrapper_module
-use system_module, only : dp, system_initialise, INPUT, system_abort,&
-        verbosity_push, verbosity_pop, PRINT_SILENT, operator(//), inoutput, PRINT_ALWAYS
-use extendable_str_module, only : extendable_str, string, read
-use table_module, only : table, wipe, int_part
-use atoms_types_module, only : atoms, assign_pointer, add_property
-use atoms_module, only : initialise, calc_connect, set_lattice, assignment(=)
-use potential_module, only : potential, initialise, finalise, calc
-use mpi_context_module, only : mpi_context
-implicit none
-private
+  use system_module, only : dp, system_initialise, INPUT, system_abort, &
+          verbosity_push, verbosity_pop, PRINT_SILENT, operator(//), inoutput, PRINT_ALWAYS
+  use extendable_str_module, only : extendable_str, string, read
+  use table_module, only : table, wipe, int_part
+  use atoms_types_module, only : atoms, assign_pointer, add_property
+  use atoms_module, only : initialise, calc_connect, set_lattice, assignment(=)
+  use potential_module, only : potential, initialise, finalise, calc
+  use mpi_context_module, only : mpi_context
+  implicit none
+  private
 
   type (Potential), save :: pot
   type (Atoms), save :: at
@@ -55,7 +55,7 @@ private
   real(dp), private :: vacuum_dist = 5.0_dp
 
   public :: verbosity_push, verbosity_pop, PRINT_SILENT
-  public :: QC_QUIP_initialise, QC_QUIP_calc,MakeLine
+  public :: QC_QUIP_initialise, QC_QUIP_calc, MakeLine
   type (Potential), save :: pot_ip
 #if defined(HAVE_LOCAL_E_MIX) || defined(HAVE_ONIOM)
   type (Potential), save :: pot_qm
@@ -64,16 +64,16 @@ private
 
 contains
 
-  subroutine MakeLine(str1,real1,str2,real2,strout)
-    character(len=*), intent(in)  :: str1,str2
-    real(dp),     intent(in) :: real1,real2
-    character(len=*), intent(out) :: strout
-    
-    strout = trim(str1)//real1//trim(str2)//real2
+  subroutine MakeLine(str1, real1, str2, real2, strout)
+    character(len = *), intent(in) :: str1, str2
+    real(dp), intent(in) :: real1, real2
+    character(len = *), intent(out) :: strout
+
+    strout = trim(str1) // real1 // trim(str2) // real2
   end subroutine MakeLine
 
   subroutine QC_QUIP_initialise(str, err)
-    character(len=*), intent(in) :: str
+    character(len = *), intent(in) :: str
     integer, intent(out), optional :: err
 
     type(inoutput) :: params
@@ -84,16 +84,16 @@ contains
     call Initialise(params_str)
     call read(params_str, params%unit)
 
-    call Initialise(pot, args_str=str, param_str=string(params_str))
+    call Initialise(pot, args_str = str, param_str = string(params_str))
     if (present(err)) err = 0
   end subroutine
 
   subroutine QC_QUIP_calc(Lz, pos, Z, w, local_e, f, err)
     real(dp), intent(in) :: Lz
-    real(dp), intent(in) :: pos(:,:)
+    real(dp), intent(in) :: pos(:, :)
     integer, intent(in) :: Z(:)
     real(dp), intent(in) :: w(:)
-    real(dp), intent(out) :: local_e(:), f(:,:)
+    real(dp), intent(out) :: local_e(:), f(:, :)
     integer, intent(out) :: err
 
     integer N
@@ -107,13 +107,14 @@ contains
 
     if (.not. assign_pointer(at, "weight", weight)) then
       call add_property(at, "weight", 0.0_dp)
-      if (.not. assign_pointer(at, "weight", weight)) call system_abort("QC_QUIP_calc Failed to add weight property to at")
+      if (.not. assign_pointer(at, "weight", weight)) &
+              call system_abort("QC_QUIP_calc Failed to add weight property to at")
       weight = w
     endif
 
     call add_property_from_pointer(at, "local_energy", local_e)
     call add_property_from_pointer(at, "force", f)
-    call calc(pot, at, args_str="local_energy force", error=err)
+    call calc(pot, at, args_str = "local_energy force", error = err)
 
   end subroutine
 
@@ -123,13 +124,13 @@ contains
     ! moduel level imports
     ! gcc10: these are needed to be discovered by the compiler to realise that there
     !        in indeed no argument mismatch
-    use system_module, only: print
-    use potential_module, only: print
+    use system_module, only : print
+    use potential_module, only : print
 
-    character(len=*), intent(in) :: str_ip, str_qm, str_hybrid
-    real(dp), intent(in), optional :: lat(3,3)
+    character(len = *), intent(in) :: str_ip, str_qm, str_hybrid
+    real(dp), intent(in), optional :: lat(3, 3)
     integer, intent(in), optional :: Z(:)
-    real(dp), intent(in), optional :: pos(:,:)
+    real(dp), intent(in), optional :: pos(:, :)
     integer, intent(out), optional :: err
 
     type(inoutput) :: params
@@ -137,35 +138,40 @@ contains
     ! type(atoms) :: bulk
     integer :: n_present
 
-    call system_initialise(enable_timing=.true.)
+    call system_initialise(enable_timing = .true.)
 
     call initialise(mpi_glob)
 
     call initialise(params, "quip_params.xml", INPUT)
     call initialise(params_str)
-    call read(params_str, params%unit, convert_to_string=.true., mpi_comm = mpi_glob%communicator, mpi_id=mpi_glob%my_proc)
+    call read(params_str, params%unit, convert_to_string = .true., &
+            mpi_comm = mpi_glob%communicator, mpi_id = mpi_glob%my_proc)
 
     ! call initialise(pot_ip, str_ip, string(params_str))
     ! call initialise(pot_qm, str_qm, string(params_str), mpi_obj = mpi_glob)
 
     call finalise(params_str)
 
-    n_present = count ( (/present(lat), present(Z), present(pos)  /) )
+    n_present = count ((/present(lat), present(Z), present(pos)  /))
     if (n_present == 3) then
       if (.not. matching_array_sizes(Z, pos = pos)) then
-	call system_abort("Mismatched array sizes in QC_QUIP_initialise_hybrid")
+        call system_abort("Mismatched array sizes in QC_QUIP_initialise_hybrid")
       endif
-call print("QC_QUIP_initialise_hybrid was passed in bulk structure, ignoring it", PRINT_ALWAYS)
-!      call initialise(bulk, size(Z), lat)
-!      bulk%Z = Z
-!      bulk%pos = pos
-!      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk) 
-!      call finalise(bulk)
-call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_pot1="//trim(str_qm), mpi_obj=mpi_glob)
+      call print("QC_QUIP_initialise_hybrid was passed in bulk structure, &
+              &ignoring it", PRINT_ALWAYS)
+      !      call initialise(bulk, size(Z), lat)
+      !      bulk%Z = Z
+      !      bulk%pos = pos
+      !      call initialise(pot, str_hybrid, pot_qm, pot_ip, bulk)
+      !      call finalise(bulk)
+      call initialise(pot, str_hybrid // " init_args_pot2=" // trim(str_ip) &
+              // " init_args_pot1=" // trim(str_qm), mpi_obj = mpi_glob)
     else if (n_present == 0) then
-      call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_pot1="//trim(str_qm), mpi_obj=mpi_glob)
+      call initialise(pot, str_hybrid // " init_args_pot2=" // trim(str_ip) &
+              // " init_args_pot1=" // trim(str_qm), mpi_obj = mpi_glob)
     else
-      call system_abort("QC_QUIP_initialise_hybrid called with some but not all of lat, Z, pos present")
+      call system_abort("QC_QUIP_initialise_hybrid called with some but not &
+              &all of lat, Z, pos present")
     endif
 
     call print("QC_QUIP using hybrid potential:")
@@ -174,13 +180,14 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     if (present(err)) err = 0
   end subroutine QC_QUIP_initialise_hybrid
 
-  subroutine QC_QUIP_calc_hybrid(Lz, pos, Z, w, qm_list, local_e, f, qm_region_width, buffer_region_width, err)
+  subroutine QC_QUIP_calc_hybrid(Lz, pos, Z, w, qm_list, local_e, f, &
+          qm_region_width, buffer_region_width, err)
     real(dp), intent(in) :: Lz
-    real(dp), intent(in) :: pos(:,:)
+    real(dp), intent(in) :: pos(:, :)
     integer, intent(in) :: Z(:)
     real(dp), intent(in) :: w(:)
     integer, intent(in) :: qm_list(:)
-    real(dp), intent(out) :: local_e(:), f(:,:)
+    real(dp), intent(out) :: local_e(:), f(:, :)
     integer, intent(in) :: qm_region_width, buffer_region_width
     integer, intent(out) :: err
 
@@ -190,12 +197,12 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     type(table) :: qm_table
 
     if (.not. matching_array_sizes(Z, pos, w, local_e, f, N)) then
-	call system_abort("Mismatched array sizes in QC_QUIP_calc_hybrid")
+      call system_abort("Mismatched array sizes in QC_QUIP_calc_hybrid")
     endif
 
     if (buffer_region_width > 0 .and. pot%is_oniom) &
-      call system_abort("Don't do buffer_region_width = " // buffer_region_width // &
-			 " > 0 with ONIOM")
+            call system_abort("Don't do buffer_region_width = " // &
+                    buffer_region_width // " > 0 with ONIOM")
 
     call qc_setup_atoms(at, N, Lz, pos, Z)
 
@@ -203,21 +210,21 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     call add_property(at, "hybrid", 0)
 
     if (.not. assign_pointer(at, "weight", weight)) &
-      call system_abort("QC_QUIP_calc Failed to add weight property to at")
+            call system_abort("QC_QUIP_calc Failed to add weight property to at")
     if (.not. assign_pointer(at, "hybrid", hybrid)) &
-      call system_abort("QC_QUIP_calc Failed to add hybrid property to at")
+            call system_abort("QC_QUIP_calc Failed to add hybrid property to at")
 
     call calc_connect(at)
 
     hybrid = 0
     call wipe(qm_table)
-    do i=1, size(qm_list)
-      if (qm_list(i) > at%N) call system_abort("QC_QUIP_calc_hybrid got qm_list("//i//")=" &
-							      // qm_list(i) // " > at%N="//at%N)
-      if (qm_list(i) > 0) call append(qm_table, (/ qm_list(i), 0, 0, 0 /) )
+    do i = 1, size(qm_list)
+      if (qm_list(i) > at%N) call system_abort("QC_QUIP_calc_hybrid got qm_list(" // i // ")=" &
+              // qm_list(i) // " > at%N=" // at%N)
+      if (qm_list(i) > 0) call append(qm_table, (/ qm_list(i), 0, 0, 0 /))
     end do
 
-    hybrid(int_part(qm_table,1)) = 1
+    hybrid(int_part(qm_table, 1)) = 1
 
     weight = w
 
@@ -225,22 +232,22 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     call add_property_from_pointer(at, "force", f)
 
     if (pot%is_oniom) then
-      call calc(pot, at, args_str="local_energy force calc_weights" // &
-	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width, error=err)
+      call calc(pot, at, args_str = "local_energy force calc_weights" // &
+              " core_hops=" // qm_region_width // " transition_hops=0 buffer_hops=" // buffer_region_width, error = err)
     else
-      call calc(pot, at, args_str="local_energy force calc_weights" // &
-	" core_hops="//qm_region_width// " transition_hops=0 buffer_hops="//buffer_region_width // &
-	" solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0", error=err)
+      call calc(pot, at, args_str = "local_energy force calc_weights" // &
+              " core_hops=" // qm_region_width // " transition_hops=0 buffer_hops=" // buffer_region_width // &
+              " solver=DIAG_GF SCF_GLOBAL_U GLOBAL_U=20.0", error = err)
     endif
 
-  end subroutine QC_QUIP_calc_hybrid 
+  end subroutine QC_QUIP_calc_hybrid
 #endif
 
   function matching_array_sizes(Z, pos, w, local_e, f, N)
     integer, intent(in) :: Z(:)
-    real(dp), intent(in), optional :: pos(:,:)
+    real(dp), intent(in), optional :: pos(:, :)
     real(dp), intent(in), optional :: w(:)
-    real(dp), intent(in), optional :: local_e(:), f(:,:)
+    real(dp), intent(in), optional :: local_e(:), f(:, :)
     integer, intent(out), optional :: N
     logical :: matching_array_sizes
 
@@ -250,27 +257,27 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     my_N = size(Z)
     if (present(N)) N = my_N
     if (present(pos)) then
-      if (3 /= size(pos,1) .or. my_N /= size(pos,2)) then
-	matching_array_sizes=.false.
-	return
+      if (3 /= size(pos, 1) .or. my_N /= size(pos, 2)) then
+        matching_array_sizes = .false.
+        return
       endif
     endif
     if (present(w)) then
       if (my_N /= size(w)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes = .false.
+        return
       endif
     endif
     if (present(local_e)) then
       if (my_N /= size(local_e)) then
-	matching_array_sizes=.false.
-	return
+        matching_array_sizes = .false.
+        return
       endif
     endif
     if (present(f)) then
-      if (3 /= size(f,1) .or. my_N /= size(f,2)) then
-	matching_array_sizes=.false.
-	return
+      if (3 /= size(f, 1) .or. my_N /= size(f, 2)) then
+        matching_array_sizes = .false.
+        return
       endif
     endif
 
@@ -280,20 +287,20 @@ call initialise(pot, str_hybrid//" init_args_pot2="//trim(str_ip)//" init_args_p
     type(atoms), intent(inout) :: at
     integer, intent(in) :: N
     real(dp), intent(in) :: Lz
-    real(dp), intent(in) :: pos(:,:)
+    real(dp), intent(in) :: pos(:, :)
     integer, intent(in) :: Z(:)
 
-    real(dp) :: lattice(3,3)
+    real(dp) :: lattice(3, 3)
 
     lattice = 0.0_dp
-    lattice(1,1) = maxval(pos(1,:)) - minval(pos(1,:)) + vacuum_dist
-    lattice(2,2) = maxval(pos(2,:)) - minval(pos(2,:)) + vacuum_dist
-    lattice(3,3) = Lz
+    lattice(1, 1) = maxval(pos(1, :)) - minval(pos(1, :)) + vacuum_dist
+    lattice(2, 2) = maxval(pos(2, :)) - minval(pos(2, :)) + vacuum_dist
+    lattice(3, 3) = Lz
 
     if (at%N /= N) then
       call Initialise(at, N, lattice)
     end if
-    call set_lattice(at, lattice, scale_positions=.false.)
+    call set_lattice(at, lattice, scale_positions = .false.)
     at%pos = pos
     at%Z = Z
 
