@@ -20,13 +20,21 @@ jobs:
 
     strategy:
       matrix:
-        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
+        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ,
+                linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_openmp,
+                linux_x86_64_ifort_gcc_openmp ]
         gcc_version: [ 9 ]
         have_gap: [ 0, 1 ]
         include:
+          # GCC 10.2 with GAP only
           - arch: linux_x86_64_gfortran_openmp
             have_gap: 1
             gcc_version: 10
+        exclude:
+          # only keep the version with GAP for the intel compilers
+          - arch: [ linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_openmp,
+                    linux_x86_64_ifort_gcc_openmp ]
+            have_gap: 0
 
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -36,7 +44,8 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
+      - name: Install dependencies - GNU
+        if: contains( matrix.arch, 'gfortran' )
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
@@ -57,6 +66,32 @@ jobs:
               export CPLUSPLUS=g++-10
           fi
 
+      - name: Install INTEL compilers
+        if: contains( matrix.arch, 'ifort' )
+        run: |
+          # add repository to apt
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+
+          # install components
+          # - Compilers: CXX, Fortran
+          # - Maths: MKL
+          # - Python: numpy
+          # Not installed here: MPI, NetCDF, HDF5 (these are not needed for the current build setup)
+          sudo apt-get install --no-install-recommends -o=Dpkg::Use-Pty=0 \
+                  intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic \
+                  intel-oneapi-compiler-fortran \
+                  intel-oneapi-mkl intel-oneapi-mkl-devel \
+                  python-numpy
+
+          # set environment variables
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> $GITHUB_ENV
+
+
       # substitute for make config
       - name: Include Config
         env:
@@ -64,11 +99,17 @@ jobs:
         run: |
           mkdir -p build/${QUIP_ARCH}
 
-          if [[ "$gcc_version" == 10 ]]; then
-              cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
+          if [[ "$QUIP_ARCH" == *"ifort"* ]]; then
+              # Intel config
+              cp -v .github/workflows/Makefile.inc.intel build/${QUIP_ARCH}/Makefile.inc
           else
-              # gcc-9 is the default one in github actions containers (last checked: 2021 Aug)
-              cp -v .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+              # GNU configurations - gcc 9 or 10
+              if [[ "$gcc_version" == 10 ]]; then
+                  cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
+              else
+                  # gcc-9 is the default one in github actions containers (last checked: 2021 Aug)
+                  cp -v .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+              fi
           fi
 
       - name: Build QUIP
