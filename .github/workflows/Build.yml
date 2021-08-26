@@ -25,7 +25,8 @@ jobs:
         have_gap: [ 0, 1 ]
         include:
           - arch: linux_x86_64_gfortran_openmp
-            gcc_version: [ 9, 10 ]
+            have_gap: 1
+            gcc_version: 10
 
 
     # Steps represent a sequence of tasks that will be executed as part of the job
