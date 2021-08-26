@@ -71,9 +71,6 @@ RUN ln -s /opt/OpenBLAS/lib/libopenblas.a /usr/local/lib/libopenblas.a
 # && update-alternatives --install /usr/lib/liblapack.so.3 liblapack.so.3 /opt/OpenBLAS/lib/libopenblas.so 1000 \
 # && ldconfig
 
-
-
-
 #################################################################################
 ## Python 3 environment
 #################################################################################
@@ -99,8 +96,9 @@ RUN pip install --upgrade pip \
         RISE \
         pandas \
         phonopy \
-        torch\
-        torchani\
+        torch \
+        torchani \
+        gpaw \
  && jupyter nbextension enable --py --sys-prefix widgetsnbextension \
  && jupyter nbextension enable --py --sys-prefix nglview \
  && jupyter-nbextension install rise --py --sys-prefix \
@@ -145,23 +143,19 @@ RUN julia -e 'using Pkg;Pkg.REPLMode.pkgstr("add ImageMagick"); using ImageMagic
 # Add kernelspecs to global Jupyter
 RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
 
-########################################################################################
+#################################################################################
 #RUN pip install julia
 #RUN python -c 'import julia; julia.install()'
 #RUN pip install git+https://github.com/casv2/pyjulip.git
 
-CMD bash
-
-########################################################################################
+#################################################################################
 # End of the quip-base image
 #
 # This was the very base env, now we are building QUIP and GAP
 #
 #
 #
-########################################################################################
-#FROM libatomsquip/quip-base
-#LABEL maintainer="Gabor Csanyi <gc121@cam.ac.uk>"
+#################################################################################
 
 # All the QUIPs go here; added to path in the end.
 ENV QUIP_ROOT /opt/quip
@@ -198,41 +192,22 @@ RUN make \
  && make install \
  && make install-quippy
 
-
 #################################################################################
-## Entrypoint
-#################################################################################
-
-WORKDIR /root/
-
-# Set bash instead of sh as defualt terminal in Jupyter
-ENV SHELL /bin/bash
-
-CMD bash -c exit && jupyter notebook --ip=$(hostname -i) --port=8899 --allow-root
-EXPOSE 8899
-
-########################################################################################
 # End of the quip-gap image
 #
 # Now we are doing the general changes for the final image
 #
 #
 #
-########################################################################################
-#FROM libatomsquip/quip-gap
-#LABEL maintainer="Gabor Csanyi <gc121@cam.ac.uk>"
+#################################################################################
 
 #################################################################################
 ## Additional python packages
 #################################################################################
 
-# Latest release of GPAW (https://wiki.fysik.dtu.dk/gpaw/install.html)
-RUN pip install --upgrade  gpaw
-
 # Atomistica
-#RUN pip install --global-option=build_ext --global-option="-L/opt/OpenBLAS/lib" atomistica
-#RUN pip install --global-option=build_ext atomistica
-# we need to set the arg mismatch flag for the compiler, their setup will not add it automatically
+#   we need to set the arg mismatch flag for the compiler, their setup will not add it automatically
+#   should remove this when this is done: https://github.com/Atomistica/atomistica/pull/40
 WORKDIR /opt
 RUN git clone --depth 1 https://github.com/Atomistica/atomistica.git \
  && cd atomistica \
@@ -241,7 +216,6 @@ RUN git clone --depth 1 https://github.com/Atomistica/atomistica.git \
 
 # AtomEye needs to link with QUIP for xyz read-write
 WORKDIR ${QUIP_ROOT}/src/AtomEye
-
 ENV PATH ${QUIP_ROOT}/src/AtomEye/bin:${PATH}
 
 RUN git clone --depth 1 https://github.com/jameskermode/AtomEye.git . \
@@ -312,13 +286,17 @@ ENV GPAW_SETUP_PATH /opt/share/gpaw/gpaw-setups-${GPAW_SETUP_VERSION}
 
 RUN wget https://wiki.fysik.dtu.dk/gpaw-files/gpaw-setups-0.9.20000.tar.gz -O - | tar -xz  -C .
 
-
 #################################################################################
 ## Entrypoint
 #################################################################################
 
 WORKDIR /root/
 
+# Set bash instead of sh as defualt terminal in Jupyter
+ENV SHELL /bin/bash
+
 # Launch in the home directory of the user
 ADD files/demo.ipynb .
 
+CMD bash -c exit && jupyter notebook --ip=$(hostname -i) --port=8899 --allow-root
+EXPOSE 8899
