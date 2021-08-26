@@ -17,11 +17,17 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
-        arch: [linux_x86_64_gfortran, linux_x86_64_gfortran_openmp]
-        have_gap: [0, 1]
+        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
+        gcc_version: [ 9 ]
+        have_gap: [ 0, 1 ]
+        include:
+          - arch: linux_x86_64_gfortran_openmp
+            have_gap: 1
+            gcc_version: 10
+
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -30,18 +36,46 @@ jobs:
         with:
           submodules: 'recursive'
 
-      # Runs a set of commands using the runners shell
-      - name: Build QUIP
+      - name: Install dependencies
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
+          gcc_version: ${{ matrix.gcc_version }}
         run: |
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
             python-numpy
+
+          if [[ "$gcc_version" == 10 ]]; then
+              # compilers explicitly pointing to gcc-10
+
+              export F77=gfortran-10
+              export F90=gfortran-10
+              export F95=gfortran-10
+              export CC=gcc-10
+              export CPLUSPLUS=g++-10
+          fi
+
+      # substitute for make config
+      - name: Include Config
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+        run: |
           mkdir -p build/${QUIP_ARCH}
-          cp .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+
+          if [[ "$gcc_version" == 10 ]]; then
+              cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
+          else
+              # gcc-9 is the default one in github actions containers (last checked: 2021 Aug)
+              cp -v .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
+          fi
+
+      - name: Build QUIP
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+        run: |
           make
           make libquip
           make quippy
@@ -56,7 +90,7 @@ jobs:
           ulimit -n 256
           make test
 
-      - name: Build documentation  
+      - name: Build documentation
         if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1
         run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
@@ -64,10 +98,10 @@ jobs:
           pip install nbconvert[execute] ipython
           cd doc
           make html
-          
+
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@v3
         if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: doc/_build/html    
+          publish_dir: doc/_build/html

@@ -1,3 +1,11 @@
+# compilers explicitly pointing to gcc-10
+# these are pre-installed in the GitHub Actions ubuntu image!
+F77=gfortran-10
+F90=gfortran-10
+F95=gfortran-10
+CC=gcc-10
+CPLUSPLUS=g++-10
+
 MATH_LINKOPTS=-llapack -lblas
 EXTRA_LINKOPTS=
 HAVE_CP2K=0
