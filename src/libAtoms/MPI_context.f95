@@ -1125,19 +1125,20 @@ subroutine MPI_Context_Print(this, file)
   endif
 end subroutine MPI_Context_Print
 
-subroutine MPI_Print(this, lines)
+subroutine MPI_Print(this, lines, file)
   type(MPI_context), intent(in) :: this
   character(len=*), intent(in) :: lines(:)
+  type(Inoutput), intent(inout), optional :: file
 
   integer i
 
   if (.not. this%active) then
     do i=1, size(lines)
-      call Print(trim(lines(i)))
+      call Print(trim(lines(i)), file=file)
     end do
 #ifdef _MPI
   else
-    call parallel_print(lines, this%communicator)
+    call parallel_print(lines, this%communicator, file=file)
 #endif
   endif
 
