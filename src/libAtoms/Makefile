@@ -95,7 +95,9 @@ LIBATOMS_F95_FILES = \
   libAtoms \
   libAtoms_misc_utils \
   libAtoms_utils_no_module \
-  f90wrap_stub
+  f90wrap_stub \
+  ScaLAPACK \
+  Matrix
 
 LIBATOMS_F77_FILES= \
    lbfgs	
