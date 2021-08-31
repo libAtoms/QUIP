@@ -1,11 +1,11 @@
 name: Build QUIP Docker image
 
 # change this to the public one later on!
-on: [ push, workflow_dispatch ]
+on: [ workflow_dispatch ]
 
 jobs:
 
-  build:
+  docker:
 
     runs-on: ubuntu-latest
 
