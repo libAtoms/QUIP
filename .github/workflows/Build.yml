@@ -106,10 +106,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: doc/_build/html
 
-  # Builds the QUIP docker image. This takeb about 1h 20min
+  # Builds the QUIP docker image. This takes about 1h 20min
+  # this only happens ON the public branch, after pull requests
+  # are completed
   docker:
     runs-on: ubuntu-latest
     needs: build # depends on the previous matrix jobs to succeed
+    if: github.ref == 'refs/heads/public'
 
     steps:
       - uses: actions/checkout@v2

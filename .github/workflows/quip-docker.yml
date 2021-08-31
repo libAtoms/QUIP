@@ -1,6 +1,11 @@
+# This builds the QUIP docker image, tagging it as development
+#   since the main docker run is only happening on the public
+#   branch after merge is completed, you can use this for
+#   building a development version of the docker, triggered
+#   manually when needed
 name: Build QUIP Docker image
 
-# change this to the public one later on!
+# manually triggered only
 on: [ workflow_dispatch ]
 
 jobs:
