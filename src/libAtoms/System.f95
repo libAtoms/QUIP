@@ -446,7 +446,7 @@ contains
 
     ! Default of optional parameters------------------------------- 
 
-    my_master_only = optional_default(.false., master_only)
+    my_master_only = optional_default(.true., master_only)
     call mpi_all_inoutput(this, .not. my_master_only)
 
     if(present(isformatted)) then 
