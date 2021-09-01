@@ -111,7 +111,7 @@ module linearalgebra_module
   public :: diagonalise, nonsymmetric_diagonalise, uniq, find_indices, inverse, pseudo_inverse, matrix_product_sub, matrix_product_vect_asdiagonal_sub, matrix_mvmt
   public :: add_identity, linear_interpolate, cubic_interpolate, pbc_aware_centre, randomise, zero_sum
   public :: insertion_sort, update_exponential_average, least_squares, scalar_triple_product, inverse_svd_threshold, svdfact
-  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_RL_sub
+  public :: fit_cubic, symmetrise, symmetric_linear_solve, matrix_product_vect_asdiagonal_RL_sub, matrix_condition_number
   public :: rms_diff, histogram, kmeans, round_prime_factors, binary_search, apply_function_matrix, invsqrt_real_array1d, fill_random_integer
   public :: poly_switch, dpoly_switch, d2poly_switch, d3poly_switch
   public :: is_diagonal, integerDigits
@@ -3722,6 +3722,38 @@ CONTAINS
     end do
     call print ("};", verbosity, file)
   end subroutine matrix_z_print_mathematica
+
+  subroutine matrix_condition_number(A, rcond, norm)
+    real(dp), intent(inout) :: A(:,:)
+    real(dp), intent(out) :: rcond
+    character, intent(in) :: norm !% 1 or O: 1-norm, I: inf-norm
+
+    integer :: m, n, minmn, lda, info
+    real(dp) :: anorm
+    integer, allocatable :: ipiv(:), iwork(:)
+    real(dp), allocatable :: work(:)
+
+    real(dp), external :: dlange
+
+    rcond = -1.0_dp
+
+    m = size(A, 1)
+    n = size(A, 2)
+    lda = m
+
+    allocate(work(m))
+    anorm = dlange(norm, m, n, a, lda, work)
+    deallocate(work)
+
+    minmn = min(m, n)
+    allocate(ipiv(minmn))
+    call dgetrf(m, n, A, lda, ipiv, info)
+    deallocate(ipiv)
+
+    allocate(work(4 * n))
+    allocate(iwork(n))
+    call dgecon(norm, n, a, lda, anorm, rcond, work, iwork, info)
+  end subroutine matrix_condition_number
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
