@@ -778,8 +778,7 @@ function Matrix_partial_TraceMult_DD(a, b, a_T, b_T)
   logical u_a_T, u_b_T
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -834,8 +833,7 @@ function Matrix_partial_TraceMult_DZ(a, b, a_T, b_H)
   logical u_a_T, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -890,8 +888,7 @@ function Matrix_partial_TraceMult_ZD(a, b, a_H, b_T)
   logical u_a_H, u_b_T
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -946,8 +943,7 @@ function Matrix_partial_TraceMult_ZZ(a, b, a_H, b_H)
   logical u_a_H, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -1002,8 +998,7 @@ function Matrix_partial_TraceMult_spinor_ZZ(a, b, a_H, b_H)
   logical u_a_H, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -1198,8 +1193,7 @@ subroutine Matrix_scaled_sum_ZDD(this, f1, m1, f2, m2)
 
   integer i
 
-  if ( (m1%ScaLAPACK_Info_obj%active .and. .not. m2%ScaLAPACK_Info_obj%active) .or. &
-       (.not. m1%ScaLAPACK_Info_obj%active .and. m2%ScaLAPACK_Info_obj%active) ) then
+  if (m1%ScaLAPACK_Info_obj%active .neqv. m2%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_sum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1218,8 +1212,7 @@ subroutine Matrix_scaled_sum_ZZZ(this, f1, m1, f2, m2)
 
   integer i
 
-  if ( (m1%ScaLAPACK_Info_obj%active .and. .not. m2%ScaLAPACK_Info_obj%active) .or. &
-       (.not. m1%ScaLAPACK_Info_obj%active .and. m2%ScaLAPACK_Info_obj%active) ) then
+  if (m1%ScaLAPACK_Info_obj%active .neqv. m2%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_sum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1236,8 +1229,7 @@ subroutine Matrix_scaled_accum_DZ(this, f1, m1)
 
   integer i
 
-  if ( (this%ScaLAPACK_Info_obj%active .and. .not. m1%ScaLAPACK_Info_obj%active) .or. &
-       (.not. this%ScaLAPACK_Info_obj%active .and. m1%ScaLAPACK_Info_obj%active) ) then
+  if (this%ScaLAPACK_Info_obj%active .neqv. m1%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_accum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1254,8 +1246,7 @@ subroutine Matrix_scaled_accum_ZZ(this, f1, m1)
 
   integer i
 
-  if ( (this%ScaLAPACK_Info_obj%active .and. .not. m1%ScaLAPACK_Info_obj%active) .or. &
-       (.not. this%ScaLAPACK_Info_obj%active .and. m1%ScaLAPACK_Info_obj%active) ) then
+  if (this%ScaLAPACK_Info_obj%active .neqv. m1%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_accum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
