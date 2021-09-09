@@ -97,10 +97,11 @@ LIBATOMS_F95_FILES = \
   libAtoms_utils_no_module \
   f90wrap_stub \
   ScaLAPACK \
-  Matrix
+  Matrix \
+  task_manager
 
 LIBATOMS_F77_FILES= \
-   lbfgs	
+   lbfgs
 
 LIBATOMS_C_FILES = \
   cutil\
@@ -135,7 +136,7 @@ allclean: clean docclean
 
 
 ${LIBATOMS_C_OBJS}  : %.o : %.c
-	${CC} ${CFLAGS} -c $< 
+	${CC} ${CFLAGS} -c $<
 
 
 ${PROGRAMS} ${EXTRA_PROGRAMS}: % :  %.o libatoms.a
