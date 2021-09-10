@@ -331,7 +331,7 @@ contains
     ! send ourselves a USR1 signal rather than aborting
     call kill(getpid(), SIGUSR1, status)
 #else
-    stop
+    stop 1
 #endif
 #endif
   end subroutine error_abort_with_message
