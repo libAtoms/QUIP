@@ -40,25 +40,25 @@ FPP = gfortran -m32 -E -x f95-cpp-input -P
 
 #set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
 SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEBUG = 
+DEBUG =
 OPTIM = -O3
 
 DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -fPIC
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC
-F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC
+F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC -fno-realloc-lhs
+F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC -fno-realloc-lhs
 CFLAGS += -fPIC
 
 LIBTOOL = libtool -static
 
 export DEFAULT_MATH_LINKOPTS = -framework Accelerate
 
-NETCDF4_EXTRA_LIBS= -lz 
+NETCDF4_EXTRA_LIBS= -lz
 
 
 ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
-	      -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
+              -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
 
-QUIPPY_INSTALL_OPTS = 
+QUIPPY_INSTALL_OPTS =
 QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none
 QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE

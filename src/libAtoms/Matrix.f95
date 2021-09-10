@@ -32,8 +32,8 @@
 !X Matrix module 
 !X
 !% This module handles the math of real and complex matrices.
-!% The objects 'MatrixD' and 'MatrixZ' correspond to real and complex matrices, 
-!% respectively.
+!% The objects 'MatrixD' and 'MatrixZ' correspond to real and complex matrices,
+!% respectively. They can be used for parellel computing with ScaLAPACK.
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -55,9 +55,12 @@ private
 
 public :: MatrixD
 type MatrixD
-  integer :: N = 0, M = 0, l_N = 0, l_M = 0
-  real(dp), allocatable:: data(:,:)
-  type(Matrix_ScaLAPACK_Info) ScaLAPACK_Info_obj
+  integer :: N = 0 !> global rows
+  integer :: M = 0 !> global columns
+  integer :: l_N = 0 !> local rows
+  integer :: l_M = 0 !> local columns
+  real(dp), allocatable :: data(:,:) !> matrix values
+  type(Matrix_ScaLAPACK_Info) :: ScaLAPACK_Info_obj !> meta info for scalapack
 end type MatrixD
 
 public :: MatrixZ
@@ -200,6 +203,8 @@ interface make_hermitian
   module procedure MatrixD_make_hermitian, MatrixZ_make_hermitian
 end interface make_hermitian
 
+public :: SP_Matrix_QR_Solve
+
 contains
 
 subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
@@ -242,6 +247,63 @@ subroutine MatrixD_Initialise_mat(this, from)
   endif
 
 end subroutine MatrixD_Initialise_mat
+
+subroutine MatrixD_to_array1d(this, array)
+  type(MatrixD), intent(inout) :: this
+  real(dp), intent(out), dimension(:) :: array
+
+  integer :: nrows
+
+  if (this%ScaLAPACK_Info_obj%active) then
+    call ScaLAPACK_to_array1d(this%ScaLAPACK_Info_obj, this%data, array)
+  else
+    nrows = min(this%N, size(array, 1))
+    array(:nrows) = this%data(:nrows,1)
+    array(nrows+1:) = 0.0_dp
+  end if
+end subroutine MatrixD_to_array1d
+
+subroutine MatrixD_QR_Solve(A_SP, B_SP)
+  type(MatrixD), intent(inout) :: A_SP, B_SP
+
+  if (A_SP%ScaLAPACK_Info_obj%active .and. &
+      B_SP%ScaLAPACK_Info_obj%active) then
+    call ScaLAPACK_Matrix_QR_Solve(A_SP%ScaLAPACK_Info_obj, A_SP%data, B_SP%ScaLAPACK_Info_obj, B_SP%data)
+  else
+    call system_abort("MatrixD_QR_Solve() without ScaLAPACK is not implemented.")
+  endif
+end subroutine MatrixD_QR_Solve
+
+subroutine SP_Matrix_QR_Solve(A, B, X, procs, ScaLAPACK_obj)
+  real(dp), intent(in), dimension(:,:) :: A
+  real(dp), intent(in), dimension(:) :: B
+  real(dp), intent(out), dimension(:) :: X
+  integer, intent(in) :: procs
+  type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
+
+  integer :: m, n, mb, nb
+  type(MatrixD) :: A_SP, B_SP
+
+  mb = size(A, 1)
+  nb = size(A, 2)
+  m = mb * procs
+  n = nb
+
+  ! @fixme Hotfix: nb=max(mb, nb) ; nb=nb throws an error in pdtrtrs().
+  call initialise(A_SP, m, n, mb, max(mb, nb), scalapack_obj=ScaLAPACK_obj)
+  call initialise(B_SP, m, 1, mb, 1, scalapack_obj=ScaLAPACK_obj)
+
+  A_SP%data(:,:) = 0.0_qp
+  A_SP%data(:,:) = A
+  B_SP%data(:,:) = 0.0_qp
+  B_SP%data(:,1) = B
+
+  call MatrixD_QR_Solve(A_SP, B_SP)
+  call MatrixD_to_array1d(B_SP, X)
+
+  call finalise(A_SP)
+  call finalise(B_SP)
+end subroutine SP_Matrix_QR_Solve
 
 subroutine MatrixZ_Initialise(this, N, M, NB, MB, scalapack_obj)
   type(MatrixZ), intent(out) :: this
@@ -716,8 +778,7 @@ function Matrix_partial_TraceMult_DD(a, b, a_T, b_T)
   logical u_a_T, u_b_T
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -772,8 +833,7 @@ function Matrix_partial_TraceMult_DZ(a, b, a_T, b_H)
   logical u_a_T, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -828,8 +888,7 @@ function Matrix_partial_TraceMult_ZD(a, b, a_H, b_T)
   logical u_a_H, u_b_T
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -884,8 +943,7 @@ function Matrix_partial_TraceMult_ZZ(a, b, a_H, b_H)
   logical u_a_H, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -940,8 +998,7 @@ function Matrix_partial_TraceMult_spinor_ZZ(a, b, a_H, b_H)
   logical u_a_H, u_b_H
   integer i, j, g_i, g_j
 
-  if ((a%ScaLAPACK_Info_obj%active .and. .not. b%ScaLAPACK_Info_obj%active) .or. &
-      (.not. a%ScaLAPACK_Info_obj%active .and. b%ScaLAPACK_Info_obj%active)) then
+  if (a%ScaLAPACK_Info_obj%active .neqv. b%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do partial tracemult for mixed dense regular and ScaLAPACK matrices")
   endif
 
@@ -1136,8 +1193,7 @@ subroutine Matrix_scaled_sum_ZDD(this, f1, m1, f2, m2)
 
   integer i
 
-  if ( (m1%ScaLAPACK_Info_obj%active .and. .not. m2%ScaLAPACK_Info_obj%active) .or. &
-       (.not. m1%ScaLAPACK_Info_obj%active .and. m2%ScaLAPACK_Info_obj%active) ) then
+  if (m1%ScaLAPACK_Info_obj%active .neqv. m2%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_sum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1156,8 +1212,7 @@ subroutine Matrix_scaled_sum_ZZZ(this, f1, m1, f2, m2)
 
   integer i
 
-  if ( (m1%ScaLAPACK_Info_obj%active .and. .not. m2%ScaLAPACK_Info_obj%active) .or. &
-       (.not. m1%ScaLAPACK_Info_obj%active .and. m2%ScaLAPACK_Info_obj%active) ) then
+  if (m1%ScaLAPACK_Info_obj%active .neqv. m2%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_sum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1174,8 +1229,7 @@ subroutine Matrix_scaled_accum_DZ(this, f1, m1)
 
   integer i
 
-  if ( (this%ScaLAPACK_Info_obj%active .and. .not. m1%ScaLAPACK_Info_obj%active) .or. &
-       (.not. this%ScaLAPACK_Info_obj%active .and. m1%ScaLAPACK_Info_obj%active) ) then
+  if (this%ScaLAPACK_Info_obj%active .neqv. m1%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_accum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 
@@ -1192,8 +1246,7 @@ subroutine Matrix_scaled_accum_ZZ(this, f1, m1)
 
   integer i
 
-  if ( (this%ScaLAPACK_Info_obj%active .and. .not. m1%ScaLAPACK_Info_obj%active) .or. &
-       (.not. this%ScaLAPACK_Info_obj%active .and. m1%ScaLAPACK_Info_obj%active) ) then
+  if (this%ScaLAPACK_Info_obj%active .neqv. m1%ScaLAPACK_Info_obj%active) then
     call system_abort("Can't do scaled_accum for mixed ScaLAPCAK non-ScaLAPACK matrices")
   endif
 

@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X ScaLAPACK module 
+!X ScaLAPACK module
 !X
 !% Module wrapping ScaLAPACK routines
 !X
@@ -51,24 +51,30 @@ private
 integer, external :: indxl2g, numroc
 #endif
 
-integer dlen_
-parameter (dlen_ = 50)
+integer, parameter :: dlen_ = 50
 
 public :: ScaLAPACK
 type ScaLAPACK
   logical :: active = .false.
-  type(MPI_context) MPI_obj
-  integer :: blacs_context
-  integer :: n_proc_rows = 1, n_proc_cols = 1, my_proc_row = 0, my_proc_col = 0
+  type(MPI_context) :: MPI_obj
+  integer :: blacs_context   ! BLACS context (process grid ID)
+  integer :: n_proc_rows = 1 ! number rows in process grid
+  integer :: n_proc_cols = 1 ! number columns in process grid
+  integer :: my_proc_row = 0 ! grid row index of this process
+  integer :: my_proc_col = 0 ! grid column index of this process
 end type ScaLAPACK
 
 public :: Matrix_ScaLAPACK_Info
 type Matrix_ScaLAPACK_Info
   logical :: active = .false.
   type(ScaLAPACK) :: ScaLAPACK_obj
-  integer :: N_R = 0, N_C = 0, NB_R = 0, NB_C = 0
-  integer desc(dlen_)
-  integer :: l_N_R = 0, l_N_C = 0
+  integer :: N_R = 0 ! number of rows in global matrix
+  integer :: N_C = 0 ! number of columns in global matrix
+  integer :: NB_R = 0 ! number of rows per block
+  integer :: NB_C = 0 ! number of columns per block
+  integer :: desc(dlen_) ! descriptor for ScaLAPACK
+  integer :: l_N_R = 0 ! local number of rows for this process
+  integer :: l_N_C = 0 ! local number of columns for this process
 end type Matrix_ScaLAPACK_Info
 
 public :: Initialise
@@ -148,6 +154,9 @@ interface diag_spinor
   module procedure ScaLAPACK_diag_spinorZ, ScaLAPACK_diag_spinorD
 end interface diag_spinor
 
+public :: ScaLAPACK_pdgeqrf_wrapper, ScaLAPACK_pdtrtrs_wrapper, ScaLAPACK_pdormqr_wrapper
+public :: ScaLAPACK_matrix_QR_solve, ScaLAPACK_to_array1d, ScaLAPACK_to_array2d
+
 contains
 
 subroutine Matrix_ScaLAPACK_Info_Initialise(this, N_R, N_C, NB_R, NB_C, scalapack_obj)
@@ -189,9 +198,10 @@ subroutine Matrix_ScaLAPACK_Info_Initialise(this, N_R, N_C, NB_R, NB_C, scalapac
 #endif
 end subroutine Matrix_ScaLAPACK_Info_Initialise
 
-subroutine ScaLAPACK_Initialise(this, MPI_obj)
+subroutine ScaLAPACK_Initialise(this, MPI_obj, np_r, np_c)
   type(ScaLAPACK), intent(inout) :: this
   type(MPI_context), intent(in), optional :: MPI_obj
+  integer, intent(in), optional :: np_r, np_c !> rows, cols in process grid
 
 #ifdef SCALAPACK
   call Finalise(this)
@@ -204,7 +214,12 @@ subroutine ScaLAPACK_Initialise(this, MPI_obj)
       this%MPI_obj = MPI_obj
       this%blacs_context = MPI_obj%communicator
 
-      call calc_n_proc_rows_cols(this%MPI_obj%n_procs, this%n_proc_rows, this%n_proc_cols)
+      if (present(np_r) .and. present(np_c)) then
+        this%n_proc_rows = np_r
+        this%n_proc_cols = np_c
+      else
+        call calc_n_proc_rows_cols(this%MPI_obj%n_procs, this%n_proc_rows, this%n_proc_cols)
+      end if
       call print("ScaLAPACK_Initialise using proc grid " // this%n_proc_rows // " x " // this%n_proc_cols, PRINT_VERBOSE)
 
       call blacs_gridinit (this%blacs_context, 'R', this%n_proc_rows, this%n_proc_cols)
@@ -395,6 +410,7 @@ subroutine Matrix_ScaLAPACK_Info_Print(this,file)
     call Print ('Matrix_ScaLAPACK_Info : N_R N_C ' // this%N_R // " " // this%N_C, file=file)
     call Print ('Matrix_ScaLAPACK_Info : NB_R NB_C ' // this%NB_R // " " // this%NB_C, file=file)
     call Print ('Matrix_ScaLAPACK_Info : l_N_R l_N_C ' // this%l_N_R // " " // this%l_N_C, file=file)
+    call Print ('Matrix_ScaLAPACK_Info : desc ' // this%desc, file=file)
   endif
 #endif
 end subroutine Matrix_ScaLAPACK_Info_Print
@@ -984,56 +1000,76 @@ subroutine ScaLAPACK_add_identity_r(this, data)
 #endif
 end subroutine ScaLAPACK_add_identity_r
 
-subroutine ScaLAPACK_Matrix_d_print(this, data, file)
+subroutine ScaLAPACK_Matrix_d_print(this, data, file, short_output)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   real(dp), intent(in) :: data(:,:)
   type(Inoutput), intent(inout), optional :: file
+  logical, intent(in), optional :: short_output
 
 #ifdef SCALAPACK
-  integer l_i, l_j, g_i, g_j
+  logical :: short_output_opt
+  integer :: l_i, l_j, g_i, g_j, my_proc
   character(len=200), allocatable :: lines(:)
+
+  short_output_opt = optional_default(.false., short_output)
 
   if (this%l_N_R*this%l_N_c > 0) then
     allocate(lines(this%l_N_R*this%l_N_C))
 
+    my_proc = this%ScaLAPACK_obj%MPI_obj%my_proc
+
     do l_i=1, this%l_N_R
-    do l_j=1, this%l_N_C
-      call coords_local_to_global(this, l_i, l_j, g_i, g_j)
-      lines((l_i-1)*this%l_N_C + l_j) = &
-	"ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
-	// " " // data(l_i,l_j)
-    end do
+      do l_j=1, this%l_N_C
+        call coords_local_to_global(this, l_i, l_j, g_i, g_j)
+        if (short_output_opt) then
+          lines((l_i-1)*this%l_N_C + l_j) = g_i // " " // g_j // " " // data(l_i,l_j)
+        else
+          lines((l_i-1)*this%l_N_C + l_j) = my_proc // &
+            ": ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
+            // " " // data(l_i,l_j)
+        end if
+      end do
     end do
   else
     allocate(lines(1))
     lines(1) = ""
   endif
 
-  call mpi_print(this%ScaLAPACK_obj%mpi_obj, lines)
+  call mpi_print(this%ScaLAPACK_obj%mpi_obj, lines, file)
 
   deallocate(lines)
 #endif
 end subroutine ScaLAPACK_Matrix_d_print
 
-subroutine ScaLAPACK_Matrix_z_print(this, data, file)
+subroutine ScaLAPACK_Matrix_z_print(this, data, file, short_output)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   complex(dp), intent(in) :: data(:,:)
   type(Inoutput), intent(inout), optional :: file
+  logical, intent(in), optional :: short_output
 
 #ifdef SCALAPACK
-  integer l_i, l_j, g_i, g_j
+  logical :: short_output_opt
+  integer :: l_i, l_j, g_i, g_j, my_proc
   character(len=200), allocatable :: lines(:)
+
+  short_output_opt = optional_default(.false., short_output)
 
   if (this%l_N_R*this%l_N_C > 0) then
     allocate(lines(this%l_N_R*this%l_N_C))
 
+    my_proc = this%ScaLAPACK_obj%MPI_obj%my_proc
+
     do l_i=1, this%l_N_R
-    do l_j=1, this%l_N_C
-      call coords_local_to_global(this, l_i, l_j, g_i, g_j)
-      lines((l_i-1)*this%l_N_C + l_j) = &
-	"ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
-	// " " // data(l_i,l_j)
-    end do
+      do l_j=1, this%l_N_C
+        call coords_local_to_global(this, l_i, l_j, g_i, g_j)
+        if (short_output_opt) then
+          lines((l_i-1)*this%l_N_C + l_j) = g_i // " " // g_j // " " // data(l_i,l_j)
+        else
+          lines((l_i-1)*this%l_N_C + l_j) = my_proc // &
+            ": ScaLAPACK local_matrix li,j " // l_i // " " // l_j // " gi,j " // g_i // " " // g_j &
+            // " " // data(l_i,l_j)
+        end if
+      end do
     end do
   else
     allocate(lines(1))
@@ -1056,7 +1092,7 @@ subroutine ScaLAPACK_matrix_product_sub_ddd(c_scalapack, c_data, a_scalapack, a_
   real(dp), intent(in) :: b_data(:,:)
   logical, intent(in), optional :: a_transpose, b_transpose, a_conjugate, b_conjugate
 
-#ifdef SCALAPACK 
+#ifdef SCALAPACK
 
   logical a_transp, b_transp, a_conjg, b_conjg
   character a_op, b_op
@@ -1142,7 +1178,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_ddd(this_scalapack, this
   real(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   real(dp), intent(in) :: a_data(:,:)
-  real(dp), intent(in) :: diag(:) 
+  real(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j
@@ -1163,7 +1199,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_zzd(this_scalapack, this
   complex(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   complex(dp), intent(in) :: a_data(:,:)
-  real(dp), intent(in) :: diag(:) 
+  real(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j
@@ -1184,7 +1220,7 @@ subroutine ScaLAPACK_matrix_product_vect_asdiagonal_sub_zzz(this_scalapack, this
   complex(dp), intent(out) :: this_data(:,:)
   type(Matrix_ScaLAPACK_Info), intent(in) :: a_scalapack
   complex(dp), intent(in) :: a_data(:,:)
-  complex(dp), intent(in) :: diag(:) 
+  complex(dp), intent(in) :: diag(:)
 
 #ifdef SCALAPACK
   integer l_i, l_j, g_i, g_j
@@ -1302,5 +1338,114 @@ function ScaLAPACK_diag_spinorD(this_scalapack, this_data)
 
 end function ScaLAPACK_diag_spinorD
 
+subroutine ScaLAPACK_pdgeqrf_wrapper(this, data, tau, work)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: this
+  real(dp), intent(inout), dimension(:,:) :: data
+  real(dp), intent(out), dimension(:), allocatable :: tau
+  real(dp), intent(out), dimension(:), allocatable :: work
+
+  integer :: m, n, k, lwork, info
+
+#ifdef SCALAPACK
+  m = this%N_R
+  n = this%N_C
+  k = min(m, n)
+
+  call reallocate(tau, k)
+  call reallocate(work, 1)
+  call pdgeqrf(m, n, data, 1, 1, this%desc, tau, work, -1, info)
+  lwork = work(1)
+  call reallocate(work, lwork)
+  call pdgeqrf(m, n, data, 1, 1, this%desc, tau, work, lwork, info)
+#endif
+end subroutine ScaLAPACK_pdgeqrf_wrapper
+
+subroutine ScaLAPACK_pdormqr_wrapper(A_info, A_data, C_info, C_data, tau, work)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info, C_info
+  real(dp), intent(inout), dimension(:,:) :: A_data, C_data
+  real(dp), intent(inout), dimension(:), allocatable :: tau
+  real(dp), intent(inout), dimension(:), allocatable :: work
+
+  integer :: m, n, k, lwork, info
+
+#ifdef SCALAPACK
+  m = C_info%N_R
+  n = C_info%N_C
+  k = size(tau)
+
+  call reallocate(tau, k) ! @fixme circular logic
+  call reallocate(work, 1)
+  call pdormqr('L', 'T', m, n, k, A_data, 1, 1, A_info%desc, &
+    tau, C_data, 1, 1, C_info%desc, work, -1, info)
+  lwork = work(1)
+  call reallocate(work, lwork)
+  call pdormqr('L', 'T', m, n, k, A_data, 1, 1, A_info%desc, &
+    tau, C_data, 1, 1, C_info%desc, work, lwork, info)
+#endif
+end subroutine ScaLAPACK_pdormqr_wrapper
+
+subroutine ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info, B_info
+  real(dp), intent(inout), dimension(:,:) :: A_data ! distributed triangular matrix
+  real(dp), intent(inout), dimension(:,:)  :: B_data !
+
+  integer :: n, nrhs, info
+
+#ifdef SCALAPACK
+  n = min(A_info%N_R, A_info%N_C)
+  nrhs = B_info%N_C
+
+  ! A(lda,n+), B(ldb,nrhs+)
+  call pdtrtrs('U', 'N', 'N', n, nrhs, A_data, 1, 1, A_info%desc, &
+      B_data, 1, 1, B_info%desc, info)
+#endif
+end subroutine ScaLAPACK_pdtrtrs_wrapper
+
+subroutine ScaLAPACK_matrix_QR_solve(A_info, A_data, B_info, B_data)
+  type(Matrix_ScaLAPACK_Info), intent(inout) :: A_info, B_info
+  real(dp), intent(inout), dimension(:,:) :: A_data, B_data
+
+  real(dp), dimension(:), allocatable :: tau, work
+
+  call ScaLAPACK_pdgeqrf_wrapper(A_info, A_data, tau, work)
+  call ScaLAPACK_pdormqr_wrapper(A_info, A_data, B_info, B_data, tau, work)
+  call ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data)
+end subroutine ScaLAPACK_matrix_QR_solve
+
+subroutine ScaLAPACK_to_array1d(A_info, A_data, array)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info
+  real(dp), intent(in), dimension(:,:) :: A_data
+  real(dp), intent(out), dimension(:) :: array
+
+  integer :: info
+  integer :: nrows, ncols
+  integer, dimension(9) :: desc
+
+#ifdef SCALAPACK
+  nrows = min(A_info%N_R, size(array, 1))
+  ncols = 1
+  array(nrows+1:) = 0.0_dp
+  call descinit(desc, nrows, ncols, nrows, ncols, 0, 0, &
+                A_info%ScaLAPACK_obj%blacs_context, size(array, 1), info)
+  call pdgeadd("N", nrows, ncols, 1.0_dp, A_data, 1, 1, A_info%desc, &
+               0.0_dp, array, 1, 1, desc)
+#endif
+end subroutine ScaLAPACK_to_array1d
+
+subroutine ScaLAPACK_to_array2d(A_info, A_data, array)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info
+  real(dp), intent(in), dimension(:,:) :: A_data
+  real(dp), intent(out), dimension(:,:) :: array
+
+  integer :: info
+  integer, dimension(9) :: desc
+
+#ifdef SCALAPACK
+  call descinit(desc, A_info%N_R, A_info%N_C, A_info%N_R, A_info%N_C, 0, 0, &
+                A_info%ScaLAPACK_obj%blacs_context, A_info%N_R, info)
+  call pdgeadd("N", A_info%N_R, A_info%N_C, 1.0_dp, A_data, 1, 1, A_info%desc, &
+               0.0_dp, array, 1, 1, desc)
+#endif
+end subroutine ScaLAPACK_to_array2d
 
 end module ScaLAPACK_module

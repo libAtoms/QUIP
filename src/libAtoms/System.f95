@@ -446,7 +446,8 @@ contains
 
     ! Default of optional parameters------------------------------- 
 
-    my_master_only = optional_default(.false., master_only)
+    my_master_only = optional_default(.true., master_only)
+    call mpi_all_inoutput(this, .not. my_master_only)
 
     if(present(isformatted)) then 
        this%formatted=isformatted
@@ -740,12 +741,13 @@ contains
     call print(local_line, verbosity, file)
   end subroutine inoutput_print_integer
 
-  subroutine inoutput_print_real(real, verbosity, file, precision, format)
+  subroutine inoutput_print_real(real, verbosity, file, precision, format, nocr)
     real(dp),          intent(in) :: real
     integer, optional, intent(in) :: verbosity
     integer, optional, intent(in) :: precision ! number of decimal places
     character(*), optional, intent(in) :: format
     type(inoutput), optional, intent(in) :: file
+    logical, optional, intent(in) :: nocr
 
     character(7) :: myformat
 
@@ -770,7 +772,7 @@ contains
        write(local_line,myformat) real
     end if
 
-    call print(local_line, verbosity, file)
+    call print(local_line, verbosity, file, nocr=nocr)
   end subroutine inoutput_print_real
 
 

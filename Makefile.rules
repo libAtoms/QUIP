@@ -121,6 +121,9 @@ endif
 ifeq (${HAVE_QR},1)
   DEFINES += -DHAVE_QR
 endif
+ifeq (${HAVE_SCALAPACK},1)
+  DEFINES += -DSCALAPACK
+endif
 ifeq (${HAVE_LOTF},1)
   DEFINES += -DHAVE_LOTF
 endif

@@ -42,7 +42,7 @@ ALL_TARGETS = libquip_core.a
 
 all: ${ALL_TARGETS}
 
-BASE_F95_FILES = ScaLAPACK Matrix RS_SparseMatrix QUIP_Common Functions Ewald Multipole_Interactions  Partridge_Schwenke_Dipole
+BASE_F95_FILES = RS_SparseMatrix QUIP_Common Functions Ewald Multipole_Interactions  Partridge_Schwenke_Dipole
 BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
 BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
 
@@ -86,7 +86,7 @@ ifeq (${HAVE_QC},1)
 endif
 
 
-TEST_TARGETS = test_KP test_Matrix test_TBMatrix test_TBModel test_TBSystem test_TBCalculate  test_RS_SparseMatrix test_DFTB test_Potential test_Self_Consistency test_GreensFunc test_AF   test_ScaLAPACK test_SelfEnergy_passivation test_cat test_QC_QUIP_Wrapper
+TEST_TARGETS = test_KP test_TBMatrix test_TBModel test_TBSystem test_TBCalculate  test_RS_SparseMatrix test_DFTB test_Potential test_Self_Consistency test_GreensFunc test_AF test_SelfEnergy_passivation test_cat test_QC_QUIP_Wrapper
 
 TARGETS = ${TEST_TARGETS}
 
