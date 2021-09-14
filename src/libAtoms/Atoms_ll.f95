@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !% Atoms_ll_module
-!% linked list of Atoms structures, read in from one or more xyz files, with 
+!% linked list of Atoms structures, read in from one or more xyz files, with
 !% some automatic time sorting/clean-up capability
 
 #include "error.inc"
@@ -124,7 +124,7 @@ contains
     this%next => null()
     this%prev => null()
   end subroutine atoms_ll_entry_finalise
-  
+
   subroutine atoms_ll_new_entry(this, atoms_p, before, after)
     type(atoms_ll), target, intent(inout) :: this    !% this: atoms_ll object to add to
     type(atoms), intent(inout), pointer :: atoms_p   !% atoms_p: pointer to atoms object to insert
@@ -180,7 +180,7 @@ contains
   subroutine atoms_ll_print_xyz(this, xyzfile, comment, properties, real_format, mask)
     type(Atoms_ll),            intent(inout)    :: this     !% Atoms_ll object to print
     type(CInoutput),         intent(inout) :: xyzfile  !% CInOutput object to write to
-    character(*), optional, intent(in) :: properties !% List of properties to print 
+    character(*), optional, intent(in) :: properties !% List of properties to print
     character(*), optional, intent(in)    :: comment  !% Comment line (line #2 of xyz file)
     character(len=*), optional, intent(in) :: real_format   !% format of real numbers in output
     logical, optional, intent(in) :: mask(:)                !% mask of which atoms to print
@@ -197,7 +197,7 @@ contains
 
     entry => this%first
     i = 1
-    do while (associated(entry)) 
+    do while (associated(entry))
        call set_value(entry%at%params, 'comment', my_comment)
        call set_value(entry%at%params, 'atoms_ll_i', i)
        call write(xyzfile, entry%at, properties, real_format=real_format)
@@ -219,7 +219,7 @@ contains
     integer, intent(in), optional :: decimation !% only read one out of every decimation frames
     real(dp), intent(in), optional :: min_time, max_time !% ignore frames before min_time or after max_time
     character(len=*), intent(in), optional :: properties !% properties to include in objects in list
-    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties 
+    logical, intent(in), optional :: sort_Time, no_Time_dups, quiet, no_compute_index, all_properties
     integer, intent(out), optional :: error
        !% sort_time: if true, sort configurations by time
        !% no_Times_dups: if true, eliminate configs that have same time value
@@ -285,102 +285,102 @@ contains
       call initialise(cfile,trim(my_filename),action=INPUT, no_compute_index=do_no_compute_index)
       initial_frame_count = frame_count
       do while (l_error == ERROR_NONE) ! loop over frames in this file
-	if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
-	  ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-!	if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
-!	     ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
-	call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, error=l_error)
+        if (.not. do_quiet) write(mainlog%unit,'(4a,i0,a,i0,$)') achar(13), 'Read file ',trim(my_filename), &
+          ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+          ! if (.not. do_quiet) write(mainlog%unit,'(3a,i0,a,i0)') 'Read file ',trim(my_filename), &
+          ! ' Frame ',frame_count,' which in this file is frame (zero based) ',(frame_count-1-last_file_frame_n)
+        call read(cfile, structure_in, frame=frame_count-1-last_file_frame_n, error=l_error)
 
-	if (l_error == ERROR_NONE) then ! we succesfully read a structure
-	  skip_frame = .false.
-	  is_a_dup = .false.
-	  if (do_min_time > 0.0_dp .or. do_max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
-	    if (get_value(structure_in%params,"Time",cur_time, case_sensitive=.false.)) then
-	      if ((do_min_time >= 0.0_dp .and. cur_time < do_min_time) .or. (do_max_time >= 0.0_dp .and. cur_time > do_max_time)) skip_frame = .true.
-	    else
+        if (l_error == ERROR_NONE) then ! we succesfully read a structure
+          skip_frame = .false.
+          is_a_dup = .false.
+          if (do_min_time > 0.0_dp .or. do_max_time > 0.0_dp .or. do_sort_Time .or. no_Time_dups) then ! we need Time value
+            if (get_value(structure_in%params,"Time",cur_time, case_sensitive=.false.)) then
+              if ((do_min_time >= 0.0_dp .and. cur_time < do_min_time) .or. (do_max_time >= 0.0_dp .and. cur_time > do_max_time)) skip_frame = .true.
+            else
               RAISE_ERROR("ERROR: min_time="//do_min_time//" < 0 or max_time="//do_max_time//" < 0 or sort_Time="//do_sort_Time//", but Time field wasn't found in config " // frame_count, error)
-	    endif
-	  endif
-	  if (.not. skip_frame) then ! frame is in appropriate time range
-	    if (do_sort_Time) then ! sort by Time value
-	      ! look at LAST entry
-	      if (associated(this%LAST)) then
-		entry => this%LAST
-		!NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
-		entry_time = entry%r_index
-		!NB
-	      else ! no structure list yet, fake entry_time
-		entry_time = -1.0e38_dp
+            endif
+          endif
+          if (.not. skip_frame) then ! frame is in appropriate time range
+            if (do_sort_Time) then ! sort by Time value
+              ! look at LAST entry
+              if (associated(this%LAST)) then
+                entry => this%LAST
+                !NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for LAST entry")
+                entry_time = entry%r_index
+                !NB
+              else ! no structure list yet, fake entry_time
+                entry_time = -1.0e38_dp
                 nullify(entry)
-	      endif
-	      if (cur_time <= entry_time) then ! new frame is at or BEFORE LAST entry
-		do while (associated(entry))
-		  !NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
-		  entry_time = entry%r_index
-		  !NB
-		  if (do_no_Time_dups .and. (cur_time == entry_time)) then ! entries match in time, i.e. duplicates
-		    is_a_dup = .true.
-		    exit
-		  endif
-		  ! check time of PREV entry
-		  if (associated(entry%PREV)) then
-		    !NB if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
-		    entry_PREV_time = entry%PREV%r_index
-		    !NB
-		    ! if cur_time is <= entry, and cur_time > entry%PREV, we want to insert AFTER entry%prev, so decrement entry and exit now
-		    if ((cur_time <= entry_time) .and. (cur_time > entry_PREV_time)) then
-		      entry => entry%PREV
-		      exit
-		    endif
-		  endif
-		  ! otherwise we keep on going
-		  entry => entry%PREV ! entry will be unassociated, and therefore loop will end, if we got to beginning of list
-		end do ! associated(entry)
-	      end if ! cur frame was BEFORE last entry
-	      ! we skipped previous section if cur_time > entry_time for LAST entry, so we want to insert AFTER entry=this%LAST
-	    else ! no sorting in time, so always insert AFTER last 
-	      entry => this%last
-	    endif
-	    if (.not. is_a_dup) then
-	      if (associated(entry)) then ! we want to insert AFTER entry
-		call new_entry(this, structure, AFTER=entry)
-		entry%NEXT%r_index = cur_time
-	      else ! entry is unassociated, therefore we insert and the BEGINNING of the list
-		call new_entry(this, structure, BEFORE=this%FIRST)
-		this%FIRST%r_index = cur_time
-	      endif
-	      ! actually copy the structure
+              endif
+              if (cur_time <= entry_time) then ! new frame is at or BEFORE LAST entry
+                do while (associated(entry))
+                  !NB if (.not. get_value(entry%at%params, "Time", entry_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry")
+                  entry_time = entry%r_index
+                  !NB
+                  if (do_no_Time_dups .and. (cur_time == entry_time)) then ! entries match in time, i.e. duplicates
+                    is_a_dup = .true.
+                    exit
+                  endif
+                  ! check time of PREV entry
+                  if (associated(entry%PREV)) then
+                    !NB if (.not. get_value(entry%PREV%at%params, "Time", entry_PREV_time, case_sensitive=.false.)) call system_abort("atoms_ll_read_xyz sort missing Time for entry%PREV")
+                    entry_PREV_time = entry%PREV%r_index
+                    !NB
+                    ! if cur_time is <= entry, and cur_time > entry%PREV, we want to insert AFTER entry%prev, so decrement entry and exit now
+                    if ((cur_time <= entry_time) .and. (cur_time > entry_PREV_time)) then
+                      entry => entry%PREV
+                      exit
+                    endif
+                  endif
+                  ! otherwise we keep on going
+                  entry => entry%PREV ! entry will be unassociated, and therefore loop will end, if we got to beginning of list
+                end do ! associated(entry)
+              end if ! cur frame was BEFORE last entry
+              ! we skipped previous section if cur_time > entry_time for LAST entry, so we want to insert AFTER entry=this%LAST
+            else ! no sorting in time, so always insert AFTER last
+              entry => this%last
+            endif
+            if (.not. is_a_dup) then
+              if (associated(entry)) then ! we want to insert AFTER entry
+                call new_entry(this, structure, AFTER=entry)
+                entry%NEXT%r_index = cur_time
+              else ! entry is unassociated, therefore we insert and the BEGINNING of the list
+                call new_entry(this, structure, BEFORE=this%FIRST)
+                this%FIRST%r_index = cur_time
+              endif
+              ! actually copy the structure
               if (do_all_properties) then
                 call atoms_copy_without_connect(structure, structure_in)
               else
                 call atoms_copy_without_connect(structure, structure_in, properties=my_properties)
               endif
-	    endif
-	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "
-!	    if (.not. do_quiet) write (mainlog%unit,'(a)') "          "
-	  else ! skip_frame was true, we're skipping
-	    if (.not. do_quiet) write (mainlog%unit,'(a,$)') " skip     "
-!	    if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
-	  endif ! skip_frame
-	  frame_count = frame_count + do_decimation
+            endif
+            if (.not. do_quiet) write (mainlog%unit,'(a,$)') "          "
+            ! if (.not. do_quiet) write (mainlog%unit,'(a)') "          "
+          else ! skip_frame was true, we're skipping
+            if (.not. do_quiet) write (mainlog%unit,'(a,$)') " skip     "
+            ! if (.not. do_quiet) write (mainlog%unit,'(a)') " skip"
+          endif ! skip_frame
+          frame_count = frame_count + do_decimation
         else
            CLEAR_ERROR(error)
-	endif ! l_error == 0 for reading this structure
+        endif ! l_error == 0 for reading this structure
 
       end do ! while l_error == 0 for frames in this file
       if (cfile%got_index) then
-	last_file_frame_n = last_file_frame_n + cfile%n_frame
+        last_file_frame_n = last_file_frame_n + cfile%n_frame
       else
-	last_file_frame_n = last_file_frame_n + cfile%current_frame
+        last_file_frame_n = last_file_frame_n + cfile%current_frame
       endif
       !call print("at end of file, frame_count " // frame_count // " last_file_frame_n " // last_file_frame_n)
       call finalise(cfile)
 
       if (file_is_list) then
-	my_filename = read_line(file_list, status)
-	if (status /= 0) call finalise(file_list)
+        my_filename = read_line(file_list, status)
+        if (status /= 0) call finalise(file_list)
       else
-	status = 1
+        status = 1
       endif
 
     end do ! while status == 0 for each file

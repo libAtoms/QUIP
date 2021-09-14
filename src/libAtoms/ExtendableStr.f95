@@ -245,22 +245,22 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim,
     if (allocated(this%s)) then ! already allocated contents
       new_len = this%len + add_len
       if (new_len > size(this%s)) then ! new length too big for current allocated array
-	 if (this%increment > 0) then
+         if (this%increment > 0) then
            new_len = size(this%s)
            do while(new_len < this%len + add_len)
              new_len = new_len + this%increment
              this%increment = this%increment*2
            enddo
-	 endif
-	 if (this%len > 0) then ! need to save old data
-	   allocate(t(size(this%s)))
-	   t = this%s
-	   deallocate(this%s)
-	   allocate(this%s(new_len))
-	   this%s(1:this%len) = t(1:this%len)
-	   deallocate(t)
-	 else ! don't need to save old data
-	   if (this%increment > 0) then
+         endif
+         if (this%len > 0) then ! need to save old data
+           allocate(t(size(this%s)))
+           t = this%s
+           deallocate(this%s)
+           allocate(this%s(new_len))
+           this%s(1:this%len) = t(1:this%len)
+           deallocate(t)
+         else ! don't need to save old data
+           if (this%increment > 0) then
              new_len = this%increment
              this%increment = this%increment*2
              do while (new_len < this%len + add_len)
@@ -268,9 +268,9 @@ subroutine extendable_str_concat(this, str, keep_lf, add_lf_if_missing, no_trim,
                this%increment = this%increment*2
              enddo
            endif
-	   deallocate(this%s)
-	   allocate(this%s(new_len))
-	 endif
+           deallocate(this%s)
+           allocate(this%s(new_len))
+         endif
       endif
     else ! array not already allocated
       allocate(this%s(add_len))
@@ -375,14 +375,14 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
   if (len(replace) <= substr_len) then ! no need to extend length
     ! do replacement
     do j=start, start+len(replace)-1
-	this%s(j) = replace(j-start+1:j-start+1)
+        this%s(j) = replace(j-start+1:j-start+1)
     end do
     ! move rest of string back if needed
     if (len(replace) < substr_len) then !
-	do j=1, this%len-(end+1)+1
-	    this%s(start+len(replace)-1+j) = this%s(end+j)
-	end do
-	this%len = this%len - (substr_len - len(replace))
+        do j=1, this%len-(end+1)+1
+            this%s(start+len(replace)-1+j) = this%s(end+j)
+        end do
+        this%len = this%len - (substr_len - len(replace))
     endif
   else ! need to extend length
     old_len = this%len
@@ -390,16 +390,16 @@ subroutine extendable_str_substr_replace(this, start, end, replace, error)
     call concat(this, replace(1:len(replace)-substr_len))
     ! move trailing part of string
     do j=1, old_len - end
-	this%s(this%len-j+1) = this%s(old_len-j+1)
+        this%s(this%len-j+1) = this%s(old_len-j+1)
     end do
     ! replace
     if (start == 0) then
       do j=1, len(replace)
-	this%s(j) = replace(j:j)
+        this%s(j) = replace(j:j)
       end do
     else
       do j=start, start+len(replace)-1
-	  this%s(j) = replace(j-start+1:j-start+1)
+          this%s(j) = replace(j-start+1:j-start+1)
       end do
     endif
   endif
@@ -490,22 +490,22 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, mpi
     do while (.not. done)
       read (unit=unit, fmt='(A)', iostat=stat, advance='no', size=n_read) line
       if (.not. is_iostat_end(stat)) then
-	if (n_read == 0 .and. .not. is_iostat_eor(stat) ) cycle
-	if (.not.last_was_incomplete .and. .not. my_keep_lf) then
-	  call concat(this, " " // trim(line))
-	else
-	  call concat(this, trim(line))
-	endif
-	if(is_iostat_eor(stat)) then
+        if (n_read == 0 .and. .not. is_iostat_eor(stat) ) cycle
+        if (.not.last_was_incomplete .and. .not. my_keep_lf) then
+          call concat(this, " " // trim(line))
+        else
+          call concat(this, trim(line))
+        endif
+        if(is_iostat_eor(stat)) then
            if(my_keep_lf) then
-	      call concat(this, quip_new_line)
+              call concat(this, quip_new_line)
            elseif(n_read == 0) then
               call concat(this, " ")
            endif
-	endif
-	last_was_incomplete = (stat == 0)
+        endif
+        last_was_incomplete = (stat == 0)
       else
-	done = .true. ! EOF
+        done = .true. ! EOF
       endif
     end do
   endif
@@ -517,7 +517,7 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, mpi
     stack_size_err = increase_stack(stack_size)
     if (stack_size_err /= 0) then
       call print("extendable_str_read_unit: error calling c_increase_stack size = " // stack_size // &
-	" err = "// stack_size_err)
+        " err = "// stack_size_err)
     endif
   endif
 

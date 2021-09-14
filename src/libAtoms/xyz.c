@@ -190,9 +190,9 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
       strncat(buf2, "/", LINESIZE-strlen(buf2)-1);
       strncat(buf2, bname, LINESIZE-strlen(buf2)-1);
       if (access(buf2, R_OK) == 0) {
-	fprintf(stderr,"Found index %s\n",buf2);
-	strncpy(indexname,buf2, LINESIZE);
-	idx_exists = 0;
+        fprintf(stderr,"Found index %s\n",buf2);
+        strncpy(indexname,buf2, LINESIZE);
+        idx_exists = 0;
       }
     }
   }
@@ -256,9 +256,9 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
     // Try to seek past last frame, and check this looks
     // like the start of a new frame
     if (fseek(in,(*frames)[nframes],SEEK_SET) != 0 ||
-	!fgets(linebuffer,LINESIZE,in) ||
-	sscanf(linebuffer, "%d", &natoms) != 1 ||
-	natoms != (*atoms)[nframes]) {
+        !fgets(linebuffer,LINESIZE,in) ||
+        sscanf(linebuffer, "%d", &natoms) != 1 ||
+        natoms != (*atoms)[nframes]) {
       // Seek failed, we'll have to rebuild index from start
       fseek(in,0,SEEK_SET);
       nframes = 0;
@@ -288,9 +288,9 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
     // Skip the whole frame, as quickly as possible
     for (i=0; i<natoms+1; i++)
       if (!fgets(linebuffer,LINESIZE,in)) {
-	fseek(in, (*frames)[nframes], SEEK_SET); // return file pointer to beginning of frame
-	nframes--; // incomplete last frame
-	goto XYZ_END;
+        fseek(in, (*frames)[nframes], SEEK_SET); // return file pointer to beginning of frame
+        nframes--; // incomplete last frame
+        goto XYZ_END;
       }
   }
  XYZ_END:
@@ -403,7 +403,7 @@ void query_xyz (char *filename, int compute_index, int frame, int *n_frame, int 
 
 
 char* get_line(char *linebuffer, int string, int string_length, char *orig_stringp, char *stringp, char **prev_stringp,
-	       FILE *in, char *info, int strip_prefix, int *line_offset, int *error)
+               FILE *in, char *info, int strip_prefix, int *line_offset, int *error)
 {
   INIT_ERROR;
 
@@ -420,9 +420,9 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
     if (*stringp == '\n') stringp++;
     if (strip_prefix) {
       if (strchr(linebuffer, ' ') != NULL) {
-	*line_offset = strchr(linebuffer, ' ')+1-linebuffer;
+        *line_offset = strchr(linebuffer, ' ')+1-linebuffer;
       } else {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
       }
     }
     return stringp;
@@ -433,9 +433,9 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
     linebuffer[strlen(linebuffer)-1] = '\0';
     if (strip_prefix) {
       if (strchr(linebuffer, ' ') != NULL) {
-	*line_offset = strchr(linebuffer, ' ')+1-linebuffer;
+        *line_offset = strchr(linebuffer, ' ')+1-linebuffer;
       } else {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
       }
       //debug("line = <%s>\n", linebuffer);
     }
@@ -448,7 +448,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
   linep = linebuffer+line_offset;
 
 void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int *n_atom,
-	       int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error)
+               int compute_index, int frame, int *range, int string, int string_length, int n_index, int *indices, int *error)
 {
   FILE *in;
   int i,n, entry_count,j=0,k=0,ncols,m, atidx, at_start, at_end;
@@ -572,15 +572,15 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     for (i=0; i<frame; i++) {
       GET_LINE("read_xyz: premature end when skipping, expecting number of atoms");
       if (sscanf(linep, "%d", &nxyz) != 1) {
-	if (sscanf(linep, "%s %d", prefix, &nxyz) == 2) {
-	  strip_prefix = 1;
-	} else {
-	  RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms (optionally preceeded by a prefix string)", linep);
-	}
+        if (sscanf(linep, "%s %d", prefix, &nxyz) == 2) {
+          strip_prefix = 1;
+        } else {
+          RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: first line (%s) must be number of atoms (optionally preceeded by a prefix string)", linep);
+        }
       }
       GET_LINE("read_xyz: premature end when skipping, expecting comment line");
       for (j=0; j<nxyz; j++)
-  	GET_LINE("read_xyz: premature end when skipping");
+          GET_LINE("read_xyz: premature end when skipping");
     }
   }
 
@@ -615,13 +615,13 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       at_end = -1;
     } else {
       if (range[0] < 1) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: lower limit of range (%d) must be >= 1", range[0]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: lower limit of range (%d) must be >= 1", range[0]);
       }
       if (range[1] > *n_atom) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be <= %d", range[1], *n_atom);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be <= %d", range[1], *n_atom);
       }
       if (range[1] <= range[0]) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: upper limit of range (%d) must be > lower limit (%d)", range[1], range[0]);
       }
       *n_atom = range[1] - range[0] + 1;
       at_start = range[0]-1;
@@ -645,8 +645,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     at_end = INT_MIN;
     for (i=0; i < n_index; i++) {
       if (indices[i] < 1 || indices[i] > *n_atom) {
-	free(mask);
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: indices(%d)=%d out of range 1 <= index <= %d", i+1, indices[i], *n_atom);
+        free(mask);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: indices(%d)=%d out of range 1 <= index <= %d", i+1, indices[i], *n_atom);
       }
       mask[indices[i]-1] = 1;
       if (indices[i]-1 < at_start) at_start = indices[i]-1;
@@ -677,20 +677,20 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       offset = k-9;
       error_occured = 0;
       for (i=0; i<9; i++)
-	if (sscanf(fields[offset+i], "%lf", &tmpd) != 1) {
-	  error_occured = 1;
-	  break;
-	}
+        if (sscanf(fields[offset+i], "%lf", &tmpd) != 1) {
+          error_occured = 1;
+          break;
+        }
 
       if ((p = strstr(linep, "\n")) != NULL) *p = '\0';
       if ((p = strstr(linep, "\r")) != NULL) *p = '\0';
       if (!error_occured) {
-	sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
-		fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
-	strncat(linep, tmpbuf, LINESIZE-line_offset);
+        sprintf(tmpbuf, " Lattice=\"%s %s %s %s %s %s %s %s %s\"", fields[offset+0], fields[offset+1], fields[offset+2], fields[offset+3],
+                fields[offset+4], fields[offset+5], fields[offset+6], fields[offset+7], fields[offset+8]);
+        strncat(linep, tmpbuf, LINESIZE-line_offset);
 
       } else {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linep);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot extract lattice from line %s\n", linep);
       }
     } else {
       // Put in a bogus lattice
@@ -721,11 +721,11 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       p = fields[i];
       j = 0;
       while ((p1 = strsep(&p, " \t")) != NULL) {
-	if (*p1 == '\0') continue;
-	strncpy(subfields[j++], p1, LINESIZE);
+        if (*p1 == '\0') continue;
+        strncpy(subfields[j++], p1, LINESIZE);
       }
       for (n=0; n<j; n++, nfields++) {
-	strncpy(finalfields[nfields],subfields[n], LINESIZE);
+        strncpy(finalfields[nfields],subfields[n], LINESIZE);
       }
 
     } else {
@@ -762,7 +762,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
     if (k == 0) {
       if (strlen(linep) == 0) {
-        	RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
+                RAISE_ERROR_WITH_KIND(ERROR_IO, "Missing value for parameter \"%s\"\n", param_key);
       }
       k = 1;
       strncpy(fields[0], linep, LINESIZE);
@@ -775,7 +775,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       while(n < strlen(fields[j]) && isblank(fields[j][n])) n++;  // skip leading blanks
       if (n < strlen(fields[j]) && fields[j][n] == '-') n++;        // leading minus sign is OK
       for (; n<strlen(fields[j]); n++)
-	if (!isdigit(fields[j][n])) goto NOT_INT;
+        if (!isdigit(fields[j][n])) goto NOT_INT;
     }
 
     if (k==1) {
@@ -819,7 +819,7 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   NOT_REAL:
     for (j=0; j<k; j++)
       if (strcmp(fields[j],"F") != 0 && strcmp(fields[j],"T") != 0)
-	goto NOT_LOGICAL;
+        goto NOT_LOGICAL;
 
     if (k==1) {
       type = T_LOGICAL;
@@ -861,35 +861,35 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       break;
     case(T_LOGICAL):
       if (param_value[0] == 'T')
-	LOGICAL(data) = 1;
+        LOGICAL(data) = 1;
       else
-	LOGICAL(data) = 0;
+        LOGICAL(data) = 0;
       break;
     case(T_INTEGER_A):
       for (m=0; m<k; m++)
-	INTEGER_A(data,m) = strtol(fields[m], &p, 10);
+        INTEGER_A(data,m) = strtol(fields[m], &p, 10);
       break;
     case(T_REAL_A):
       for (m=0; m<k; m++)
-	REAL_A(data,m) = strtod(fields[m], &p);
+        REAL_A(data,m) = strtod(fields[m], &p);
       break;
     case(T_LOGICAL_A):
       for (m=0; m<k; m++) {
-	if (fields[m][0] == 'T')
-	  LOGICAL_A(data,m) = 1;
-	else
-	  LOGICAL_A(data,m) = 0;
+        if (fields[m][0] == 'T')
+          LOGICAL_A(data,m) = 1;
+        else
+          LOGICAL_A(data,m) = 0;
       }
       break;
     case(T_INTEGER_A2):
       for (m=0; m<shape[1]; m++)
-	for (n=0; n<shape[0]; n++)
-	  INTEGER_A2(data,shape,n,m) = strtol(fields[3*m+n], &p, 10);
+        for (n=0; n<shape[0]; n++)
+          INTEGER_A2(data,shape,n,m) = strtol(fields[3*m+n], &p, 10);
       break;
     case(T_REAL_A2):
       for (m=0; m<shape[1]; m++)
-	for (n=0; n<shape[0]; n++)
-	  REAL_A2(data,shape,n,m) = strtod(fields[3*m+n], &p);
+        for (n=0; n<shape[0]; n++)
+          REAL_A2(data,shape,n,m) = strtod(fields[3*m+n], &p);
       break;
     case(T_CHAR):
       strncpy(CHAR(data), param_value, strlen(param_value));
@@ -951,32 +951,32 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 
     if (strcmp(fields[3*i+1],"I") == 0) {
       if (ncols == 1) {
-	type = T_INTEGER_A;
-	shape[0] = n_buffer;
+        type = T_INTEGER_A;
+        shape[0] = n_buffer;
       } else {
-	type = T_INTEGER_A2;
-	shape[0] = ncols;
-	shape[1] = n_buffer;
+        type = T_INTEGER_A2;
+        shape[0] = ncols;
+        shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"R") == 0) {
       if (ncols == 1) {
-	type = T_REAL_A;
-	shape[0] = n_buffer;
+        type = T_REAL_A;
+        shape[0] = n_buffer;
       } else {
-	type = T_REAL_A2;
-	shape[0] = ncols;
-	shape[1] = n_buffer;
+        type = T_REAL_A2;
+        shape[0] = ncols;
+        shape[1] = n_buffer;
       }
     } else if (strcmp(fields[3*i+1],"S") == 0) {
       if (ncols != 1) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "String property %s with ncols != 1 no longer supported", fields[3*i]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "String property %s with ncols != 1 no longer supported", fields[3*i]);
       }
       type = T_CHAR_A;
       shape[0] = PROPERTY_STRING_LENGTH; // FIXME: this could be variable
       shape[1] = n_buffer;
     } else if (strcmp(fields[3*i+1],"L") == 0) {
       if (ncols != 1) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Logical property %s with ncols != 1 no longer supported", fields[3*i]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Logical property %s with ncols != 1 no longer supported", fields[3*i]);
       }
       type = T_LOGICAL_A;
       shape[0] = n_buffer;
@@ -1000,8 +1000,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
       debug("adding property %s type %d shape [%d %d]\n", fields[3*i], type, shape[0], shape[1]);
       dictionary_add_key(properties, fields[3*i], &type, shape, &data, error, strlen(fields[3*i]));
       if (data != NULL) {
-	if (type == T_CHAR_A) memset(data, ' ', shape[0]*shape[1]); // Zero string data
-	property_data[n_property] = data;
+        if (type == T_CHAR_A) memset(data, ' ', shape[0]*shape[1]); // Zero string data
+        property_data[n_property] = data;
       }
     }
     n_property++;
@@ -1017,12 +1017,12 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
   if (type == T_REAL_A2) {
     for (m=0; m<shape[0]; m++)
       for (n=0; n<shape[1]; n++)
-	lattice[m][n] = REAL_A2(data, shape, n, m);
+        lattice[m][n] = REAL_A2(data, shape, n, m);
   }
    else if (type == T_INTEGER_A2) {
     for (m=0; m<shape[0]; m++)
       for (n=0; n<shape[1]; n++)
-  	lattice[m][n] = INTEGER_A2(data, shape, n, m);
+          lattice[m][n] = INTEGER_A2(data, shape, n, m);
   } else {
     RAISE_ERROR_WITH_KIND(ERROR_IO, "read_xyz: bad type for Lattice (%d)", type);
   }
@@ -1050,60 +1050,60 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
     k = 0;
     for (i=0; i<n_property; i++) {
       if (property_data[i] == NULL) {
-	k += property_ncols[i];
-	continue;
+        k += property_ncols[i];
+        continue;
       }
       switch(property_type[i]) {
       case(T_INTEGER_A):
-	if (sscanf(fields[k], "%d", &INTEGER_A(property_data[i], n)) != 1)  {
-	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k]);
-	}
-	k++;
-	break;
+        if (sscanf(fields[k], "%d", &INTEGER_A(property_data[i], n)) != 1)  {
+          RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k]);
+        }
+        k++;
+        break;
 
       case(T_INTEGER_A2):
-	for (j=0; j < property_ncols[i]; j++)
-	  if (sscanf(fields[k+j], "%d", &INTEGER_A2(property_data[i], property_shape[i], j, n)) != 1)  {
-	    RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
-	  }
-	k += property_shape[i][0];
-	break;
+        for (j=0; j < property_ncols[i]; j++)
+          if (sscanf(fields[k+j], "%d", &INTEGER_A2(property_data[i], property_shape[i], j, n)) != 1)  {
+            RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
+          }
+        k += property_shape[i][0];
+        break;
 
       case(T_REAL_A):
-	if (sscanf(fields[k], "%lf", &REAL_A(property_data[i], n)) != 1)  {
-	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
-	}
-	k++;
-	break;
+        if (sscanf(fields[k], "%lf", &REAL_A(property_data[i], n)) != 1)  {
+          RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert int value %s\n", fields[k+j]);
+        }
+        k++;
+        break;
 
       case(T_REAL_A2):
-	for (j=0; j < property_ncols[i]; j++)
-	  if (sscanf(fields[k+j], "%lf", &REAL_A2(property_data[i], property_shape[i], j, n)) != 1)  {
-	    RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert real value %s\n", fields[k+j]);
-	  }
-	k += property_shape[i][0];
-	break;
+        for (j=0; j < property_ncols[i]; j++)
+          if (sscanf(fields[k+j], "%lf", &REAL_A2(property_data[i], property_shape[i], j, n)) != 1)  {
+            RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert real value %s\n", fields[k+j]);
+          }
+        k += property_shape[i][0];
+        break;
 
       case(T_LOGICAL_A):
-	if (sscanf(fields[k], "%c", &tmp_logical) != 1)  {
-	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert logical value %s\n", fields[k+j]);
-	}
-	if (tmp_logical == 'T' || tmp_logical == '1')
-	  LOGICAL_A(property_data[i],n) = 1;
-	else
-	  LOGICAL_A(property_data[i],n) = 0;
-	k++;
-	break;
+        if (sscanf(fields[k], "%c", &tmp_logical) != 1)  {
+          RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert logical value %s\n", fields[k+j]);
+        }
+        if (tmp_logical == 'T' || tmp_logical == '1')
+          LOGICAL_A(property_data[i],n) = 1;
+        else
+          LOGICAL_A(property_data[i],n) = 0;
+        k++;
+        break;
 
       case(T_CHAR_A):
-	if (sscanf(fields[k], "%10c", &CHAR_A(property_data[i], property_shape[i], 0, n)) != 1)  {
-	  RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert str value %s\n", fields[k]);
-	}
-	k++;
-	break;
+        if (sscanf(fields[k], "%10c", &CHAR_A(property_data[i], property_shape[i], 0, n)) != 1)  {
+          RAISE_ERROR_WITH_KIND(ERROR_IO, "Can't convert str value %s\n", fields[k]);
+        }
+        k++;
+        break;
 
       default:
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad property type %d", property_type[i]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Bad property type %d", property_type[i]);
       }
     }
     n++;
@@ -1117,8 +1117,8 @@ void read_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran
 #define PUT_LINE(line) { if (string) extendable_str_concat(estr, line, &tmp_zero, &tmp_one, strlen(line)-1); else { if (fputs(line, out) < 0) fprintf(stderr, "Error writing line in xyz file write\n"); } }
 
 void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortran_t *selected_properties, double lattice[3][3], int n_atom,
-		int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format,
-		int string, fortran_t *estr, int update_index, int *error) {
+                int append, char *prefix, char *int_format, char *real_format, char *str_format, char *logical_format,
+                int string, fortran_t *estr, int update_index, int *error) {
   FILE *out;
   char linebuffer[LINESIZE], tmpbuf[LINESIZE], param_key[LINESIZE], param_value[LINESIZE], property_name[C_KEY_LEN], indexname[LINESIZE];
   int i, j, m, n, type, shape[2], tmp_type, tmp_shape[2];
@@ -1146,15 +1146,15 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       out = stdout;
     } else {
       if (append)
-	out = fopen(filename, "a");
+        out = fopen(filename, "a");
       else
-	out = fopen(filename, "w");
+        out = fopen(filename, "w");
       if (out == NULL) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open %s for writing", filename);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "write_xyz: cannot open %s for writing", filename);
       }
       start_idx = ftell(out);
       if (start_idx < 0) {
-	 perror("Error in ftell at start of xyz file write");
+         perror("Error in ftell at start of xyz file write");
       }
     }
   } else {
@@ -1224,7 +1224,7 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     property_shape[i][0] = shape[0];
     property_shape[i][1] = shape[1];
     if (property_type[i] == T_INTEGER_A || property_type[i] == T_REAL_A ||
-	property_type[i] == T_LOGICAL_A || property_type[i] == T_CHAR_A)
+        property_type[i] == T_LOGICAL_A || property_type[i] == T_CHAR_A)
       ncols = 1;
     else {
       ncols = property_shape[i][0];
@@ -1268,59 +1268,59 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       sprintf(param_value, real_format, REAL(data));
     else if (type == T_LOGICAL) {
       if (LOGICAL(data))
-	sprintf(param_value, "T");
+        sprintf(param_value, "T");
       else
-	sprintf(param_value, "F");
+        sprintf(param_value, "F");
     }
     else if (type == T_INTEGER_A) {
       if (shape[0] != 3 && shape[0] != 6) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s integer array size=%d != 3 or 6", param_key, shape[0]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s integer array size=%d != 3 or 6", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
-	sprintf(tmpbuf, int_format, INTEGER_A(data,j));
-	strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
+        sprintf(tmpbuf, int_format, INTEGER_A(data,j));
+        strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
       }
     } else if (type == T_REAL_A) {
       if (shape[0] != 3 && shape[0] != 6) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s real array size=%d != 3 or 6", param_key, shape[0]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s real array size=%d != 3 or 6", param_key, shape[0]);
       }
       param_value[0]='\0';
       for (j=0; j<shape[0]; j++) {
-	sprintf(tmpbuf, real_format, REAL_A(data,j));
-	strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
+        sprintf(tmpbuf, real_format, REAL_A(data,j));
+        strncat(param_value, tmpbuf, PARAM_STRING_LENGTH-strlen(param_value)-1);
       }
     } else if (type == T_LOGICAL_A) {
       if (shape[0] != 3 && shape[0] != 6) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s logical array size=%d != 3 or 6", param_key, shape[0]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s logical array size=%d != 3 or 6", param_key, shape[0]);
       }
       sprintf(param_value, "%s %s %s",
-	      LOGICAL_A(data,0) ? "T" : "F",
-	      LOGICAL_A(data,1) ? "T" : "F",
-	      LOGICAL_A(data,2) ? "T" : "F");
+              LOGICAL_A(data,0) ? "T" : "F",
+              LOGICAL_A(data,1) ? "T" : "F",
+              LOGICAL_A(data,2) ? "T" : "F");
     } else if (type == T_INTEGER_A2) {
       if (shape[0] != 3 || shape[1] != 3) {
-	RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s 2D integer array shape=[%d %d] != [3 3]", param_key, shape[0], shape[1]);
+        RAISE_ERROR_WITH_KIND(ERROR_IO, "Parameter %s 2D integer array shape=[%d %d] != [3 3]", param_key, shape[0], shape[1]);
       }
       sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", int_format, int_format, int_format,
-	      int_format, int_format, int_format, int_format, int_format, int_format);
+              int_format, int_format, int_format, int_format, int_format, int_format);
       sprintf(param_value, tmpbuf,
-	      INTEGER_A2(data,shape,0,0), INTEGER_A2(data,shape,1,0), INTEGER_A2(data,shape,2,0),
-	      INTEGER_A2(data,shape,0,1), INTEGER_A2(data,shape,1,1), INTEGER_A2(data,shape,2,1),
-	      INTEGER_A2(data,shape,0,2), INTEGER_A2(data,shape,1,2), INTEGER_A2(data,shape,2,2));
+              INTEGER_A2(data,shape,0,0), INTEGER_A2(data,shape,1,0), INTEGER_A2(data,shape,2,0),
+              INTEGER_A2(data,shape,0,1), INTEGER_A2(data,shape,1,1), INTEGER_A2(data,shape,2,1),
+              INTEGER_A2(data,shape,0,2), INTEGER_A2(data,shape,1,2), INTEGER_A2(data,shape,2,2));
     } else if (type == T_REAL_A2) {
       sprintf(tmpbuf, "%s %s %s %s %s %s %s %s %s", real_format, real_format, real_format,
-	      real_format, real_format, real_format, real_format, real_format, real_format);
+              real_format, real_format, real_format, real_format, real_format, real_format);
       sprintf(param_value, tmpbuf,
-	      REAL_A2(data,shape,0,0), REAL_A2(data,shape,1,0), REAL_A2(data,shape,2,0),
-	      REAL_A2(data,shape,0,1), REAL_A2(data,shape,1,1), REAL_A2(data,shape,2,1),
-	      REAL_A2(data,shape,0,2), REAL_A2(data,shape,1,2), REAL_A2(data,shape,2,2));
+              REAL_A2(data,shape,0,0), REAL_A2(data,shape,1,0), REAL_A2(data,shape,2,0),
+              REAL_A2(data,shape,0,1), REAL_A2(data,shape,1,1), REAL_A2(data,shape,2,1),
+              REAL_A2(data,shape,0,2), REAL_A2(data,shape,1,2), REAL_A2(data,shape,2,2));
     } else if (type == T_CHAR) {
       memset(param_value, ' ', LINESIZE);
       strncpy(param_value, CHAR(data), shape[0]);
       param_value[LINESIZE-1] = '\0';
       while (param_value[strlen(param_value)-1] == ' ')
-	param_value[strlen(param_value)-1] = '\0';
+        param_value[strlen(param_value)-1] = '\0';
     }
 
     trimmed = param_value;
@@ -1330,9 +1330,9 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
       sprintf(tmpbuf, "%s ", param_key);
     } else {
       sprintf(tmpbuf, "%s=%s%s%s ", param_key,
-	    strchr(trimmed,' ') != NULL ? "\"" : "",
-	    trimmed,
-	    strchr(trimmed,' ') != NULL ? "\"" : "");
+            strchr(trimmed,' ') != NULL ? "\"" : "",
+            trimmed,
+            strchr(trimmed,' ') != NULL ? "\"" : "");
     }
     strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
   }
@@ -1348,50 +1348,50 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
 
       switch(property_type[i]) {
       case(T_INTEGER_A):
-	sprintf(tmpbuf, int_format, INTEGER_A(property_data[i], n));
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	break;
+        sprintf(tmpbuf, int_format, INTEGER_A(property_data[i], n));
+        if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+          strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+        strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        break;
 
       case(T_INTEGER_A2):
-	for (j=0; j < property_shape[i][0]; j++) {
-	  sprintf(tmpbuf, int_format, INTEGER_A2(property_data[i], property_shape[i], j, n));
-	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	}
-	break;
+        for (j=0; j < property_shape[i][0]; j++) {
+          sprintf(tmpbuf, int_format, INTEGER_A2(property_data[i], property_shape[i], j, n));
+          if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+            strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+          strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        }
+        break;
 
       case(T_REAL_A):
-	sprintf(tmpbuf, real_format, REAL_A(property_data[i], n));
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	break;
+        sprintf(tmpbuf, real_format, REAL_A(property_data[i], n));
+        if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+          strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+        strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        break;
 
       case(T_REAL_A2):
-	for (j=0; j < property_shape[i][0]; j++) {
-	  sprintf(tmpbuf, real_format, REAL_A2(property_data[i], property_shape[i], j, n));
-	  if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	    strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	  strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	}
-	break;
+        for (j=0; j < property_shape[i][0]; j++) {
+          sprintf(tmpbuf, real_format, REAL_A2(property_data[i], property_shape[i], j, n));
+          if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+            strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+          strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        }
+        break;
 
       case(T_CHAR_A):
-	sprintf(tmpbuf, str_format, (char *)property_data[i] + property_shape[i][0]*n);
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	break;
+        sprintf(tmpbuf, str_format, (char *)property_data[i] + property_shape[i][0]*n);
+        if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+          strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+        strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        break;
 
       case(T_LOGICAL_A):
-	sprintf(tmpbuf, logical_format, LOGICAL_A(property_data[i], n) ? 'T' : 'F');
-	if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
-	  strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
-	strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
-	break;
+        sprintf(tmpbuf, logical_format, LOGICAL_A(property_data[i], n) ? 'T' : 'F');
+        if (strlen(linebuffer) != 0 && linebuffer[strlen(linebuffer)-1] != ' ' && tmpbuf[0] != ' ')
+          strncat(linebuffer, " ", LINESIZE-strlen(linebuffer)-1);
+        strncat(linebuffer, tmpbuf, LINESIZE-strlen(linebuffer)-1);
+        break;
       }
     }
     strncat(linebuffer, "\n", LINESIZE-strlen(linebuffer)-1);
@@ -1402,56 +1402,55 @@ void write_xyz (char *filename, fortran_t *params, fortran_t *properties, fortra
     if (out != stdout) {
       end_idx = ftell(out);
       if (end_idx < 0) {
-	 perror("Error in ftell at end of xyz file write");
+         perror("Error in ftell at end of xyz file write");
       }
       fclose(out);
 
-      if (update_index) {   	/* read and update .xyz.idx index file */
-	frames_array_size = 0;
-	got_index = xyz_find_index(filename, indexname, &do_update, error);
-	PASS_ERROR;
+      if (update_index) {           /* read and update .xyz.idx index file */
+        frames_array_size = 0;
+        got_index = xyz_find_index(filename, indexname, &do_update, error);
+        PASS_ERROR;
 
-	nframes = 0;
-	if (got_index) {
-	  nframes = xyz_read_index(indexname, &frames, &atoms, &frames_array_size, error);
-	  PASS_ERROR;
-	}
-	if (start_idx == 0) nframes = 0; // we're overwriting existing output file
+        nframes = 0;
+        if (got_index) {
+          nframes = xyz_read_index(indexname, &frames, &atoms, &frames_array_size, error);
+          PASS_ERROR;
+        }
+        if (start_idx == 0) nframes = 0; // we're overwriting existing output file
 
-	if (nframes == 0 || frames[nframes] == start_idx) {
-	  nframes++;
-	  realloc_frames(&frames, &atoms, &frames_array_size, nframes+1);
+        if (nframes == 0 || frames[nframes] == start_idx) {
+          nframes++;
+          realloc_frames(&frames, &atoms, &frames_array_size, nframes+1);
 
-	  frames[nframes-1] = start_idx;  atoms[nframes-1] = n_atom;
-	  frames[nframes] = end_idx;	  atoms[nframes] = n_atom;
+          frames[nframes-1] = start_idx;  atoms[nframes-1] = n_atom;
+          frames[nframes] = end_idx;          atoms[nframes] = n_atom;
 
-	  xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
-	  PASS_ERROR;
+          xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
+          PASS_ERROR;
 
-	  if (access(indexname, R_OK) != 0) {
-	     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot access index file %s\n", indexname);
-	  }
-	  if (stat(indexname, &idx_stat) != 0) {
-	     RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat index file %s\n", indexname);
-	  }
-	  if (idx_stat.st_size == 0) { // try again
-	     sleep(1);
-	     xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
-	     PASS_ERROR;
-	  }
+          if (access(indexname, R_OK) != 0) {
+             RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot access index file %s\n", indexname);
+          }
+          if (stat(indexname, &idx_stat) != 0) {
+             RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat index file %s\n", indexname);
+          }
+          if (idx_stat.st_size == 0) { // try again
+             sleep(1);
+             xyz_write_index(indexname, &frames, &atoms, &frames_array_size, nframes, error);
+             PASS_ERROR;
+          }
 
-	}  else {
-	  // found index file, but does not match current file contents so let's remove it
-	  if (got_index) unlink(indexname);
-	}
+        }  else {
+          // found index file, but does not match current file contents so let's remove it
+          if (got_index) unlink(indexname);
+        }
 
-	if (got_index) {
-	  free(frames);
-	  free(atoms);
-	}
+        if (got_index) {
+          free(frames);
+          free(atoms);
+        }
       }
     } else
       fflush(out);
   }
 }
-

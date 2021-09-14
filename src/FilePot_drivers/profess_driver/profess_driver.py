@@ -31,22 +31,22 @@ for i in range(2,len(args)):
    if m is not None:
       do_force=True
       if m.group(1) is not None:
-	 force_field=m.group(1)
+         force_field=m.group(1)
       else:
-	 force_field="force"
+         force_field="force"
    m=re.match("virial=?(\S+)?", args[i])
    if m is not None:
       do_virial=True
       if m.group(1) is not None:
-	 virial_field=m.group(1)
+         virial_field=m.group(1)
       else:
-	 virial_field="virial"
+         virial_field="virial"
    m=re.match("energy=?(\S+)?", args[i])
    if m is not None:
       if m.group(1) is not None:
-	 energy_field=m.group(1)
+         energy_field=m.group(1)
       else:
-	 energy_field="energy"
+         energy_field="energy"
 
 if do_virial:
    sys.stderr.write("No support for virial yet\n")
@@ -198,9 +198,9 @@ in_species_pot=False
 in_no_print=False
 for l in f_ion_template:
    if re.match("\s*%BLOCK\s+(LATTICE|POSITIONS)",l):
-	 in_no_print=True
+         in_no_print=True
    if re.match("\s*%END\s+BLOCK\s+(LATTICE|POSITIONS)",l):
-	 in_no_print=False
+         in_no_print=False
    if re.match("\s*%BLOCK\s+SPECIES_POT",l):
       just_got_species_pot=True
    if re.match("\s*%END\s+BLOCK\s+SPECIES_POT",l):
@@ -213,7 +213,7 @@ for l in f_ion_template:
    elif (in_species_pot):
       fields=l.split()
       if not re.search('/', fields[1].strip()):
-	 os.system("cp ../%s %s" % (fields[1].strip(), fields[1].strip()))
+         os.system("cp ../%s %s" % (fields[1].strip(), fields[1].strip()))
 f_ion_template.close()
 f_ion_out.close()
 

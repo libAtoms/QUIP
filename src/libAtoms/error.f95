@@ -220,7 +220,7 @@ contains
     error = ERROR_NONE
 
     error_stack_position = 0
-    
+
   endsubroutine clear_error
 
 
@@ -257,7 +257,7 @@ contains
        write (linestr, '(I10)')  error_stack(i)%line
 
        if (error_stack(i)%has_doc) then
-          
+
           str = trim(str) // C_NEW_LINE // &
                '  File "' // &
                trim(error_stack(i)%fn) // &
@@ -381,38 +381,38 @@ contains
     do while (len_trim(tmp_str) > 0)
       next_cr = scan(trim(tmp_str),quip_new_line)
       if (next_cr > 0) then
-	 copy_len = min(len_trim(tmp_str),line_len,next_cr)
+         copy_len = min(len_trim(tmp_str),line_len,next_cr)
       else
-	 copy_len = min(len_trim(tmp_str),line_len)
+         copy_len = min(len_trim(tmp_str),line_len)
       endif
       if (copy_len < len_trim(tmp_str) .and. tmp_str(copy_len+1:copy_len+1) /= " ") then
-	 last_space=scan(tmp_str(1:copy_len), " ", .true.)
-	 if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
-	    copy_len=last_space
-	 endif
+         last_space=scan(tmp_str(1:copy_len), " ", .true.)
+         if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
+            copy_len=last_space
+         endif
       endif
 
       if (len_trim(lb_str) > 0) then ! we already have some text, add newline before concatenating next line
-	if (lb_str(len_trim(lb_str):len_trim(lb_str)) == quip_new_line) then
-	   lb_str = trim(lb_str)//trim(tmp_str(1:copy_len))
-	else
-	   lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
-	endif
+        if (lb_str(len_trim(lb_str):len_trim(lb_str)) == quip_new_line) then
+           lb_str = trim(lb_str)//trim(tmp_str(1:copy_len))
+        else
+           lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
+        endif
       else ! just concatenate next line
-	lb_str = trim(tmp_str(1:copy_len))
+        lb_str = trim(tmp_str(1:copy_len))
       endif
       ! if we broke in mid word, add "-"
       word_break = .true.
       if (tmp_str(copy_len:copy_len) == " ") then ! we broke right after a space, so no wordbreak
-	word_break = .false.
+        word_break = .false.
       else ! we broke after a character
-	if (copy_len < len_trim(tmp_str)) then ! there's another character after this one, check if it's a space
-	  if (tmp_str(copy_len+1:copy_len+1) == " ") then
-	    word_break = .false.
-	  endif
-	else ! we broke after the last character
-	  word_break = .false.
-	endif
+        if (copy_len < len_trim(tmp_str)) then ! there's another character after this one, check if it's a space
+          if (tmp_str(copy_len+1:copy_len+1) == " ") then
+            word_break = .false.
+          endif
+        else ! we broke after the last character
+          word_break = .false.
+        endif
       endif
       if (word_break) lb_str = trim(lb_str)//"-"
       tmp_str(1:copy_len) = ""

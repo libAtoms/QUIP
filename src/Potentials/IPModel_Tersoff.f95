@@ -29,8 +29,8 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_Tersoff module 
-!X  
+!X IPModel_Tersoff module
+!X
 !% Module for computing energy using the Tersoff potential for C/Si/Ge and alloys
 !% (Ref. J. Tersoff,  Phys. Rev. B {\bf 39}, 5566 (1989)).
 !% The IPModel_Tersoff object contains all the parameters read from a 'Tersoff_params'
@@ -61,8 +61,8 @@ include 'IPModel_interface.h'
 
 public :: IPModel_Tersoff
 type IPModel_Tersoff
-  integer :: n_types = 0         !% Number of atomic types 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types} 
+  integer :: n_types = 0         !% Number of atomic types
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connections
 
@@ -139,7 +139,7 @@ subroutine IPModel_Tersoff_Finalise(this)
 end subroutine IPModel_Tersoff_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator. It computes energy, forces and virial.
 !% Derivatives are taken from M. Tang, Ph.D. Thesis, MIT 1995.
 !X
@@ -147,10 +147,10 @@ end subroutine IPModel_Tersoff_Finalise
 subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Tersoff), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
-  character(len=*), intent(in), optional :: args_str 
+  character(len=*), intent(in), optional :: args_str
   type(MPI_Context), intent(in), optional :: mpi
   integer, intent(out), optional :: error
 
@@ -172,7 +172,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   real(dp) :: dr_ij_mag_dr_i(3), dr_ij_mag_dr_j(3)
   real(dp) :: dr_ik_mag_dr_i(3), dr_ik_mag_dr_k(3)
   real(dp) :: dr_jk_mag_dr_j(3), dr_jk_mag_dr_k(3)
-  real(dp) :: f_C_ij_d, dV_ij_R_dr_ij_mag 
+  real(dp) :: f_C_ij_d, dV_ij_R_dr_ij_mag
   real(dp) :: f_C_ik
 
   real(dp) :: dcos_theta_ijk_dr_ij_mag, dcos_theta_ijk_dr_ik_mag, dcos_theta_ijk_dr_jk_mag
@@ -201,7 +201,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_Tersoff_Calc', error)
      f = 0.0_dp
   end if
@@ -245,7 +245,7 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -267,28 +267,28 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 
       S_ij = sqrt(this%S(ti)*this%S(tj))
       if (dr_ij_mag < S_ij) then
-	beta_i = this%beta(ti)
-	R_ij = sqrt(this%R(ti)*this%R(tj))
-	c_i = this%c(ti)
-	d_i = this%d(ti)
-	h_i = this%h(ti)
+        beta_i = this%beta(ti)
+        R_ij = sqrt(this%R(ti)*this%R(tj))
+        c_i = this%c(ti)
+        d_i = this%d(ti)
+        h_i = this%h(ti)
       else
-	cycle
+        cycle
       endif
 
       zeta_ij = 0.0_dp
       do ki=1, n_neighbours(at, i)
-	if (ki == ji) cycle
-	k = neighbour(at, i, ki, dr_ik_mag, cosines = dr_ik)
-	if (dr_ik_mag .feq. 0.0_dp) cycle
+        if (ki == ji) cycle
+        k = neighbour(at, i, ki, dr_ik_mag, cosines = dr_ik)
+        if (dr_ik_mag .feq. 0.0_dp) cycle
         if (do_rescale_r) dr_ik_mag = dr_ik_mag*r_scale
 
-	tk = get_type(this%type_of_atomic_num, at%Z(k))
+        tk = get_type(this%type_of_atomic_num, at%Z(k))
 
-	R_ik = sqrt(this%R(ti)*this%R(tk))
-	S_ik = sqrt(this%S(ti)*this%S(tk))
-	cos_theta_ijk = sum(dr_ij*dr_ik)
-	zeta_ij = zeta_ij + f_C(dr_ik_mag, R_ik, S_ik)*g(cos_theta_ijk, c_i, d_i, h_i)
+        R_ik = sqrt(this%R(ti)*this%R(tk))
+        S_ik = sqrt(this%S(ti)*this%S(tk))
+        cos_theta_ijk = sum(dr_ij*dr_ik)
+        zeta_ij = zeta_ij + f_C(dr_ik_mag, R_ik, S_ik)*g(cos_theta_ijk, c_i, d_i, h_i)
       end do
       z_ij(ji) = beta_i*zeta_ij
     end do ! ji (calc z_ij)
@@ -307,15 +307,15 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
 
       S_ij = sqrt(this%S(ti)*this%S(tj))
       if (dr_ij_mag < S_ij) then
-	n_i = this%n(ti)
-	R_ij = sqrt(this%R(ti)*this%R(tj))
-	AA_ij = sqrt(this%A(ti)*this%A(tj))
-	BB_ij = sqrt(this%B(ti)*this%B(tj))
-	lambda_ij = 0.5_dp*(this%lambda(ti)+this%lambda(tj))
-	mu_ij = 0.5_dp*(this%mu(ti)+this%mu(tj))
-	chi_ij = this%chi(ti,tj)
+        n_i = this%n(ti)
+        R_ij = sqrt(this%R(ti)*this%R(tj))
+        AA_ij = sqrt(this%A(ti)*this%A(tj))
+        BB_ij = sqrt(this%B(ti)*this%B(tj))
+        lambda_ij = 0.5_dp*(this%lambda(ti)+this%lambda(tj))
+        mu_ij = 0.5_dp*(this%mu(ti)+this%mu(tj))
+        chi_ij = this%chi(ti,tj)
       else
-	cycle
+        cycle
       endif
 
       b_ij = chi_ij*(1.0_dp + z_ij(ji)**n_i)**(-1.0_dp/(2*n_i))
@@ -326,120 +326,120 @@ subroutine IPModel_Tersoff_Calc(this, at, e, local_e, f, virial, local_virial, a
       V_ij_A = f_C_ij * (-b_ij*BB_ij * exp_mu_ij)
 
       if (associated(w_e)) then
-	w_f = 0.5_dp*(w_e(i)+w_e(j))
+        w_f = 0.5_dp*(w_e(i)+w_e(j))
       else
-	w_f = 1.0_dp
+        w_f = 1.0_dp
       endif
 
       if (present(e) .or. present(local_e)) then
-	! factor of 0.5 because Tersoff definition goes over each pair only once
-	de = 0.5_dp*(V_ij_R + v_ij_A)
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + de
-	endif
-	if (present(e)) then
-	  e = e + de*w_f
-	endif
+        ! factor of 0.5 because Tersoff definition goes over each pair only once
+        de = 0.5_dp*(V_ij_R + v_ij_A)
+        if (present(local_e)) then
+          local_e(i) = local_e(i) + de
+        endif
+        if (present(e)) then
+          e = e + de*w_f
+        endif
       endif
 
       if (present(f) .or. present(virial) .or. present(local_virial)) then
-	dr_ij_mag_dr_i = -dr_ij
-	dr_ij_mag_dr_j = dr_ij
+        dr_ij_mag_dr_i = -dr_ij
+        dr_ij_mag_dr_j = dr_ij
 
-	f_C_ij_d = f_C_d(dr_ij_mag, R_ij, S_ij)
-	dV_ij_R_dr_ij_mag = f_C_ij_d*AA_ij*exp_lambda_ij + f_C_ij*AA_ij*(-lambda_ij)*exp_lambda_ij
-	if (present(f)) then
-	  f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_i(:)
-	  f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_j(:)
-	endif
-	if (present(virial) .or. present(local_virial)) virial_i = 0.5_dp*w_f * dV_ij_R_dr_ij_mag * (dr_ij .outer. dr_ij) * dr_ij_mag
+        f_C_ij_d = f_C_d(dr_ij_mag, R_ij, S_ij)
+        dV_ij_R_dr_ij_mag = f_C_ij_d*AA_ij*exp_lambda_ij + f_C_ij*AA_ij*(-lambda_ij)*exp_lambda_ij
+        if (present(f)) then
+          f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_i(:)
+          f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_R_dr_ij_mag * dr_ij_mag_dr_j(:)
+        endif
+        if (present(virial) .or. present(local_virial)) virial_i = 0.5_dp*w_f * dV_ij_R_dr_ij_mag * (dr_ij .outer. dr_ij) * dr_ij_mag
         if (present(virial)) virial = virial - virial_i
         if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
-	if (z_ij(ji) .fne. 0.0_dp) then
-	  beta_i_db_ij_dz_ij = beta_i* ( -0.5_dp*chi_ij * &
-	    ( ( 1.0_dp+z_ij(ji)**n_i)**(-(1.0_dp+2.0_dp*n_i)/(2.0_dp*n_i)) ) * &
-	    ( z_ij(ji)**(n_i-1.0_dp) ) )
-	else
-	  beta_i_db_ij_dz_ij = -1.0_dp
-	endif
+        if (z_ij(ji) .fne. 0.0_dp) then
+          beta_i_db_ij_dz_ij = beta_i* ( -0.5_dp*chi_ij * &
+            ( ( 1.0_dp+z_ij(ji)**n_i)**(-(1.0_dp+2.0_dp*n_i)/(2.0_dp*n_i)) ) * &
+            ( z_ij(ji)**(n_i-1.0_dp) ) )
+        else
+          beta_i_db_ij_dz_ij = -1.0_dp
+        endif
 
-	do ki=1, n_neighbours(at,i)
-	  if (ki == ji) cycle
-	  k = neighbour(at, i, ki, dr_ik_mag, dr_ik_diff, dr_ik)
-	  if (dr_ik_mag .feq. 0.0_dp) cycle
+        do ki=1, n_neighbours(at,i)
+          if (ki == ji) cycle
+          k = neighbour(at, i, ki, dr_ik_mag, dr_ik_diff, dr_ik)
+          if (dr_ik_mag .feq. 0.0_dp) cycle
 
           if (do_rescale_r) then
              dr_ik_mag = dr_ik_mag * r_scale
              dr_ik_diff = dr_ik_diff * r_scale
           end if
 
-	  tk = get_type(this%type_of_atomic_num, at%Z(k))
+          tk = get_type(this%type_of_atomic_num, at%Z(k))
 
-	  dr_ik_mag_dr_i = -dr_ik
-	  dr_ik_mag_dr_k = dr_ik
+          dr_ik_mag_dr_i = -dr_ik
+          dr_ik_mag_dr_k = dr_ik
 
-	  cos_theta_ijk = sum(dr_ij*dr_ik)
+          cos_theta_ijk = sum(dr_ij*dr_ik)
 
-	  dcos_theta_ijk_dr_ij_mag = 1.0_dp/dr_ik_mag - cos_theta_ijk/dr_ij_mag
-	  dcos_theta_ijk_dr_ik_mag = 1.0_dp/dr_ij_mag - cos_theta_ijk/dr_ik_mag
+          dcos_theta_ijk_dr_ij_mag = 1.0_dp/dr_ik_mag - cos_theta_ijk/dr_ij_mag
+          dcos_theta_ijk_dr_ik_mag = 1.0_dp/dr_ij_mag - cos_theta_ijk/dr_ik_mag
 
-	  dr_jk = dr_ik_diff - dr_ij_diff
-	  dr_jk_mag = sqrt(sum(dr_jk*dr_jk))
-	  dr_jk = dr_jk/dr_jk_mag
+          dr_jk = dr_ik_diff - dr_ij_diff
+          dr_jk_mag = sqrt(sum(dr_jk*dr_jk))
+          dr_jk = dr_jk/dr_jk_mag
 
-	  dr_jk_mag_dr_j = -dr_jk
-	  dr_jk_mag_dr_k = dr_jk
+          dr_jk_mag_dr_j = -dr_jk
+          dr_jk_mag_dr_k = dr_jk
 
-	  dcos_theta_ijk_dr_jk_mag = -dr_jk_mag/(dr_ij_mag*dr_ik_mag)
-	  dg_dcos_theta_ijk = dg_dcos_theta(cos_theta_ijk, c_i, d_i, h_i)
+          dcos_theta_ijk_dr_jk_mag = -dr_jk_mag/(dr_ij_mag*dr_ik_mag)
+          dg_dcos_theta_ijk = dg_dcos_theta(cos_theta_ijk, c_i, d_i, h_i)
 
-	  R_ik = sqrt(this%R(ti)*this%R(tk))
-	  S_ik = sqrt(this%S(ti)*this%S(tk))
-	  f_C_ik = f_C(dr_ik_mag, R_ik, S_ik)
+          R_ik = sqrt(this%R(ti)*this%R(tk))
+          S_ik = sqrt(this%S(ti)*this%S(tk))
+          f_C_ik = f_C(dr_ik_mag, R_ik, S_ik)
 
-	  dzeta_ij_dr_ij_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_ij_mag
-	  dzeta_ij_dr_jk_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_jk_mag
+          dzeta_ij_dr_ij_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_ij_mag
+          dzeta_ij_dr_jk_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_jk_mag
 
-	  dzeta_ij_dr_ik_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_ik_mag + &
-	    f_C_d(dr_ik_mag, R_ik, S_ik) * g(cos_theta_ijk, c_i, d_i, h_i)
+          dzeta_ij_dr_ik_mag = f_C_ik * dg_dcos_theta_ijk * dcos_theta_ijk_dr_ik_mag + &
+            f_C_d(dr_ik_mag, R_ik, S_ik) * g(cos_theta_ijk, c_i, d_i, h_i)
 
-	  db_ij_dr_ij_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_ij_mag
-	  db_ij_dr_ik_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_ik_mag
-	  db_ij_dr_jk_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_jk_mag
+          db_ij_dr_ij_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_ij_mag
+          db_ij_dr_ik_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_ik_mag
+          db_ij_dr_jk_mag = beta_i_db_ij_dz_ij*dzeta_ij_dr_jk_mag
 
-	  dV_ij_A_dr_ij_mag = f_C_ij*(-db_ij_dr_ij_mag*BB_ij*exp_mu_ij)
-	  dV_ij_A_dr_ik_mag = f_C_ij*(-db_ij_dr_ik_mag*BB_ij*exp_mu_ij)
-	  dV_ij_A_dr_jk_mag = f_C_ij*(-db_ij_dr_jk_mag*BB_ij*exp_mu_ij)
+          dV_ij_A_dr_ij_mag = f_C_ij*(-db_ij_dr_ij_mag*BB_ij*exp_mu_ij)
+          dV_ij_A_dr_ik_mag = f_C_ij*(-db_ij_dr_ik_mag*BB_ij*exp_mu_ij)
+          dV_ij_A_dr_jk_mag = f_C_ij*(-db_ij_dr_jk_mag*BB_ij*exp_mu_ij)
 
-	  if (present(f)) then
-	    f(:,i) = f(:,i) - w_f*( 0.5_dp * dV_ij_A_dr_ik_mag*dr_ik_mag_dr_i(:) + &
-				    0.5_dp * dV_ij_A_dr_ij_mag*dr_ij_mag_dr_i(:) )
+          if (present(f)) then
+            f(:,i) = f(:,i) - w_f*( 0.5_dp * dV_ij_A_dr_ik_mag*dr_ik_mag_dr_i(:) + &
+                                    0.5_dp * dV_ij_A_dr_ij_mag*dr_ij_mag_dr_i(:) )
 
-	    f(:,j) = f(:,j) - w_f*( 0.5_dp * dV_ij_A_dr_jk_mag*dr_jk_mag_dr_j(:) + &
-				    0.5_dp * dV_ij_A_dr_ij_mag*dr_ij_mag_dr_j(:) )
+            f(:,j) = f(:,j) - w_f*( 0.5_dp * dV_ij_A_dr_jk_mag*dr_jk_mag_dr_j(:) + &
+                                    0.5_dp * dV_ij_A_dr_ij_mag*dr_ij_mag_dr_j(:) )
 
-	    f(:,k) = f(:,k) - w_f*( 0.5_dp*dV_ij_A_dr_ik_mag*dr_ik_mag_dr_k(:) + &
-				    0.5_dp*dV_ij_A_dr_jk_mag*dr_jk_mag_dr_k(:) )
-	  end if
+            f(:,k) = f(:,k) - w_f*( 0.5_dp*dV_ij_A_dr_ik_mag*dr_ik_mag_dr_k(:) + &
+                                    0.5_dp*dV_ij_A_dr_jk_mag*dr_jk_mag_dr_k(:) )
+          end if
 
-	  if (present(virial) .or. present(local_virial)) virial_i = &
-	    w_f*0.5_dp*( dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag + &
+          if (present(virial) .or. present(local_virial)) virial_i = &
+            w_f*0.5_dp*( dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag + &
             dV_ij_A_dr_ik_mag*(dr_ik .outer. dr_ik)*dr_ik_mag + &
             dV_ij_A_dr_jk_mag*(dr_jk .outer. dr_jk)*dr_jk_mag)
 
           if (present(virial)) virial = virial - virial_i
           if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
-	end do ! ki
-	dV_ij_A_dr_ij_mag = f_C_ij_d*(-b_ij*BB_ij*exp_mu_ij) + &
-	  f_C_ij*(-b_ij*BB_ij*(-mu_ij)*exp_mu_ij)
+        end do ! ki
+        dV_ij_A_dr_ij_mag = f_C_ij_d*(-b_ij*BB_ij*exp_mu_ij) + &
+          f_C_ij*(-b_ij*BB_ij*(-mu_ij)*exp_mu_ij)
 
-	if (present(f)) then
-	  f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_i(:)
-	  f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_j(:)
-	endif
-	if (present(virial)) virial_i = &
+        if (present(f)) then
+          f(:,i) = f(:,i) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_i(:)
+          f(:,j) = f(:,j) - 0.5_dp*w_f * dV_ij_A_dr_ij_mag * dr_ij_mag_dr_j(:)
+        endif
+        if (present(virial)) virial_i = &
             0.5_dp*w_f * dV_ij_A_dr_ij_mag*(dr_ij .outer. dr_ij)*dr_ij_mag
         if (present(virial)) virial = virial - virial_i
         if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
@@ -527,15 +527,15 @@ function dg_dcos_theta(cos_theta, c, d, h)
 end function dg_dcos_theta
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -566,7 +566,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, "n_types", value, status)
@@ -642,7 +642,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -665,9 +665,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'Tersoff_params') then
@@ -704,7 +704,7 @@ subroutine IPModel_Tersoff_read_params_xml(this, param_str)
 end subroutine IPModel_Tersoff_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of Tersoff parameters: number of different types, cutoff radius, atomic numbers, ect.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -729,7 +729,7 @@ subroutine IPModel_Tersoff_Print (this, file)
     end do
     call verbosity_pop()
   end do
-    
+
 end subroutine IPModel_Tersoff_Print
 
 end module IPModel_Tersoff_module

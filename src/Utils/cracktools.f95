@@ -74,7 +74,7 @@ module CrackTools_module
 contains
 
   subroutine crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-       old_nn, hybrid, hybrid_mark, force) 
+       old_nn, hybrid, hybrid_mark, force)
 
     type(Atoms), intent(inout) :: crack_slab
     real(dp), pointer, dimension(:,:) :: load, force
@@ -90,7 +90,7 @@ contains
          call add_property(crack_slab, 'changed_nn', 0)
     if (.not. assign_pointer(crack_slab, 'changed_nn', changed_nn)) &
          call system_abort('changed_nn pointer assignment failed')
-  
+
     if (.not. has_property(crack_slab, 'load')) &
          call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
     if (.not. assign_pointer(crack_slab, 'load', load)) &
@@ -120,7 +120,7 @@ contains
          call add_property(crack_slab, 'old_nn', 0)
     if (.not. assign_pointer(crack_slab, 'old_nn', old_nn)) &
          call system_abort('old_nn pointer assignment failed')
-    
+
     if (.not. has_property(crack_slab, 'hybrid')) &
          call add_property(crack_slab, 'hybrid', 0)
     if (.not. assign_pointer(crack_slab, 'hybrid', hybrid)) &
@@ -173,7 +173,7 @@ contains
 
   end subroutine crack_parse_name
 
-  !% Calculate energy release rate $G$ from strain using 
+  !% Calculate energy release rate $G$ from strain using
   !% $$G = \frac{1}{2} \frac{E}{1-\nu^2} \epsilon^2 h$$
   !% from thin strip result. Quantities are:
   !% 'strain',$\epsilon$, dimensionless ratio $\frac{\Delta y}{y}$;
@@ -271,7 +271,7 @@ contains
   !% Rescale atoms in slab, with atoms in front of either crack tip
   !% strained in y direction by 'strain' and atoms behind crack tip
   !% rigidly shifted to keep top and bottom edges flat. A transition
-  !% zone is created in between with linearly varying strain to 
+  !% zone is created in between with linearly varying strain to
   !% avoid creation of defects.
   !%
   !%>  --------------------------------------
@@ -315,7 +315,7 @@ contains
     if (.not. get_value(at%params, 'PoissonRatio_yx', v)) &
          call system_abort('crack_uniform_load: "PoissonRatio_yx" missing')
 
-    if (.not. get_value(at%params, 'CrackPosy', crack_pos_y)) & 
+    if (.not. get_value(at%params, 'CrackPosy', crack_pos_y)) &
          call system_abort('crack_uniform_load: CrackPosy parameter missing from atoms')
 
     if ((.not. present(eps) .and. .not. present(G)) .or. (present(eps) .and. present(G))) &
@@ -342,7 +342,7 @@ contains
 
     do j=1, at%N
        x = at%pos(1,j);
-       y = at%pos(2,j)-crack_pos_y; 
+       y = at%pos(2,j)-crack_pos_y;
 
        ! Strain regions 1 and 5
        if (x < l_crack_pos-zone_width .or. x > r_crack_pos+zone_width) then
@@ -355,7 +355,7 @@ contains
           y_check = y
           if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
              call crack_check_coordination(at,params,j,y_check)
-          endif 
+          endif
           if (y_check >= 0.0) then
              disp(2,j) = strain*(y*(1.0-q) + top_old*q)
           else
@@ -369,7 +369,7 @@ contains
           y_check = y
           if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
              call crack_check_coordination(at,params,j,y_check)
-          endif 
+          endif
           if (y_check >= 0.0) then
              disp(2,j) = strain*(y*q + top_old*(1.0-q))
           else
@@ -382,7 +382,7 @@ contains
           y_check = y
           if(params%crack_check_surface_coordination.and.at%Z(j).eq.params%crack_check_coordination_atom_type.and.abs(y).lt.params%crack_check_coordination_region) then
              call crack_check_coordination(at,params,j,y_check)
-          endif 
+          endif
           if(y_check >= 0.0) then
              disp(2,j) = strain*top_old
           else
@@ -408,20 +408,20 @@ contains
   end subroutine crack_uniform_load
 
   !% Calculate Irwin K-field stresses and/or displacements for all atoms in 'at'.
-  !% Atomic positions should be the original undistorted bulk crystal positions. 
+  !% Atomic positions should be the original undistorted bulk crystal positions.
   !% 'YoungsModulus' and 'PoissonRatio_yx' parameters are extracted from 'at', along
   !% with 'CrackPos' to specify the location of the crack tip. If neither 'sig' nor 'disp'
   !% are present thenn properties are added to at if do_disp or do_sig are true.
-  !% Stress is in 6 component Voigt notation: $1=xx, 2=yy, 3=zz, 4=yz, 5=zx$ and $6=xy$, and 
+  !% Stress is in 6 component Voigt notation: $1=xx, 2=yy, 3=zz, 4=yz, 5=zx$ and $6=xy$, and
   !% displacement is a Cartesian vector $(u_x,u_y,u_z)$.
 
-  !Instead of adding a property to the atom structure, return 
+  !Instead of adding a property to the atom structure, return
   !an array with sig and disp, if do_sig or do_disp are true
   subroutine crack_k_field(at, K, mode, sig, disp, do_sig, do_disp)
-    type(Atoms), intent(in) :: at 
+    type(Atoms), intent(in) :: at
     real(dp), intent(in) :: K
     character(*), intent(in), optional :: mode
-    real(dp), dimension(:,:), optional, intent(out) :: sig, disp 
+    real(dp), dimension(:,:), optional, intent(out) :: sig, disp
     logical, optional, intent(in) :: do_sig, do_disp
 
     real(dp), allocatable, dimension(:,:) :: mysig
@@ -470,14 +470,14 @@ contains
 
        mysig(1,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp - sin(theta/2.0_dp)* &
             sin(3.0_dp*theta/2.0_dp))
-       
+
        mysig(2,i) = K/sqrt(2.0_dp*pi*r)*cos(theta/2.0_dp)*(1.0_dp + sin(theta/2.0_dp)* &
             sin(3.0_dp*theta/2.0_dp))
-       
+
        mysig(3,i) = vp*(mysig(1,i) + mysig(2,i))
        mysig(4,i) = 0.0_dp
        mysig(5,i) = 0.0_dp
-       
+
        mysig(6,i) = K/sqrt(2.0_dp*pi*r)*sin(theta/2.0_dp)*cos(theta/2.0_dp)* &
             cos(3.0_dp*theta/2.0_dp)
 
@@ -496,11 +496,11 @@ contains
 
   end subroutine crack_k_field
 
-!The subroutine crack_apply_strain_ramp  has to be called in order to create a slab with two different strain regions (or loading regions). 
+!The subroutine crack_apply_strain_ramp  has to be called in order to create a slab with two different strain regions (or loading regions).
 !G1 defines the initial loading with which the initial crack is created and it characterizes the third region just before the start of the ramp.
 !G2 defines the final loading belonging to the fifth region, immediately after the ramp, and is associated to the parameter crack_ramp_end_G.
 !Tha parameter crack_ramp_start_length defines the extension of region 3, lying in between the crack tip (d2) and start of the ramp.
-!In between of the 2 different strain regions (region3 with G=G1 and region 5 with G=G2) is created a buffer region 
+!In between of the 2 different strain regions (region3 with G=G1 and region 5 with G=G2) is created a buffer region
 !which length is defined by the parameter crack_ramp_length (|d4-d3| in this subroutine).
 !IMPORTANT: In the crack.xml the option crack_loading="ramp" has to be used with crack_apply_loading_field="F" and simulation_initial_state="MD_CONSTANT".
 
@@ -598,12 +598,12 @@ contains
     ! Setup edge_mask to allow easy exclusion of edge atoms
     do i=1,crack_slab%N
        if (crack_is_edge_atom(crack_slab, i, params%selection_edge_tol)) &
-	    edge_mask(i) = 1
+          edge_mask(i) = 1
     end do
 
-    ! Setup load_mask 
+    ! Setup load_mask
     do i=1,crack_slab%N
-       if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) & 
+       if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) &
             load_mask(i) = 1
     end do
 
@@ -623,7 +623,7 @@ contains
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark, force)
 
-    ! clear changed_nn, hybrid and hybrid_mark 
+    ! clear changed_nn, hybrid and hybrid_mark
     hybrid(:) = 0
     hybrid_mark(:) = 0
     changed_nn(:) = 0
@@ -631,7 +631,7 @@ contains
     ! Artificially set changed_nn to 1 for atoms near to crack tip
     do i = 1, crack_slab%N
        if (distance_min_image(crack_slab, i, crack_tips%real(:,crack_tips%N)) < params%crack_seed_embed_tol) &
-	    changed_nn(i) = 1
+          changed_nn(i) = 1
     end do
 
     call Print('Seeded embed region with '//count(changed_nn /= 0)//' atoms.')
@@ -641,7 +641,7 @@ contains
 
   end subroutine crack_setup_marks
 
-  subroutine crack_calc_load_field(crack_slab, params, classicalpot, load_method, overwrite_pos, mpi) 
+  subroutine crack_calc_load_field(crack_slab, params, classicalpot, load_method, overwrite_pos, mpi)
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
     type(Potential), intent(inout) :: classicalpot
@@ -690,7 +690,7 @@ contains
        call add_property(crack_slab, 'load', 0.0_dp, n_cols=3)
 
        call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, force)  
+            old_nn, hybrid, hybrid_mark, force)
 
        if (.not. mpi%active .or. (mpi%active .and.mpi%my_proc == 0)) then
           if (params%io_netcdf) then
@@ -707,7 +707,7 @@ contains
        end if
 
        allocate(relaxed_pos(3,crack_slab%N), new_pos(3,crack_slab%N))
-       allocate(k_disp(3, crack_slab%N))  
+       allocate(k_disp(3, crack_slab%N))
        allocate(u_disp(3, crack_slab%N))
        allocate(initial_pos(3,crack_slab%N))
 
@@ -717,10 +717,10 @@ contains
        !create a bulk slab
        call crack_make_slab(params, classicalpot, crack_slab1, width1, height1, E, v, v2, bulk)
 
-       ! Apply loading field   
+       ! Apply loading field
        if (trim(load_method) == 'saved') then
- 
-          !relax the positions of the original slab 
+
+          !relax the positions of the original slab
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
              steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
@@ -729,17 +729,17 @@ contains
                print_cinoutput=movie)
           end if
 
-          ! Save relaxed positions 
+          ! Save relaxed positions
           relaxed_pos = crack_slab%pos
- 
-          crack_slab%pos = initial_pos 
- 
+
+          crack_slab%pos = initial_pos
+
           call print_title('Applying saved load increment')
           call crack_apply_load_increment(crack_slab)
 
        else if (trim(load_method) == 'uniform') then
- 
-          !relax the positions of the original slab 
+
+          !relax the positions of the original slab
           if (params%crack_relax_loading_field) then
             ! Geometry optimise
              steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
@@ -748,28 +748,28 @@ contains
                print_cinoutput=movie)
           endif
 
-          ! Save relaxed positions 
+          ! Save relaxed positions
           relaxed_pos = crack_slab%pos
- 
-          crack_slab%pos = initial_pos  
+
+          crack_slab%pos = initial_pos
           call print_title('Applying uniform load increment')
           ! strain it a bit
           do i=1,crack_slab%N
              crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp+params%crack_strain_increment)
           end do
-     
+
        else if (trim(load_method) == 'reduce_uniform') then
- 
-          ! Save relaxed positions 
+
+          ! Save relaxed positions
           relaxed_pos = crack_slab%pos
- 
-          crack_slab%pos = initial_pos  
+
+          crack_slab%pos = initial_pos
           call print_title('Applying uniform load decrement')
           ! Invoque function crack_is_topbottom_edge_atom = abs(slab%pos(2,i)) > height/2.0_dp - edge_gap
           ! strain it a bit
           do i=1,crack_slab%N
             if (crack_is_topbottom_edge_atom(crack_slab, i, params%selection_edge_tol)) &
-             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp-params%crack_strain_increment)    
+             crack_slab%pos(2,i) = crack_slab%pos(2,i)*(1.0_dp-params%crack_strain_increment)
           end do
 
        else if (trim(load_method) == 'kfield') then
@@ -781,7 +781,7 @@ contains
           k_disp = 0.0_dp
           call print('Energy release rate     G = '//G//' J/m^2')
           call print('Stress Intensity Factor K = '//(crack_g_to_k(G,E,v)/1e6_dp)//' MPa.sqrt(m)')
-          call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)  
+          call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)
 
           do i=1,crack_slab%N
              crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
@@ -794,7 +794,7 @@ contains
                  do_pos=.true.,do_lat=.false., &
                  print_cinoutput=movie)
          end if
-         relaxed_pos = crack_slab%pos  
+         relaxed_pos = crack_slab%pos
 
 
           crack_slab%pos = crack_slab1%pos
@@ -802,7 +802,7 @@ contains
           K1 = crack_g_to_k(crack_strain_to_g( &
                crack_g_to_strain(G, E, v, orig_height) + &
                params%crack_strain_increment, E, v, orig_height),E,v)
-       
+
           k_disp = 0.0_dp
           call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
           call crack_k_field(crack_slab, K1, do_sig=.false., disp=k_disp, do_disp=.true.)
@@ -816,19 +816,19 @@ contains
 
           crack_slab%pos = crack_slab1%pos
           r_crack_pos = crack_pos(1)-0.85*params%crack_strain_zone_width
-       
+
           call print('Applying load 1')
 
           u_disp = 0.0_dp
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp) 
+               params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp)
 
           k_disp = 0.0_dp
           call print('Energy release rate     G = '//G//' J/m^2')
           call print('Stress Intensity Factor K = '//(crack_g_to_k(G,E,v)/1e6_dp)//' MPa.sqrt(m)')
-          call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)  
+          call crack_k_field(crack_slab, crack_g_to_k(G,E,v), do_sig=.false., disp=k_disp, do_disp=.true.)
 
-          r = 0.0 
+          r = 0.0
           do i=1,crack_slab%N
              r = sqrt((crack_slab%pos(1,i) - crack_pos(1))**2.0_dp + &
                   (crack_slab%pos(2,i) - crack_pos(2))**2.0_dp)
@@ -841,14 +841,14 @@ contains
                 end do
              end if
           end do
- 
+
          if (params%crack_relax_loading_field) then
             steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                  max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                  do_pos=.true.,do_lat=.false., &
                  print_cinoutput=movie)
          end if
-         relaxed_pos = crack_slab%pos  
+         relaxed_pos = crack_slab%pos
 
           call print('Applying new load')
 
@@ -860,7 +860,7 @@ contains
 
           u_disp = 0.0_dp
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-            params%crack_strain_zone_width, G1, apply_load=.false., disp=u_disp) 
+            params%crack_strain_zone_width, G1, apply_load=.false., disp=u_disp)
 
           ! apply load increment to K_disp
           K1 = crack_g_to_k(G1,E,v)
@@ -868,9 +868,9 @@ contains
           k_disp = 0.0_dp
           call print('Energy release rate     G_1 = '//G1//' J/m^2')
           call print('Stress Intensity Factor K_1 = '//(K1/1e6_dp)//' MPa.sqrt(m)')
-          call crack_k_field(crack_slab, K1, do_sig=.false., disp=k_disp, do_disp=.true.)  
+          call crack_k_field(crack_slab, K1, do_sig=.false., disp=k_disp, do_disp=.true.)
 
-          r = 0.0 
+          r = 0.0
           do i=1,crack_slab%N
              r = sqrt((crack_slab%pos(1,i) - crack_pos(1))**2.0_dp + &
                   (crack_slab%pos(2,i) - crack_pos(2))**2.0_dp)
@@ -883,33 +883,33 @@ contains
                 end do
              end if
           end do
- 
+
        end if
 
 
        if (params%crack_relax_loading_field) then
-       
+
           ! now re-relax
            steps = minim(classicalpot, crack_slab, method=params%minim_mm_method, convergence_tol=params%minim_mm_tol, &
                max_steps=params%minim_mm_max_steps, linminroutine=params%minim_mm_linminroutine, do_print=.true., &
                do_pos=.true.,do_lat=.false., &
                print_cinoutput=movie)
        end if
-    
+
        call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-            old_nn, hybrid, hybrid_mark, force)  
- 
+            old_nn, hybrid, hybrid_mark, force)
+
        ! work out displacement field, using relaxed positions
        do i=1,crack_slab%N
           load(:,i) = crack_slab%pos(:,i) - relaxed_pos(:,i)
        end do
-   
+
        call print('Displacement field generated. Max disp: '//maxval(load))
        !NB workaround for pgf90 bug (as of 9.0-1)
        t_norm = norm(reshape(load,(/3*crack_slab%N/)))
        !NB end workaround for pgf90 bug (as of 9.0-1)
        call print('                              RMS disp: '//(t_norm/sqrt(3.0_dp*crack_slab%N)))
-   
+
        if (overwrite_pos) then
           crack_slab%pos = relaxed_pos
        else
@@ -923,14 +923,14 @@ contains
     deallocate(u_disp, k_disp)
     call finalise(movie)
     call finalise(crack_slab1)
-    
+
   end subroutine crack_calc_load_field
 
-  subroutine crack_make_seed(crack_slab, params) 
+  subroutine crack_make_seed(crack_slab, params)
     type(Atoms), intent(inout) :: crack_slab
     type(CrackParams), intent(in) :: params
 
-    real(dp), allocatable, dimension(:,:):: k_disp, u_disp 
+    real(dp), allocatable, dimension(:,:):: k_disp, u_disp
     real(dp), pointer, dimension(:,:) :: load, force
     integer, pointer, dimension(:) :: move_mask, nn, changed_nn, edge_mask, load_mask, md_old_changed_nn, &
          old_nn, hybrid, hybrid_mark
@@ -938,7 +938,7 @@ contains
     integer :: i, k
 
     call crack_fix_pointers(crack_slab, nn, changed_nn, load, move_mask, edge_mask, load_mask, md_old_changed_nn, &
-         old_nn, hybrid, hybrid_mark, force) 
+         old_nn, hybrid, hybrid_mark, force)
 
     if (.not. get_value(crack_slab%params, 'OrigHeight', orig_height)) &
          call system_abort('crack_make_seed: "OrigHeight" parameter missing')
@@ -981,10 +981,10 @@ contains
 
        if (params%crack_G > 0.0_dp) then
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G=params%crack_G, apply_load=.true., disp=u_disp) 
+               params%crack_strain_zone_width, G=params%crack_G, apply_load=.true., disp=u_disp)
        else
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, eps=params%crack_strain, apply_load=.true., disp=u_disp) 
+               params%crack_strain_zone_width, eps=params%crack_strain, apply_load=.true., disp=u_disp)
        end if
 
        if (.not. get_value(crack_slab%params, 'strain', strain)) &
@@ -997,8 +997,8 @@ contains
           crack_slab%pos(3,:) = crack_slab%pos(3,:)*(1.0_dp-v2*strain)
           crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
           call set_lattice(crack_slab, crack_slab%lattice, scale_positions=.false.)
-       elseif(params%crack_rescale_x) then 
-          !  Rescale in x direction by v 
+       elseif(params%crack_rescale_x) then
+          !  Rescale in x direction by v
           if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
           crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
        endif
@@ -1026,7 +1026,7 @@ contains
        call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
        call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
        call set_value(crack_slab%params, 'G', params%crack_G)
-       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.)  
+       call crack_k_field(crack_slab, crack_g_to_k(params%crack_G, E, v), disp=k_disp, do_disp=.true.)
 
        do i=1,crack_slab%N
           crack_slab%pos(:,i) = crack_slab%pos(:,i) + k_disp(:,i)
@@ -1056,7 +1056,7 @@ contains
 
        G = params%crack_G
        call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-            params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp)  
+            params%crack_strain_zone_width, G, apply_load=.false., disp=u_disp)
        call set_value(crack_slab%params, 'G', G)
 
        do i=1,crack_slab%N
@@ -1084,7 +1084,7 @@ contains
           call set_value(crack_slab%params, 'CrackPosy', 0.0_dp)
           call set_value(crack_slab%params, 'OrigCrackPos', r_crack_pos + 0.85_dp*params%crack_strain_zone_width)
           call crack_uniform_load(crack_slab, params, l_crack_pos, r_crack_pos, &
-               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp) 
+               params%crack_strain_zone_width, G, apply_load=.true., disp=u_disp)
 
           if(params%crack_rescale_x_z) then
              !  Rescale in x direction by v and in z direction by v2
@@ -1095,7 +1095,7 @@ contains
              crack_slab%lattice(3,3) = crack_slab%lattice(3,3)*(1.0_dp-v2*strain)
              call set_lattice(crack_slab, crack_slab%lattice, scale_positions=.false.)
           elseif(params%crack_rescale_x) then
-             !  Rescale in x direction by v 
+             !  Rescale in x direction by v
              if (.not. get_value(crack_slab%params,'OrigHeight',orig_height)) orig_height = 0.0_dp
              strain = crack_g_to_strain(params%crack_G, E, v, orig_height)
              crack_slab%pos(1,:) = crack_slab%pos(1,:)*(1.0_dp-v*strain)
@@ -1106,14 +1106,14 @@ contains
        call system_abort('Unknown loading type '//trim(params%crack_loading))
     end if
 
-    deallocate(u_disp) 
-    deallocate(k_disp) 
+    deallocate(u_disp)
+    deallocate(k_disp)
 
   end subroutine crack_make_seed
 
 
   !% Increase the load by adding the the load displacement field
-  !% to the atomic positions. The routine recalculates the loading 
+  !% to the atomic positions. The routine recalculates the loading
   !% G and stores it in the atom parameter dictionary.
   subroutine crack_apply_load_increment(at, G_increment)
     type(Atoms) :: at
@@ -1213,11 +1213,11 @@ contains
     real(dp), intent(in) :: ellipse(3)      !% Principal radii of ellipse in $x$, $y$ and $z$ directions
     real(dp), intent(in) :: ellipse_bias(3) !%  Shift ellipse, positive values forward
     type(Table), intent(inout) :: list      !% On exit contains indexes of selected atoms, which
-                                            !% are also reachable by nearest neighbour  bond hopping starting from c 
+                                            !% are also reachable by nearest neighbour  bond hopping starting from c
     integer, intent(in) :: c                !% Ellipse is centred around atom 'c'.
     integer i, old_n
     type(Table) :: ellipselist, nextlist
-    
+
     call allocate(ellipselist, Nint=1, Nreal=0, Nstr=0, Nlogical=0)
     do i=1,at%N
        if (in_ellipse(diff_min_image(at, c, i) - ellipse_bias, ellipse)) call append(ellipselist, i)
@@ -1281,7 +1281,7 @@ contains
 
   end function crack_is_topbottom_edge_atom
 
-  !% Update the connectivity of a crack slab. calc_connect is only called if 
+  !% Update the connectivity of a crack slab. calc_connect is only called if
   !% necessary (i.e. if the maximal atomic displacement is bigger than
   !% 'params%md(params%md_stanza)%recalc_connect_factor*params%md(params%md_stanza)%crust'
   !% The 'nn' and 'changed_nn' properties are updated each call, with
@@ -1352,7 +1352,7 @@ contains
          call system_abort('crack_update_connect: changed_nn property missing from atoms')
 
     if (.not. assign_pointer(at, 'edge_mask', edge_mask)) &
-         call system_abort('crack_update_connect: edge property missing from atoms')    
+         call system_abort('crack_update_connect: edge property missing from atoms')
 
     nn = 0
     do i = 1,nn_atoms%N
@@ -1392,7 +1392,7 @@ contains
     else
        call system_abort('crack_update_selection: unknown selection_method '//trim(params%selection_method))
     end if
-    
+
   end subroutine crack_update_selection
 
   !% Update QM selection region for a crack configuration using the 'nn' and 'changed_nn'
@@ -1437,7 +1437,7 @@ contains
          call system_abort('crack_update_selection_coordination: CrackPosy parameter missing from atoms')
 
     call print('Building QM selection zone...')
-    
+
     call allocate(embedlist, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
     call allocate(old_embed, Nint=1,Nreal=0,Nstr=0,Nlogical=0)
     call print('count(changed_nn /= 0) = '//count(changed_nn /= 0))
@@ -1467,26 +1467,26 @@ contains
 
     ! Do selection twice, once to get inner and once to get outer surface
     do surface=1,2
-       
+
        call allocate(selectlist(surface), Nint=5, Nreal=0, Nstr=0, Nlogical=0)
 
        ! Mark ellipsoid around each real atom with changed_nn /= 0 with its age
        !  - If central (active) atom already marked, keep the newer mark
        !  - If embedded atoms already marked, also keep newer mark
-       
+
        do i=1,at%N
           if (changed_nn(i) == 0) cycle
 
-          if (abs(at%pos(1,i)-crack_pos(1)) < params%selection_cutoff_plane .and. & 
+          if (abs(at%pos(1,i)-crack_pos(1)) < params%selection_cutoff_plane .and. &
                abs(at%pos(2,i)-crack_pos(2)) < params%selection_cutoff_plane) then
-             
+
              p = Find_in_array(selectlist(surface)%int(1,1:selectlist(surface)%N), i)
              if (p == 0) then
                 call append(selectlist(surface), (/i,0,0,0,changed_nn(i)/))
              else
                 selectlist(surface)%int(5,p) = min(selectlist(surface)%int(5,p), changed_nn(i))
              end if
-             
+
              if (old_embed%N == 0) then
                 ! First time we do embedding, use ellipse halfway between inner and outer
                 call select_ellipse(at, 0.5_dp*(selection_ellipse(1,:) + selection_ellipse(2,:)), &
@@ -1494,7 +1494,7 @@ contains
              else
                 call select_ellipse(at, selection_ellipse(surface,:), ellipse_bias, tmp_select, i)
              end if
-             
+
              do j = 1, tmp_select%N
                 p = Find_in_array(int_part(selectlist(surface),(/1,2,3,4/)), tmp_select%int(:,j))
                 if (p == 0) then
@@ -1509,36 +1509,36 @@ contains
        end do
 
 
-    
+
        ! Sort by age of NN changes, most recent are smallest values
        allocate(sorted(selectlist(surface)%N))
        allocate(tip_dist(selectlist(surface)%N))
        allocate(sindex(selectlist(surface)%N))
        sorted = selectlist(surface)%int(5,1:selectlist(surface)%N)
-       
-       ! multiply sorted by abs(distance from tip). 
+
+       ! multiply sorted by abs(distance from tip).
        do i = 1, selectlist(surface)%N
           j = selectlist(surface)%int(1,i)
           tip_dist(i) =  ((crack_pos(1)-at%pos(1,j))**2+(crack_pos(2)-at%pos(2,j))**2)**(1/2)
           sorted(i) = sorted(i)*tip_dist(i)
        enddo
 
-	   call insertion_sort(sorted, sindex)
+       call insertion_sort(sorted, sindex)
 
        i = 1
-       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N) 
+       do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N)
           age = sorted(i)
           call print('  Selecting changed_nn age '//age)
-          
+
           do while(i <= selectlist(surface)%N)
              if (sorted(i) /= age) exit
              call append(new_embed(surface), selectlist(surface)%int(1:4,sindex(i)))
              i = i + 1
           end do
-          
+
           call print('Surface '//surface//' Now embedding '//new_embed(surface)%N//' atoms')
        end do
-       
+
        deallocate(sorted)
        deallocate(tip_dist)
        deallocate(sindex)
@@ -1557,7 +1557,7 @@ contains
           HANDLE_ERROR(error)
        end if
     end do
-    
+
     ! Add atoms inside inner surface
     do i=1,new_embed(1)%N
        if (.not. is_in_array(embedlist%int(1,1:embedlist%N), new_embed(1)%int(1,i))) then
@@ -1565,7 +1565,7 @@ contains
           HANDLE_ERROR(error)
        end if
     end do
-    
+
     call Print('Embedding '//embedlist%N//' atoms.')
 
     call finalise(old_embed)
@@ -1654,10 +1654,10 @@ contains
        ! Mark ellipsoid around each atom with crack_front /= 0
        do i=1,at%N
           if (.not. crack_front(i)) cycle
-          
+
 
           selectmask(surface,i) = 1
-             
+
           if (old_embed%N == 0) then
              ! First time we do embedding, use ellipse halfway between inner and outer
              call select_ellipse(at, 0.5_dp*(selection_ellipse(1,:) + selection_ellipse(2,:)), &
@@ -1667,13 +1667,13 @@ contains
           end if
 
           call print('marking '//tmp_select%n//' atoms in ellipse around atom '//i)
-          
+
           selectmask(surface,tmp_select%int(1,1:tmp_select%n)) = 1
        end do
-       
+
        write (line,'(a,i0,a,i0,a)') 'Surface ',surface,' Now embedding ', count(selectmask(surface,:) == 1), ' atoms'
        call print(line)
-       
+
        ! First time there's no need to go round twice
        if(old_embed%N == 0) exit
     end do
@@ -1685,14 +1685,14 @@ contains
     do i=1,old_embed%N
        if (selectmask(2,old_embed%int(1,i)) == 1) call append(embedlist, old_embed%int(1,i))
     end do
-    
+
     ! Add atoms inside inner surface
     do i=1,at%N
        if (selectmask(1,i) == 0) cycle
        if (.not. is_in_array(embedlist%int(1,1:embedlist%N), i)) &
             call append(embedlist, i)
     end do
-    
+
     call Print('Embedding '//embedlist%N//' atoms.')
 
     ! Copy embedlist to 'hybrid' property
@@ -1718,7 +1718,7 @@ contains
     integer :: i, n
 
     if (trim(params%crack_tip_method) == 'coordination') then
-       call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)   
+       call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)
        crack_tip = crack_find_tip_coordination(at, params)
        call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
 
@@ -1731,7 +1731,7 @@ contains
 
        if (.not. assign_pointer(at, 'crack_front', crack_front)) &
             call system_abort('crack_find_tip: crack_front property missing from atoms')
-    
+
        ! Calculate crack tip position as average along crack front
        crack_tip = 0.0_dp
        n = 0
@@ -1743,7 +1743,7 @@ contains
        end do
        crack_tip = crack_tip / real(n, dp)
        call append(crack_tips, realpart=(/crack_tip(1), crack_tip(2), 0.0_dp /))
-       
+
     else if (trim(params%crack_tip_method) == 'alpha_shape') then
 #ifdef HAVE_CGAL
        call crack_find_surface_atoms(at)
@@ -1752,7 +1752,7 @@ contains
 #else
        call system_abort('crack_find_tip: method="alpha_shape" but compiled without CGAL support')
 #endif
-       
+
        if (.not. get_value(at%params, 'CrackPosx', crack_tip(1))) &
             call system_abort('crack_find_tip: CrackPosx param missing')
        if (.not. get_value(at%params, 'CrackPosy', crack_tip(2))) &
@@ -1830,7 +1830,7 @@ contains
     call Print('Crack position = '//crack_pos//' near atoms ['//orig_index(surface%N-n_tip+1:surface%N)//']')
     call set_value(at%params, 'CrackPosx', crack_pos(1))
     call set_value(at%params, 'CrackPosy', crack_pos(2))
-    
+
     if (present(n_tip_atoms)) n_tip_atoms = n_tip
     if (present(tip_indices)) then
        if (size(tip_indices) < n_tip) call system_abort('crack_find_tip_coordination: tip_indices array too small')
@@ -1886,9 +1886,9 @@ contains
   !% atoms and 0s where there are no atoms. The percolation is then
   !% seeded in the void at (0,0,0) for a double-ended crack or (-OrigWidth/2, 0, 0)
   !% for a single-ended crack, and then spreads between connected cells
-  !% like a forest fire. A filter is used to remove local minima closer than 
+  !% like a forest fire. A filter is used to remove local minima closer than
   !% 'params%crack_tip_min_separation' cells from one another. The result is a Table
-  !% with realsize=3 containing the coordinates of the crack tips detected. 
+  !% with realsize=3 containing the coordinates of the crack tips detected.
   !% If a through-going crack is detected the result table will have size zero.
   subroutine crack_find_tip_percolation(at, params, crack_tips)
     type(Atoms), intent(inout) :: at
@@ -1906,19 +1906,19 @@ contains
     integer, pointer, dimension(:) :: horz_slice, vert_slice
     integer, pointer, dimension(:,:,:) :: n_cell_slab
     type(Atoms) :: at_copy
-    
+
     call system_timer('crack_find_tip')
-    
+
     if (.not. get_value(at%params, 'OrigWidth', orig_width)) &
          call system_abort('crack_find_tip_percolation: "OrigWidth" parameter missing from atoms')
-    
+
     call atoms_copy_without_connect(at_copy, at)
-    call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)   
-    
+    call allocate(crack_tips, Nint=0, Nreal=3, Nstr=0, Nlogical=0)
+
     do grid_i=0,0
        grid_factor = 2**grid_i
        grid_size = params%crack_tip_grid_size/grid_factor
-       
+
        if (grid_factor /= 1) then
           if (allocated(old_cells)) deallocate(old_cells)
           allocate(old_cells(connect%cellsNa,connect%cellsNb,connect%cellsNc))
@@ -1927,10 +1927,10 @@ contains
           call print('cells allocated to shape '//shape(cells))
           deallocate(n_cell, cells, min_cells)
        end if
-       
+
        ! Construct temporary Connection object and partition atoms into cells
        call print('crack_find_tip_percolation: allocating percolation grid with cell size '//grid_size//' A')
-       
+
        call finalise(connect)
        call set_cutoff(at_copy, grid_size)
        call calc_connect(at_copy, alt_connect=connect)
@@ -1945,13 +1945,13 @@ contains
 !!$       call initialise(connect, at%N, at%Nbuffer, at%pos, at%lattice, at%g, fill=.false.)
 !!$       call connection_cells_initialise(connect, cellsna, cellsnb, cellsnc, at%n)
 !!$       call partition_atoms(connect, at)
-              
+
        allocate(n_cell(connect%cellsNa,connect%cellsNb, connect%cellsNc))
        allocate(cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
        allocate(min_cells(connect%cellsNa,connect%cellsNb, connect%cellsNc))
 
        call print('crack_find_tip_percolation: shape(cells)='//shape(cells))
-       
+
        n_cell = 0
        do k=1,connect%cellsnc
           do j=1,connect%cellsnb
@@ -1961,7 +1961,7 @@ contains
              end do
           end do
        end do
-       
+
        ! Find top and bottom edges of slab
        vert_slice => n_cell(max(1,size(n_cell,1)/2),:,max(1,size(n_cell,3)/2))
        top_edge = 1
@@ -1969,50 +1969,50 @@ contains
           top_edge = top_edge + 1
        end do
        top_edge = top_edge + 2
-       
+
        bottom_edge = size(vert_slice)
        do while (vert_slice(bottom_edge) == 0)
           bottom_edge = bottom_edge - 1
        end do
        bottom_edge = bottom_edge - 2
-       
+
        ! Find left and right edges of slab
        if (params%crack_double_ended) then
           left_edge = 1
           right_edge = size(n_cell,1)
        else
           horz_slice => n_cell(:,max(1,size(n_cell,2)/2),max(1,size(n_cell,3)/2))
-          
+
           left_edge = 1
           do while (horz_slice(left_edge) == 0)
              left_edge = left_edge + 1
           end do
           left_edge = left_edge + 2
-          
+
           right_edge = size(horz_slice)
           do while (horz_slice(right_edge) == 0)
              right_edge = right_edge - 1
           end do
           right_edge = right_edge - 2
        end if
-       
+
        call print('crack_find_tip_percolation: edges left='//left_edge//' right='//right_edge//' top='//top_edge//' bottom='//bottom_edge)
-       
+
        n_slab = (right_edge-left_edge+1)*(bottom_edge-top_edge+1)*connect%cellsnc
-       
+
        call print('crack_find_tip_percolation: n_slab='//n_slab)
-       
+
        n_cell_slab => n_cell(left_edge:right_edge,top_edge:bottom_edge,:)
-       
+
        occ_mu = real(sum(n_cell_slab),dp)/size(n_cell_slab)
        occ_sigma = sqrt(real(sum(n_cell_slab**2),dp)/size(n_cell_slab) - occ_mu**2.0_dp)
-       
+
        occ_threshold = max(0,floor(occ_mu - occ_sigma))
        call print('crack_find_tip_percolation: occ_mu='//occ_mu//' occ_sigma='//occ_sigma//' occ_threshold='//occ_threshold)
-       
+
        ! Mark cells with occupancy <= occ_threshold for percolation
        cells = 0
-       
+
        where (n_cell <= occ_threshold) cells = 1
 
        call print('crack_find_tip_percolation: before filtration count(cells == 1) = '//count(cells == 1))
@@ -2041,26 +2041,26 @@ contains
        end if
 
        call print('crack_find_tip_percolation: after filtration count(cells == 1) = '//count(cells == 1))
-       
+
        if (params%crack_double_ended) then
           start_pos = (/ 0.0_dp, 0.0_dp, 0.0_dp /)
        else
           start_pos = (/ -0.5_dp*orig_width/2.0_dp, 0.0_dp, 0.0_dp /)
        end if
-       
+
        call cell_of_pos(connect, at%g .mult. start_pos, start_i, start_j, start_k)
-       
+
        if (cells(start_i, start_j, start_k) /= 1) &
             call system_abort('crack_find_tip_percolation: cannot start percolation since start_pos='//start_pos//' is not in void')
-       
+
        call print('crack_find_tip_percolation: seeding percolation in cell ('//i//','//j//','//k//')', PRINT_VERBOSE)
-       
+
        ! Stop percolation from going outside slab
        cells(:left_edge,:,:) = 0
        cells(right_edge:,:,:) = 0
        cells(:,:top_edge,:) = 0
        cells(:,bottom_edge:,:) = 0
-       
+
        ! Seed percolation at start_pos then allow "fire" to percolate through cells
        cells(start_i,start_j,start_k) = 2
        nstep = 0
@@ -2068,15 +2068,15 @@ contains
           nstep = nstep + 1
        end do
        call print('crack_find_tip_percolation: percolation completed in '//nstep//' steps', PRINT_VERBOSE)
-       
+
        if (any(cells(left_edge,top_edge:bottom_edge,:) > 1) .and. any(cells(right_edge,top_edge:bottom_edge,:) > 1)) then
           call print('crack_find_tip_percolation: through-going crack detected')
-          
+
           deallocate(n_cell)
           deallocate(cells)
-          deallocate(min_cells)    
+          deallocate(min_cells)
           if (allocated(old_cells)) deallocate(old_cells)
-          
+
           call finalise(connect)
           call finalise(at_copy)
           call finalise(minima)
@@ -2084,42 +2084,42 @@ contains
           return
 
        end if
-       
+
        ! Fill cells outside the slab and those containing atoms to avoid them showing up as minima
        fill = 2*maxval(cells)
        where(cells == 0 .or. cells == 1)
           cells = fill
        end where
-       
+
     end do
-    
-    
+
+
     ! minimum filter: each point on the grid is set to the minimum of nearby points
-    ! Equivalent to 
+    ! Equivalent to
     !   min_cells(i,j,k) = minval(cells(i-min_dist/2:i+min_dist/2, j-min_dist/2:j+min_dist/2, k-min_dist/2:j+min_dist/2)
     ! but without overflowing any array boundaries
-    
+
     min_dist = params%crack_tip_min_separation/grid_size
     call print('crack_find_tip_percolation: minimum distance between tips is '//params%crack_tip_min_separation//' A = '//min_dist//' cells.', PRINT_VERBOSE)
-    
+
     min_cells = 0
     do k=1,connect%cellsnc
        min_k = min(max(k - min_dist/2, 1), connect%cellsnc)
        max_k = min(max(k + min_dist/2, 1), connect%cellsnc)
-       
+
        do j=1,connect%cellsnb
           min_j = min(max(j - min_dist/2, 1), connect%cellsnb)
           max_j = min(max(j + min_dist/2, 1), connect%cellsnb)
-          
+
           do i=1,connect%cellsna
              min_i = min(max(i - min_dist/2, 1), connect%cellsna)
              max_i = min(max(i + min_dist/2, 1), connect%cellsna)
-             
+
              min_cells(i,j,k) = minval(cells(min_i:max_i, min_j:max_j, min_k:max_k))
           end do
        end do
     end do
-    
+
     ! Find all the local minima
     call allocate(minima, Nint=3,Nreal=0,Nstr=0,Nlogical=0)
     do k=1,connect%cellsnc
@@ -2129,7 +2129,7 @@ contains
           end do
        end do
     end do
-    
+
     call print('crack_find_tip_percolation: got '//minima%n//' tips before duplicate removal', PRINT_VERBOSE)
     if (current_verbosity() >= PRINT_VERBOSE) then
        do i=1,minima%n
@@ -2140,7 +2140,7 @@ contains
           call print(' tip #'//i//' cell '//minima%int(:,i)//' position '//(at%lattice .mult. crack_t))
        end do
     end if
-    
+
     ! Remove duplicate minima of same depth within params%crack_tip_min_separation of one another
     do while (.true.)
        duplicate = .false.
@@ -2152,13 +2152,13 @@ contains
              end if
           end do
        end do outer
-       
+
        if (duplicate) then
           d_i = dot_product((minima%int(:,i) - (/start_i, start_j, start_k/)),(minima%int(:,i) - (/start_i, start_j, start_k/)))
           d_j = dot_product((minima%int(:,j) - (/start_i, start_j, start_k/)),(minima%int(:,j) - (/start_i, start_j, start_k/)))
-          
+
           call print('duplicates '//i//' and '//j//' d_i='//d_i//' d_j='//d_j)
-          
+
           if (d_i > d_j) then
              call print('removing j '//j)
              call delete(minima, j, .true.)
@@ -2170,37 +2170,37 @@ contains
           exit
        end if
     end do
-    
+
     call print('crack_find_tip_percolation: found '//minima%n//' crack tips')
-    
+
     do i=1,minima%n
        crack_t(1) = real(minima%int(1,i),dp)/connect%cellsna
        crack_t(2) = real(minima%int(2,i),dp)/connect%cellsnb
        crack_t(3) = real(minima%int(3,i),dp)/connect%cellsnc
        crack_t = crack_t - 0.5_dp
        crack_pos = at%lattice .mult. crack_t
-       
+
        ! Insert in crack_tips table such that results are ordered by increasing x coordinate
        j = 1
        do while (j <= crack_tips%N)
           if (crack_tips%real(1,j) > crack_pos(1)) exit
           j = j + 1
        end do
-       
+
        call print('crack_find_tip_percolation: inserting x='//crack_pos(1)//' at position '//j)
        call insert(crack_tips, j, realpart=crack_pos)
     end do
-    
+
     deallocate(n_cell)
     deallocate(cells)
-    deallocate(min_cells)    
+    deallocate(min_cells)
     if (allocated(old_cells)) deallocate(old_cells)
-    
+
     call finalise(connect)
     call finalise(at_copy)
     call finalise(minima)
     call system_timer('crack_find_tip')
-    
+
   end subroutine crack_find_tip_percolation
 
 
@@ -2289,7 +2289,7 @@ contains
 
     deallocate(surface_i, surface_x, surface_z, surface_i_band, surface_x_band)
     call print('crack_find_tip_local_energy: found '//count(crack_front)//' crack front atoms.')
-    
+
   end subroutine crack_find_tip_local_energy
 
 #ifdef HAVE_CGAL
@@ -2312,7 +2312,7 @@ contains
     call c_alpha_shape_2(points_n, x, y, alpha, shape_n, shape_list, error)
     ! convert from 0-based to 1-based indices
     shape_list(1:shape_n) = shape_list(1:shape_n) + 1
-    
+
   end subroutine alpha_shape_2
 
   subroutine crack_front_alpha_shape(at, alpha, angle_threshold, error)
@@ -2337,13 +2337,13 @@ contains
     if (.not. assign_pointer(at, 'crack_surface', crack_surface)) then
        RAISE_ERROR('crack_find_tip_local_energy: crack_surface property missing from atoms', error)
     end if
-    
+
     n_surf = count(crack_surface)
     allocate(x(n_surf), z(n_surf), surf(n_surf))
     surf(:) = pack((/ (i, i=1,at%N) /), crack_surface)
     x(:) = pack(at%pos(1,:), crack_surface)
     z(:) = pack(at%pos(3,:), crack_surface)
-    
+
     n_front = n_surf
     allocate(front(n_front))
     front(:) = 0
@@ -2370,21 +2370,21 @@ contains
     type(Atoms), intent(inout) :: at
     type(CInoutput), intent(inout) :: cio
     type(CrackParams), intent(in) :: params
-    
+
     if (params%io_print_all_properties) then
        call write(cio, at)
     else
        call write(cio, at, properties_array=params%io_print_properties)
     end if
   end subroutine crack_print_cio
-  
+
   subroutine crack_print_filename(at, filename, params)
     type(Atoms), intent(inout) :: at
     character(*), intent(in) :: filename
     type(CrackParams), intent(in) :: params
-    
+
     type(CInOutput) :: cio
-    
+
     call initialise(cio, filename, action=OUTPUT)
     if (params%io_print_all_properties) then
        call write(cio, at)
@@ -2417,21 +2417,21 @@ contains
           c = params%elastic_cij/EV_A3_IN_GPA
        else
           call calc_elastic_constants(classicalpot, bulk, c=c, c0=c0, relax_initial=params%crack_relax_bulk, return_relaxed=params%crack_relax_bulk)
-          
+
           call print('Relaxed elastic constants (GPa):')
           call print(c*EV_A3_IN_GPA)
           call print('')
           call print('Unrelaxed elastic constants (GPa):')
           call print(c0*EV_A3_IN_GPA)
           call print('')
-          
+
           call print('Relaxed lattice')
           call print(bulk%lattice)
        end if
-       
+
        if (.not. get_value(bulk%params, 'YoungsModulus', E)) &
             call system_abort('crack_uniform_load: "YoungsModulus" missing')
-       
+
        if (.not. get_value(bulk%params, 'PoissonRatio_yx', v)) &
             call system_abort('crack_uniform_load: "PoissonRatio_yx" missing')
 
@@ -2451,7 +2451,7 @@ contains
        ny = max(ny, 1)
 
        call supercell(crack_layer, bulk, nx, ny, 1)
-      
+
        call set_cutoff(crack_layer, cutoff(classicalpot)+params%md(params%md_stanza)%crust)
        call supercell(crack_slab, crack_layer, 1, 1, params%crack_num_layers)
        call calc_connect(crack_slab, store_is_min_image=.true.)
@@ -2649,7 +2649,7 @@ contains
 
     if(params%crack_align_y) then
       call print_title('Aligning Seed Crack at y=0')
-  
+
       ! Find an atom close to y=0
       minabsy = 1000.0_dp
       atom1 = -1; atom2 = -1
@@ -2660,19 +2660,19 @@ contains
             atom1 = i
          end if
       end do
-  
+
       ! Apply shift to centre the seed crack in the right place
       if (trim(params%crack_name) == '(111)[11b0]') then
-  
+
          call calc_connect(crack_slab)
-  
+
          ! Find atom1's closest neighbour vertically above or below it (x and z equal, not y)
          do n = 1, n_neighbours(crack_slab, atom1)
             j = neighbour(crack_slab, atom1, n, diff=uij) ! nth neighbour of atom1
-            if (abs(uij(1)) < 1e-4_dp .and. & 
+            if (abs(uij(1)) < 1e-4_dp .and. &
                  abs(uij(2)) > 1e-4_dp .and. &
                  abs(uij(3)) < 1e-4_dp) then
-  
+
                ydiff = abs(crack_slab%pos(2,atom1)-crack_slab%pos(2,j))
                if (ydiff < mindiff) then
                   mindiff = ydiff
@@ -2680,13 +2680,13 @@ contains
                end if
             end if
          end do
-  
+
          if (atom1 == -1 .or. atom2 == -1) &
               call system_abort('Failed to find a pair of atoms vertically aligned!')
-  
+
          ! Align y=0 to centre line of atom1-atom2 bond
          shift = (crack_slab%pos(2,atom1) + crack_slab%pos(2,atom2))/2.0_dp
-  
+
          call Print('Centering on (atom '//atom1//')--(atom '//atom2//') bond')
          call print('  Atom 1 pos = '//crack_slab%pos(:,atom1))
          call print('  Atom 2 pos = '//crack_slab%pos(:,atom2))
@@ -2695,18 +2695,18 @@ contains
          do i=1,crack_slab%N
             crack_slab%pos(2,i) = crack_slab%pos(2,i) + shift
          end do
-  
+
       else if(trim(params%crack_name) == '(110)[11b0]') then
          ! Align y=0 to atom1
          shift = -crack_slab%pos(2,atom1)
-  
+
          call Print('Centering on atom '//atom1)
          call print('  Atom 1 pos = '//crack_slab%pos(:,atom1))
          call Print('Shifting atoms vertically by '//shift)
          do i=1,crack_slab%N
             crack_slab%pos(2,i) = crack_slab%pos(2,i) + shift
          end do
-  
+
       else if (trim(params%crack_name) == '(110)[001b]') then
          ! Do nothing - correctly aligned already
       else if (trim(params%crack_name) == '(100)(010)') then
@@ -2742,7 +2742,7 @@ contains
       real(dp)                         :: rmin, rij
       integer                          :: i, ji, n2, who_closest
       integer, allocatable,dimension(:)  :: who, who_nn, who_absolute_index
- 
+
       my_x_boundaries = optional_default(.false.,x_boundaries)
 
       rmin = 100.d0
@@ -2757,9 +2757,9 @@ contains
 
       do i = 1, n_neighbours(at, j)
          ji = neighbour(at,j,i,distance=rij)
-         if(at%Z(ji).ne.at%Z(j)) then 
+         if(at%Z(ji).ne.at%Z(j)) then
             n2 = n2 + 1
-            who_absolute_index(n2) = ji 
+            who_absolute_index(n2) = ji
             who(n2) = i
             if(present(at_for_connectivity)) then
                who_nn(n2) = n_neighbours(at_for_connectivity, ji)
@@ -2774,12 +2774,12 @@ contains
          endif
       enddo
 
-!     Check the connectivity. E.g.: if coordination_critical_nneigh=2, it checks when the atom has 3 nn, since it is going to loose a neighbours of its. 
+!     Check the connectivity. E.g.: if coordination_critical_nneigh=2, it checks when the atom has 3 nn, since it is going to loose a neighbours of its.
 !     If an atom has already lost a neighbour, do not remove another atoms from it
       do i = 1, n2
         if(present(neigh_removed).and.neigh_removed(who_absolute_index(i))) then
              who_closest = who(i)
-             exit 
+             exit
         elseif(who_nn(i).le.params%crack_check_coordination_critical_nneigh+1.and.who(i).ne.who_closest) then
            if(who_nn(who_closest).gt.who_nn(i)) then
               who_closest = who(i)
@@ -2788,11 +2788,11 @@ contains
       enddo
 
       if(my_x_boundaries) then
-         ! check x-boundary 
+         ! check x-boundary
          if(at%pos(1,neighbour(at,j,who_closest)).gt.0.0_dp.and.at%pos(1,j).lt.0.0_dp) then
-            at%pos(1,j) = at%pos(1,j) + at%lattice(1,1) 
+            at%pos(1,j) = at%pos(1,j) + at%lattice(1,1)
          elseif(at%pos(1,neighbour(at,j,who_closest)).lt.0.0_dp.and.at%pos(1,j).gt.0.0_dp) then
-            at%pos(1,j) = at%pos(1,j) - at%lattice(1,1) 
+            at%pos(1,j) = at%pos(1,j) - at%lattice(1,1)
          endif
          if(present(neigh_removed)) then
            do i = 1, n2
@@ -2839,7 +2839,7 @@ contains
            !call crack_check_coordination(at,params,i, x_boundaries=.true.)
         endif
       enddo
-       
+
   end subroutine crack_check_coordination_boundaries
 
 

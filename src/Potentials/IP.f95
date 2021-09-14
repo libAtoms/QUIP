@@ -29,17 +29,17 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IP module 
+!X IP module
 !X
 !% General object which manages all the possible interatomic potentials (IP), addressing
 !% the calls to the right modules. The available IPs are the following:
 !%   \begin{itemize}
-!%    \item    Gaussian Approximation Potential           ({\bf IPModel_GAP}) 
-!%    \item    Lennard-Jones Potential                    ({\bf IPModel_LJ}) 
-!%    \item    Morse Potential                            ({\bf IPModel_Morse}) 
-!%    \item    Force-Constant Potential                   ({\bf IPModel_FC}) 
-!%    \item    Stillinger and Weber Potential for Silicon ({\bf IPModel_SW}) 
-!%    \item    Tersoff potential for C/Si/Ge              ({\bf IPModel_Tersoff})  
+!%    \item    Gaussian Approximation Potential           ({\bf IPModel_GAP})
+!%    \item    Lennard-Jones Potential                    ({\bf IPModel_LJ})
+!%    \item    Morse Potential                            ({\bf IPModel_Morse})
+!%    \item    Force-Constant Potential                   ({\bf IPModel_FC})
+!%    \item    Stillinger and Weber Potential for Silicon ({\bf IPModel_SW})
+!%    \item    Tersoff potential for C/Si/Ge              ({\bf IPModel_Tersoff})
 !%    \item    Embedded Atom Potential of Ercolessi Adam  ({\bf IPModel_EAM_ErcolAd})
 !%    \item    Brenner Potential                          ({\bf IPModel_Brenner})
 !%    \item    FB Potential for SiO2                      ({\bf IPModel_FB})
@@ -74,16 +74,16 @@
 !%  The IP_type object contains details regarding the selected IP.
 !%  When a type Potential is defined
 !%>   type(Potential) :: pot
-!%  it is then necessary to initialise the IP parameters (readable from an external input file or 
+!%  it is then necessary to initialise the IP parameters (readable from an external input file or
 !%  from an internal string) and to define the IP type:
-!%>   call Initialise(pot, IP_type, params) 
-!%  where IP_type can be 
+!%>   call Initialise(pot, IP_type, params)
+!%  where IP_type can be
 !%   \begin{itemize}
 !%    \item    'IP GAP'
 !%    \item    'IP LJ'
 !%    \item    'IP Morse'
 !%    \item    'IP FC'
-!%    \item    'IP SW' 
+!%    \item    'IP SW'
 !%    \item    'IP Tersoff'
 !%    \item    'IP EAM_ErcolAd'
 !%    \item    'IP Brenner'
@@ -235,7 +235,7 @@ type IP_type
   type(IPModel_BornMayer) ip_BornMayer
   type(IPModel_Custom) ip_Custom
   type(IPModel_ConfiningMonomer) ip_ConfiningMonomer
-  type(IPModel_HFdimer) ip_HFdimer 
+  type(IPModel_HFdimer) ip_HFdimer
   type(IPModel_SW_VP) ip_sw_vp
   type(IPModel_WaterDimer_Gillan) ip_waterdimer_gillan
   type(IPModel_WaterTrimer_Gillan) ip_watertrimer_gillan
@@ -261,7 +261,7 @@ type IP_type
 end type IP_type
 
 !% Initialise IP_type object defining the IP model and the corresponding parameters. If necessary
-!% it initialises the input file for the potential parameters. 
+!% it initialises the input file for the potential parameters.
 public :: Initialise
 public :: IP_Initialise_filename
 interface Initialise
@@ -362,7 +362,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   logical is_GAP, is_LJ, is_FC, is_Morse, is_SW, is_Tersoff, is_EAM_ErcolAd, is_Brenner, is_FS, is_BOP, is_FB, is_Si_MEAM, &
        is_Brenner_Screened, is_Brenner_2002, is_ASAP, is_TS, is_Glue, is_PartridgeSchwenke, is_Einstein, is_Coulomb, &
        is_Sutton_Chen, is_KIM, is_FX, is_HFdimer, is_BornMayer, is_Custom, is_SW_VP, is_WaterDimer_Gillan , &
-       is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, & 
+       is_WaterTrimer_Gillan, is_Tether, is_Spring, is_LMTO_TBE, is_FC4 , is_Multipoles, is_SCME, is_MTP, &
        is_MBD, is_ZBL, is_LinearSOAP, is_DispTS, is_TTM_nF, is_CH4, is_ConfiningMonomer, is_vdW, is_RS, &! Add new IPs here
        is_Template
 
@@ -412,7 +412,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
   call param_register(params, 'Tether', 'false', is_Tether, help_string="Tether a selection of atoms to the origin with a spring")
   call param_register(params, 'Spring', 'false', is_Spring, help_string="Tether a selection of atoms to each other with a spring")
   call param_register(params, 'LMTO_TBE', 'false', is_LMTO_TBE, help_string="Interface to LMTO empirical Tight Binding code")
-  call param_register(params, 'Multipoles', 'false', is_Multipoles, help_string="Electrostatics including charges, dipoles, polarisabilities")  
+  call param_register(params, 'Multipoles', 'false', is_Multipoles, help_string="Electrostatics including charges, dipoles, polarisabilities")
   call param_register(params, 'FC4', 'false', is_FC4, help_string="Fourth-order force-constant potential of Esfarjani et al")
   call param_register(params, 'DispTS', 'false', is_DispTS, help_string="Dispersion correction from Tkatchenko and Scheffler (PRL, 2009)")
   call param_register(params, 'SCME', 'false', is_SCME, help_string="SCME water potential")
@@ -486,30 +486,30 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
 #ifdef HAVE_ASAP
   else if (is_ASAP) then
     this%functional_form = FF_ASAP
-    call Initialise(this%ip_ASAP, args_str, param_str) 
+    call Initialise(this%ip_ASAP, args_str, param_str)
 #endif
   else if (is_TS) then
     this%functional_form = FF_TS
-    call Initialise(this%ip_TS, args_str, param_str) 
+    call Initialise(this%ip_TS, args_str, param_str)
   else if (is_Glue) then
     this%functional_form = FF_GLUE
-    call Initialise(this%ip_Glue, args_str, param_str) 
+    call Initialise(this%ip_Glue, args_str, param_str)
  else if (is_PartridgeSchwenke) then
     this%functional_form = FF_PartridgeSchwenke
     call Initialise(this%ip_PartridgeSchwenke, args_str, param_str)
   else if (is_Einstein) then
     this%functional_form = FF_Einstein
-    call Initialise(this%ip_Einstein, args_str, param_str) 
+    call Initialise(this%ip_Einstein, args_str, param_str)
   else if (is_Coulomb) then
     this%functional_form = FF_Coulomb
-    call Initialise(this%ip_Coulomb, args_str, param_str) 
+    call Initialise(this%ip_Coulomb, args_str, param_str)
   else if (is_Sutton_Chen) then
     this%functional_form = FF_Sutton_Chen
-    call Initialise(this%ip_Sutton_Chen, args_str, param_str) 
+    call Initialise(this%ip_Sutton_Chen, args_str, param_str)
 #ifdef HAVE_KIM
   else if (is_KIM) then
     this%functional_form = FF_KIM
-    call Initialise(this%ip_KIM, args_str, param_str) 
+    call Initialise(this%ip_KIM, args_str, param_str)
 #endif
   else if (is_FX) then
      this%functional_form = FF_FX
@@ -555,7 +555,7 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
     call Initialise(this%ip_dispts, args_str, param_str)
   else if (is_SCME) then
     this%functional_form = FF_SCME
-    call Initialise(this%ip_SCME, args_str, param_str) 
+    call Initialise(this%ip_SCME, args_str, param_str)
   else if (is_MTP) then
      this%functional_form = FF_MTP
      call Initialise(this%ip_MTP, args_str, param_str)
@@ -570,20 +570,20 @@ subroutine IP_Initialise_str(this, args_str, param_str, mpi_obj, error)
      call Initialise(this%ip_LinearSOAP, args_str, param_str)
   else if (is_TTM_nF) then
     this%functional_form = FF_TTM_nF
-    call Initialise(this%ip_TTM_nF, args_str, param_str) 
+    call Initialise(this%ip_TTM_nF, args_str, param_str)
   else if (is_CH4) then
     this%functional_form = FF_CH4
-    call Initialise(this%ip_CH4, args_str, param_str) 
+    call Initialise(this%ip_CH4, args_str, param_str)
   else if (is_vdW) then
     this%functional_form = FF_vdW
-    call Initialise(this%ip_vdW, args_str, param_str) 
+    call Initialise(this%ip_vdW, args_str, param_str)
   else if (is_RS) then
     this%functional_form = FF_RS
-    call Initialise(this%ip_RS, args_str, param_str) 
-     ! Add new IP here
+    call Initialise(this%ip_RS, args_str, param_str)
+  ! Add new IP here
   else if (is_Template) then
     this%functional_form = FF_Template
-    call Initialise(this%ip_Template, args_str, param_str) 
+    call Initialise(this%ip_Template, args_str, param_str)
   end if
 
   if (present(mpi_obj)) this%mpi_glob = mpi_obj
@@ -663,7 +663,7 @@ subroutine IP_Finalise(this)
       call Finalise(this%ip_Tether)
    case (FF_Spring)
       call Finalise(this%ip_Spring)
-   case (FF_LMTO_TBE)   
+   case (FF_LMTO_TBE)
       call Finalise(this%ip_LMTO_TBE)
    case (FF_FC4)
       call Finalise(this%ip_FC4)
@@ -760,7 +760,7 @@ function IP_cutoff(this)
   case (FF_HFdimer)
      IP_cutoff = this%ip_HFdimer%cutoff
   case (FF_SW_VP)
-     IP_cutoff = this%ip_sw_vp%cutoff 
+     IP_cutoff = this%ip_sw_vp%cutoff
   case (FF_WaterDimer_Gillan)
      IP_cutoff = this%ip_waterdimer_gillan%cutoff
   case (FF_WaterTrimer_Gillan)
@@ -816,11 +816,11 @@ end subroutine IP_setup_atoms
 
 subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str, error)
   type(IP_type), intent(inout) :: this
-  type(Atoms), intent(inout) :: at                
+  type(Atoms), intent(inout) :: at
   real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)
   real(dp), intent(out), optional :: virial(3,3)
-  character(len=*), intent(in), optional      :: args_str 
+  character(len=*), intent(in), optional      :: args_str
   integer, intent(out), optional :: error
 
   type(Dictionary) :: params
@@ -964,7 +964,7 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
       call calc(this%ip_vdW, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case (FF_RS)
       call calc(this%ip_RS, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
-   ! Add new IP here   
+   ! Add new IP here
    case (FF_Template)
       call calc(this%ip_Template, at, energy, local_e, f, virial, local_virial, args_str, mpi=this%mpi_local, error=error)
    case default
@@ -1092,10 +1092,10 @@ end subroutine IP_Print
 subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial, args_str)
   type(IP_type), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: energy, local_e(:) !% \texttt{energy} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)
-  character(len=*), intent(in), optional      :: args_str 
+  character(len=*), intent(in), optional      :: args_str
 
 
   integer :: pgroup_size, prev_pgroup_size
@@ -1121,11 +1121,11 @@ subroutine IP_setup_parallel(this, at, energy, local_e, f, virial, local_virial,
       this_time = max(this%mpi_glob, this_time)
       call print("IP_Setup_Parallel "//pgroup_size//' '//this_time, PRINT_VERBOSE)
       if (this_time > prev_time) then
-	call setup_parallel_groups(this, this%mpi_glob, prev_pgroup_size)
-	exit
+        call setup_parallel_groups(this, this%mpi_glob, prev_pgroup_size)
+        exit
       else
-	prev_time = this_time
-	prev_pgroup_size = pgroup_size
+        prev_time = this_time
+        prev_pgroup_size = pgroup_size
       endif
     endif
   end do

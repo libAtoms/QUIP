@@ -38,10 +38,10 @@ failed=0
 # Check for "end function" and "end subroutine" without function name
 for func in function subroutine; do
     if (egrep -q "^\W*end $func\W*$" $sources); then
-	echo
-	echo Found some \"end $func\" lines without names:
-	
-	egrep -n "^\W*end $func\W*$" $sources | awk -F ':' '{print $1 " line " $2}'
+        echo
+        echo Found some \"end $func\" lines without names:
+
+        egrep -n "^\W*end $func\W*$" $sources | awk -F ':' '{print $1 " line " $2}'
 
     failed=1
     fi

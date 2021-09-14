@@ -51,7 +51,7 @@ rm -rf Jpg
 
 #echo Generating comment file...
 #for i in $all_cfgs
-#do 
+#do
 #  echo -n $i Jpg/`basename $i .cfg`.jpg
 #  head -2 $i | tail -1 | cut -c2\-
 #done > $index
@@ -81,14 +81,14 @@ do
   echo capture_jpg Jpg/`printf ${base}%0${ndigit}d $i`.jpg  >> scr_movie_${script_n}
   echo load_config_forward >> scr_movie_${script_n}
   n=$((n+1))
-  if ((n >= 1000)); then 
+  if ((n >= 1000)); then
       script_n=$((script_n+1))
       n=0
 
       cp $view scr_movie_${script_n}
       echo shift_xtal 0 0 >> scr_movie_${script_n}
       if [[ $extras != "" ]] ; then
-	  cat $extras >> scr_movie_${script_n}
+          cat $extras >> scr_movie_${script_n}
       fi
   fi
 

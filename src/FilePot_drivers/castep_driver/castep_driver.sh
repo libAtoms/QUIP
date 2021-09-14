@@ -48,7 +48,7 @@ max_force_tol=99999.0                                                # Max force
 test_mode=0                                                          # Set to 1 to test script without actually running castep
 
 # name of seq. ; on BSD systems, it happens to be called jot
-if which seq >& /dev/null ; then 
+if which seq >& /dev/null ; then
     SEQ=seq
 elif which jot >& /dev/null ; then
     SEQ=jot
@@ -71,7 +71,7 @@ function print_property {
 awk 'NR == 2 {
   match($0,/Properties="?([^" ]*)/,a);
   nf = split(a[1],b,/:/);
-  
+
   sum=0;
   for (i = 1; i <= nf; i+=3) {
     if (b[i] != "'$2'")
@@ -138,10 +138,10 @@ fi
 for loop in 1 2; do # Loop at most twice: once reusing check file and once without
     # Invoke castep
     if [[ $test_mode == 1 ]]; then
-	echo castep_driver: test mode
+        echo castep_driver: test mode
     else
-	rm -f ${stem}.castep ${stem}.out ${stem}.0001.err ${stem}.out
-	${castep} ${stem}
+        rm -f ${stem}.castep ${stem}.out ${stem}.0001.err ${stem}.out
+        ${castep} ${stem}
     fi
 
     n_failed=0
@@ -149,76 +149,76 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
         echo castep_driver ${stem}: Error encountered while running CASTEP
         ((n_failed=$n_failed+1))
         if ((n_failed > 2)); then
-	    echo castep_driver ${stem}: Too many failed restarts, aborting.
-	    exit 1
+            echo castep_driver ${stem}: Too many failed restarts, aborting.
+            exit 1
         fi
 
         # If we were trying to reuse checkfile, try without this time
         cp ${stem}.param ${stem}.param.old
         awk '! /^reuse/' ${stem}.param.old > ${stem}.param
         rm ${stem}.param.old
-    
+
         if [[ $test_mode == 1 ]]; then
-	    echo castep_driver: test mode
+            echo castep_driver: test mode
         else
-	    ${castep} ${stem}
+            ${castep} ${stem}
         fi
     done
 
     # Extract information from .castep file
     if [[ $use_check2xsf == 1 ]]; then
-	${check2xsf} --xyz_ext ${stem}.check ${stem}.out
+        ${check2xsf} --xyz_ext ${stem}.check ${stem}.out
 
-	energy=`head -n 2 ${stem}.out | tail -n 1 | awk '{match($0,/energy=?([^ ]*)/,a); print a[1]}'`
+        energy=`head -n 2 ${stem}.out | tail -n 1 | awk '{match($0,/energy=?([^ ]*)/,a); print a[1]}'`
     else
-	if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
-	    energy=`grep "Final Enthalpy" ${stem}.castep | awk '{print $5}'`
-	elif grep -i "finite_basis_corr" ${stem}.param | grep -q '2'; then
-	    energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | awk '{print $9}'`
-	elif grep -i "finite_basis_corr" ${stem}.param | grep -q 'auto'; then
-	    energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | awk '{print $9}'`
-	else
-	    energy=`grep "Final energy" ${stem}.castep | awk '{print $4}'`
-	fi
+        if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
+            energy=`grep "Final Enthalpy" ${stem}.castep | awk '{print $5}'`
+        elif grep -i "finite_basis_corr" ${stem}.param | grep -q '2'; then
+            energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | awk '{print $9}'`
+        elif grep -i "finite_basis_corr" ${stem}.param | grep -q 'auto'; then
+            energy=`grep "Total energy corrected for finite basis set" ${stem}.castep | awk '{print $9}'`
+        else
+            energy=`grep "Final energy" ${stem}.castep | awk '{print $4}'`
+        fi
 
         # Extract stress tensor
-	grep -A 8 "Stress Tensor" ${stem}.castep | tail -3 | awk '{print $3,$4,$5}' > ${stem}_tmpvirial
+        grep -A 8 "Stress Tensor" ${stem}.castep | tail -3 | awk '{print $3,$4,$5}' > ${stem}_tmpvirial
 
         # Change stress tensor into virial
-	[[ -f ${stem}_tmpvirial_libatoms ]] && rm ${stem}_tmpvirial_libatoms
-	cell_volume=`grep "Current cell volume" ${stem}.castep | awk '{print $5}'`
-	gpa=160.2176487 # 1.602176487e-19*1.0e30/1.0e9
-	for i in `cat ${stem}_tmpvirial`; do
-	    j=`echo '- '$i' * '$cell_volume' / '$gpa | bc -l`
-	    printf "%.6f " $j >> ${stem}_tmpvirial_libatoms
-	done
+        [[ -f ${stem}_tmpvirial_libatoms ]] && rm ${stem}_tmpvirial_libatoms
+        cell_volume=`grep "Current cell volume" ${stem}.castep | awk '{print $5}'`
+        gpa=160.2176487 # 1.602176487e-19*1.0e30/1.0e9
+        for i in `cat ${stem}_tmpvirial`; do
+            j=`echo '- '$i' * '$cell_volume' / '$gpa | bc -l`
+            printf "%.6f " $j >> ${stem}_tmpvirial_libatoms
+        done
 
         # First line of output is number of atoms
-	echo $N > ${stem}.out
+        echo $N > ${stem}.out
 
         # Second line of output is parameter line
-	echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy virial\=\"`cat ${stem}_tmpvirial_libatoms | sed -e 's/\ $//'`\" >> ${stem}.out
+        echo Lattice\=\"$lattice\" Properties=\"species:S:1:pos:R:3:force:R:3\" energy\=$energy virial\=\"`cat ${stem}_tmpvirial_libatoms | sed -e 's/\ $//'`\" >> ${stem}.out
 
         # Extract forces
-	grep -A $(($N+5)) "Forces" ${stem}.castep | tail -$N | awk '{print $2,$3,$4,$5,$6}' > ${stem}_tmpforce
+        grep -A $(($N+5)) "Forces" ${stem}.castep | tail -$N | awk '{print $2,$3,$4,$5,$6}' > ${stem}_tmpforce
 
-        # Combine atomic positions and forces, converting from castep 
+        # Combine atomic positions and forces, converting from castep
         # (species,species number) ordering to atom number ordering as we go
-	if [[ $SEQ == "seq" ]] ; then
-	    numlist=`seq 1 $N`
-	elif [[ $SEQ == "jot" ]] ; then
-	    numlist=`jot $N 1` 
-	else
-	    echo "cannot interpret SEQ variable"
-	    exit 1
-	fi
+        if [[ $SEQ == "seq" ]] ; then
+            numlist=`seq 1 $N`
+        elif [[ $SEQ == "jot" ]] ; then
+            numlist=`jot $N 1`
+        else
+            echo "cannot interpret SEQ variable"
+            exit 1
+        fi
 
-	if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
-	    tail -$(($N*2+1)) ${stem}.geom | head -$N | awk -v factor=0.529177 '{print $1, $3*factor,$4*factor,$5*factor}' > ${stem}_tmppos
-	else
-	    print_property $xyzfile pos 1 > ${stem}_tmppos
-	fi
-	paste ${stem}_tmppos <(for i in $numlist; do
+        if grep -i "task" ${stem}.param | grep -q -i 'geometry' ; then
+            tail -$(($N*2+1)) ${stem}.geom | head -$N | awk -v factor=0.529177 '{print $1, $3*factor,$4*factor,$5*factor}' > ${stem}_tmppos
+        else
+            print_property $xyzfile pos 1 > ${stem}_tmppos
+        fi
+        paste ${stem}_tmppos <(for i in $numlist; do
             # Find species and species count of ith atom in XYZ file
             at=`awk 'NR > 2 { nz[$1] += 1 } NR-2 == '$i' {print $1, nz[$1]}' $xyzfile`
             # Look this up in CASTEP force list
@@ -234,8 +234,8 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
     #rm ${stem}_tmpvirial ${stem}_tmpvirial_libatoms ${stem}_tmpforce ${stem}_tmppos
 
     if [[ `wc -l ${stem}.out | awk '{print $1}'` != $(($N+2)) ]]; then
-	echo castep_driver ${stem}: Error parsing CASTEP output file 
-	exit 1
+        echo castep_driver ${stem}: Error parsing CASTEP output file
+        exit 1
     fi
 
     # Check there are no crazily large forces
@@ -244,12 +244,12 @@ for loop in 1 2; do # Loop at most twice: once reusing check file and once witho
 
     if (( `echo "$max_force > $max_force_tol" | bc -l` == 1 )); then
         # Repeat without using checkfile
-	echo "castep_driver ${stem}: max force too large: repeating without check file"
-	cp ${stem}.param ${stem}.param.old
-	awk '! /^reuse/' ${stem}.param.old > ${stem}.param
-	rm ${stem}.param.old
+        echo "castep_driver ${stem}: max force too large: repeating without check file"
+        cp ${stem}.param ${stem}.param.old
+        awk '! /^reuse/' ${stem}.param.old > ${stem}.param
+        rm ${stem}.param.old
     else
-	break
+        break
     fi
 done
 

@@ -29,10 +29,10 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_Brenner module  
+!X IPModel_Brenner module
 !X
-!% Module for computing energy, forces and virial with Brenner potential for hydrocarbons. 
-!% Ref. D. W. Brenner, Empirical potential for hydrocarbons for use in 
+!% Module for computing energy, forces and virial with Brenner potential for hydrocarbons.
+!% Ref. D. W. Brenner, Empirical potential for hydrocarbons for use in
 !% simulating the chemical vapor deposition of diamond films.
 !% Phys. Rev. B  {\bf 42}, 9458 (1990).
 !% The 'IPModel_Brenner' object reads parameters from a 'Brenner_params' XML stanza.
@@ -62,14 +62,14 @@ include 'IPModel_interface.h'
 
 public :: IPModel_Brenner
 type IPModel_Brenner
-  integer :: n_types = 0         !% Number of atomic types 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types} 
+  integer :: n_types = 0         !% Number of atomic types
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}
 
   real(dp) :: cutoff = 0.0_dp
 
   real(dp), allocatable :: R1(:,:), R2(:,:), De(:,:), S(:,:), beta(:,:)  !% IP parameters
   real(dp), allocatable :: delta(:,:), Re(:,:), a0(:,:,:), c0(:,:,:), d0(:,:,:) !% IP parameters
-  real(dp), allocatable :: shift(:,:)                                 
+  real(dp), allocatable :: shift(:,:)
 
   character(len=STRING_LENGTH) :: label
 
@@ -139,7 +139,7 @@ subroutine IPModel_Brenner_Finalise(this)
 end subroutine IPModel_Brenner_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X The potential calculator
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -148,8 +148,8 @@ end subroutine IPModel_Brenner_Finalise
 subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_Brenner), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -186,7 +186,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_Brenner_Calc', error)
      f = 0.0_dp
   end if
@@ -244,7 +244,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
   do i=1,at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -278,9 +278,9 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
         call brenner_cutoff(r_ij, R1_ij, R2_ij, fc_ij, dfc_ij)
 
         ! Evaluate attractive and repulsive pair potentials
-        Vr1 = De_ij/(S_ij-1.0_dp)* & 
+        Vr1 = De_ij/(S_ij-1.0_dp)* &
              exp(-sqrt(2.0_dp*S_ij)*beta_ij*(r_ij-Re_ij))
-        Va1 = De_ij*S_ij/(S_ij-1.0_dp)* & 
+        Va1 = De_ij*S_ij/(S_ij-1.0_dp)* &
              exp(-sqrt(2.0_dp/S_ij)*beta_ij*(r_ij-Re_ij))
 
         Vr = Vr1*fc_ij
@@ -306,7 +306,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
 
            ! First we loop over neighbours of atom r (i or j)
            ! to get get total bond order factors B_ij and B_ji.
-           ! Store r_rk, u_rk, cos_theta, fc_rk, dfc_rk, G, 
+           ! Store r_rk, u_rk, cos_theta, fc_rk, dfc_rk, G,
            ! and dG_dcostheta for each neighbour to save having
            ! to recalculate them below when we evaluate forces
            G_sum = 0.0_dp
@@ -418,7 +418,7 @@ subroutine IPModel_Brenner_Calc(this, at, e, local_e, f, virial, local_virial, a
            end if
 
            ! 2 body contribution to virial
-           if (present(virial)) then 
+           if (present(virial)) then
               virial = virial - ((u_ij*r_ij) .outer. f_ij)
            end if
 
@@ -457,7 +457,7 @@ end subroutine IPModel_Brenner_Calc
 subroutine brenner_cutoff(r, R1, R2, fc, dfc)
   real(dp), intent(in) :: r, R1, R2
   real(dp), intent(out) :: fc, dfc
-  
+
   if (r < R1) then
      fc = 1.0_dp
      dfc = 0.0_dp !fc constant, so d(fc)/dr = 0
@@ -471,16 +471,16 @@ end subroutine brenner_cutoff
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% Parameters can be given using an external input file or with an internal string.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -511,7 +511,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, "n_types", value, status)
@@ -550,7 +550,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -640,9 +640,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'Brenner_params') then
@@ -679,7 +679,7 @@ subroutine IPModel_Brenner_read_params_xml(this, param_str)
 end subroutine IPModel_Brenner_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of Brenner potential parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -707,7 +707,7 @@ subroutine IPModel_Brenner_Print (this, file)
     end do
     call verbosity_pop()
   end do
-    
+
 end subroutine IPModel_Brenner_Print
 
 end module IPModel_Brenner_module

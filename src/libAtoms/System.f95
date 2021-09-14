@@ -30,12 +30,12 @@
 
 !X
 !X  System module
-!X  
+!X
 !X  Basic system dependent functionality:
-!X  
+!X
 !X  mpi constants, default output objects, printing
 !X  random number generators
-!X 
+!X
 !% The system module contains low-level routines for I/O, timing, random
 !% number generation etc. The Inoutput type is used to abstract both
 !% formatted and unformatted (i.e. binary) I/O.
@@ -59,7 +59,7 @@ module system_module
 include 'mpif.h'
 #endif
 #endif
-  
+
 private
 
   logical, public :: system_always_flush = .false.
@@ -67,13 +67,13 @@ private
   logical, public :: system_use_fortran_random = .false.
 
 #ifdef HAVE_QP
-  integer, parameter, public :: qp = 16 
+  integer, parameter, public :: qp = 16
 #elsif TEN_DIGIT_PRECISION
   integer, parameter, public :: qp = selected_real_kind(10) !kind(1.0d0)
 #else
   integer, parameter, public :: qp = 8
 #endif
-  
+
 #ifdef QUAD_PRECISION
   integer, parameter, public :: dp = 16 ! kind(1.0d0)
 #elsif TEN_DIGIT_PRECISION
@@ -125,7 +125,7 @@ private
   integer, parameter, private       :: SYSTEM_STRING_LENGTH = 1024 !max line length read
   integer, parameter, private       :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
   character(10240),public           :: line               ! 'line' is global and is used by other modules
-  character(10240),private          :: local_line         ! 'local_line' is private and System should use this instead         
+  character(10240),private          :: local_line         ! 'local_line' is private and System should use this instead
   type(inoutput),target,save,public :: mainlog            !% main output, connected to 'stdout' by default
   type(inoutput),target,save,public :: errorlog           !% error output, connected to 'stderr' by default
   type(inoutput),target,save,public :: mpilog             !% MPI output, written to by each mpi process
@@ -133,7 +133,7 @@ private
   !$omp threadprivate(idum)
   real(dp),parameter, public               :: NUMERICAL_ZERO = 1.0e-14_dp
 
-  ! system dependent variables 
+  ! system dependent variables
   integer, public::RAN_MAX
 
 
@@ -147,7 +147,7 @@ private
 
   integer,parameter, public::INPUT=0
   integer,parameter, public::OUTPUT=1
-  integer,parameter, public::INOUT=2 
+  integer,parameter, public::INOUT=2
 
 
   ! random number generator parameters
@@ -246,7 +246,7 @@ private
   interface reallocate
      module procedure reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
   end interface reallocate
- 
+
   public :: operator(//)
 
   interface operator(//)
@@ -275,7 +275,7 @@ private
   end interface
 
 #ifdef NO_FORTRAN_ISNAN
-  INTERFACE 	
+  INTERFACE
      elemental function fisnan(r)
        real(8), intent(in)::r
        integer::fisnan
@@ -323,7 +323,7 @@ private
     module procedure Stack_Print
   end interface Print
 
-  !% takes as arguments a default value and an optional argument, and 
+  !% takes as arguments a default value and an optional argument, and
   !% returns the optional argument value if it's present, otherwise
   !% the default value
   private :: optional_default_l, optional_default_i, optional_default_r
@@ -362,7 +362,7 @@ private
   public :: mpi_id
   public :: mpi_n_procs
   public :: a2s, s2a
-  public :: system_get_random_seed 
+  public :: system_get_random_seed
   public :: system_abort
   public :: verbosity_push_decrement
   public :: verbosity_pop
@@ -429,7 +429,7 @@ contains
   subroutine inoutput_initialise(this,filename,action,isformatted,append,verbosity,verbosity_cascade,master_only,unit,error)
     type(Inoutput), intent(inout)::this
     character(*),intent(in),optional::filename
-    logical,intent(in),optional::isformatted 
+    logical,intent(in),optional::isformatted
     integer,intent(in),optional::action
     logical,intent(in),optional::append
     integer,intent(in),optional :: verbosity, verbosity_cascade
@@ -444,21 +444,21 @@ contains
 
     INIT_ERROR(error)
 
-    ! Default of optional parameters------------------------------- 
+    ! Default of optional parameters-------------------------------
 
     my_master_only = optional_default(.true., master_only)
     call mpi_all_inoutput(this, .not. my_master_only)
 
-    if(present(isformatted)) then 
+    if(present(isformatted)) then
        this%formatted=isformatted
-    else 
+    else
        this%formatted=.true.
     endif
 
     if(.NOT.(this%formatted)) then
        formattedstr = 'unformatted'
     else
-       formattedstr = 'formatted' 
+       formattedstr = 'formatted'
     end if
 
     if (present(action)) then
@@ -467,15 +467,15 @@ contains
        this%action=INPUT
     end if
 
-    if (present(append)) then 
+    if (present(append)) then
        this%append=append
-       if(append) then 
+       if(append) then
           position_value="APPEND"
        else
           position_value="REWIND"
        end if
 
-    else 
+    else
        this%append=.false.
        position_value="REWIND"
     end if
@@ -486,7 +486,7 @@ contains
 
     if (present(filename)) then
        if (present(unit)) then
-	  RAISE_ERROR("got filename and unit simultaneously",error)
+          RAISE_ERROR("got filename and unit simultaneously",error)
        endif
        if (trim(filename).eq.'stderr') then
           this%filename=trim(filename)
@@ -499,7 +499,7 @@ contains
           this%action=OUTPUT
 
        else if (trim(filename).eq.'stdin')  then
-          this%filename=trim(filename) 
+          this%filename=trim(filename)
           this%unit = 5 !standard input
           this%action=INPUT
 
@@ -508,29 +508,29 @@ contains
           this%unit=pick_up_unit()! pick up a unit from available(7-99)
 
           ! actually open the unit
-	  if ((.not. my_master_only) .or. mpi_myid == 0) then
-	    if (this%action == INPUT) then
-	      open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,status='OLD',iostat=stat)
-	    else
-	      open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,iostat=stat)
-	    endif
-	  else
-	    stat = 0
-	  endif
-          if(stat.NE.0)then 
+          if ((.not. my_master_only) .or. mpi_myid == 0) then
+            if (this%action == INPUT) then
+              open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,status='OLD',iostat=stat)
+            else
+              open(unit=this%unit,file=trim(filename),form=formattedstr,position=position_value,iostat=stat)
+            endif
+          else
+            stat = 0
+          endif
+          if(stat.NE.0)then
              RAISE_ERROR('IO error opening "'//trim(filename)//'" on unit '//this%unit//', error number: '//stat,error)
           end if
 
        end if
     else ! no file name passed, so we go to passed-in unit if present, otherwise standard output
        if (present(unit)) then
-	  this%filename='from_unit_arg'
-	  this%unit=unit
-	  this%action=OUTPUT
+          this%filename='from_unit_arg'
+          this%unit=unit
+          this%action=OUTPUT
        else
-	  this%filename='stdout' 
-	  this%unit = 6 !standard output 
-	  this%action = OUTPUT        
+          this%filename='stdout'
+          this%unit = 6 !standard output
+          this%action = OUTPUT
        endif
     end if  ! end default--------------------------------------------------
 
@@ -567,7 +567,7 @@ contains
     logical::iopened
     do i=7,99
        INQUIRE(i,opened=iopened)
-       if(.NOT.iopened) then 
+       if(.NOT.iopened) then
           unit=i
           exit
        end if
@@ -587,7 +587,7 @@ contains
   end subroutine inoutput_activate
 
 
-  !% Cleans everything and set members to default 
+  !% Cleans everything and set members to default
   subroutine inoutput_finalise(this)
     type(Inoutput), intent(inout)::this
     if (this%unit .ge. 7)  close(this%unit)
@@ -674,23 +674,23 @@ contains
 
     if(.NOT.myoutput%formatted) then
         call system_abort("inoutput_print: this subroutine is not good for unformatted printing")
-    end if        
+    end if
 
     ! actually write the line, removing trailing blanks
     if (inoutput_do_output(myoutput)) then
       if (len_trim(myoutput%prefix) == 0) then
-	if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
-	  write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(string)//trim(myoutput%postfix)
-	else
-	  write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(string)//trim(myoutput%postfix)
-	endif
+        if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
+          write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(string)//trim(myoutput%postfix)
+        else
+          write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(string)//trim(myoutput%postfix)
+        endif
       else
-	if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
-	  write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(myoutput%prefix)//" "//trim(string) &
-	    // " " // trim(myoutput%postfix)
-	else
-	  write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(myoutput%prefix)//" "//trim(string)// " "  // trim(myoutput%postfix)
-	endif
+        if (myoutput%mpi_all_inoutput_flag .and. myoutput%mpi_print_id) then
+          write(myoutput%unit,'(i0,": ",a'//trim(nocr_fmt)//')') mpi_id(), trim(myoutput%prefix)//" "//trim(string) &
+            // " " // trim(myoutput%postfix)
+        else
+          write(myoutput%unit,'(a'//trim(nocr_fmt)//')') trim(myoutput%prefix)//" "//trim(string)// " "  // trim(myoutput%postfix)
+        endif
       endif
     endif
 
@@ -858,12 +858,12 @@ contains
     line_no = 0
     my_status = 0
 
-    do while (my_status == 0) 
+    do while (my_status == 0)
       line_no = line_no + 1
       if (allocated(line_array)) then
-	line_array_size = size(line_array)
+        line_array_size = size(line_array)
       else
-	line_array_size = 0
+        line_array_size = 0
       endif
       if (line_no > line_array_size) call extend_char_array(line_array, 1.5_dp, 10)
       line_array(line_no) = read_line(this, my_status)
@@ -873,10 +873,10 @@ contains
 
     if (my_status > 0) then
       if (present(status)) then
-	status = my_status
-	return
+        status = my_status
+        return
       else
-	call system_abort("ERROR inoutput_read_file reading file '"//trim(adjustl(this%filename))//"' status " // my_status)
+        call system_abort("ERROR inoutput_read_file reading file '"//trim(adjustl(this%filename))//"' status " // my_status)
       endif
     endif
 
@@ -908,14 +908,14 @@ contains
     allocate(t_line_array(len(line_array(1)), old_n))
     do i=1, old_n
       do j=1, len(line_array(1))
-	t_line_array(j,i) = line_array(i)(j:j)
+        t_line_array(j,i) = line_array(i)(j:j)
       end do
     end do
     deallocate(line_array)
     allocate(line_array(int(old_n*my_factor)))
     do i=1, old_n
       do j=1, len(line_array(1))
-	line_array(i)(j:j) = t_line_array(j,i)
+        line_array(i)(j:j) = t_line_array(j,i)
       end do
     end do
     deallocate(t_line_array)
@@ -955,21 +955,21 @@ contains
     cur_field = 1
     do while (cur_pos <= str_len)
       if (cur_field > size(fields)) then
-	RAISE_ERROR("split_string_simple str='"//trim(str)//"' no room for fields size(fields)="//size(fields)//" cur_field "//cur_field, error)
+        RAISE_ERROR("split_string_simple str='"//trim(str)//"' no room for fields size(fields)="//size(fields)//" cur_field "//cur_field, error)
       endif
       next_pos = scan(str(cur_pos+1:str_len),separators)
       if (next_pos > 0) then
-	if (next_pos == 1) then ! found another separator, skip it
-	   cur_pos = cur_pos + 1
-	else ! some stuff between us and separator, must be another field
-	   fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-2)
-	   cur_pos = cur_pos + next_pos
-	   cur_field = cur_field + 1
-	endif
+        if (next_pos == 1) then ! found another separator, skip it
+           cur_pos = cur_pos + 1
+        else ! some stuff between us and separator, must be another field
+           fields(cur_field) = str(cur_pos+1:cur_pos+1+next_pos-2)
+           cur_pos = cur_pos + next_pos
+           cur_field = cur_field + 1
+        endif
       else ! end of string, last field
-	fields(cur_field) = str(cur_pos+1:str_len)
-	cur_field = cur_field + 1
-	cur_pos = str_len+1 ! exit loop
+        fields(cur_field) = str(cur_pos+1:str_len)
+        cur_field = cur_field + 1
+        cur_pos = str_len+1 ! exit loop
       endif
     end do
     n_fields = cur_field - 1
@@ -1019,13 +1019,13 @@ contains
 
     if (do_matching) then
       if (mod(len(quotes),2) == 0) then
-	do i=1, len(quotes)/2
-	  opening_quotes(i:i) = quotes(2*(i-1)+1:2*(i-1)+1)
-	  closing_quotes(i:i) = quotes(2*(i-1)+2:2*(i-1)+2)
-	end do
-	n_quotes = len(quotes)/2
+        do i=1, len(quotes)/2
+          opening_quotes(i:i) = quotes(2*(i-1)+1:2*(i-1)+1)
+          closing_quotes(i:i) = quotes(2*(i-1)+2:2*(i-1)+2)
+        end do
+        n_quotes = len(quotes)/2
       else
-	call system_abort("split_string called with matching=.true. but odd number of quotes " // (len(quotes)))
+        call system_abort("split_string called with matching=.true. but odd number of quotes " // (len(quotes)))
       endif
     else
       n_quotes = len(quotes)
@@ -1041,50 +1041,50 @@ contains
     i = 1
     do
       if (i > length) then ! last character
-	if (in_token) then
-	  num_fields = num_fields + 1
-	  if (num_fields > size(fields)) call system_abort("split_string on '"//trim(this)//"' ran out of space for fields max " // size(fields))
-	  if (tmp_field_last > 0) then
-	    if (t_start <= length) then
-	      fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:length)
-	    else
-	      fields(num_fields) = tmp_field(1:tmp_field_last)
-	    endif
-	  else
-	    if (t_start <= length) then
-	      fields(num_fields) = this(t_start:length)
-	    else
-	    endif
-	  endif
-	endif
-	exit
+        if (in_token) then
+          num_fields = num_fields + 1
+          if (num_fields > size(fields)) call system_abort("split_string on '"//trim(this)//"' ran out of space for fields max " // size(fields))
+          if (tmp_field_last > 0) then
+            if (t_start <= length) then
+              fields(num_fields) = tmp_field(1:tmp_field_last) // this(t_start:length)
+            else
+              fields(num_fields) = tmp_field(1:tmp_field_last)
+            endif
+          else
+            if (t_start <= length) then
+              fields(num_fields) = this(t_start:length)
+            else
+            endif
+          endif
+        endif
+        exit
       else if (scan(this(i:i),opening_quotes(1:n_quotes)) > 0) then ! found an opening quote
-	opening_quote_index = index(opening_quotes,this(i:i))
-	closing_quote_pos = find_closing_delimiter(this(i+1:length), closing_quotes(opening_quote_index:opening_quote_index), &
-						   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
-	if (closing_quote_pos <= 0) then
-	  call print("splitting string '"//trim(this)//"'", PRINT_ALWAYS)
-	  call system_abort("split_string on '"//trim(this)//"' couldn't find closing quote matching opening at char " // i)
-	endif
-	if (in_token) then ! add string from t_start to tmp_field
+        opening_quote_index = index(opening_quotes,this(i:i))
+        closing_quote_pos = find_closing_delimiter(this(i+1:length), closing_quotes(opening_quote_index:opening_quote_index), &
+                                                   opening_quotes(1:n_quotes), closing_quotes(1:n_quotes), do_matching)
+        if (closing_quote_pos <= 0) then
+          call print("splitting string '"//trim(this)//"'", PRINT_ALWAYS)
+          call system_abort("split_string on '"//trim(this)//"' couldn't find closing quote matching opening at char " // i)
+        endif
+        if (in_token) then ! add string from t_start to tmp_field
           if (tmp_field_last > 0) then
             tmp_field = tmp_field(1:tmp_field_last) // this(t_start:i-1)
           else
             tmp_field = this(t_start:i-1)
           endif
-	  tmp_field_last = tmp_field_last + (i-1 - t_start + 1)
-	endif
-	if (tmp_field_last > 0) then ! add contents of quote to tmp_field
-	  if (i+closing_quote_pos-1 >= i+1) tmp_field = tmp_field(1:tmp_field_last) // this(i+1:i+closing_quote_pos-1)
-	else
-	  if (i+closing_quote_pos-1 >= i+1) tmp_field = this(i+1:i+closing_quote_pos-1)
-	endif
+          tmp_field_last = tmp_field_last + (i-1 - t_start + 1)
+        endif
+        if (tmp_field_last > 0) then ! add contents of quote to tmp_field
+          if (i+closing_quote_pos-1 >= i+1) tmp_field = tmp_field(1:tmp_field_last) // this(i+1:i+closing_quote_pos-1)
+        else
+          if (i+closing_quote_pos-1 >= i+1) tmp_field = this(i+1:i+closing_quote_pos-1)
+        endif
         ! update tmp_field_last
-	tmp_field_last = tmp_field_last + closing_quote_pos - 1
-	in_token = .true.
-	i = i + closing_quote_pos + 1
+        tmp_field_last = tmp_field_last + closing_quote_pos - 1
+        in_token = .true.
+        i = i + closing_quote_pos + 1
         ! reset t_start
-	t_start = i
+        t_start = i
       else if (scan(this(i:i),separators) > 0) then ! found a separator
         if (next_non_separator(this, i+1, length, separators, dist) == '=') then
           if (in_token) then
@@ -1102,7 +1102,7 @@ contains
           in_token = .true.
           ! update i and t_start to be after '='
           i = i + dist + 1
-          t_start = i 
+          t_start = i
           if (i <= length) then
             ! look for next non separator
             c = next_non_separator(this, i, length, separators, dist)
@@ -1128,11 +1128,11 @@ contains
           i = i + 1
         endif
       else ! plain character
-	if (.not. in_token) then
-	  t_start = i
-	endif
-	in_token = .true.
-	i = i + 1
+        if (.not. in_token) then
+          t_start = i
+        endif
+        in_token = .true.
+        i = i + 1
       endif
     end do
   end subroutine split_string
@@ -1192,11 +1192,11 @@ contains
 
     if (do_matching) then
       if (mod(len(delimiters),2) == 0) then
-	do i=1, len(delimiters)/2
-	  opening_delims(i:i) = delimiters(2*(i-1)+1:2*(i-1)+1)
-	  closing_delims(i:i) = delimiters(2*(i-1)+2:2*(i-1)+2)
-	end do
-	n_delims = len(delimiters)/2
+        do i=1, len(delimiters)/2
+          opening_delims(i:i) = delimiters(2*(i-1)+1:2*(i-1)+1)
+          closing_delims(i:i) = delimiters(2*(i-1)+2:2*(i-1)+2)
+        end do
+        n_delims = len(delimiters)/2
       else
          RAISE_ERROR("parse_string called with matching=.true. but odd number of delimiters " // (len(delimiters)), error)
       endif
@@ -1209,57 +1209,57 @@ contains
     do
       delim_pos = scan(this(field_start:length), opening_delims(1:n_delims))
       if (delim_pos == 0) then ! didn't find opening delimiter
-	if (len_trim(this(field_start:length)) == 0) then !...and the rest of the string is blank...
-	  !... then we've finished
-	  exit
-	else !otherwise, there's one field left to get
-	  if (length >= field_start) then
-	    num_fields = num_fields + 1
-	    if (num_fields > size(fields)) then
+        if (len_trim(this(field_start:length)) == 0) then !...and the rest of the string is blank...
+          !... then we've finished
+          exit
+        else !otherwise, there's one field left to get
+          if (length >= field_start) then
+            num_fields = num_fields + 1
+            if (num_fields > size(fields)) then
               RAISE_ERROR("parse_string ran out of space for fields", error)
             endif
             fields(num_fields) = this(field_start:length)
-	  endif
-	  return
-	end if
+          endif
+          return
+        end if
       endif
       ! get here if we found an opening delimiter
       delim_pos = delim_pos + field_start - 1
       if (delim_pos /= field_start) then ! found an opening delimiter after some text
-	! save text in a field, and jump over it
-	if (delim_pos-1 >= field_start) then
-	  num_fields = num_fields + 1
+        ! save text in a field, and jump over it
+        if (delim_pos-1 >= field_start) then
+          num_fields = num_fields + 1
           if (num_fields > size(fields)) then
              RAISE_ERROR("parse_string ran out of space for fields", error)
           endif
-	  fields(num_fields) = this(field_start:delim_pos-1)
-	end if
-	field_start = delim_pos
+          fields(num_fields) = this(field_start:delim_pos-1)
+        end if
+        field_start = delim_pos
       endif
       field_start = field_start + 1
       if (do_matching) then
-	opening_delim = this(delim_pos:delim_pos)
-	opening_delim_index = index(opening_delims(1:n_delims), opening_delim)
-	delim_pos = find_closing_delimiter(this(field_start:length), closing_delims(opening_delim_index:opening_delim_index), opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
+        opening_delim = this(delim_pos:delim_pos)
+        opening_delim_index = index(opening_delims(1:n_delims), opening_delim)
+        delim_pos = find_closing_delimiter(this(field_start:length), closing_delims(opening_delim_index:opening_delim_index), opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
       else
-	delim_pos = find_closing_delimiter(this(field_start:length), closing_delims, opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
+        delim_pos = find_closing_delimiter(this(field_start:length), closing_delims, opening_delims(1:n_delims), closing_delims(1:n_delims), do_matching)
       endif
       if (delim_pos == 0) then ! didn't find closing delimiter
-	if (do_matching) then
-	  call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), PRINT_ALWAYS)
-	  call print("parse_string string='"//this//"'", PRINT_ALWAYS)
+        if (do_matching) then
+          call print("parse_string failed to find closing delimiter to match opening delimiter at position " // (field_start-1), PRINT_ALWAYS)
+          call print("parse_string string='"//this//"'", PRINT_ALWAYS)
           RAISE_ERROR("parse_string failed to find closing delimiter", error)
-	else
-	  delim_pos = length-field_start+2
-	endif
+        else
+          delim_pos = length-field_start+2
+        endif
       endif
       delim_pos = delim_pos + field_start - 1
       if (delim_pos-1 >= field_start) then
-	num_fields = num_fields + 1
+        num_fields = num_fields + 1
         if (num_fields > size(fields)) then
           RAISE_ERROR("parse_string ran out of space for fields", error)
         endif
-	fields(num_fields) = this(field_start:delim_pos-1)
+        fields(num_fields) = this(field_start:delim_pos-1)
       endif
       field_start = delim_pos+1
       if (field_start > length) return
@@ -1283,33 +1283,33 @@ contains
 
     do
       if (matching) then
-	first_matching_closing_delim = scan(this, closing_delim)
+        first_matching_closing_delim = scan(this, closing_delim)
       else
-	first_matching_closing_delim = scan(this, closing_delims)
+        first_matching_closing_delim = scan(this, closing_delims)
       endif
       first_opening_delim = scan(this, opening_delims)
       if ((first_opening_delim > 0) .and. (first_opening_delim < first_matching_closing_delim)) then
-	length = len(this)
-	if (matching) then
-	  opening_delim = this(first_opening_delim:first_opening_delim)
-	  opening_delim_index = index(opening_delims, opening_delim)
-	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
-	    closing_delims(opening_delim_index:opening_delim_index), opening_delims, closing_delims, matching)
-	else
-	  substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
-	    closing_delims, opening_delims, closing_delims, matching)
-	endif
-	if (substring_end_pos == 0) &
-	  call system_abort("find_closing_delimiter failed to find substring closing delimiter '"// &
-	    closing_delims(opening_delim_index:opening_delim_index)//"' in string '"//this// &
-	    "' for substring starting at "//(first_opening_delim+1))
-	substring_end_pos = substring_end_pos + first_opening_delim+1 - 1
-	pos = find_closing_delimiter(this(substring_end_pos+1:length), closing_delim, opening_delims, &
-	  closing_delims, matching) + substring_end_pos+1 - 1
-	return
+        length = len(this)
+        if (matching) then
+          opening_delim = this(first_opening_delim:first_opening_delim)
+          opening_delim_index = index(opening_delims, opening_delim)
+          substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+            closing_delims(opening_delim_index:opening_delim_index), opening_delims, closing_delims, matching)
+        else
+          substring_end_pos = find_closing_delimiter(this(first_opening_delim+1:length), &
+            closing_delims, opening_delims, closing_delims, matching)
+        endif
+        if (substring_end_pos == 0) &
+          call system_abort("find_closing_delimiter failed to find substring closing delimiter '"// &
+            closing_delims(opening_delim_index:opening_delim_index)//"' in string '"//this// &
+            "' for substring starting at "//(first_opening_delim+1))
+        substring_end_pos = substring_end_pos + first_opening_delim+1 - 1
+        pos = find_closing_delimiter(this(substring_end_pos+1:length), closing_delim, opening_delims, &
+          closing_delims, matching) + substring_end_pos+1 - 1
+        return
       else
-	pos=first_matching_closing_delim
-	return
+        pos=first_matching_closing_delim
+        return
       endif
     end do
 
@@ -1373,7 +1373,7 @@ contains
 
   end subroutine parse_string_orig
 
-  !% Convert an input string into an integer. 
+  !% Convert an input string into an integer.
   function string_to_int(string,error)
     character(*), intent(in)       :: string
     integer, optional, intent(out) :: error
@@ -1390,14 +1390,14 @@ contains
 
   end function string_to_int
 
-  !% Convert an input string into a logical. 
+  !% Convert an input string into a logical.
   function string_to_logical(string, error)
     character(*), intent(in)       :: string
     integer, optional, intent(out) :: error
     logical                        :: string_to_logical
 
     INIT_ERROR(error)
- 
+
     select case(trim(lower_case(string)))
     case("true","t")
        string_to_logical = .true.
@@ -1410,7 +1410,7 @@ contains
   end function string_to_logical
 
 
-  !% Convert an input string into a real. 
+  !% Convert an input string into a real.
   function string_to_real(string, error)
     character(*), intent(in)       :: string
     integer, optional, intent(out) :: error
@@ -1546,18 +1546,18 @@ contains
 
     if (allocated(array)) then
        if (size(array) /= d1) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1))
-	  if (do_copy) then
-	    array = 0
-	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = 0
+            array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1))
@@ -1579,18 +1579,18 @@ contains
 
     if (allocated(array)) then
        if (size(array) /= d1) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1))
-	  if (do_copy) then
-	    array = 0
-	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = 0
+            array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1))
@@ -1613,18 +1613,18 @@ contains
 
     if (allocated(array)) then
        if (.not. all(shape(array) == (/d1,d2/))) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array,1),size(array,2)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array,1),size(array,2)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1,d2))
-	  if (do_copy) then
-	    array = 0
-	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = 0
+            array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1,d2))
@@ -1646,18 +1646,18 @@ contains
 
     if (allocated(array)) then
        if (.not. all(shape(array) == (/d1,d2,d3/))) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array,1),size(array,2),size(array,3)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array,1),size(array,2),size(array,3)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1,d2,d3))
-	  if (do_copy) then
-	    array = 0
-	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = 0
+            array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)),1:min(size(tmp,3),size(array,3)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1,d2,d3))
@@ -1679,18 +1679,18 @@ contains
 
     if (allocated(array)) then
        if (.not. all(shape(array) == (/d1,d2/))) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array,1),size(array,2)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array,1),size(array,2)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1,d2))
-	  if (do_copy) then
-	    array = 0.0_dp
-	    array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = 0.0_dp
+            array(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2))) = tmp(1:min(size(tmp,1),size(array,1)),1:min(size(tmp,2),size(array,2)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1,d2))
@@ -1725,10 +1725,10 @@ contains
      character(len=*), allocatable, dimension(:), intent(inout) :: array
      integer,                            intent(in)             :: d1
      logical, optional,                  intent(in)             :: copy
- 
+
      logical :: do_copy
      character(len=len(array(lbound(array)))), allocatable, dimension(:) :: tmp
- 
+
      if (size(array) /= d1) then
         do_copy = optional_default(.false., copy)
         if (do_copy) then
@@ -1755,18 +1755,18 @@ contains
 
     if (allocated(array)) then
        if (size(array) /= d1) then
-	  do_copy = optional_default(.false., copy)
-	  if (do_copy) then
-	    allocate(tmp(size(array)))
-	    tmp = array
-	  endif
+          do_copy = optional_default(.false., copy)
+          if (do_copy) then
+            allocate(tmp(size(array)))
+            tmp = array
+          endif
           deallocate(array)
           allocate(array(d1))
-	  if (do_copy) then
-	    array = .false.
-	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
-	    deallocate(tmp)
-	  endif
+          if (do_copy) then
+            array = .false.
+            array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+            deallocate(tmp)
+          endif
        end if
     else
        allocate(array(d1))
@@ -1835,11 +1835,11 @@ contains
       integer, optional              :: n
       integer                        :: i
       if (present(n)) then
-	  do i=1,n
-	     backspace this%unit
-	  end do
+          do i=1,n
+             backspace this%unit
+          end do
       else
-	  backspace this%unit
+          backspace this%unit
       end if
    end subroutine backspace
 
@@ -1909,7 +1909,7 @@ contains
     ! below we work out the exact length of the resultant string
     character(len(string)+int_format_length(int)) :: int_cat_string
 
-    write(int_cat_string,'(i0,a)') int,string 
+    write(int_cat_string,'(i0,a)') int,string
   end function int_cat_string
 
   function string_cat_int_array(string, values)
@@ -1950,7 +1950,7 @@ contains
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
        write(format,'("(a,",I0,"e",I0,".",I0,"e3)")') size(values), real_sci_format_length(), &
             mainlog%default_real_precision
-       write(string_cat_real_array, format) string, values 
+       write(string_cat_real_array, format) string, values
     else
        write(string_cat_real_array, '(a)') string
     end if
@@ -1968,7 +1968,7 @@ contains
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
        write(format,'("(a,",I0,"e",I0,".",I0,"e3)")') 2*size(values), real_sci_format_length(), &
             mainlog%default_real_precision
-       write(string_cat_complex_array, format) string, values 
+       write(string_cat_complex_array, format) string, values
     else
        write(string_cat_complex_array, '(a)') string
     end if
@@ -1985,7 +1985,7 @@ contains
     if (size(values)>0) then
        ! replaced concatenation with write... for PGI bug, NB 22/6/2007
        write(format,'("(a",I0,",",I0,"a",I0,")")') len(string), size(values)+1, len(values(1))
-       write(string_cat_string_array, format) string, values 
+       write(string_cat_string_array, format) string, values
     else
        write(string_cat_string_array, '(a)') string
     end if
@@ -2109,13 +2109,13 @@ contains
   !% Return the mpi size and rank for the communicator 'comm'.
   !% this routine aborts of _MPI is not defined
   subroutine get_mpi_size_rank(comm, nproc, rank)
-    
+
     integer, intent(in)  :: comm  !% MPI communicator
     integer, intent(out) :: nproc  !% Total number of processes
     integer, intent(out) :: rank  !% Rank of this process
 
 #ifdef _MPI
-    
+
     integer::error_code
 
     call MPI_COMM_SIZE(comm, nproc, error_code)
@@ -2149,7 +2149,7 @@ contains
     integer,intent(in), optional::verbosity           !% mainlog output verbosity
     integer,intent(in), optional::seed                !% Seed for the random number generator.
     logical,intent(in), optional::mpi_all_inoutput    !% Print on all MPI nodes (false by default)
-    logical,intent(in), optional::common_seed 
+    logical,intent(in), optional::common_seed
     logical,intent(in), optional::enable_timing           !% Enable system_timer() calls
     logical,intent(in), optional::quippy_running       !% .true. if running under quippy (Python interface)
     character(len=*),intent(in), optional :: mainlog_file
@@ -2381,7 +2381,7 @@ contains
   end subroutine system_set_random_seeds
 
   !% Called by 'system_initialise' to print welcome messages and
-  !% seed the random number generator. 
+  !% seed the random number generator.
   subroutine hello_world(seed, common_seed)
     integer, optional::seed !% Seed for the random number generator.
     logical, optional :: common_seed
@@ -2493,7 +2493,7 @@ contains
 
     if (l > 10 .and. l < 20) then
        th = 'th'
-    else 
+    else
        select case(m)
        case(1)
           th = 'st'
@@ -2504,7 +2504,7 @@ contains
        case default
           th = 'th'
        end select
-    end if         
+    end if
 
   end function th
 
@@ -2517,10 +2517,10 @@ contains
     call system_set_random_seeds(new_seed)
   end subroutine system_reseed_rng
 
-  !% Return the current random number seed. 
+  !% Return the current random number seed.
   function system_get_random_seed()
     integer :: system_get_random_seed
-    
+
     system_get_random_seed = idum
   end function system_get_random_seed
 
@@ -2535,7 +2535,7 @@ contains
        ran = dran*RAN_MAX
     else
        if (idum == 0) &
-	 call system_abort("function ran(): linear-congruential random number generators fail with seed idum=0")
+         call system_abort("function ran(): linear-congruential random number generators fail with seed idum=0")
        k = idum/ran_Q
        idum = ran_A*(idum-k*ran_Q)-ran_R*k
        if(idum < 0) idum = idum + ran_M
@@ -2551,15 +2551,15 @@ contains
        call random_number(ran_uniform)
     else
        ran_uniform = 1.1_dp
-       do while (ran_uniform > 1.0_dp) ! generating [0,1]  
-	  ran_uniform = real(ran(),dp)/RAN_MAX
+       do while (ran_uniform > 1.0_dp) ! generating [0,1]
+          ran_uniform = real(ran(),dp)/RAN_MAX
        end do
     end if
   end function ran_uniform
 
   !% Return random real from Normal distribution with mean zero and standard deviation one.
   function ran_normal()
-     real(dp) :: ran_normal, r, v1, v2     
+     real(dp) :: ran_normal, r, v1, v2
      r = 2.0_dp
      do while (r > 1.0_dp)
         v1 = 2.0_dp * ran_uniform() - 1.0_dp
@@ -2571,16 +2571,16 @@ contains
 
    !% Return a random real distributed exponentially between zero and positive infinity
    !% with mean and variance of unity
-   function ran_exp() result(r)    
+   function ran_exp() result(r)
      real(dp) :: r
      r = -log(ran_uniform())
    end function ran_exp
 
    !% Return a random string of length l containing the characters A-Z, a-z, and 0-9
    function ran_string(l)
-   
+
      integer, intent(in) :: l
-     character(len=l)    :: ran_string    
+     character(len=l)    :: ran_string
      integer             :: i, n
 
      do i = 1, l
@@ -2591,7 +2591,7 @@ contains
            ran_string(i:i) = achar(n+55) ! A-Z
         else
            ran_string(i:i) = achar(n+61) ! a-z
-        end if           
+        end if
      end do
 
    end function ran_string
@@ -2601,8 +2601,8 @@ contains
       integer(kind=8) wall_t_count, count_rate, max_count
       if (present(cpu_t)) call cpu_time(cpu_t)
       if (present(wall_t)) then
-	 call system_clock(wall_t_count, count_rate, max_count)
-	 wall_t = real(wall_t_count,dp) * 1.0_dp/real(count_rate,dp)
+         call system_clock(wall_t_count, count_rate, max_count)
+         wall_t = real(wall_t_count,dp) * 1.0_dp/real(count_rate,dp)
       endif
 #ifdef _MPI
       if (present(mpi_t)) mpi_t = MPI_Wtime()
@@ -2611,8 +2611,8 @@ contains
 #endif
    end subroutine current_times
 
-   !% Measure elapsed CPU and wall clock time between pairs of calls with 
-   !% matching 'name' parameter. Calls to 'system_timer' must be properly 
+   !% Measure elapsed CPU and wall clock time between pairs of calls with
+   !% matching 'name' parameter. Calls to 'system_timer' must be properly
    !% nested (i.e. start and stop from different pairs can't overlap), and
    !% maximum depth of calls is set by the 'TIMER_STACK' parameter.
    !%
@@ -2620,7 +2620,7 @@ contains
    !%>   ...                      do something
    !%>   call system_timer(name)  stop clock and print elapsed time
    !%>
-   !%> If optional do_always argument is true, routine will do its thing even 
+   !%> If optional do_always argument is true, routine will do its thing even
    !%> if system_do_timing is false.
    !
    subroutine system_timer(name, do_always, time_elapsed, do_print)
@@ -2670,35 +2670,35 @@ contains
         names(stack_pos) = trim(name)
 
 #ifdef _MPI
-	call current_times(cpu_t0(stack_pos), wall_t0(stack_pos), mpi_t0(stack_pos))
+        call current_times(cpu_t0(stack_pos), wall_t0(stack_pos), mpi_t0(stack_pos))
 #else
-	call current_times(cpu_t0(stack_pos), wall_t0(stack_pos))
+        call current_times(cpu_t0(stack_pos), wall_t0(stack_pos))
 #endif
 
-	if (present(time_elapsed)) time_elapsed = 0.0_dp
+        if (present(time_elapsed)) time_elapsed = 0.0_dp
 
      else
         ! Stop the most recently started timer
 #ifdef _MPI
-	call current_times(cpu_t1, wall_t1, mpi_t1)
+        call current_times(cpu_t1, wall_t1, mpi_t1)
 #else
-	call current_times(cpu_t1, wall_t1)
+        call current_times(cpu_t1, wall_t1)
 #endif
 
         out_name = name
 #ifndef _MPI
-	if (present(time_elapsed)) time_elapsed = wall_t1-wall_t0(stack_pos)
-	if (my_do_print) then
-	  call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
-	     " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs.")
-	endif
+        if (present(time_elapsed)) time_elapsed = wall_t1-wall_t0(stack_pos)
+        if (my_do_print) then
+          call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
+             " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs.")
+        endif
 #else
-	if (present(time_elapsed)) time_elapsed = mpi_t1-mpi_t0(stack_pos)
-	if (my_do_print) then
-	  call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
-	     " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs, " // &
-	     (mpi_t1-mpi_t0(stack_pos)) // " mpi wall secs.")
-	endif
+        if (present(time_elapsed)) time_elapsed = mpi_t1-mpi_t0(stack_pos)
+        if (my_do_print) then
+          call print("TIMER: " // out_name // " done in " // (cpu_t1-cpu_t0(stack_pos)) // &
+             " cpu secs, " // (wall_t1-wall_t0(stack_pos))//" wall clock secs, " // &
+             (mpi_t1-mpi_t0(stack_pos)) // " mpi wall secs.")
+        endif
 #endif
 
         stack_pos = stack_pos - 1
@@ -2721,7 +2721,7 @@ contains
 
      open(file=filename,unit=myunit,status="OLD",iostat=stat)
 
-     if(stat == 0)then 
+     if(stat == 0)then
         is_file_readable = .true.
         close(unit=myunit)
      else
@@ -2743,7 +2743,7 @@ contains
     else
        this%pos = 0
     end if
-    
+
   end subroutine Stack_Initialise
 
   subroutine Stack_Finalise(this)
@@ -2852,13 +2852,13 @@ contains
        call system_abort("verbosity_of_str failed to understand '"//trim(str)//"'")
     end if
   end function verbosity_of_str
-    
+
 
   !% Push a value onto the verbosity stack
   !% Don't ever lower the verbosity if verbosity minimum is set,
   !%   but always push _something_
   subroutine verbosity_push(val)
-    integer, intent(in) :: val 
+    integer, intent(in) :: val
 
     if ((value(mainlog%verbosity_cascade_stack) == 0) .or. &
         val > value(mainlog%verbosity_stack)) then
@@ -3071,10 +3071,10 @@ contains
     if(error_code .ne. MPI_SUCCESS) then
        call  MPI_ERROR_STRING(error_code, error_string, error_string_length, my_error_code)
        if(my_error_code .ne. MPI_SUCCESS) then
-	  call system_abort(trim(routine_name) // " returned with error code = " // error_code &
-	    // ", which could not be parsed")
+          call system_abort(trim(routine_name) // " returned with error code = " // error_code &
+            // ", which could not be parsed")
        else
-	  call system_abort(trim(routine_name) // " had error '"  // trim(error_string) // "'")
+          call system_abort(trim(routine_name) // " had error '"  // trim(error_string) // "'")
        endif
     endif
 #else
@@ -3104,8 +3104,8 @@ contains
     if (mpi_id() == 0) then
 #endif
       do i=1, size(lines)
-	call Print(trim(lines(i)), verbosity, file)
-      end do 
+        call Print(trim(lines(i)), verbosity, file)
+      end do
 #ifdef _MPI
       allocate(lengths(2*mpi_n_procs()))
       lengths_send(1) = size(lines)
@@ -3113,14 +3113,14 @@ contains
       call mpi_gather(lengths_send,2,MPI_INTEGER,lengths,2,MPI_INTEGER,0,comm,err)
 
       do proc=1, mpi_n_procs()-1
-	n_lines = lengths((proc)*2+1)
-	line_l = lengths((proc)*2+2)
-	allocate(in_lines(n_lines*line_l))
-	call mpi_recv(in_lines,n_lines*line_l,MPI_CHARACTER,proc,100+proc,comm,mpi_stat,err)
-	do i=1, n_lines*line_l, line_l
-	  call Print(in_lines(i:i+line_l-1), verbosity, file)
-	end do
-	deallocate(in_lines)
+        n_lines = lengths((proc)*2+1)
+        line_l = lengths((proc)*2+2)
+        allocate(in_lines(n_lines*line_l))
+        call mpi_recv(in_lines,n_lines*line_l,MPI_CHARACTER,proc,100+proc,comm,mpi_stat,err)
+        do i=1, n_lines*line_l, line_l
+          call Print(in_lines(i:i+line_l-1), verbosity, file)
+        end do
+        deallocate(in_lines)
       end do
 
       deallocate(lengths)
@@ -3174,7 +3174,7 @@ contains
 
     call omp_set_num_threads(threads)
   end subroutine system_omp_set_num_threads
-#endif  
+#endif
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -3197,14 +3197,14 @@ contains
 
   function reference_true()
     logical :: reference_true
-    
+
     reference_true = .true.
 
   end function reference_true
 
   function reference_false()
     logical :: reference_false
-    
+
     reference_false = .false.
 
   end function reference_false
@@ -3215,7 +3215,7 @@ function s2a(s) result(a)
   character(len=1), dimension(len(s)) :: a
 
   integer i
-  
+
   do i=1,len(s)
      a(i) = s(i:i)
   end do
@@ -3232,7 +3232,7 @@ function a2s(a) result(s)
   do i=1,size(a)
      s(i:i) = a(i)
   end do
-  
+
 end function a2s
 
 !% String to padded character array of length l
@@ -3259,7 +3259,7 @@ end function pad
     integer i
     character(len=SYSTEM_STRING_LENGTH) :: use_basename
     integer :: use_force_run_dir_i
-   
+
     logical :: exists
     integer stat
 
@@ -3267,7 +3267,7 @@ end function pad
 
     use_force_run_dir_i = optional_default(-1, force_run_dir_i)
     use_basename = optional_default("run", basename)
-   
+
     if (use_force_run_dir_i >= 0) then
       i = use_force_run_dir_i
       dir = trim(use_basename)//"_"//i
@@ -3282,11 +3282,11 @@ end function pad
         i = i + 1
         dir = trim(use_basename)//"_"//i
         call system_command("bash -c '[ -e "//trim(dir)//" ]'", status=stat)
-	exists = (stat == 0)
+        exists = (stat == 0)
       end do
       call system_command("mkdir "//trim(dir), status=stat)
       if (stat /= 0) then
-	 RAISE_ERROR("Failed to mkdir "//trim(dir)//" status " // stat, error)
+         RAISE_ERROR("Failed to mkdir "//trim(dir)//" status " // stat, error)
       endif
     endif
 
@@ -3303,14 +3303,14 @@ end function pad
 
     integer i
     character(len=SYSTEM_STRING_LENGTH) :: use_basename
-   
+
     logical :: exists
     integer stat
 
     INIT_ERROR(error)
 
     use_basename = optional_default("run", basename)
-   
+
     exists = .true.
     i = 0
     do while (exists)
@@ -3331,9 +3331,9 @@ end function pad
   function current_version()
     character(len=SYSTEM_STRING_LENGTH) :: current_version
 
-#ifdef GIT_VERSION    
+#ifdef GIT_VERSION
     current_version = trim(GIT_VERSION)
-#else    
+#else
     current_version = "<exported>"
 #endif
 
@@ -3347,7 +3347,7 @@ end function pad
     length = len_trim(str)+2*len_trim(str)/line_len+3
 
   end function linebreak_string_length
- 
+
   function linebreak_string(str, line_len) result(lb_str)
     character(len=*), intent(in) :: str
     integer, intent(in) :: line_len
@@ -3363,29 +3363,29 @@ end function pad
     do while (len_trim(tmp_str) > 0)
       copy_len = min(len_trim(tmp_str),line_len)
       if (tmp_str(copy_len:copy_len) /= " ") then
-	 last_space=scan(tmp_str(1:copy_len), " ", .true.)
-	 if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
-	    copy_len=last_space
-	 endif
+         last_space=scan(tmp_str(1:copy_len), " ", .true.)
+         if ( last_space > 0 .and. (len_trim(tmp_str(1:copy_len)) - last_space) < 4) then
+            copy_len=last_space
+         endif
       endif
 
       if (len_trim(lb_str) > 0) then ! we already have some text, add newline before concatenating next line
-	lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
+        lb_str = trim(lb_str)//quip_new_line//trim(tmp_str(1:copy_len))
       else ! just concatenate next line
-	lb_str = trim(tmp_str(1:copy_len))
+        lb_str = trim(tmp_str(1:copy_len))
       endif
       ! if we broke in mid word, add "-"
       word_break = .true.
       if (tmp_str(copy_len:copy_len) == " ") then ! we broke right after a space, so no wordbreak
-	word_break = .false.
+        word_break = .false.
       else ! we broke after a character
-	if (copy_len < len_trim(tmp_str)) then ! there's another character after this one, check if it's a space
-	  if (tmp_str(copy_len+1:copy_len+1) == " ") then
-	    word_break = .false.
-	  endif
-	else ! we broke after the last character
-	  word_break = .false.
-	endif
+        if (copy_len < len_trim(tmp_str)) then ! there's another character after this one, check if it's a space
+          if (tmp_str(copy_len+1:copy_len+1) == " ") then
+            word_break = .false.
+          endif
+        else ! we broke after the last character
+          word_break = .false.
+        endif
       endif
       if (word_break) lb_str = trim(lb_str)//"-"
       tmp_str(1:copy_len) = ""
@@ -3429,12 +3429,12 @@ end function pad
       inquire(file=filename, exist=file_exists)
       total_wait_time = 0.0_dp
       do while (.not. file_exists)
-	 call fusleep(usleep_cycle_time)
-	 total_wait_time = total_wait_time + use_cycle_time
-	 inquire(file=filename, exist=file_exists)
-	 if (.not. file_exists .and. total_wait_time > max_wait_time) then
-	    RAISE_ERROR("error waiting too long for '"//trim(filename)//"' to exist", error)
-	 endif
+         call fusleep(usleep_cycle_time)
+         total_wait_time = total_wait_time + use_cycle_time
+         inquire(file=filename, exist=file_exists)
+         if (.not. file_exists .and. total_wait_time > max_wait_time) then
+            RAISE_ERROR("error waiting too long for '"//trim(filename)//"' to exist", error)
+         endif
       end do
 
    end subroutine wait_for_file_to_exist

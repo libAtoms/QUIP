@@ -124,48 +124,48 @@ call print(MoI_evecs_orig, PRINT_VERBOSE)
      call read(config, md_io, error=error)
      if (error /= 0) then
         if (error == ERROR_IO_EOF) then
-	   done = .true.
-	else
-	   HANDLE_ERROR(error)
-	endif
+           done = .true.
+        else
+           HANDLE_ERROR(error)
+        endif
      else
       call add_property(config, "mass", 0.0_dp, 1)
       call atoms_repoint(config)
       config%mass = ElementMass(config%Z)
       if (.not. associated(config%velo)) &
-	call system_abort("config " // config_i // " has no velo pointer")
+        call system_abort("config " // config_i // " has no velo pointer")
       ke_tot = kinetic_energy(config)
       p = momentum(config)
       L = angular_momentum(config, centre_of_mass(config))
       MoI = moment_of_inertia_tensor(config, centre_of_mass(config))
 
       if (fix_rotation) then
-	call diagonalise(MoI, MoI_evals, MoI_evecs)
-	do i=1,3
-	if ((MoI_evecs(:,i) .dot. MoI_evecs_orig(:,i)) < 0) MoI_evecs(:,i) = - MoI_evecs(:,i)
-	end do
-	call print(MoI_evecs, PRINT_VERBOSE)
-	R = transpose(MoI_evecs_orig) .mult. MoI_evecs
-	config%velo = R .mult. config%velo
+        call diagonalise(MoI, MoI_evals, MoI_evecs)
+        do i=1,3
+        if ((MoI_evecs(:,i) .dot. MoI_evecs_orig(:,i)) < 0) MoI_evecs(:,i) = - MoI_evecs(:,i)
+        end do
+        call print(MoI_evecs, PRINT_VERBOSE)
+        R = transpose(MoI_evecs_orig) .mult. MoI_evecs
+        config%velo = R .mult. config%velo
       endif
 
       vel_mag = sqrt(sum(config%velo**2))
       if (vel_mag .feq. 0.0_dp) then
-	ke_proj = 0.0_dp
+        ke_proj = 0.0_dp
       else
-	do i=1, n_phonons
-	  mode_vel = 0.0_dp
-	  do j=1, config%N
-	    mode_vel = mode_vel + ElementMass(config%Z(j))*sum(phonons(:,j,i)*config%velo(:,j))
-	  end do
-	  ke_proj(i) = mode_vel**2/2.0_dp
-	end do
+        do i=1, n_phonons
+          mode_vel = 0.0_dp
+          do j=1, config%N
+            mode_vel = mode_vel + ElementMass(config%Z(j))*sum(phonons(:,j,i)*config%velo(:,j))
+          end do
+          ke_proj(i) = mode_vel**2/2.0_dp
+        end do
       endif
       call print("check " // config_i // " p " // p // " L ", PRINT_VERBOSE)
       call print("check ke_tot " // ke_tot // " sum(ke_proj) " // sum(ke_proj) // &
-	" sum(ke_proj(1:6)) " // sum(ke_proj(1:6)) // &
-	" sum(ke_proj(7:)) " // sum(ke_proj(7:)) // " ratio " // &
-	(sum(ke_proj(7:))/sum(ke_proj)), PRINT_VERBOSE)
+        " sum(ke_proj(1:6)) " // sum(ke_proj(1:6)) // &
+        " sum(ke_proj(7:)) " // sum(ke_proj(7:)) // " ratio " // &
+        (sum(ke_proj(7:))/sum(ke_proj)), PRINT_VERBOSE)
       call print("config " // config_i // " ke_proj " // ke_proj)
     endif
   end do

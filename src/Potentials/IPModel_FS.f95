@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_FS module  
+!X IPModel_FS module
 !X
 !% Module for Finnis-Sinclair embedded-atom potential
 !% (Ref. Philosophical Magazine A, {\bf 50}, 45 (1984)).
@@ -56,14 +56,14 @@ use QUIP_Common_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_FS
 type IPModel_FS
-  integer :: n_types = 0                 !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types} 
+  integer :: n_types = 0                 !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}
 
   real(dp) :: cutoff = 0.0_dp  !% Cutoff for computing connection.
 
@@ -134,11 +134,11 @@ subroutine IPModel_FS_Finalise(this)
 
   this%n_types = 0
   this%label = ''
-  
+
 end subroutine IPModel_FS_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -146,8 +146,8 @@ end subroutine IPModel_FS_Finalise
 subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_FS), intent(inout) :: this
   type(Atoms), intent(in) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}. 
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)  !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -164,7 +164,7 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   character(STRING_LENGTH) :: atom_mask_name
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
-  ! private variables for open-mp 
+  ! private variables for open-mp
   real(dp) :: private_virial(3,3), private_e, virial_i(3,3)
   real(dp), allocatable, dimension(:,:) :: private_f
 
@@ -219,41 +219,41 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if (present(f)) then
     allocate(private_f(3,at%N))
     private_f = 0.0_dp
-  endif                        
+  endif
 
-!$omp do 
+!$omp do
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
-     
+
     if(associated(atom_mask_pointer)) then
        if(.not. atom_mask_pointer(i)) cycle
     endif
 
     phi_tot = 0.0_dp
-     
+
     do ji=1, n_neighbours(at, i)
       j = neighbour(at, i, ji, rij_mag)
       if (rij_mag .feq. 0.0_dp) cycle
 
       if (do_rescale_r) rij_mag = rij_mag*r_scale
- 
+
       ti = get_type(this%type_of_atomic_num, at%Z(i))
       tj = get_type(this%type_of_atomic_num, at%Z(j))
- 
+
       phi_tot = phi_tot + this%A(ti,tj) *  this%A(ti,tj) * phi_ij(this, ti, tj, rij_mag)
     enddo
- 
+
     sqrt_phi_tot = dsqrt(phi_tot)
- 
+
     if (present(e)) then
        private_e =  private_e - sqrt_phi_tot
     endif
     if (present(local_e)) then
-      local_e(i) = local_e(i) - sqrt_phi_tot 
+      local_e(i) = local_e(i) - sqrt_phi_tot
     endif
 
     do ji=1, n_neighbours(at, i)
@@ -267,18 +267,18 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
       if (present(e) .or. present(local_e)) then
         Ui  = 0.5_dp * Vij(this, ti, tj, rij_mag)
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + Ui 
-	endif
-	if (present(e)) then
-	  private_e = private_e + Ui 
-	endif
+        if (present(local_e)) then
+          local_e(i) = local_e(i) + Ui
+        endif
+        if (present(e)) then
+          private_e = private_e + Ui
+        endif
       endif
 
       if (present(f) .or. present(virial)) then
 
-        dU = 0.5_dp * dVij(this, ti, tj, rij_mag) - this%A(ti,tj) * this%A(ti,tj) * dphi_ij(this, ti, tj, rij_mag) / 2.0_dp /  sqrt_phi_tot 
-  
+        dU = 0.5_dp * dVij(this, ti, tj, rij_mag) - this%A(ti,tj) * this%A(ti,tj) * dphi_ij(this, ti, tj, rij_mag) / 2.0_dp /  sqrt_phi_tot
+
         if (present(f)) then
           private_f(:,i) = private_f(:,i) + dU * drij(:)
           private_f(:,j) = private_f(:,j) - dU * drij(:)
@@ -289,7 +289,7 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       endif
 
    end do
-   
+
   end do
 
 !$omp critical
@@ -305,8 +305,8 @@ subroutine IPModel_FS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(f)) call sum_in_place(mpi, f)
-     if (present(virial)) call sum_in_place(mpi, virial) 
-     if (present(local_virial)) call sum_in_place(mpi, local_virial) 
+     if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(local_virial)) call sum_in_place(mpi, local_virial)
   endif
 
   if (do_rescale_r) then
@@ -327,23 +327,23 @@ function Vij(this, ti, tj, r)
   type(IPModel_FS), intent(in) :: this
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: r
-  real(dp) :: Vij 
+  real(dp) :: Vij
 
   if ((r .feq. 0.0_dp) .or. (r > this%c(ti,tj))) then
     Vij = 0.0
     return
   endif
 
-  Vij = (r - this%c(ti,tj))*(r - this%c(ti,tj))*(this%c0(ti,tj) + r * this%c1(ti,tj) + r * r * this%c2(ti,tj) ) 
+  Vij = (r - this%c(ti,tj))*(r - this%c(ti,tj))*(this%c0(ti,tj) + r * this%c1(ti,tj) + r * r * this%c2(ti,tj) )
 
-end function Vij 
+end function Vij
 
 
 function dVij(this, ti, tj, r)
   type(IPModel_FS), intent(in) :: this
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: r
-  real(dp) :: dVij 
+  real(dp) :: dVij
 
   if ((r .feq. 0.0_dp) .or. (r > this%c(ti,tj))) then
     dVij = 0.0
@@ -351,15 +351,15 @@ function dVij(this, ti, tj, r)
   endif
 
   dVij =  2.0_dp * (r - this%c(ti,tj))*(this%c0(ti,tj) + r * this%c1(ti,tj) + r * r * this%c2(ti,tj)) + &
-           (r - this%c(ti,tj))*(r - this%c(ti,tj))*(this%c1(ti,tj) + 2.0_dp * r * this%c2(ti,tj)) 
-end function dVij 
+           (r - this%c(ti,tj))*(r - this%c(ti,tj))*(this%c1(ti,tj) + 2.0_dp * r * this%c2(ti,tj))
+end function dVij
 
 
 function phi_ij(this, ti, tj, r)
   type(IPModel_FS), intent(in) :: this
   integer, intent(in) :: ti, tj
   real(dp), intent(in) :: r
-  real(dp) :: num 
+  real(dp) :: num
   real(dp) :: phi_ij
 
   if ((r .feq. 0.0_dp) .or. (r > this%d(ti,tj))) then
@@ -370,7 +370,7 @@ function phi_ij(this, ti, tj, r)
   num = r  - this%d(ti,tj)
   phi_ij = num * num  +  this%beta(ti,tj) * (num * num * num) / this%d(ti,tj)
 
-end function  phi_ij 
+end function  phi_ij
 
 function dphi_ij(this, ti, tj, r)
   type(IPModel_FS), intent(in) :: this
@@ -391,15 +391,15 @@ end function  dphi_ij
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -416,10 +416,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -427,14 +427,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in FS_params")
+        call system_abort("Can't find n_types in FS_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -496,13 +496,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     read (value, *) parse_ip%c2(ti,tj)
     call QUIP_FoX_get_value(attributes, "A", value, status)
     if (status /= 0) call system_abort ("IPModel_FS_read_params_xml cannot find A")
-    read (value, *) parse_ip%A(ti,tj) 
+    read (value, *) parse_ip%A(ti,tj)
     call QUIP_FoX_get_value(attributes, "beta", value, status)
     if (status /= 0) call system_abort ("IPModel_FS_read_params_xml cannot find beta")
-    read (value, *) parse_ip%beta(ti,tj) 
+    read (value, *) parse_ip%beta(ti,tj)
     call QUIP_FoX_get_value(attributes, "d", value, status)
     if (status /= 0) call system_abort ("IPModel_FS_read_params_xml cannot find d")
-    read (value, *) parse_ip%d(ti,tj) 
+    read (value, *) parse_ip%d(ti,tj)
 
     if (ti /= tj) then
       parse_ip%c(tj,ti) = parse_ip%c(ti,tj)
@@ -519,9 +519,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'FS_params') then
@@ -557,7 +557,7 @@ end subroutine IPModel_FS_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X printing
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -578,8 +578,8 @@ subroutine IPModel_FS_Print (this, file)
       call Print ("IPModel_FS : interaction " // ti // " " // tj // " c, c0, c1, c2 " // this%c(ti,tj) // " " // &
         this%c0(ti,tj) // " " //  this%c1(ti,tj) // " " // this%c2(ti,tj) // " " // &
          " d " // this%d(ti,tj) // " " // &
-	" A " // this%a(ti,tj) // "  " // " beta " // &
-	this%beta(ti,tj), file=file)
+        " A " // this%a(ti,tj) // "  " // " beta " // &
+        this%beta(ti,tj), file=file)
     end do
     call verbosity_pop()
   end do

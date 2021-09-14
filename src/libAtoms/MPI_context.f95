@@ -240,7 +240,7 @@ end subroutine MPI_context_Initialise
 
 subroutine MPI_context_Finalise(this, end_of_program, error)
   type(MPI_context), intent(inout) :: this
-  logical, optional, intent(in) :: end_of_program 
+  logical, optional, intent(in) :: end_of_program
   integer, intent(out), optional :: error
 
 #ifdef _MPI
@@ -258,7 +258,7 @@ subroutine MPI_context_Finalise(this, end_of_program, error)
       call mpi_initialized(is_initialized, err)
       PASS_MPI_ERROR(err, error)
       if (.not. is_initialized) then
-	call mpi_finalize(err)
+        call mpi_finalize(err)
         PASS_MPI_ERROR(err, error)
       endif
     endif
@@ -1183,8 +1183,8 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   end do
 
   call MPI_allgatherv(v_in, my_count, MPI_DOUBLE_PRECISION, &
-		      v_out, counts, displs, MPI_DOUBLE_PRECISION, &
-		      this%communicator, err)
+                      v_out, counts, displs, MPI_DOUBLE_PRECISION, &
+                      this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
   deallocate(displs)
@@ -1340,7 +1340,7 @@ subroutine push_MPI_error(info, fn, line)
   integer, intent(inout)    :: info  !% MPI error code
   character(*), intent(in)  :: fn
   integer, intent(in)       :: line
-    
+
   ! ---
 
 #ifdef _MPI
@@ -1355,7 +1355,7 @@ subroutine push_MPI_error(info, fn, line)
        fn, line, ERROR_MPI)
 
 #endif
-    
+
 endsubroutine push_MPI_error
 
 

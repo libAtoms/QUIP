@@ -216,7 +216,7 @@ program density_KDE
         call read_xyz(xyzfile,status)
         if (status/=0) exit
       end do
-  
+
       ! read rest of configs, skipping decimation related ones, put in structure_ll
       do while (status == 0 .and. (to <= 0 .or. frame_count < to))
         frame_count = frame_count + 1
@@ -238,14 +238,14 @@ program density_KDE
         if (to > 0 .and. frame_count >= to) then
           exit
         endif
-  
+
         do i=1, (decimation-1)
           frame_count = frame_count + 1
           call read_xyz(xyzfile, status)
           if (status /= 0) exit
         end do
       end do
-  
+
       if (status /= 0) then
         call remove_last_entry(structure_ll)
       endif
@@ -284,7 +284,7 @@ program density_KDE
               endif
             endif
             if (.not. skip_frame) then
-!	      call new_entry(structure_ll, structure)
+!              call new_entry(structure_ll, structure)
               call atoms_ll_new_entry2(structure_ll, structure)
               call atoms_copy_without_connect(structure, structure_in, properties="pos:Z")
             else
@@ -353,7 +353,7 @@ program density_KDE
 #ifdef DEBUG
               call print('Storing distance (/0,0,0/)--'//j//' = '//round(d,5)//'A')
 #endif
-!	      !Add this distance to the list
+!              !Add this distance to the list
                call append(distances,realpart=(/d/))
                call append(distances_intermed,realpart=(/d/))
            end if
@@ -390,7 +390,7 @@ program density_KDE
         hist_int_intermed = 0.0_dp
         do i = 1, num_bins
            hist_int = hist_int + data(i,2) * bin_width * (4.0_dp * data(i,1)**2.0_dp * PI) *density
-           data(i,3) = hist_int 
+           data(i,3) = hist_int
            hist_int_intermed = hist_int_intermed + data_intermed(i,2) * bin_width * (4.0_dp * data_intermed(i,1)**2.0_dp * PI) *density
            data_intermed(i,3) = hist_int_intermed
         end do
@@ -437,7 +437,7 @@ program density_KDE
        !Try to read another frame
        structure_ll_entry => structure_ll_entry%next
        frame_count = frame_count + decimation
-  
+
     end do
 
     frame_count = frame_count - decimation

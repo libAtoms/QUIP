@@ -69,7 +69,7 @@ module  structures_module
 
 contains
 
-  !X 
+  !X
   !X Edge dislocation generator
   !X
   subroutine fcc_11b2_edge_disloc(at, a0, n1, n2, n3)
@@ -90,7 +90,7 @@ contains
        if( at%pos(3,i) > 0.0_dp) then
           if(abs(at%pos(1,i)) < 0.1_dp) then
              call append(removelist, i)
-          else 
+          else
              at%pos(1,i) = at%pos(1,i)-sign(at%pos(1,i))*min(a0/sqrt(2.0_dp)/4.0_dp, at%pos(3,i)/10.0_dp)
              at%pos(2,i) = at%pos(2,i)-sign(at%pos(1,i))*min(a0*sqrt(3.0_dp/2.0_dp)/4.0_dp, at%pos(3,i)/10.0_dp)
           end if
@@ -108,14 +108,14 @@ contains
          20.0_dp,0.0_dp,0.0_dp, &
          0.0_dp, 0.0_dp,0.0_dp, &
          0.0_dp, 0.0_dp,20.0_dp/), (/3, 3/)), scale_positions=.false.)
-         
+
     call finalise(at1)
     call finalise(removelist)
 
   end subroutine fcc_11b2_edge_disloc
 
 
-  !X 
+  !X
   !X Dislocation generator, formulas from Malcolm Heggie
   !X
   subroutine fcc_disloc_malc(at, a0, nu, n1, n2, n3, d, type)
@@ -213,8 +213,8 @@ contains
       r1_hat = (/ 1.0_dp, 0.0_dp, 0.0_dp /)
       r1_hat = r1_hat - l_hat * (r1_hat .dot. l_hat)
       if (norm(r1_hat) .feq. 0.0_dp) then
-	r1_hat = (/ 0.0_dp, 1.0_dp, 0.0_dp /)
-	r1_hat = r1_hat - l_hat * (r1_hat .dot. l_hat)
+        r1_hat = (/ 0.0_dp, 1.0_dp, 0.0_dp /)
+        r1_hat = r1_hat - l_hat * (r1_hat .dot. l_hat)
       endif
       r1_hat = r1_hat / norm(r1_hat)
       r2_hat = l_hat .cross. r1_hat
@@ -231,12 +231,12 @@ contains
     do i_at = 1, at%N
       delta_p = diff_min_image(at, p, i_at)
       if (norm(delta_p) .feq. 0.0_dp) then
-	theta = 0.0_dp
+        theta = 0.0_dp
       else
-	delta_p_rot(1) = delta_p .dot. r1_hat
-	delta_p_rot(2) = delta_p .dot. r2_hat
-	delta_p_rot(3) = delta_p .dot. l_hat
-	theta = atan2(delta_p_rot(2), delta_p_rot(1))
+        delta_p_rot(1) = delta_p .dot. r1_hat
+        delta_p_rot(2) = delta_p .dot. r2_hat
+        delta_p_rot(3) = delta_p .dot. l_hat
+        theta = atan2(delta_p_rot(2), delta_p_rot(1))
       endif
       call print("atom " // i_at // " pos " // at%pos(:,i_at) // " delta_p " // delta_p // " theta " // theta, PRINT_ANALYSIS)
       delta_p = b*theta/(2.0_dp*PI)
@@ -250,25 +250,25 @@ contains
     do i_at = 1, at%N
       if (atoms_remove(i_at)) cycle
       do j=1, n_neighbours(at, i_at)
-	j_at = neighbour(at, i_at, j, distance=r)
-	if (atoms_remove(j_at)) cycle
-	if (present(close_threshold)) then
-	  if (r < close_threshold) then
-	    if (j_at == i_at) then
-	      call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
-	    else
-	      atoms_remove(j_at) = .true.
-	    endif
-	  endif
-	else
-	  if (r < 0.5_dp*bond_length(at%Z(i_at), at%Z(j_at))) then
-	    if (i_at == j_at) then
-	      call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
-	    else
-	      atoms_remove(j_at) = .true.
-	    endif
-	  endif
-	endif ! present(close_threshold)
+        j_at = neighbour(at, i_at, j, distance=r)
+        if (atoms_remove(j_at)) cycle
+        if (present(close_threshold)) then
+          if (r < close_threshold) then
+            if (j_at == i_at) then
+              call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
+            else
+              atoms_remove(j_at) = .true.
+            endif
+          endif
+        else
+          if (r < 0.5_dp*bond_length(at%Z(i_at), at%Z(j_at))) then
+            if (i_at == j_at) then
+              call print("WARNING: disloc_noam found atom too close to itself", PRINT_ALWAYS)
+            else
+              atoms_remove(j_at) = .true.
+            endif
+          endif
+        endif ! present(close_threshold)
       end do ! j
     end do ! i_at
 
@@ -276,10 +276,10 @@ contains
       allocate(remove_list(count(atoms_remove)))
       j_at = 0
       do i_at=1, at%N
-	if (atoms_remove(i_at)) then
-	  j_at = j_at + 1
-	  remove_list(j_at) = i_at
-	endif
+        if (atoms_remove(i_at)) then
+          j_at = j_at + 1
+          remove_list(j_at) = i_at
+        endif
       end do
       call remove_atoms(at, remove_list)
 
@@ -347,7 +347,7 @@ contains
   subroutine bulk(at, lat_type, a, c, u, x, y, z, atnum)
     type(Atoms), intent(out) :: at
     character(len=*), intent(in) :: lat_type !% One of 'diamond', 'bcc', 'fcc', 'alpha_quartz', 'anatase_cubic', 'anatase', or 'rutile'
-    real(dp), intent(in) :: a !% Principal lattice constant 
+    real(dp), intent(in) :: a !% Principal lattice constant
     real(dp), intent(in), optional :: c, u, x, y, z
     integer, intent(in), optional :: atnum(:) !% Optionally specify atomic numbers
 
@@ -383,7 +383,7 @@ contains
   !%  be given either as ``(nx, ny, nz)`` unit cells or as ``(width,
   !%  height, nz)`` where `width` and `height` are measured in Angstrom
   !%  and `nz` is the number of cells in the `z` direction.
-  !%  
+  !%
   !%  `atnum` can be used to initialise the `z` and `species` properties.
   !%  `lat_type` should be of ``"diamond"```, ``"fcc"``, or ``"bcc"``
   !%  (default is ``"diamond"``)
@@ -400,18 +400,18 @@ contains
    real(dp), dimension(3,3) :: rot
    type(Atoms) :: at
    character(20) :: my_lat_type
-   
+
    i = 0
    Nrep = (/ 1,1,1 /)
 
    my_lat_type = optional_default('diamond', lat_type)
-   call print("unit_slab : Lattice type " // trim(my_lat_type))    
+   call print("unit_slab : Lattice type " // trim(my_lat_type))
    call bulk(at, lat_type, a, c, u, x, y, z, atnum)
 
    ! Need special cases for some surfaces to ensure we only get one unit cell
-   if (all(axes(:,2) == (/ 1,1,1 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) & 
+   if (all(axes(:,2) == (/ 1,1,1 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) &
         Nrep = (/ 2,1,2 /)
-   if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 0,0,-1 /))) & 
+   if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 0,0,-1 /))) &
         Nrep = (/ 2,2,1 /)
    if (all(axes(:,2) == (/ 1,1,0 /)) .and. all(axes(:,3) == (/ 1,-1,0 /))) &
         Nrep = (/ 1,1,2 /)
@@ -434,7 +434,7 @@ contains
    end do
    call set_lattice(myatoms, myatoms%lattice, scale_positions=.false.)
 
-   ! Form primitive cell by discarding atoms with 
+   ! Form primitive cell by discarding atoms with
    ! lattice coordinates outside range [-0.5,0.5]
    d = (/ 0.01_dp,0.02_dp,0.03_dp /) ! Small shift to avoid conincidental alignments
    i = 1
@@ -456,7 +456,7 @@ contains
 
 
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- ! 
+ !
  ! Slab with dimensions width x height in xy plane and nz layers deep.
  ! Origin is at centre of slab.
  !
@@ -469,7 +469,7 @@ contains
    real(dp), intent(IN), optional :: c, u, x, y, z ! Lattice vector
    integer, intent(in) :: nz ! Number of layers
    integer, intent(in), optional :: atnum(:) ! atomic numbers to use
-   character(len=*),   optional  ::  lat_type 
+   character(len=*),   optional  ::  lat_type
    logical, optional, intent(in) :: even_nx, even_ny ! round nx or ny to even numbers
 
    type(Atoms) :: unit, layer
@@ -515,7 +515,7 @@ contains
 
 
  !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- ! 
+ !
  ! Slab of size nx x ny x nx primitive cells.
  ! Origin is at centre of slab.
  !
@@ -561,11 +561,11 @@ contains
                     0.0_dp,   0.0_dp,   10.0_dp/), (/3, 3/)))
 
     call set_atoms(cube, 6)
-    cube%pos(:,1) = a*(/0.0_dp, sqrt(3.0_dp)/2.0, 0.0_dp/) 
-    cube%pos(:,2) = a*(/0.5_dp, 0.0_dp, 0.0_dp/) 
-    cube%pos(:,3) = a*(/1.5_dp, 0.0_dp, 0.0_dp/) 
+    cube%pos(:,1) = a*(/0.0_dp, sqrt(3.0_dp)/2.0, 0.0_dp/)
+    cube%pos(:,2) = a*(/0.5_dp, 0.0_dp, 0.0_dp/)
+    cube%pos(:,3) = a*(/1.5_dp, 0.0_dp, 0.0_dp/)
     cube%pos(:,4) = a*(/2.0_dp, sqrt(3.0_dp)/2.0, 0.0_dp/)
-    
+
   end function Graphene_Cubic
 
   !% Construct a slab of graphene of a given with and height, at a given angle.
@@ -602,7 +602,7 @@ contains
     lattice(3,3) = tmp_slab%lattice(3,3)
     call Set_Lattice(tmp_slab, lattice, scale_positions=.false.)
 
-    ! Form primitive cell by discarding atoms with 
+    ! Form primitive cell by discarding atoms with
     ! lattice coordinates outside range [-0.5,0.5]
     d = (/ 0.01, 0.02, 0.03 /)
     call Allocate(keep_list, 1, 0, 0, 0, tmp_slab%N)
@@ -627,7 +627,7 @@ contains
     call finalise(keep_list)
   end subroutine Graphene_Slab
 
-  !% Construct a graphene sheet of index $(n,m)$ with lattice constant 'a' with 'rep_x' 
+  !% Construct a graphene sheet of index $(n,m)$ with lattice constant 'a' with 'rep_x'
   !% repeat units in the $x$ direction and 'rep_y' in the $y$ direction.
   subroutine Graphene_Sheet(sheet, a, n, m, rep_x, rep_y)
     type(Atoms), intent(out) :: sheet
@@ -678,7 +678,7 @@ contains
 
     call Set_Lattice(unitsheet, lattice, scale_positions=.false.)
 
-    ! Form primitive cell by discarding atoms with 
+    ! Form primitive cell by discarding atoms with
     ! lattice coordinates outside range [-0.5,0.5]
     d = (/ 0.01, 0.02, 0.03 /)
     i = 1
@@ -719,7 +719,7 @@ contains
        r_sum = r_sum + sqrt(pos(1,i)**2 + pos(2,i)**2)
     end do
     r = r_sum/tube%N ! Average radius
-   
+
   end function Tube_Radius
 
 
@@ -754,7 +754,7 @@ contains
     type(Atoms) :: unit, sheet, unittube
     real(dp) :: a1(2), a2(2), x(2), lattice(3,3), normx
     integer :: i
-    
+
     real, parameter :: NANOTUBE_VACCUUM = 10.0_dp
 
     a1 = a*(/3.0_dp/2.0_dp,  sqrt(3.0_dp)/2.0/)
@@ -769,12 +769,12 @@ contains
     ! Circumference of tube is norm(x)
     r = normx/(2.0_dp*pi)
 
-    ! Tube lattice 
+    ! Tube lattice
     lattice = 0.0_dp
     lattice(1,1) = 2*r + NANOTUBE_VACCUUM
     lattice(2,2) = lattice(1,1)
     lattice(3,3) = sheet%lattice(2,2)
-    
+
     call Initialise(unittube, sheet%N, lattice)
     unittube%Z = sheet%Z
     unittube%species = sheet%species
@@ -793,15 +793,15 @@ contains
     call Finalise(unit)
     call Finalise(sheet)
     call Finalise(unittube)
-    
+
   end function Graphene_Tube
 
   !
-  !% Return an atoms object containing one TIP3P water molecule in a box 
+  !% Return an atoms object containing one TIP3P water molecule in a box
   !% giving the correct density at 300K
   !
   function water()
-    
+
     type(Atoms) :: water
 
     call initialise(water,3,make_lattice(3.129058333_dp))
@@ -811,7 +811,7 @@ contains
     water%pos(:,3) = (/-0.2399872084_dp,0.9266272065_dp,0.0_dp/)
 
     call set_atoms(water, (/8, 1, 1/))
-    
+
   end function water
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -952,7 +952,7 @@ contains
           do k = 0,n3-1
              p = a%lattice .mult. (/i,j,k/)
              do n = 1,a%N
-                nn = ((i*n2+j)*n3+k)*a%n+n 
+                nn = ((i*n2+j)*n3+k)*a%n+n
                 ! overwrite position with shifted pos
                 aa%pos(:,nn) = a%pos(:,n)+p
                 if(present(supercell_index_name)) supercell_index(:,nn) = (/i,j,k/)
@@ -966,7 +966,7 @@ contains
 
   !% Create a supercell of size sx and sy out of unit cell that are rotated
   !% by phi in the x-y plane.
-  !% 
+  !%
   !% The final cell might be distorted, but distortions become smaller then
   !% sx and sy grow. The strain tensor that describes these distortions is
   !% returned in the optional parameter eps.
@@ -986,7 +986,7 @@ contains
     integer,  optional, intent(out)    :: error
 
     ! ---
- 
+
     real(DP), parameter  :: initial_step_size = 0.001_DP
 
     integer      :: i, j, jn, n1, n2, m1, m2
@@ -1076,7 +1076,7 @@ contains
 
     allocate(mask(at%N))
     mask = .true.
-    
+
     ! n2 is negative for 0 < phi < pi/2
     at%pos(2, :) = at%pos(2, :) + n2*unitcell%lattice(2, 2)
 
@@ -1203,7 +1203,7 @@ contains
   !% and atomic number 'Z', e.g. in Python::
   !%
   !%    a = diamond(5.44, 14)  # Silicon unit cell
-  !% 
+  !%
   !% Or, in Fortran::
   !%
   !%    type(Atoms) :: at
@@ -1219,7 +1219,7 @@ contains
 
     call initialise(myatoms, 8, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)  ! sublattice 1
     myatoms%pos(:,2) = a*(/0.25_dp, 0.25_dp, 0.25_dp/)  ! sublattice 2
     myatoms%pos(:,3) = a*(/0.50_dp, 0.50_dp, 0.00_dp/)  ! sublattice 1
@@ -1231,19 +1231,19 @@ contains
 
     if (present(Z)) then
       if (size(Z) == 1) then
-	myatoms%Z = Z(1)
+        myatoms%Z = Z(1)
         if (has_property(myatoms, 'mass')) &
              myatoms%mass = ElementMass(Z(1))
       else if (size(Z) == 2) then
-	myatoms%Z(1:7:2) = Z(1)
+        myatoms%Z(1:7:2) = Z(1)
         if (has_property(myatoms, 'mass')) &
              myatoms%mass(1:7:2) = ElementMass(Z(1))
 
-	myatoms%Z(2:8:2) = Z(2)
+        myatoms%Z(2:8:2) = Z(2)
         if (has_property(myatoms, 'mass')) &
              myatoms%mass(2:8:2) = ElementMass(Z(2))
       else
-	call system_abort("diamond got passed Z with size="//size(Z)//" which isn't 1 or 2")
+        call system_abort("diamond got passed Z with size="//size(Z)//" which isn't 1 or 2")
       endif
 
       call set_atoms(myatoms,myatoms%Z)
@@ -1269,7 +1269,7 @@ contains
 
     call initialise(myatoms, 2, &
          reshape((/a/2,a/2,0.0_dp,0.0_dp,a/2,a/2,a/2,0.0_dp,a/2/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
     myatoms%pos(:,2) = a*(/0.25_dp, 0.25_dp, 0.25_dp/)
 
@@ -1294,7 +1294,7 @@ contains
          reshape((/ 0.5_dp*a,-0.5_dp*a,-0.5_dp*c, &
                   &-0.5_dp*a, 0.5_dp*a,-0.5_dp*c, &
                   & 0.5_dp*a, 0.5_dp*a, 0.5_dp*c /), (/3,3/) ))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ -0.125_dp, -0.375_dp,  0.25_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/  0.125_dp,  0.375_dp, -0.25_dp /))
     if (present(Z)) call set_atoms(myatoms,Z)
@@ -1316,7 +1316,7 @@ contains
 
     call initialise(myatoms, 4, &
          reshape((/a, 0.0_dp, 0.0_dp, 0.0_dp, a, 0.0_dp, 0.0_dp, 0.0_dp, c/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp,        0.00_dp,        0.00_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.50_dp,        0.50_dp,        0.50_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 0.00_dp,        0.50_dp,        0.25_dp /))
@@ -1340,7 +1340,7 @@ contains
 
     call initialise(myatoms, 4, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
     myatoms%pos(:,2) = a*(/0.50_dp, 0.50_dp, 0.00_dp/)
     myatoms%pos(:,3) = a*(/0.50_dp, 0.00_dp, 0.50_dp/)
@@ -1368,7 +1368,7 @@ contains
 
     call initialise(myatoms, 1, &
          reshape((/a/2,a/2,0.0_dp,0.0_dp,a/2,a/2,a/2,0.0_dp,a/2/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
 
     call set_atoms(myatoms,(/my_Z/))
@@ -1392,7 +1392,7 @@ contains
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                a*sqrt(8.0_dp/3.0_dp) /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/        0.0_dp,        0.0_dp, 0.0_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.5_dp /))
 
@@ -1417,7 +1417,7 @@ contains
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
 
     if (present(Z)) call set_atoms(myatoms,Z)
@@ -1441,7 +1441,7 @@ contains
          reshape( (/     a,         0.0_dp, 0.0_dp, &
                   & 0.0_dp, sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,         0.0_dp, c /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.5_dp, 0.5_dp, 0.0_dp /))
 
@@ -1466,7 +1466,7 @@ contains
          0.5_dp * reshape( (/ a,  b, -c, &
                              -a,  b,  c, &
                               a, -b,  c /),(/3,3/)))
-    
+
     !myatoms%pos(:,1) =  matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
     !myatoms%pos(:,2) = -matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp+u, u /))
 
@@ -1493,7 +1493,7 @@ contains
                   reshape( (/ a, 0.0_dp, 0.0_dp, &
                               0.0_dp, b, 0.0_dp, &
                               0.0_dp, 0.0_dp,  c /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp,        0.00_dp,        0.00_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.50_dp,        0.50_dp,        0.50_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 0.00_dp,        0.50_dp,              u /))
@@ -1520,7 +1520,7 @@ contains
          reshape( (/     a, 0.0_dp, 0.0_dp, &
                   & 0.0_dp,      a, 0.0_dp, &
                   & 0.0_dp, 0.0_dp,      a /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp, 0.0_dp, 0.0_dp /))
 
     if (present(Z)) call set_atoms(myatoms,Z)
@@ -1534,7 +1534,7 @@ contains
   !% Creates a 2-atom bcc-structure with cubic lattice constant of 'a'
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- 
+
   subroutine bcc(myatoms, a, Z)
     type(Atoms), intent(out) :: myatoms
     real(dp)                 :: a
@@ -1542,10 +1542,10 @@ contains
 
     call initialise(myatoms, 2, &
          reshape((/a,0.0_dp,0.0_dp,0.0_dp,a,0.0_dp,0.0_dp,0.0_dp,a/), (/3,3/)))
-    
+
     myatoms%pos(:,1) = a*(/0.00_dp, 0.00_dp, 0.00_dp/)
     myatoms%pos(:,2) = a*(/0.50_dp, 0.50_dp, 0.50_dp/)
- 
+
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine bcc
@@ -1557,7 +1557,7 @@ contains
   !% Creates a 1-atom primitive bcc-structure with cubic lattice constant of 'a'
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- 
+
   subroutine bcc1(myatoms, a, Z)
     type(Atoms), intent(out) :: myatoms
     real(dp)                 :: a
@@ -1567,9 +1567,9 @@ contains
     & 0.5_dp*a*reshape( (/1.0_dp,-1.0_dp, 1.0_dp, &
                         & 1.0_dp, 1.0_dp,-1.0_dp, &
                         &-1.0_dp, 1.0_dp, 1.0_dp/),(/3,3/)))
-    
+
     myatoms%pos(:,1) = (/0.00_dp, 0.00_dp, 0.00_dp/)
- 
+
     if (present(Z)) call set_atoms(myatoms,Z)
 
   end subroutine bcc1
@@ -1591,7 +1591,7 @@ contains
          reshape( (/0.0_dp,   0.5_dp*a, 0.5_dp*a, &
                   & 0.5_dp*a, 0.0_dp,   0.5_dp*a, &
                   & 0.5_dp*a, 0.5_dp*a, 0.0_dp /),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.00_dp, 0.00_dp, 0.00_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.25_dp, 0.25_dp, 0.25_dp /))
 
@@ -1624,7 +1624,7 @@ contains
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                my_c/),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.00_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 2.0_dp/3.0_dp, 1.0_dp/3.0_dp, 0.50_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, my_u    /))
@@ -1643,7 +1643,7 @@ contains
   !% Creates an 8-atom a15-structure with cubic lattice constant of 'a'
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
- 
+
   subroutine a15(myatoms, a, Z)
     type(Atoms), intent(out)      :: myatoms
     real(dp)                      :: a
@@ -1682,7 +1682,7 @@ contains
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c/),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp,        0.0_dp,        0.25_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 0.0_dp,        0.0_dp,        0.75_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.25_dp /))
@@ -1701,7 +1701,7 @@ contains
          reshape( (/0.5_dp*a,-0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.5_dp*a, 0.5_dp*sqrt(3.0_dp)*a, 0.0_dp, &
                   & 0.0_dp,   0.0_dp,                c/),(/3,3/)))
-    
+
     myatoms%pos(:,1) = matmul(myatoms%lattice, (/ 0.0_dp,        0.0_dp,        0.0_dp /))
     myatoms%pos(:,2) = matmul(myatoms%lattice, (/ 1.0_dp/3.0_dp, 2.0_dp/3.0_dp, 0.0_dp /))
     myatoms%pos(:,3) = matmul(myatoms%lattice, (/ 0.0_dp,        0.0_dp,        1.0_dp/3.0_dp /))
@@ -1725,10 +1725,10 @@ contains
     a1 = (/ 0.5_dp*a, -0.5_dp*sqrt(3.0_dp)*a, 0.0_dp /)
     a2 = (/ 0.5_dp*a,  0.5_dp*sqrt(3.0_dp)*a, 0.0_dp /)
     a3 = (/ 0.0_dp,    0.0_dp,                c /)
-    lattice(:,1) = a1 
-    lattice(:,2) = a2 
+    lattice(:,1) = a1
+    lattice(:,2) = a2
     lattice(:,3) = a3
-   
+
     call initialise(at, n=9, lattice=lattice)
     call set_atoms(at, (/14,14,14,8,8,8,8,8,8 /))
 
@@ -1743,7 +1743,7 @@ contains
     at%pos(:,9) = (x - y)*a1 - y*a2 - (1.0_dp/3.0_dp + z)*a3
 
     call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6,7,8,9 /))
-    
+
  end subroutine alpha_quartz
 
  !%  Non-primitive 18-atom cubic quartz cell
@@ -1770,7 +1770,7 @@ contains
    unit_cell = .false.
    do i=1,a1%n
       ! add small shift to avoid coincidental alignment
-      t = g .mult. a1%pos(:,i) + (/0.01_dp, 0.02_dp, 0.03_dp/) 
+      t = g .mult. a1%pos(:,i) + (/0.01_dp, 0.02_dp, 0.03_dp/)
       if (all(t >= -0.5) .and. all(t < 0.5)) unit_cell(i) = .true.
    end do
 
@@ -1800,16 +1800,16 @@ contains
     call initialise(at, n=6, lattice=lattice)
     call set_atoms(at, (/22,22,8,8,8,8 /))
 
-    at%pos(:,1) =  0.0_dp 
+    at%pos(:,1) =  0.0_dp
     at%pos(:,2) =  0.5_dp * a1 + 0.5_dp*a2 + 0.5_dp*a3
     at%pos(:,3) =  u*a1 + u*a2
-    at%pos(:,4) = -u*a1 - u*a2 
-    at%pos(:,5) = (0.5_dp + u)*a1 + (0.5_dp - u)*a2 + 0.5_dp*a3 
+    at%pos(:,4) = -u*a1 - u*a2
+    at%pos(:,5) = (0.5_dp + u)*a1 + (0.5_dp - u)*a2 + 0.5_dp*a3
     at%pos(:,6) = (0.5_dp - u)*a1 + (0.5_dp + u)*a2 + 0.5_dp*a3
 
     call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6/))
 
- end subroutine rutile 
+ end subroutine rutile
 
  subroutine anatase_cubic(at, a, c, u)
 !Conventional 12 atoms unit cell defined as a function of a,c,u.
@@ -1831,21 +1831,21 @@ contains
     call set_atoms(at, (/22,22,22,22,8,8,8,8,8,8,8,8 /))
 
     at%pos(:,1) = (/0.0_dp*a, 0.5_dp*a,  0.0_dp   /)
-    at%pos(:,2) = (/0.0_dp,   0.0_dp  ,  0.25_dp*c/) 
-    at%pos(:,3) = (/0.5_dp*a, 0.5_dp*a, -0.25_dp*c/) 
-    at%pos(:,4) = (/0.5_dp*a, 0.0_dp  ,  0.50_dp*c/)  
-    at%pos(:,5) = (/0.0_dp  , 0.5_dp*a,  u * c   /) 
-    at%pos(:,6) = (/0.0_dp  , 0.5_dp*a, -u * c   /) 
-    at%pos(:,7) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp+u)*c /) 
-    at%pos(:,8) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp-u)*c /) 
-    at%pos(:,9) = (/0.5_dp*a, 0.5_dp*a,  (0.75_dp-u)*c /) 
-    at%pos(:,10)= (/0.5_dp*a, 0.0_dp  ,  (0.50_dp-u)*c /) 
-    at%pos(:,11)= (/0.5_dp*a, 0.0_dp  , -(0.50_dp-u)*c /) 
-    at%pos(:,12)= (/0.5_dp*a, 0.5_dp*a, -(0.25_dp-u)*c /) 
+    at%pos(:,2) = (/0.0_dp,   0.0_dp  ,  0.25_dp*c/)
+    at%pos(:,3) = (/0.5_dp*a, 0.5_dp*a, -0.25_dp*c/)
+    at%pos(:,4) = (/0.5_dp*a, 0.0_dp  ,  0.50_dp*c/)
+    at%pos(:,5) = (/0.0_dp  , 0.5_dp*a,  u * c   /)
+    at%pos(:,6) = (/0.0_dp  , 0.5_dp*a, -u * c   /)
+    at%pos(:,7) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp+u)*c /)
+    at%pos(:,8) = (/0.0_dp  , 0.0_dp  ,  (0.25_dp-u)*c /)
+    at%pos(:,9) = (/0.5_dp*a, 0.5_dp*a,  (0.75_dp-u)*c /)
+    at%pos(:,10)= (/0.5_dp*a, 0.0_dp  ,  (0.50_dp-u)*c /)
+    at%pos(:,11)= (/0.5_dp*a, 0.0_dp  , -(0.50_dp-u)*c /)
+    at%pos(:,12)= (/0.5_dp*a, 0.5_dp*a, -(0.25_dp-u)*c /)
 
     call add_property(at, 'primitive_index', (/ 1,2,3,4,5,6,7,8,9,10,11,12/))
 
- end subroutine anatase_cubic 
+ end subroutine anatase_cubic
 
 subroutine anatase(at, a, c, u)
 !Conventional 6 atoms unit cell defined as a function of a,c,u.
@@ -1927,7 +1927,7 @@ subroutine anatase(at, a, c, u)
   !%>   call append(motif,Atomic_Number('O'), &
   !%>               (/real(0.0,dp),real(0.0,dp),real((5.0/6.0),dp)/))
   !%>
-  !%>   ybco = make_structure(lattice,'P',motif) 
+  !%>   ybco = make_structure(lattice,'P',motif)
   !%>
   !%>   call supercell(big_ybco,ybco,2,2,2)
   !
@@ -1977,7 +1977,7 @@ subroutine anatase(at, a, c, u)
 
     do j = 1, points%N
        do i = 1, motif%N
-          
+
           if (motif%int(1,i) < 1) call system_abort('Make_Structure: Atom '//i//' not recognised')
 
           n = (j-1)*motif%N + i
@@ -1986,10 +1986,10 @@ subroutine anatase(at, a, c, u)
           if (has_property(structure, 'mass')) &
                structure%mass(n) = ElementMass(structure%Z(n))
           structure%pos(:,n) = lattice .mult. (motif%real(:,i) + points%real(:,j))
-          
+
        end do
     end do
-    
+
     call finalise(points)
 
   end function make_structure
@@ -2045,15 +2045,15 @@ subroutine anatase(at, a, c, u)
     else
       call get_env_var("QUIP_STRUCTS_DIR", quip_structs_dir, stat)
       if (stat /= 0) then
-	call get_env_var("QUIP_ROOT", quip_structs_dir, stat)
-	if (stat /= 0) then
-	  call get_env_var("HOME", quip_structs_dir, stat)
-	  if (stat /= 0) &
-	    call system_abort("Could not get QUIP_STRUCTS_DIR or QUIP_ROOT or HOME env variables")
-	  quip_structs_dir = trim(quip_structs_dir) // "/share/quip_structures"
-	else
-	  quip_structs_dir = trim(quip_structs_dir) // "/structures"
-	endif
+        call get_env_var("QUIP_ROOT", quip_structs_dir, stat)
+        if (stat /= 0) then
+          call get_env_var("HOME", quip_structs_dir, stat)
+          if (stat /= 0) &
+            call system_abort("Could not get QUIP_STRUCTS_DIR or QUIP_ROOT or HOME env variables")
+          quip_structs_dir = trim(quip_structs_dir) // "/share/quip_structures"
+        else
+          quip_structs_dir = trim(quip_structs_dir) // "/structures"
+        endif
       endif
       struct_file = trim(quip_structs_dir)//"/"//trim(struct)//".xyz"
     endif
@@ -2075,7 +2075,7 @@ subroutine anatase(at, a, c, u)
     endif
     if (len_trim(Z_values_str_use) <= 0) then
       if (.not. get_value(cell%params, "z_values", Z_values_str_use)) then
-	RAISE_ERROR("structure_from_file: no appropriate Z values in cell file or Z_values_str argument", error)
+        RAISE_ERROR("structure_from_file: no appropriate Z values in cell file or Z_values_str argument", error)
       endif
     endif
 
@@ -2094,7 +2094,7 @@ subroutine anatase(at, a, c, u)
 
     do i=1, n_types
       where (cell%Z == i)
-	new_Z = Z_values(i)
+        new_Z = Z_values(i)
       end where
     end do
     call set_atoms(cell, new_Z)
@@ -2115,8 +2115,8 @@ subroutine anatase(at, a, c, u)
 
   !% Transform cell and lattice coordinates by the 3 x 3 matrix `t`
   subroutine transform(at_out, at_in, t)
-    type(Atoms), intent(out)::at_out  !% Output 
-    type(Atoms), intent(in) ::at_in   !% Input 
+    type(Atoms), intent(out)::at_out  !% Output
+    type(Atoms), intent(in) ::at_in   !% Input
     real(dp), intent(in)::t(3,3)
 
     at_out = at_in
@@ -2132,8 +2132,8 @@ subroutine anatase(at, a, c, u)
   !% i.e. if we don\'t include a bond between two atoms it is because it really isn\'t there.
   !%
   !% Pattern matching problems are combinatorial in time required, so the routine itself
-  !% has seven different escape routes; the first six try to quickly fail and prevent the 
-  !% main part of the algorithm from executing at all. 
+  !% has seven different escape routes; the first six try to quickly fail and prevent the
+  !% main part of the algorithm from executing at all.
   !%
   !% 'at' is the atoms structure with connectivity data precalculated to at least first nearest neighbours
   !%
@@ -2154,12 +2154,12 @@ subroutine anatase(at, a, c, u)
   !%>                            2, 1, 2, &
   !%>                            0, 3, 0/), (/3,3/) )
   !%
-  !% and for an alpha carbon 
-  !%>          O   
-  !%>          |   
-  !%>  N - C - C   
-  !%>      | 
-  !%>      H  
+  !% and for an alpha carbon
+  !%>          O
+  !%>          |
+  !%>  N - C - C
+  !%>      |
+  !%>      H
   !%>
   !%> c_alpha = reshape( (/ 6,6,7,8,1, &
   !%>                       2,1,1,2,1, &
@@ -2259,7 +2259,7 @@ subroutine anatase(at, a, c, u)
     allocate(Z(N))
     Z = motif(:,1)
 
-    ! Check symmetry 
+    ! Check symmetry
     if (.not.is_symmetric(A)) then
        call print_title('Non-symmetic adjacency matrix')
        call print(A)
@@ -2310,9 +2310,9 @@ subroutine anatase(at, a, c, u)
 
        if (present(mask)) then
           if (.not.mask(i)) then
-	    call print("   i not in mask, skipping", verbosity=PRINT_ANALYSIS)
-	    cycle
-	   endif
+            call print("   i not in mask, skipping", verbosity=PRINT_ANALYSIS)
+            cycle
+           endif
        end if
 
        !XXXXXXXXXXXXXXXXXXXX
@@ -2322,7 +2322,7 @@ subroutine anatase(at, a, c, u)
        ! Discard atoms which don't match the atomic number of the optimum atom
 
        if (at%Z(i) /= Z(opt_atom)) then
-	  call print("   i has wrong Z to match opt_atom, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i has wrong Z to match opt_atom, skipping", verbosity=PRINT_ANALYSIS)
           discards(1) = discards(1) + 1
           cycle
        end if
@@ -2337,7 +2337,7 @@ subroutine anatase(at, a, c, u)
 
        if (.not.atoms_compatible(at,i,A,Z,opt_atom,nneighb_only=nneighb_only,alt_connect=alt_connect)) then
           discards(2) = discards(2) + 1
-	  call print("   i has incompatible neighbour list, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i has incompatible neighbour list, skipping", verbosity=PRINT_ANALYSIS)
           cycle
        end if
 
@@ -2349,11 +2349,11 @@ subroutine anatase(at, a, c, u)
        call bfs_grow(at,core_raw,max_depth,nneighb_only = nneighb_only, min_images_only = .true.,alt_connect=alt_connect)
        call finalise(core)
        if (present(mask)) then
-	 call select(core, core_raw, mask(int_part(core_raw,1)))
+         call select(core, core_raw, mask(int_part(core_raw,1)))
        else
          core = core_raw
        end if
-      
+
 
        !XXXXXXXXXXXXXXXXXXXX
        !X ESCAPE ROUTE 3
@@ -2361,7 +2361,7 @@ subroutine anatase(at, a, c, u)
 
        ! If the number of atoms in the cluster is less than those in the motif we can't have a match
        if (core%N < N) then
-	  call print("   i's cluster is too small, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i's cluster is too small, skipping", verbosity=PRINT_ANALYSIS)
           discards(3) = discards(3) + 1
           cycle
        end if
@@ -2407,7 +2407,7 @@ subroutine anatase(at, a, c, u)
        call finalise(num_species_motif)
        call finalise(num_species_at)
        if (.not.match) then
-	  call print("   i's cluster has mismatching atom numbers, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i's cluster has mismatching atom numbers, skipping", verbosity=PRINT_ANALYSIS)
           discards(4) = discards(4) + 1
           cycle
        end if
@@ -2419,17 +2419,17 @@ subroutine anatase(at, a, c, u)
        B = 0
        do p = 1, core%N
           k = core%int(1,p)
-	  do ji=1, n_neighbours(at, k, alt_connect=alt_connect)
-	    j = neighbour(at, k, ji, alt_connect=alt_connect)
-	    if (my_nneighb_only) then
-	       if (.not. is_nearest_neighbour(at, k, ji, alt_connect=alt_connect)) cycle
-	    endif
-	    q = find_in_array(core%int(1,1:core%N),j)
-	    if (q > 0) then
-	       B(p,q) = 1
-	       B(q,p) = 1
-	    endif
-	 end do ! ji
+          do ji=1, n_neighbours(at, k, alt_connect=alt_connect)
+            j = neighbour(at, k, ji, alt_connect=alt_connect)
+            if (my_nneighb_only) then
+               if (.not. is_nearest_neighbour(at, k, ji, alt_connect=alt_connect)) cycle
+            endif
+            q = find_in_array(core%int(1,1:core%N),j)
+            if (q > 0) then
+               B(p,q) = 1
+               B(q,p) = 1
+            endif
+         end do ! ji
        end do !p
 
        call print("core", verbosity=PRINT_ANALYSIS)
@@ -2448,7 +2448,7 @@ subroutine anatase(at, a, c, u)
 
        ! If there are atoms which aren't deep enough in the real structure then a match is impossible
        if (max_depth > max_depth_real) then
-	  call print("   i's cluster isn't actually keep enough, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i's cluster isn't actually keep enough, skipping", verbosity=PRINT_ANALYSIS)
           deallocate(B,depth_real)
           discards(5) = discards(5) + 1
           cycle
@@ -2484,7 +2484,7 @@ subroutine anatase(at, a, c, u)
 
        ! Check to see if any atoms have no possibilities
        if (any(sum(M0,dim=2)==0)) then
-	  call print("   i has some neighbor that doesn't match, skipping", verbosity=PRINT_ANALYSIS)
+          call print("   i has some neighbor that doesn't match, skipping", verbosity=PRINT_ANALYSIS)
           deallocate(M0,B)
           discards(6) = discards(6) + 1
           cycle
@@ -2496,49 +2496,49 @@ subroutine anatase(at, a, c, u)
        allocate(M(N,core%N))
        call first_trial_matrix(M0,M)
        match = .false.
-       do 
+       do
 
-	  call print("  check permutation loop start", verbosity=PRINT_ANALYSIS)
+          call print("  check permutation loop start", verbosity=PRINT_ANALYSIS)
           ! For each trial matrix create the permuted adjacency matrix
           C = matmul(M,transpose(matmul(M,B))) ! ***** THIS LINE IS ANOTHER CANDIDATE FOR OPTIMISATION *****
                                                ! Use sparse matrices maybe?
 
           if (all(C==A)) then ! match
-	     !decode trial matrix into atomic indices
-	     allocate(match_indices(N))
-	     do j = 1, N
-		 do k = 1, core%N
-		    if (M(j,k)==1) then
-		       match_indices(j) = core%int(1,k)
-		       exit
-		    end if
-		 end do
-	     end do
+             !decode trial matrix into atomic indices
+             allocate(match_indices(N))
+             do j = 1, N
+                 do k = 1, core%N
+                    if (M(j,k)==1) then
+                       match_indices(j) = core%int(1,k)
+                       exit
+                    end if
+                 end do
+             end do
 
-	     do_append = .true.
-	     ! if mask is present, make sure all atoms are in mask, otherwise skip
-	     if (present(mask)) then
-		 if (.not. all(mask(match_indices))) do_append = .false.
-	     end if
-	     if (do_find_all_possible_matches) then
-	       ! if we're finding all possible matches, skip only if _all_ atoms are already in a motif
-	       if(all(assigned_to_motif(match_indices))) do_append = .false.
-	     else
-	       ! if we're not, skip if _any_ atom is already in a motif
-	       if (any(assigned_to_motif(match_indices))) do_append = .false.
-	     endif
+             do_append = .true.
+             ! if mask is present, make sure all atoms are in mask, otherwise skip
+             if (present(mask)) then
+                 if (.not. all(mask(match_indices))) do_append = .false.
+             end if
+             if (do_find_all_possible_matches) then
+               ! if we're finding all possible matches, skip only if _all_ atoms are already in a motif
+               if(all(assigned_to_motif(match_indices))) do_append = .false.
+             else
+               ! if we're not, skip if _any_ atom is already in a motif
+               if (any(assigned_to_motif(match_indices))) do_append = .false.
+             endif
 
-	     if (do_append) then
-		call append(matches,match_indices)
-		assigned_to_motif(match_indices) = .true.
-		call print("  found match, indices " // match_indices, verbosity=PRINT_ANALYSIS)
-	     endif
-	     deallocate(match_indices)
+             if (do_append) then
+                call append(matches,match_indices)
+                assigned_to_motif(match_indices) = .true.
+                call print("  found match, indices " // match_indices, verbosity=PRINT_ANALYSIS)
+             endif
+             deallocate(match_indices)
 
-	     if (.not. do_find_all_possible_matches) then
-	       call print("  not looking for _all_ matches, finished", verbosity=PRINT_ANALYSIS)
-	       exit
-	     endif
+             if (.not. do_find_all_possible_matches) then
+               call print("  not looking for _all_ matches, finished", verbosity=PRINT_ANALYSIS)
+               exit
+             endif
           end if ! match
 
           call next_trial_matrix(M0,M)
@@ -2550,7 +2550,7 @@ subroutine anatase(at, a, c, u)
           ! If next_trial_matrix deletes the only atom we know to be fitted then all
           ! permutations have been exhausted
           if (M(opt_atom,1)==0) then
-	     call print("   i has no more premutations, leaving loop", verbosity=PRINT_ANALYSIS)
+             call print("   i has no more premutations, leaving loop", verbosity=PRINT_ANALYSIS)
              discards(7) = discards(7) + 1
              exit
           end if
@@ -2818,12 +2818,12 @@ subroutine anatase(at, a, c, u)
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% find supercells of two lattices that are compatible (i.e. 
+  !% find supercells of two lattices that are compatible (i.e.
   !% equal or parallel vectors to some tolerance)
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  subroutine find_compatible_supercells(l1, l2, match_tol, n1, n2, fix_l2, max_m1, max_m2, error) 
+  subroutine find_compatible_supercells(l1, l2, match_tol, n1, n2, fix_l2, max_m1, max_m2, error)
     real(dp), intent(in) :: l1(3,3), l2(3,3) !% lattices of 1st and 2nd structures
     real(dp), intent(in) :: match_tol !% tolerange for good enough match.
     integer, intent(out) :: n1(3,3), n2(3,3) !% output supercells of 1st and 2nd structures that match well enough (new lattices = lattice . n[12] )
@@ -2899,14 +2899,14 @@ subroutine anatase(at, a, c, u)
    call calc_connect(a2_sc)
    do i=1, a2_sc%N
       if (a2_sc%Z(i) == 2) then
-	 do ji=1, n_neighbours(a2_sc, i) 
-	    j = neighbour(a2_sc, i, ji, distance=r)
-	    if (a2_sc%Z(j) /= 1) cycle
-	    if (r/max(norm(a2_sc%pos(:,i)),norm(a2_sc%pos(:,j))) <= match_tol) then
-	       call add_atoms(matches, a2_sc%pos(:,j), 1)
-	       call add_atoms(matches, a2_sc%pos(:,i), 2)
-	    endif
-	 end do
+         do ji=1, n_neighbours(a2_sc, i)
+            j = neighbour(a2_sc, i, ji, distance=r)
+            if (a2_sc%Z(j) /= 1) cycle
+            if (r/max(norm(a2_sc%pos(:,i)),norm(a2_sc%pos(:,j))) <= match_tol) then
+               call add_atoms(matches, a2_sc%pos(:,j), 1)
+               call add_atoms(matches, a2_sc%pos(:,i), 2)
+            endif
+         end do
       endif
    end do
 
@@ -2935,20 +2935,20 @@ subroutine anatase(at, a, c, u)
       new_lattice_2(:,3) = matches%pos(:, i3+1)
       if (cell_volume(new_lattice_2) .feq. 0.0_dp) cycle
       t_normsq = normsq(new_lattice_1(:,1)-new_lattice_2(:,1)) + &
-	 normsq(new_lattice_1(:,2)-new_lattice_2(:,2)) + normsq(new_lattice_1(:,3)-new_lattice_2(:,3))
+         normsq(new_lattice_1(:,2)-new_lattice_2(:,2)) + normsq(new_lattice_1(:,3)-new_lattice_2(:,3))
       t_vol = cell_volume(new_lattice_1) + cell_volume(new_lattice_2)
       better = .false.
       if (t_normsq < best_normsq) then
-	 better = .true.
+         better = .true.
       else if ((t_normsq .feq. best_normsq) .and. (t_vol < best_vol)) then
-	 better = .true.
+         better = .true.
       endif
       if (better) then
-	 best_normsq = t_normsq
-	 best_vol = t_vol
-	 n1(:,:) = floor(matmul(l1_inv,new_lattice_1)+0.5_dp)
-	 n2(:,:) = floor(matmul(l2_inv,new_lattice_2)+0.5_dp)
-	 match = .true.
+         best_normsq = t_normsq
+         best_vol = t_vol
+         n1(:,:) = floor(matmul(l1_inv,new_lattice_1)+0.5_dp)
+         n2(:,:) = floor(matmul(l2_inv,new_lattice_2)+0.5_dp)
+         match = .true.
       endif
    end do
    end do
@@ -3020,10 +3020,10 @@ subroutine anatase(at, a, c, u)
     is_good = .true.
     do i=1, a_dup%N
       if (is_good(i)) then
-	 do ji=1, n_neighbours(a_dup, i)
-	    j = neighbour(a_dup, i, ji, max_dist=0.01_dp)
-	    if (j > i) is_good(j) = .false.
-	 end do
+         do ji=1, n_neighbours(a_dup, i)
+            j = neighbour(a_dup, i, ji, max_dist=0.01_dp)
+            if (j > i) is_good(j) = .false.
+         end do
       endif
     end do
 
@@ -3056,22 +3056,22 @@ subroutine anatase(at, a, c, u)
        n_remove = 0
        remove_list = 0
        do i=1, at%N
-	 if (any(remove_list == i)) cycle
-	 do ji=1, n_neighbours(at, i)
-	    j = neighbour(at, i, ji, distance=r)
-	    if (.not. removable_p(j)) cycle
-	    if (r < distance) then
-	       if (n_remove > 0) then
-		  if (any(remove_list == j)) cycle
-	       endif
-	       n_remove = n_remove + 1
-	       remove_list(n_remove) = j
-	    endif
-	 end do
+         if (any(remove_list == i)) cycle
+         do ji=1, n_neighbours(at, i)
+            j = neighbour(at, i, ji, distance=r)
+            if (.not. removable_p(j)) cycle
+            if (r < distance) then
+               if (n_remove > 0) then
+                  if (any(remove_list == j)) cycle
+               endif
+               n_remove = n_remove + 1
+               remove_list(n_remove) = j
+            endif
+         end do
        end do
 
        if (n_remove > 0) then
-	  call remove_atoms(at, remove_list(1:n_remove), error)
+          call remove_atoms(at, remove_list(1:n_remove), error)
        endif
        PASS_ERROR(error)
     end do
@@ -3090,8 +3090,8 @@ subroutine anatase(at, a, c, u)
     min_neighbour_dist = 1.0e38_dp
     do i=1, at%N
       do ji=1, n_neighbours(at, i)
-	 j = neighbour(at, i, ji, distance=r)
-	 if (r < min_neighbour_dist) min_neighbour_dist = r
+         j = neighbour(at, i, ji, distance=r)
+         if (r < min_neighbour_dist) min_neighbour_dist = r
       end do
     end do
 
@@ -3146,33 +3146,33 @@ subroutine anatase(at, a, c, u)
     do while (any(inner_products > NUMERICAL_ZERO) .and. any_accepted)
       any_accepted = .false.
       do i=1, 4
-	 do j=1, 4
-	    if (inner_products(i,j) > NUMERICAL_ZERO) then
-	       ! i.j is negative, try to flip i
-	       do k=1, 4
-		  if (k == i) then
-		     m_new(:,k) = -1.0_dp * m(:,k)
-		  else if (k == j) then
-		     m_new(:,k) = m(:,k)
-		  else
-		     m_new(:,k) = m(:,k) + m(:,i)
-		  endif
-	       end do
-	       inner_products_new = matmul(transpose(m_new),m_new)
-	       norm_sum_new = inner_products_new(1,1) + inner_products_new(2,2) + inner_products_new(3,3) + inner_products_new(4,4)
-	       inner_products_new(1,1) = -1.0_dp; inner_products_new(2,2) = -1.0_dp; inner_products_new(3,3) = -1.0_dp; inner_products_new(4,4) = -1.0_dp
-	       if (norm_sum_new < norm_sum) then ! improvement, accept
-		  m = m_new
-		  inner_products = inner_products_new
-		  norm_sum = norm_sum_new
-		  any_accepted = .true.
-	       endif
-	    endif ! inner_products(i,j) > NUMERICAL_ZERO
-	  end do
+         do j=1, 4
+            if (inner_products(i,j) > NUMERICAL_ZERO) then
+               ! i.j is negative, try to flip i
+               do k=1, 4
+                  if (k == i) then
+                     m_new(:,k) = -1.0_dp * m(:,k)
+                  else if (k == j) then
+                     m_new(:,k) = m(:,k)
+                  else
+                     m_new(:,k) = m(:,k) + m(:,i)
+                  endif
+               end do
+               inner_products_new = matmul(transpose(m_new),m_new)
+               norm_sum_new = inner_products_new(1,1) + inner_products_new(2,2) + inner_products_new(3,3) + inner_products_new(4,4)
+               inner_products_new(1,1) = -1.0_dp; inner_products_new(2,2) = -1.0_dp; inner_products_new(3,3) = -1.0_dp; inner_products_new(4,4) = -1.0_dp
+               if (norm_sum_new < norm_sum) then ! improvement, accept
+                  m = m_new
+                  inner_products = inner_products_new
+                  norm_sum = norm_sum_new
+                  any_accepted = .true.
+               endif
+            endif ! inner_products(i,j) > NUMERICAL_ZERO
+          end do
        end do
     end do
 
-    if (.not. any_accepted) then 
+    if (.not. any_accepted) then
       call system_abort("Did a whole scan and failed to accept a trial lattice change")
     endif
 
@@ -3219,28 +3219,28 @@ subroutine anatase(at, a, c, u)
       map_nearest_atoms = 0.0_dp
 
       do i=1, at1%N
-	 if (mapping1(i) > 0) cycle
-	 if (find_in_array(types, at1%Z(i)) <= 0) cycle
+         if (mapping1(i) > 0) cycle
+         if (find_in_array(types, at1%Z(i)) <= 0) cycle
 
-	 min_dist = huge(1.0_dp)
-	 do j=1, at2%N
-	    if (mapping2(j) > 0) cycle
-	    if (at1%Z(i) /= at2%Z(j)) cycle
-	    if (find_in_array(types, at2%Z(j)) <= 0) cycle
+         min_dist = huge(1.0_dp)
+         do j=1, at2%N
+            if (mapping2(j) > 0) cycle
+            if (at1%Z(i) /= at2%Z(j)) cycle
+            if (find_in_array(types, at2%Z(j)) <= 0) cycle
 
-	    diff = diff_min_image(at1, i, at2%pos(:,j))
-	    dist = norm(diff)
-	    if (dist < min_dist) then
-	       min_dist = dist
-	       min_diff = diff
-	       min_j = j
-	    end if
-	 end do
-	 mapping1(i) = min_j
-	 mapping_diff1(:,i) = min_diff
-	 mapping2(min_j) = i
-	 mapping_diff2(:,min_j) = -min_diff
-	 map_nearest_atoms = map_nearest_atoms + min_dist**2
+            diff = diff_min_image(at1, i, at2%pos(:,j))
+            dist = norm(diff)
+            if (dist < min_dist) then
+               min_dist = dist
+               min_diff = diff
+               min_j = j
+            end if
+         end do
+         mapping1(i) = min_j
+         mapping_diff1(:,i) = min_diff
+         mapping2(min_j) = i
+         mapping_diff2(:,min_j) = -min_diff
+         map_nearest_atoms = map_nearest_atoms + min_dist**2
       end do
    end function map_nearest_atoms
 
@@ -3257,29 +3257,29 @@ subroutine anatase(at, a, c, u)
       integer :: i, n_nn, i_nn, j_nn, ii
 
       if (.not. assign_pointer(at, "bond_angle_mean", ba_mean)) &
-	 call add_property(at, "bond_angle_mean", 0.0_dp, ptr=ba_mean, overwrite=.true.)
+         call add_property(at, "bond_angle_mean", 0.0_dp, ptr=ba_mean, overwrite=.true.)
       if (.not. assign_pointer(at, "bond_angle_dev", ba_dev)) &
-	 call add_property(at, "bond_angle_dev", 0.0_dp, ptr=ba_dev, overwrite=.true.)
+         call add_property(at, "bond_angle_dev", 0.0_dp, ptr=ba_dev, overwrite=.true.)
       if (.not. assign_pointer(at, "liquid_like", ba_dev)) &
-	 call add_property(at, "liquid_like", .false., ptr=liquid_like, overwrite=.true.)
+         call add_property(at, "liquid_like", .false., ptr=liquid_like, overwrite=.true.)
 
       do i=1, at%N
-	 ba_sum = 0.0_dp
-	 ba_sum_sq = 0.0_dp
-	 n_nn = n_neighbours(at,i)
-	 do i_nn=1, n_nn
-	    ii = neighbour(at, i, i_nn, cosines=i_rv)
-	    do j_nn=i_nn+1, n_nn
-	       ii = neighbour(at, i, j_nn, cosines=j_rv)
-	       ba = DEGREES_PER_RADIAN*acos(sum(i_rv*j_rv))
-	       ba_sum = ba_sum + ba
-	       ba_sum_sq = ba_sum_sq + ba**2
-	    end do
-	 end do
-	 n_angles = n_nn*(n_nn-1)/2
-	 ba_mean(i) = ba_sum/n_angles
-	 ba_dev(i) = sqrt(ba_sum_sq/n_angles-ba_mean(i)**2)
-	 liquid_like(i) = (ba_mean(i) < 97.6_dp+(111.5_dp-97.6_dp)/35.0_dp*ba_dev(i))
+         ba_sum = 0.0_dp
+         ba_sum_sq = 0.0_dp
+         n_nn = n_neighbours(at,i)
+         do i_nn=1, n_nn
+            ii = neighbour(at, i, i_nn, cosines=i_rv)
+            do j_nn=i_nn+1, n_nn
+               ii = neighbour(at, i, j_nn, cosines=j_rv)
+               ba = DEGREES_PER_RADIAN*acos(sum(i_rv*j_rv))
+               ba_sum = ba_sum + ba
+               ba_sum_sq = ba_sum_sq + ba**2
+            end do
+         end do
+         n_angles = n_nn*(n_nn-1)/2
+         ba_mean(i) = ba_sum/n_angles
+         ba_dev(i) = sqrt(ba_sum_sq/n_angles-ba_mean(i)**2)
+         liquid_like(i) = (ba_mean(i) < 97.6_dp+(111.5_dp-97.6_dp)/35.0_dp*ba_dev(i))
       end do
 
    end subroutine bond_angle_mean_dev
@@ -3311,39 +3311,39 @@ subroutine anatase(at, a, c, u)
       do i1 = -my_max_n, my_max_n
       do i2 = -my_max_n, my_max_n
       do i3 = -my_max_n, my_max_n
-	 v1 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
-	 do j1 = -my_max_n, my_max_n
-	 do j2 = -my_max_n, my_max_n
-	 do j3 = -my_max_n, my_max_n
-	    v2 = lat(:,1)*j1 + lat(:,2)*j2 + lat(:,3)*j3
-	    v1_cross_v2 = (v1 .cross. v2)
-	    v1_cross_v2_norm = norm(v1_cross_v2)
+         v1 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
+         do j1 = -my_max_n, my_max_n
+         do j2 = -my_max_n, my_max_n
+         do j3 = -my_max_n, my_max_n
+            v2 = lat(:,1)*j1 + lat(:,2)*j2 + lat(:,3)*j3
+            v1_cross_v2 = (v1 .cross. v2)
+            v1_cross_v2_norm = norm(v1_cross_v2)
 
-	    if (v1_cross_v2_norm <= my_tol) cycle ! v1 and v2 are parallel
-	    if ((v1_cross_v2 .dot. surf_v_hat)/v1_cross_v2_norm < 1.0_dp-my_tol) cycle ! v1 cross v2 is not parallel to surf_v
+            if (v1_cross_v2_norm <= my_tol) cycle ! v1 and v2 are parallel
+            if ((v1_cross_v2 .dot. surf_v_hat)/v1_cross_v2_norm < 1.0_dp-my_tol) cycle ! v1 cross v2 is not parallel to surf_v
 
-	    if (v1_cross_v2_norm < smallest_so_far-my_tol) then ! v1 cross v2 is smallest than best so far, pick it
-	       i_out(:,1) = (/ i1, i2, i3 /)
-	       i_out(:,2) = (/ j1, j2, j3 /)
-	       smallest_so_far = v1_cross_v2_norm
-	       most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
-	    else if (v1_cross_v2_norm <= smallest_so_far + my_tol) then ! v1 cross v2 is as good as best so far, check for normalness
-	       if (abs((v1 .dot. v2) / (norm(v1)*norm(v2))) < most_normal_so_far) then ! v1 more normal to v2, pick them
-		  i_out(:,1) = (/ i1, i2, i3 /)
-		  i_out(:,2) = (/ j1, j2, j3 /)
-		  smallest_so_far = v1_cross_v2_norm
-		  most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
-	       endif
-	    endif
-	 end do
-	 end do
-	 end do
+            if (v1_cross_v2_norm < smallest_so_far-my_tol) then ! v1 cross v2 is smallest than best so far, pick it
+               i_out(:,1) = (/ i1, i2, i3 /)
+               i_out(:,2) = (/ j1, j2, j3 /)
+               smallest_so_far = v1_cross_v2_norm
+               most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
+            else if (v1_cross_v2_norm <= smallest_so_far + my_tol) then ! v1 cross v2 is as good as best so far, check for normalness
+               if (abs((v1 .dot. v2) / (norm(v1)*norm(v2))) < most_normal_so_far) then ! v1 more normal to v2, pick them
+                  i_out(:,1) = (/ i1, i2, i3 /)
+                  i_out(:,2) = (/ j1, j2, j3 /)
+                  smallest_so_far = v1_cross_v2_norm
+                  most_normal_so_far = abs((v1 .dot. v2) / (norm(v1)*norm(v2)))
+               endif
+            endif
+         end do
+         end do
+         end do
       end do
       end do
       end do
 
       if (smallest_so_far >= 1.0e38_dp) then
-	 call system_abort("failed to find a proper unit cell v1,v2")
+         call system_abort("failed to find a proper unit cell v1,v2")
       endif
 
       v1 = matmul(lat, i_out(:,1))
@@ -3357,28 +3357,28 @@ subroutine anatase(at, a, c, u)
       do i1 = -my_max_n, my_max_n
       do i2 = -my_max_n, my_max_n
       do i3 = -my_max_n, my_max_n
-	 v3 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
+         v3 = lat(:,1)*i1 + lat(:,2)*i2 + lat(:,3)*i3
 
-	 cell(:,3) = v3
-	 cell_vol = cell_volume(cell)
-	 if (cell_vol < my_tol) cycle ! v3 is in v1-v2 plane
-	 if (my_third_vec_normal .and. abs(v1_cross_v2 .dot. v3)/(v1_cross_v2_norm*norm(v3)) < 1.0_dp-my_tol) cycle ! need v3 normal to surface, and it's not sufficiently parallel to v1 x v2
-	 if (cell_vol < smallest_so_far-my_tol) then ! volume is smaller, pick it
-	    i_out(:,3) = (/ i1, i2, i3 /)
-	    smallest_so_far = cell_vol
-	    most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
-	 else if (cell_vol <= smallest_so_far+my_tol) then ! equal, check for normalness
-	    if (abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm)) > most_normal_so_far) then ! this v3 more normal to surface (i.e. more parallel to v1_cross_v2), pick it
-	       i_out(:,3) = (/ i1, i2, i3 /)
-	       smallest_so_far = cell_vol
-	       most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
-	    endif
-	 endif
+         cell(:,3) = v3
+         cell_vol = cell_volume(cell)
+         if (cell_vol < my_tol) cycle ! v3 is in v1-v2 plane
+         if (my_third_vec_normal .and. abs(v1_cross_v2 .dot. v3)/(v1_cross_v2_norm*norm(v3)) < 1.0_dp-my_tol) cycle ! need v3 normal to surface, and it's not sufficiently parallel to v1 x v2
+         if (cell_vol < smallest_so_far-my_tol) then ! volume is smaller, pick it
+            i_out(:,3) = (/ i1, i2, i3 /)
+            smallest_so_far = cell_vol
+            most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
+         else if (cell_vol <= smallest_so_far+my_tol) then ! equal, check for normalness
+            if (abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm)) > most_normal_so_far) then ! this v3 more normal to surface (i.e. more parallel to v1_cross_v2), pick it
+               i_out(:,3) = (/ i1, i2, i3 /)
+               smallest_so_far = cell_vol
+               most_normal_so_far = abs((v3 .dot. v1_cross_v2)/(norm(v3)*v1_cross_v2_norm))
+            endif
+         endif
       end do
       end do
       end do
       if (smallest_so_far >= 1.0e38_dp) then
-	 call system_abort("failed to find a proper unit cell v3")
+         call system_abort("failed to find a proper unit cell v3")
       endif
 
    end subroutine surface_unit_cell
@@ -3493,7 +3493,7 @@ subroutine void_analysis(at, grid_size, cutoff, grid, radii)
   ! TODO agglomerative merging of overlapping grid points
 
   !deallocate(grid, radii)
- 
+
 end subroutine void_analysis
 
 end module structures_module

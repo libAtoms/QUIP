@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_FB module  
+!X IPModel_FB module
 !%
 !% Module for Flikkema \& Bromley interatomic potential
 !%
@@ -54,14 +54,14 @@ use QUIP_Common_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_FB
 type IPModel_FB
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
+  integer :: n_types = 0         !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
@@ -129,7 +129,7 @@ subroutine IPModel_FB_Finalise(this)
 end subroutine IPModel_FB_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -138,8 +138,8 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   type(IPModel_FB), intent(in) :: this
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
-  real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -204,7 +204,7 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   do i = 1, at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -218,18 +218,18 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       if (r_ij .feq. 0.0_dp) cycle
       tj = get_type(this%type_of_atomic_num, at%Z(j))
       if (present(e) .or. present(local_e)) then
-	de = 0.5_dp * (this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) - this%C(ti,tj) / r_ij**6)
-	if (present(local_e)) local_e(i) = local_e(i) + de
-	if (present(e)) e = e + de
+        de = 0.5_dp * (this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) - this%C(ti,tj) / r_ij**6)
+        if (present(local_e)) local_e(i) = local_e(i) + de
+        if (present(e)) e = e + de
       endif
       if (present(f) .or. present(virial)) then
-	de_dr = 0.5_dp * (-this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) / this%B(ti,tj) + &
+        de_dr = 0.5_dp * (-this%A(ti,tj) * exp( - r_ij / this%B(ti,tj) ) / this%B(ti,tj) + &
               & 6.0_dp * this%C(ti,tj) / r_ij**7 )
-	if (present(f)) then
-	  f(:,i) = f(:,i) + de_dr*u_ij
-	  f(:,j) = f(:,j) - de_dr*u_ij
-	endif
-	if (present(virial) .or. present(local_virial)) virial_i = de_dr*(u_ij .outer. u_ij)*r_ij
+        if (present(f)) then
+          f(:,i) = f(:,i) + de_dr*u_ij
+          f(:,j) = f(:,j) - de_dr*u_ij
+        endif
+        if (present(virial) .or. present(local_virial)) virial_i = de_dr*(u_ij .outer. u_ij)*r_ij
         if (present(virial))  virial = virial - virial_i
         if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
       endif
@@ -246,20 +246,20 @@ subroutine IPModel_FB_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 end subroutine IPModel_FB_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for XML stanza is given below.
 !%
-!%> 
+!%>
 !%> <FB_potential>
 !%>    <!-- Flikkema & Bromley  -->
 !%>    <Potential label="FB_Potential" init_args="Sum init_args_pot1={IP FB} init_args_pot2={IP Coulomb}"/>
-!%> 
+!%>
 !%>    <Coulomb_params n_types="2" cutoff="6.0" method="ewald" label="default">
 !%>       <per_type_data type="1" atomic_num="8" charge="-1.2"/>
 !%>       <per_type_data type="2" atomic_num="14" charge="2.4"/>
 !%>    </Coulomb_params>
-!%> 
+!%>
 !%>    <FB_params n_types="2" label="default">
 !%>       <per_type_data type="1" atomic_num="8"  />
 !%>       <per_type_data type="2" atomic_num="14" />
@@ -267,16 +267,16 @@ end subroutine IPModel_FB_Calc
 !%>       <per_pair_data atomic_num_i="8" atomic_num_j="14" A="10454.202" B="0.208" C="63.047" r_cut="6.0" />
 !%>       <per_pair_data atomic_num_i="14" atomic_num_j="14" A="79502.113" B="0.201" C="446.780" r_cut="6.0" />
 !%>    </FB_params>
-!%> 
+!%>
 !%> </FB_potential>
-!%> 
+!%>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -296,10 +296,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -307,21 +307,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in FB_params")
+        call system_abort("Can't find n_types in FB_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%cutoff
+        read (value, *) parse_ip%cutoff
       else
-	call system_abort("Can't find cutoff in FB_params")
+        call system_abort("Can't find cutoff in FB_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -349,7 +349,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -388,9 +388,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'FB_params') then
@@ -426,7 +426,7 @@ end subroutine IPModel_FB_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of FB parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

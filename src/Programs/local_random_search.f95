@@ -189,8 +189,8 @@ implicit none
         status = assign_pointer(at, 'local_e', atlocale)
         x = reshape(at%pos, (/at%N*3/))
         atlocale = elj(x)
-	call set_value(at%properties, "comment", "castepbfgs")
-	call set_value(at%properties, "ljenergy", sum(atlocale))
+        call set_value(at%properties, "comment", "castepbfgs")
+        call set_value(at%properties, "ljenergy", sum(atlocale))
         call write(at, movie)
 
         !r = 0

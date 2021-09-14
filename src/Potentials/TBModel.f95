@@ -29,14 +29,14 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X TBModel module 
+!X TBModel module
 !X
 !% General object which handles the possible TB scheme, addressing
-!% the calls to the right modules. 
+!% the calls to the right modules.
 !% The available models are the following
 !%   \begin{itemize}
 !%    \item    "NRL_TB", whose related object is \texttt{TBModel_NRL_TB}
-!%    \item    "Bowler",  whose related object is \texttt{TBModel_Bowler} 
+!%    \item    "Bowler",  whose related object is \texttt{TBModel_Bowler}
 !%    \item    "DFTB" , whose related object is \texttt{TBModel_DFTB}
 !%    \item    "GSP" , whose related object is \texttt{TBModel_GSP}
 !%   \end{itemize}
@@ -566,7 +566,7 @@ function TBModel_has_Fermi_E(out_Fermi_E, this, Fermi_E, args_str)
       call initialise(params)
       call param_register(params, 'fermi_e', ''//out_fermi_E, out_fermi_E, has_value_target=has_str_fermi_e, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_E args_str')) then
-	call system_abort("TBModel_has_fermi_e failed to parse args_str='"//trim(args_str)//"'")
+        call system_abort("TBModel_has_fermi_e failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
       if (has_str_fermi_e) TBModel_has_fermi_E = .true.
@@ -598,7 +598,7 @@ function TBModel_has_Fermi_T(out_Fermi_T, this, Fermi_T, args_str)
       call initialise(params)
       call param_register(params, 'fermi_T', ''//out_fermi_T, out_fermi_T, has_value_target=has_str_fermi_T, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_Fermi_T args_str')) then
-	call system_abort("TBModel_has_fermi_T failed to parse args_str='"//trim(args_str)//"'")
+        call system_abort("TBModel_has_fermi_T failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
       if (has_str_fermi_T) TBModel_has_fermi_T = .true.
@@ -630,7 +630,7 @@ function TBModel_has_band_width(out_band_width, this, band_width, args_str)
       call initialise(params)
       call param_register(params, 'band_width', ''//out_band_width, out_band_width, has_value_target=has_str_band_width, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_band_width args_str')) then
-	call system_abort("TBModel_has_band_width failed to parse args_str='"//trim(args_str)//"'")
+        call system_abort("TBModel_has_band_width failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
       if (has_str_band_width) TBModel_has_band_width = .true.
@@ -662,7 +662,7 @@ function TBModel_has_k_density(out_k_density, this, k_density, args_str)
       call initialise(params)
       call param_register(params, 'k_density', ''//out_k_density, out_k_density, has_value_target=has_str_k_density, help_string="No help yet.  This source file was $LastChangedBy$")
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='TBModel_has_k_density args_str')) then
-	call system_abort("TBModel_has_k_density failed to parse args_str='"//trim(args_str)//"'")
+        call system_abort("TBModel_has_k_density failed to parse args_str='"//trim(args_str)//"'")
       endif
       call finalise(params)
       if (has_str_k_density) TBModel_has_k_density = .true.

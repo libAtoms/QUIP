@@ -60,11 +60,11 @@ contains
       ! random initial guess
       cluster_indices = 0
       do i=1, k
-	 call random_number(rrv); rv = 1+floor(rrv*n)
-	 do while (any(cluster_indices == rv))
-	    call random_number(rrv); rv = 1+floor(rrv*n)
-	 end do
-	 cluster_indices(i) = rv
+         call random_number(rrv); rv = 1+floor(rrv*n)
+         do while (any(cluster_indices == rv))
+            call random_number(rrv); rv = 1+floor(rrv*n)
+         end do
+         cluster_indices(i) = rv
       end do
       k_means = x(cluster_indices)
 
@@ -72,57 +72,57 @@ contains
 
       ! evaluate initial assignments
       do j=1, n
-	 closest_i = 0
-	 closest_r = HUGE(1.0_dp)
-	 do i=1, k
-	    r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
-	    if (r < closest_r) then
-	       closest_r = r
-	       closest_i = i
-	    endif
-	 end do
-	 a(j) = closest_i
+         closest_i = 0
+         closest_r = HUGE(1.0_dp)
+         do i=1, k
+            r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
+            if (r < closest_r) then
+               closest_r = r
+               closest_i = i
+            endif
+         end do
+         a(j) = closest_i
       end do
 
       prev_a = 0
       do while (any(a /= prev_a))
-	 prev_a = a
+         prev_a = a
 
-	 ! update positions
-	 do i=1, k
-	    t_sum = 0.0_dp
-	    do j=1, n
-	       if (a(j) == i) t_sum = t_sum + x(j)
-	    end do
-	    k_means(i) = t_sum / real(count(a == i),dp)
-	 end do
+         ! update positions
+         do i=1, k
+            t_sum = 0.0_dp
+            do j=1, n
+               if (a(j) == i) t_sum = t_sum + x(j)
+            end do
+            k_means(i) = t_sum / real(count(a == i),dp)
+         end do
 
-	 ! update assignments
-	 do j=1, n
-	    closest_i = 0
-	    closest_r = HUGE(1.0_dp)
-	    do i=1, k
-	       r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
-	       if (r < closest_r) then
-		  closest_r = r
-		  closest_i = i
-	       endif
-	    end do
-	    a(j) = closest_i
-	 end do
+         ! update assignments
+         do j=1, n
+            closest_i = 0
+            closest_r = HUGE(1.0_dp)
+            do i=1, k
+               r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
+               if (r < closest_r) then
+                  closest_r = r
+                  closest_i = i
+               endif
+            end do
+            a(j) = closest_i
+         end do
       end do
 
       do i=1, k
-	 closest_i = 0
-	 closest_r = HUGE(1.0_dp)
-	 do j=1, n
-	    r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
-	    if (r < closest_r) then
-	       closest_r = r
-	       closest_j = j
-	    endif
-	 end do
-	 cluster_indices(i) = closest_j
+         closest_i = 0
+         closest_r = HUGE(1.0_dp)
+         do j=1, n
+            r = dist((/x(j)/), (/k_means(i)/),  (/periodicity/))
+            if (r < closest_r) then
+               closest_r = r
+               closest_j = j
+            endif
+         end do
+         cluster_indices(i) = closest_j
       end do
 
       deallocate(a, prev_a, k_means)
@@ -149,11 +149,11 @@ contains
       ! random initial guess
       cluster_indices = 0
       do i=1, k
-	 call random_number(rrv); rv = 1+floor(rrv*n)
-	 do while (any(cluster_indices == rv))
-	    call random_number(rrv); rv = 1+floor(rrv*n)
-	 end do
-	 cluster_indices(i) = rv
+         call random_number(rrv); rv = 1+floor(rrv*n)
+         do while (any(cluster_indices == rv))
+            call random_number(rrv); rv = 1+floor(rrv*n)
+         end do
+         cluster_indices(i) = rv
       end do
       k_means(:,:) = x(:,cluster_indices(:))
 
@@ -161,57 +161,57 @@ contains
 
       ! evaluate initial assignments
       do j=1, n
-	 closest_i = 0
-	 closest_r = HUGE(1.0_dp)
-	 do i=1, k
-	    r = dist(x(:,j), k_means(:,i), periodicity(:))
-	    if (r < closest_r) then
-	       closest_r = r
-	       closest_i = i
-	    endif
-	 end do
-	 a(j) = closest_i
+         closest_i = 0
+         closest_r = HUGE(1.0_dp)
+         do i=1, k
+            r = dist(x(:,j), k_means(:,i), periodicity(:))
+            if (r < closest_r) then
+               closest_r = r
+               closest_i = i
+            endif
+         end do
+         a(j) = closest_i
       end do
 
       prev_a = 0
       do while (any(a /= prev_a))
-	 prev_a = a
+         prev_a = a
 
-	 ! update positions
-	 do i=1, k
-	    t_sum = 0.0_dp
-	    do j=1, n
-	       if (a(j) == i) t_sum(:) = t_sum(:) + x(:,j)
-	    end do
-	    k_means(:,i) = t_sum(:) / real(count(a == i),dp)
-	 end do
+         ! update positions
+         do i=1, k
+            t_sum = 0.0_dp
+            do j=1, n
+               if (a(j) == i) t_sum(:) = t_sum(:) + x(:,j)
+            end do
+            k_means(:,i) = t_sum(:) / real(count(a == i),dp)
+         end do
 
-	 ! update assignments
-	 do j=1, n
-	    closest_i = 0
-	    closest_r = HUGE(1.0_dp)
-	    do i=1, k
-	       r = dist(x(:,j), k_means(:,i), periodicity(:))
-	       if (r < closest_r) then
-		  closest_r = r
-		  closest_i = i
-	       endif
-	    end do
-	    a(j) = closest_i
-	 end do
+         ! update assignments
+         do j=1, n
+            closest_i = 0
+            closest_r = HUGE(1.0_dp)
+            do i=1, k
+               r = dist(x(:,j), k_means(:,i), periodicity(:))
+               if (r < closest_r) then
+                  closest_r = r
+                  closest_i = i
+               endif
+            end do
+            a(j) = closest_i
+         end do
       end do
 
       do i=1, k
-	 closest_i = 0
-	 closest_r = HUGE(1.0_dp)
-	 do j=1, n
-	    r = dist(x(:,j), k_means(:,i), periodicity(:))
-	    if (r < closest_r) then
-	       closest_r = r
-	       closest_j = j
-	    endif
-	 end do
-	 cluster_indices(i) = closest_j
+         closest_i = 0
+         closest_r = HUGE(1.0_dp)
+         do j=1, n
+            r = dist(x(:,j), k_means(:,i), periodicity(:))
+            if (r < closest_r) then
+               closest_r = r
+               closest_j = j
+            endif
+         end do
+         cluster_indices(i) = closest_j
       end do
 
       deallocate(a, prev_a, k_means)
@@ -227,17 +227,17 @@ contains
       integer :: i
 
       if (any(periodicity /= 0.0_dp)) then
-	 dist = 0.0_dp
-	 do i=1, size(x0)
-	    if (periodicity(i) /= 0.0_dp) then
-	       dist = dist + 4.0_dp*sin((2.0_dp*3.14159265358979_dp/periodicity(i))*(x0(i)-x1(i))/2.0_dp)**2
-	    else
-	       dist = dist + (x0(i)-x1(i))**2
-	    endif
-	 end do
-	 dist = sqrt(dist)
+         dist = 0.0_dp
+         do i=1, size(x0)
+            if (periodicity(i) /= 0.0_dp) then
+               dist = dist + 4.0_dp*sin((2.0_dp*3.14159265358979_dp/periodicity(i))*(x0(i)-x1(i))/2.0_dp)**2
+            else
+               dist = dist + (x0(i)-x1(i))**2
+            endif
+         end do
+         dist = sqrt(dist)
       else
-	 dist = sqrt(sum((x0(:)-x1(:))**2))
+         dist = sqrt(sum((x0(:)-x1(:))**2))
       endif
 
    end function dist

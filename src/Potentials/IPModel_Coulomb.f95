@@ -156,7 +156,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
      endif
   endif
 
- 
+
   !  Add initialisation code here
 
 end subroutine IPModel_Coulomb_Initialise_str
@@ -202,7 +202,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    type(IPModel_Coulomb), intent(inout):: this
    type(Atoms), intent(inout)  :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -274,7 +274,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       charge => my_charge
       charge = 0.0_dp
       do i = 1, at%N
-         charge(i) = this%charge(this%type_of_atomic_num(at%Z(i))) 
+         charge(i) = this%charge(this%type_of_atomic_num(at%Z(i)))
       enddo
    endif
 
@@ -291,7 +291,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_coulomb_cutoff, error=error)
    case(IPCoulomb_Method_Ewald_NB)
       if (present(f) .or. present(virial) .or. present(local_virial)) then
-	 RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
+         RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
       endif
       allocate(gamma_mat(at%n,at%n))
       gamma_mat = 0.0_dp
@@ -301,26 +301,26 @@ call print(gamma_mat)
       if (present(e)) e = 0.5_dp*sum(charge*matmul(gamma_mat, charge))
       if (present(local_e)) local_e = 0.5_dp*charge*matmul(gamma_mat, charge)
       if (do_pairwise_by_Z) then
-	 allocate(Z_s(at%n))
-	 Z_s = at%Z
-	 call sort_array(Z_s)
-	 call uniq(Z_s, Z_u)
-	 deallocate(Z_s)
+         allocate(Z_s(at%n))
+         Z_s = at%Z
+         call sort_array(Z_s)
+         call uniq(Z_s, Z_u)
+         deallocate(Z_s)
 
 call print("local_pot "//matmul(gamma_mat, charge))
 
-	 n_uniq_Zs = size(Z_u)
-	 if (has_property(at, "local_e_pairwise_by_Z")) call remove_property(at, "local_e_pairwise_by_Z")
-	 call add_property(at, "local_e_pairwise_by_Z", 0.0_dp, n_cols=n_uniq_Zs, ptr2 = local_e_by_Z)
-	 allocate(local_e_contrib(at%N))
-	 do i=1, at%N
-	    local_e_contrib = 0.5_dp * gamma_mat(i,:) * charge(:) * charge(i)
+         n_uniq_Zs = size(Z_u)
+         if (has_property(at, "local_e_pairwise_by_Z")) call remove_property(at, "local_e_pairwise_by_Z")
+         call add_property(at, "local_e_pairwise_by_Z", 0.0_dp, n_cols=n_uniq_Zs, ptr2 = local_e_by_Z)
+         allocate(local_e_contrib(at%N))
+         do i=1, at%N
+            local_e_contrib = 0.5_dp * gamma_mat(i,:) * charge(:) * charge(i)
 call print("local_e_contrib "//i //" "//local_e_contrib)
-	    do i_Z = 1, n_uniq_Zs
-	       local_e_by_Z(i_Z,i) = sum(local_e_contrib, mask=(at%Z == Z_u(i_Z)))
-	    end do
-	 end do
-	 deallocate(local_e_contrib)
+            do i_Z = 1, n_uniq_Zs
+               local_e_by_Z(i_Z,i) = sum(local_e_contrib, mask=(at%Z == Z_u(i_Z)))
+            end do
+         end do
+         deallocate(local_e_contrib)
 
       endif
       deallocate(gamma_mat)
@@ -404,7 +404,7 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
 end subroutine IPModel_Coulomb_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

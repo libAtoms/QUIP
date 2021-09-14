@@ -248,7 +248,7 @@ contains
           else
              call Initialise(this%ip, args_str, param_str, mpi_obj, error=error)
           end if
-	  PASS_ERROR(error)
+          PASS_ERROR(error)
        else
           RAISE_ERROR('Potential_Simple_initialise: no param_str present during IP init', error)
        endif
@@ -261,7 +261,7 @@ contains
           else
              call Initialise(this%tb, args_str, param_str, mpi_obj=mpi_obj, error=error)
           end if
-	  PASS_ERROR(error)
+          PASS_ERROR(error)
        else
           RAISE_ERROR('Potential_Simple_initialise: no param_str present during TB init', error)
        endif
@@ -558,9 +558,9 @@ contains
           hybrid_mark(i) = HYBRID_ACTIVE_MARK
           call create_hybrid_weights(at, cluster_args_str)
           cluster_info = create_cluster_info_from_mark(at, cluster_args_str,mark_name='hybrid_mark'//trim(run_suffix),error=error)
-	  PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
-	  call carve_cluster(at, cluster_args_str, cluster_info, cluster)
-	  call finalise(cluster_info)
+          PASS_ERROR_WITH_INFO("potential_calc: creating little cluster ="//i//" from hybrid_mark", error)
+          call carve_cluster(at, cluster_args_str, cluster_info, cluster)
+          call finalise(cluster_info)
 
           ! Reassign pointers - create_cluster_info_from_mark() might have broken them
           if (has_property(at, 'hybrid_mark'//trim(run_suffix))) &
@@ -568,21 +568,21 @@ contains
           if (has_property(at, 'weight_region1'//trim(run_suffix))) &
                dummy = assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)
 
-	  if (current_verbosity() >= PRINT_NERD) then
-	    call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
-	  endif
+          if (current_verbosity() >= PRINT_NERD) then
+            call write(cluster, 'stdout', prefix='LITTLE_CLUSTER')
+          endif
           call print('ARGS0 | '//cluster_args_str,PRINT_VERBOSE)
 
           ! Disable MPI for duration of calc() call, since we're doing parallelisation at level of clusters
           call calc(this, cluster, args_str=new_args_str)
-	  if (.not. assign_pointer(cluster, trim(calc_force), f_cluster)) then
-	     RAISE_ERROR('Potential_Simple_calc: small_clusters failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
-	  endif
+          if (.not. assign_pointer(cluster, trim(calc_force), f_cluster)) then
+             RAISE_ERROR('Potential_Simple_calc: small_clusters failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
+          endif
 
           if (do_rescale_r)  f_cluster = f_cluster*r_scale
           if (do_rescale_E)  f_cluster = f_cluster*E_scale
           at_force_ptr(:,i) = f_cluster(:,1)
-	   call finalise(cluster)
+           call finalise(cluster)
        end do
 
        if (this%mpi%active) then
@@ -646,7 +646,7 @@ contains
        call print('Potential_Simple_calc: constructing single_cluster', PRINT_VERBOSE)
 
        if (do_carve_cluster) then
-	 call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
+         call print('Potential_Simple_calc: carving cluster', PRINT_VERBOSE)
 
          if (has_cluster_box_buffer) then
             call print('Doing quick cluster carving using cluster box buffer '//cluster_box_buffer//' A')
@@ -688,34 +688,34 @@ contains
          if (current_verbosity() >= PRINT_NERD) then
             call write(cluster, 'stdout', prefix='CLUSTER')
          endif
-	 if (.not. assign_pointer(cluster, 'index'//trim(run_suffix), cluster_index)) then
-	      RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
-	 endif
-	 if (.not. assign_pointer(cluster, 'termindex'//trim(run_suffix), termindex)) then
-	      RAISE_ERROR('Potential_Simple_calc: cluster is missing termindex property', error)
-	 endif
+         if (.not. assign_pointer(cluster, 'index'//trim(run_suffix), cluster_index)) then
+              RAISE_ERROR('Potential_Simple_calc: cluster is missing index property', error)
+         endif
+         if (.not. assign_pointer(cluster, 'termindex'//trim(run_suffix), termindex)) then
+              RAISE_ERROR('Potential_Simple_calc: cluster is missing termindex property', error)
+         endif
          call print('ARGS1 | '//cluster_args_str,PRINT_VERBOSE)
 
-	 call calc(this, cluster, args_str=new_args_str, error=error)
-	 PASS_ERROR_WITH_INFO('potential_calc after calc in carve_cluster', error)
+         call calc(this, cluster, args_str=new_args_str, error=error)
+         PASS_ERROR_WITH_INFO('potential_calc after calc in carve_cluster', error)
 
-	 call assign_property_pointer(cluster, trim(calc_force), f_cluster, error=error)
-	 PASS_ERROR_WITH_INFO('Potential_Simple_calc: single_cluster failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
-	 if (do_rescale_r)  f_cluster = f_cluster*r_scale
+         call assign_property_pointer(cluster, trim(calc_force), f_cluster, error=error)
+         PASS_ERROR_WITH_INFO('Potential_Simple_calc: single_cluster failed to get a valid '//trim(calc_force)//' property in cluster from calc',error)
+         if (do_rescale_r)  f_cluster = f_cluster*r_scale
          if (do_rescale_E)  f_cluster = f_cluster*E_scale
 
          ! Reassign pointers - create_cluster_info_from_mark() might have broken them
          if (has_property(at, 'hybrid_mark'//trim(run_suffix))) &
               dummy = assign_pointer(at, 'hybrid_mark'//trim(run_suffix), hybrid_mark)
 
-	 ! copy forces for all active and transition atoms
-	 at_force_ptr = 0.0_dp
-	 do i=1,cluster%N
-	    if (termindex(i) /= 0) cycle ! skip termination atoms
-	    if (hybrid_mark(cluster_index(i)) == HYBRID_ACTIVE_MARK .or. &
-		hybrid_mark(cluster_index(i)) == HYBRID_TRANS_MARK) &
-		  at_force_ptr(:,cluster_index(i)) = f_cluster(:,i)
-	 end do
+         ! copy forces for all active and transition atoms
+         at_force_ptr = 0.0_dp
+         do i=1,cluster%N
+            if (termindex(i) /= 0) cycle ! skip termination atoms
+            if (hybrid_mark(cluster_index(i)) == HYBRID_ACTIVE_MARK .or. &
+                hybrid_mark(cluster_index(i)) == HYBRID_TRANS_MARK) &
+                  at_force_ptr(:,cluster_index(i)) = f_cluster(:,i)
+         end do
          nullify(f_cluster)
 
          ! might need to copy some params from cluster to main Atoms object, for compatibility with filepot
@@ -782,63 +782,63 @@ contains
             end do
          end if
 
-	 call finalise(cluster)
+         call finalise(cluster)
        else ! not do_carve_cluster
-	 call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
-	 cluster_info = create_cluster_info_from_mark(at, trim(cluster_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(run_suffix), error=error)
-	 PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
+         call print('Potential_Simple_calc: not carving cluster', PRINT_VERBOSE)
+         cluster_info = create_cluster_info_from_mark(at, trim(cluster_args_str) // " cluster_same_lattice", cut_bonds, mark_name='hybrid_mark'//trim(run_suffix), error=error)
+         PASS_ERROR_WITH_INFO('potential_calc creating cluster info from hybrid mark with carve_cluster=F', error)
 
-	 call add_property(at, 'cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
-	 call add_property(at, 'old_cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
-	 if (.not. assign_pointer(at, 'cluster_mark'//trim(run_suffix), cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(run_suffix)//" pointer", error)
-	 endif
-	 if (.not. assign_pointer(at, 'old_cluster_mark'//trim(run_suffix), old_cluster_mark_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark"//trim(run_suffix)//" pointer", error)
-	 endif
-	 old_cluster_mark_p = cluster_mark_p
-	 cluster_mark_p = HYBRID_NO_MARK
-	 if (.not. assign_pointer(at, 'modified_hybrid_mark'//trim(run_suffix), modified_hybrid_mark)) then
-	   cluster_mark_p = hybrid_mark
-	 else
-	   cluster_mark_p = modified_hybrid_mark
-	 endif
+         call add_property(at, 'cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
+         call add_property(at, 'old_cluster_mark'//trim(run_suffix), HYBRID_NO_MARK)
+         if (.not. assign_pointer(at, 'cluster_mark'//trim(run_suffix), cluster_mark_p)) then
+           RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cluster_mark"//trim(run_suffix)//" pointer", error)
+         endif
+         if (.not. assign_pointer(at, 'old_cluster_mark'//trim(run_suffix), old_cluster_mark_p)) then
+           RAISE_ERROR("Potential_Simple_calc failed to assing pointer for old_cluster_mark"//trim(run_suffix)//" pointer", error)
+         endif
+         old_cluster_mark_p = cluster_mark_p
+         cluster_mark_p = HYBRID_NO_MARK
+         if (.not. assign_pointer(at, 'modified_hybrid_mark'//trim(run_suffix), modified_hybrid_mark)) then
+           cluster_mark_p = hybrid_mark
+         else
+           cluster_mark_p = modified_hybrid_mark
+         endif
 
          !save cut bonds in cut_bonds property
          call add_property(at, 'old_cut_bonds'//trim(run_suffix), 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'old_cut_bonds'//trim(run_suffix), old_cut_bonds_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
-	 endif
-	 call add_property(at, 'cut_bonds'//trim(run_suffix), 0, n_cols=MAX_CUT_BONDS)
-	 if (.not. assign_pointer(at, 'cut_bonds'//trim(run_suffix), cut_bonds_p)) then
-	   RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
-	 endif
+         if (.not. assign_pointer(at, 'old_cut_bonds'//trim(run_suffix), old_cut_bonds_p)) then
+           RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
+         endif
+         call add_property(at, 'cut_bonds'//trim(run_suffix), 0, n_cols=MAX_CUT_BONDS)
+         if (.not. assign_pointer(at, 'cut_bonds'//trim(run_suffix), cut_bonds_p)) then
+           RAISE_ERROR("Potential_Simple_calc failed to assing pointer for cut_bonds pointer", error)
+         endif
          old_cut_bonds_p = cut_bonds_p
          cut_bonds_p = 0
-	 do i=1, cut_bonds%N
-	   i_inner = cut_bonds%int(1,i)
-	   i_outer = cut_bonds%int(2,i)
-	   zero_loc = minloc(cut_bonds_p(:,i_inner))
-	   if (cut_bonds_p(zero_loc(1),i_inner) == 0) then ! free space for a cut bond
-	     cut_bonds_p(zero_loc(1),i_inner) = i_outer
-	   else
-	     call print("cut_bonds table:", PRINT_VERBOSE)
-	     call print(cut_bonds, PRINT_VERBOSE)
-	     call print("ERROR: Potential_Simple_calc ran out of space to store cut_bonds information", PRINT_ALWAYS)
-	     call print("ERROR: inner atom " // i_inner // " already has cut_bonds to " // cut_bonds_p(:,i_inner) // &
-	      " no space to add cut bond to " // i_outer, PRINT_ALWAYS)
-	     RAISE_ERROR("Potential_Simple_calc out of space to store cut_bonds information", error)
-	   endif
-	 end do
-	 call finalise(cut_bonds)
-	 if (current_verbosity() >= PRINT_ANALYSIS) then
-	   ! prefix should be "UNCARVED_CLUSTER"
-	   call write(at, 'stdout')
-	 endif
-	 call calc(this, at, args_str=new_args_str, error=error)
-	 PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
-	 if (do_rescale_r)  at_force_ptr = at_force_ptr*r_scale
-	 if (do_rescale_E)  at_force_ptr = at_force_ptr*E_scale
+         do i=1, cut_bonds%N
+           i_inner = cut_bonds%int(1,i)
+           i_outer = cut_bonds%int(2,i)
+           zero_loc = minloc(cut_bonds_p(:,i_inner))
+           if (cut_bonds_p(zero_loc(1),i_inner) == 0) then ! free space for a cut bond
+             cut_bonds_p(zero_loc(1),i_inner) = i_outer
+           else
+             call print("cut_bonds table:", PRINT_VERBOSE)
+             call print(cut_bonds, PRINT_VERBOSE)
+             call print("ERROR: Potential_Simple_calc ran out of space to store cut_bonds information", PRINT_ALWAYS)
+             call print("ERROR: inner atom " // i_inner // " already has cut_bonds to " // cut_bonds_p(:,i_inner) // &
+              " no space to add cut bond to " // i_outer, PRINT_ALWAYS)
+             RAISE_ERROR("Potential_Simple_calc out of space to store cut_bonds information", error)
+           endif
+         end do
+         call finalise(cut_bonds)
+         if (current_verbosity() >= PRINT_ANALYSIS) then
+           ! prefix should be "UNCARVED_CLUSTER"
+           call write(at, 'stdout')
+         endif
+         call calc(this, at, args_str=new_args_str, error=error)
+         PASS_ERROR_WITH_INFO('potential_calc after calc with carve_cluster=F', error)
+         if (do_rescale_r)  at_force_ptr = at_force_ptr*r_scale
+         if (do_rescale_E)  at_force_ptr = at_force_ptr*E_scale
        endif ! do_carve_cluster
     else ! little_clusters and single_cluster are false..
 
@@ -1274,7 +1274,7 @@ contains
           else
              RAISE_ERROR ("Potential_Simple_Calc: Potential_Simple is not initialised", error)
           end if
-	  PASS_ERROR_WITH_INFO('potential_calc after actual calc', error)
+          PASS_ERROR_WITH_INFO('potential_calc after actual calc', error)
 
           if (len_trim(calc_energy) /= 0) then
              call set_value(at%params, trim(calc_energy), energy)
@@ -1299,7 +1299,7 @@ contains
           call remove_value(params, 'energy')
           call remove_value(params, 'local_energy')
           call remove_value(params, 'virial')
-	  call set_value(params, "energy", "fd_energy")
+          call set_value(params, "energy", "fd_energy")
           new_args_str = write_string(params, real_format='f16.8')
           call finalise(params)
           call print("calc_force="//trim(calc_force), PRINT_ANALYSIS)
@@ -1523,21 +1523,21 @@ contains
 
     if(associated(this%ip)) then
        if (len_trim(calc_energy) > 0) then
-	  if (len_trim(calc_force) > 0) then
-	     allocate(f(3,at%n))
-	     call setup_parallel(this%ip, at, energy=e, f=f, args_str=args_str)
-	     deallocate(f)
-	  else
-	     call setup_parallel(this%ip, at, energy=e, args_str=args_str)
-	  endif
+          if (len_trim(calc_force) > 0) then
+             allocate(f(3,at%n))
+             call setup_parallel(this%ip, at, energy=e, f=f, args_str=args_str)
+             deallocate(f)
+          else
+             call setup_parallel(this%ip, at, energy=e, args_str=args_str)
+          endif
        else
-	  if (len_trim(calc_force) > 0) then
-	     allocate(f(3,at%n))
-	     call setup_parallel(this%ip, at, f=f, args_str=args_str)
-	     deallocate(f)
-	  else
-	     call setup_parallel(this%ip, at, args_str=args_str)
-	  endif
+          if (len_trim(calc_force) > 0) then
+             allocate(f(3,at%n))
+             call setup_parallel(this%ip, at, f=f, args_str=args_str)
+             deallocate(f)
+          else
+             call setup_parallel(this%ip, at, args_str=args_str)
+          endif
        endif
 #ifdef HAVE_TB
     else if(associated(this%tb)) then

@@ -94,7 +94,7 @@ implicit none
   real(dp), pointer :: local_v0(:,:)
   real(dp), pointer :: F0(:,:)
   real(dp) :: V0(3,3), P0(3,3)
-  real(dp) :: c(6,6), c0(6,6), cij_dx 
+  real(dp) :: c(6,6), c0(6,6), cij_dx
 
   real(dp) :: iso_pressure
   real(dp), dimension(3) :: diag_pressure
@@ -193,7 +193,7 @@ implicit none
   call param_register(cli_params, 'relax_lattice_fix', '0.0 0.0 0.0   0.0 0.0 0.0   0.0 0.0 0.0', relax_lattice_fix, help_string="if virial and relax are set, constrain lattice parameter matrix where this is /= 0.  Doesn't work as expected in general, although definitely OK for orthogonal lattice vectors aligned with coordinate axes")
   call param_register(cli_params, 'verbosity', 'NORMAL', verbosity, help_string="verbosity level - SILENT, NORMAL, VERBOSE, NERD, ANALYSIS")
   call param_register(cli_params, 'fire_minim_dt0', '1.0', fire_minim_dt0, help_string="if using FIRE minim, initial value of time step ")
-  call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ") 
+  call param_register(cli_params, 'fire_minim_dt_max', '20.0', fire_minim_dt_max, help_string="if using FIRE minim, maximum value of time step ")
   call param_register(cli_params, 'cg_n_precond', 'F', do_cg_n_precond, help_string="activate preconditioner for cg_n minim routine.  Probably a bad idea if you have many atoms or a cheap IP, because it inverts a dense 3N x 3N matrix")
   call param_register(cli_params, 'precond_minim_method', 'preconLBFGS', precond_minim_method, help_string="preconditioner minimization method for minim_method=precon, preconLBFGS or preconCG")
   call param_register(cli_params, 'precond_method', 'ID', precond_method, help_string="preconditioner method for preconditioner, right now ID or LJ or C1")
@@ -251,7 +251,7 @@ implicit none
 
   if(did_help) call system_abort("Run without --help")
 
-  if(do_timing) call enable_timing()  
+  if(do_timing) call enable_timing()
 
   call get_env_var("EVAL_PORT",eval_port_str, eval_port_status)
   if(eval_port_status == 0) then
@@ -263,7 +263,7 @@ implicit none
 
   call Initialise(mpi_glob)
 
-  ! are we calculating descriptors or potentials? 
+  ! are we calculating descriptors or potentials?
   if ( has_descriptor_str ) then
 #ifdef HAVE_GAP
      call initialise(eval_descriptor, trim(descriptor_str))
@@ -306,7 +306,7 @@ implicit none
       call exit()
     end if
   end if
-  
+
   call initialise(infile, trim(atoms_filename), mpi=mpi_glob)
 
   if( count( (/has_iso_pressure, has_diag_pressure, has_pressure/) ) > 1 ) call system_abort('External pressure specified in an ambiguous way')
@@ -329,20 +329,20 @@ implicit none
 
   ! main loop over frames
   do_print_pot = .true. ! print the pot on the first iteration
-  do 
+  do
      call read(at, infile, error=error)
      if (error /= 0) then
         if (error == ERROR_IO_EOF) then
-	   exit
-	else
-	   HANDLE_ERROR(error)
-	endif
+           exit
+        else
+           HANDLE_ERROR(error)
+        endif
      endif
 
      if (mycutoff >= 0.0_dp) then
-	call set_cutoff(at, mycutoff, cutoff_skin=mycutoff_skin)
+        call set_cutoff(at, mycutoff, cutoff_skin=mycutoff_skin)
      else
-	call set_cutoff(at, cutoff(pot), cutoff_skin=mycutoff_skin)
+        call set_cutoff(at, cutoff(pot), cutoff_skin=mycutoff_skin)
      endif
 
      if(at%cutoff > 0.0_dp) then
@@ -355,10 +355,10 @@ implicit none
      endif
 
      if (fill_in_mass) then
-	if (.not. associated(at%mass)) then
-	  call add_property(at, 'mass', 0.0_dp, 1)
-	endif
-	at%mass = ElementMass(at%Z)
+        if (.not. associated(at%mass)) then
+          call add_property(at, 'mass', 0.0_dp, 1)
+        endif
+        at%mass = ElementMass(at%Z)
      endif
 
      did_anything=.false.
@@ -370,7 +370,7 @@ implicit none
      endif
 
      if (do_test .or. do_n_test) then
-	did_anything = .true.
+        did_anything = .true.
         if (do_test) then
            call verbosity_set_minimum(PRINT_NERD)
            if (len_trim(test_dir_field) > 0) then
@@ -399,13 +399,13 @@ implicit none
            linmin_method = 'FAST_LINMIN'
         endif
      endif
-     
+
      if (do_relax) then
-	did_anything = .true.
+        did_anything = .true.
         do_calc = .true.
         call set_param_value(at, "Minim_Hydrostatic_Strain", relax_hydrostatic_strain)
 !       call set_param_value(at, "Minim_Constant_Volume", relax_constant_volume)
-	call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
+        call set_param_value(at, "Minim_Lattice_Fix", reshape(relax_lattice_fix, (/ 3, 3 /)) )
         if(relax_rattle > 0.0) then
            call randomise(at%pos, relax_rattle)
            if(do_V) then
@@ -413,31 +413,31 @@ implicit none
            end if
         end if
         if (len_trim(pre_relax_calc_args) > 0) then
-	   extra_calc_args = ""
-	   if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
-	   if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
-	   if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+           extra_calc_args = ""
+           if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
+           if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+           if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
            if (do_local) then
               if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
               if (do_V) extra_calc_args = trim(extra_calc_args)//" local_virial"
            endif
-	   call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
-	   HANDLE_ERROR(error)
+           call calc(pot, at, args_str = trim(pre_relax_calc_args)//" "//trim(extra_calc_args), error=error)
+           HANDLE_ERROR(error)
         endif
-	if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
-	if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
-  
+        if (precond_cutoff < 0.0) precond_cutoff=cutoff(pot)
+        if (precond_len_scale <= 0.0) precond_len_scale=cutoff(pot)
+
         if (len_trim(relax_print_filename) > 0) then
            call initialise(relax_io, relax_print_filename, OUTPUT, netcdf4=netcdf4)
       if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
               call system_timer('quip/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
-	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
-		 do_print = .true., print_cinoutput=relax_io, &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
-	length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
-     res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu) 
+                 efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
+                 do_print = .true., print_cinoutput=relax_io, &
+                 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+        length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
+     res2=precond_res2, infoverride = precond_infoverride,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_minim')
 #else
               call system_abort('minim_method=precond but HAVE_PRECON=0')
@@ -445,7 +445,7 @@ implicit none
       elseif(trim(minim_method) == 'precond_dimer') then
 #ifdef HAVE_PRECON
               call system_timer('quip/precon_dimer')
-              
+
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
                          external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
@@ -453,29 +453,29 @@ implicit none
                          precon_id=trim(precond_method), res2=precond_res2, infoverride = precond_infoverride, &
                      bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_dimer')
-   
+
               call finalise(dimer_at)
 #else
               call system_abort('minim_method=precond_dimer but HAVE_PRECON=0')
 #endif
         else
               call system_timer('quip/minim')
-	      n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
-		   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
-		   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
-		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
+              n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .true., &
+                   print_cinoutput = relax_io, do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
+                   fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
+                   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval)
               call system_timer('quip/minim')
-	   endif
-	   call finalise(relax_io) 
+           endif
+           call finalise(relax_io)
   else
            if(trim(minim_method) == 'precond') then
 #ifdef HAVE_PRECON
               call system_timer('quip/precon_minim')
               n_iter = precon_minim(pot, at, trim(precond_minim_method), relax_tol, relax_iter, &
-	         efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
-		 do_print = .false., &
-		 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
-		 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
+                 efuncroutine=trim(precond_e_method), linminroutine=trim(linmin_method), &
+                 do_print = .false., &
+                 do_pos = do_F, do_lat = do_V, args_str = calc_args, external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
+                 length_scale=precond_len_scale, energy_scale=precond_e_scale, precon_cutoff=precond_cutoff, precon_id=trim(precond_method),&
    res2=precond_res2, infoverride=precond_infoverride,convchoice=precond_conv_method,bulk_modulus=precond_bulk_modulus,number_density=precond_number_density,auto_mu=precond_auto_mu)
               call system_timer('quip/precon_minim')
 #else
@@ -484,7 +484,7 @@ implicit none
             elseif(trim(minim_method) == 'precond_dimer') then
 #ifdef HAVE_PRECON
               call system_timer('quip/precon_dimer')
-              
+
               n_iter = Precon_Dimer(pot, at, dimer_at,trim(precond_minim_method),relax_tol,relax_iter,efuncroutine=trim(precond_e_method), &
                          linminroutine=trim(linmin_method),do_print = .false.,do_pos = do_F, do_lat = do_V, args_str = calc_args, &
                          external_pressure = external_pressure/EV_A3_IN_GPA, hook=print_hook, hook_print_interval=relax_print_interval, &
@@ -500,7 +500,7 @@ implicit none
               n_iter = minim(pot, at, trim(minim_method), relax_tol, relax_iter, trim(linmin_method), do_print = .false., &
                    do_pos = do_F, do_lat = do_V, args_str = calc_args, eps_guess=relax_eps, &
                    fire_minim_dt0=fire_minim_dt0, fire_minim_dt_max=fire_minim_dt_max, external_pressure=external_pressure/EV_A3_IN_GPA, &
-		   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval) 
+                   use_precond=do_cg_n_precond, hook_print_interval=relax_print_interval)
               call system_timer('quip/minim')
            end if
         endif
@@ -514,7 +514,7 @@ implicit none
      if (do_c0ij .or. do_cij) then
         if (trim(minim_method) == 'precond') &
              call system_abort("Cannot use precond minim_method with cij yet")
-	did_anything = .true.
+        did_anything = .true.
         call print("Elastic constants in GPa")
         call print("Using finite difference = "//cij_dx)
         if (do_c0ij .and. do_cij) then
@@ -542,7 +542,7 @@ implicit none
      endif ! do_dipole_moment
 
      if (do_phonons) then
-	did_anything = .true.
+        did_anything = .true.
         if (do_force_const_mat) then
            allocate(force_const_mat(at%N*3,at%N*3))
         endif
@@ -555,17 +555,17 @@ implicit none
            if (do_force_const_mat) then
               call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    IR_intensities=IR_intensities, do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
-		   force_const_mat=force_const_mat)
+                   force_const_mat=force_const_mat)
            else
               call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    IR_intensities=IR_intensities, zero_rotation=do_phonons_zero_rotation, &
-		   do_parallel=do_parallel_phonons)
+                   do_parallel=do_parallel_phonons)
            endif
         else
            if (do_force_const_mat) then
               call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation, &
-		   force_const_mat=force_const_mat)
+                   force_const_mat=force_const_mat)
            else
               call phonons_all(pot, at, phonons_dx, phonon_evals, phonon_evecs, phonon_masses, calc_args = calc_args, &
                    do_parallel=do_parallel_phonons, zero_rotation=do_phonons_zero_rotation)
@@ -602,15 +602,15 @@ implicit none
               call set_value(at%params, "IR_intensity", 10**6*IR_intensities(i))
            endif
 
-	   if (do_frozen_phonons) then
-	      call verbosity_push(PRINT_VERBOSE)
+           if (do_frozen_phonons) then
+              call verbosity_push(PRINT_VERBOSE)
               eval_froz = eval_frozen_phonon(pot, at, phonons_dx, phonon_evecs(:,i), calc_args)/phonon_masses(i)
-	      if (eval_froz > 0.0_dp) then
-		 call set_value(at%params, "frozen_phonon_freq", sqrt(eval_froz))
-	      else
-		 call set_value(at%params, "frozen_phonon_freq", "I*"//sqrt(-eval_froz))
-	      endif
-	      call verbosity_pop()
+              if (eval_froz > 0.0_dp) then
+                 call set_value(at%params, "frozen_phonon_freq", sqrt(eval_froz))
+              else
+                 call set_value(at%params, "frozen_phonon_freq", "I*"//sqrt(-eval_froz))
+              endif
+              call verbosity_pop()
            endif
 
            ! set prefix to PHONON
@@ -620,7 +620,7 @@ implicit none
               call write(at,'stdout',properties='pos:phonon')
            endif
 
-	   if (do_frozen_phonons) call remove_value(at%params, "frozen_phonon_freq")
+           if (do_frozen_phonons) call remove_value(at%params, "frozen_phonon_freq")
 
         end do
         if (do_dipole_moment) then
@@ -630,17 +630,17 @@ implicit none
         deallocate(phonon_masses)
         deallocate(phonon_evecs)
         call remove_property(at,"phonon")
-	call remove_value(at%params, 'phonon_i')
-	call remove_value(at%params, 'phonon_freq')
-	call remove_value(at%params, 'phonon_eff_mass')
-	if (do_dipole_moment) call remove_value(at%params, 'IR_intensity')
+        call remove_value(at%params, 'phonon_i')
+        call remove_value(at%params, 'phonon_freq')
+        call remove_value(at%params, 'phonon_eff_mass')
+        if (do_dipole_moment) call remove_value(at%params, 'IR_intensity')
      endif ! do phonons
 
      if (do_fine_phonons) then
-	did_anything = .true.
+        did_anything = .true.
 
         if( .not. has_phonon_supercell_fine ) phonon_supercell_fine = phonon_supercell
-        
+
         if (has_phonons_path_start .and. has_phonons_path_end) then
            call Phonon_fine_calc_print(pot, at, phonons_dx, calc_args = calc_args, do_parallel=do_parallel_phonons, &
                 & phonon_supercell=phonon_supercell, phonon_supercell_fine=phonon_supercell_fine, &
@@ -655,11 +655,11 @@ implicit none
 
      if(do_EvsV) then
         did_anything = .true.
-        
-	extra_calc_args = ""
+
+        extra_calc_args = ""
         if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
-	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
-	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+        if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+        if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
         if (do_local) then
           if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
           if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
@@ -675,7 +675,7 @@ implicit none
            call print("EVSV --------------------------------------")
            do i=1,EvsV_NdVsteps
               call set_lattice(at, at%lattice*(EvsV_dVfactor**(1.0_dp/3.0_dp)), scale_positions=.true.)
-              
+
               call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
               HANDLE_ERROR(error)
               call get_param_value(at, 'energy', E0)
@@ -684,7 +684,7 @@ implicit none
            end do
         end if
      end if
-     
+
 #ifdef HAVE_TB
      if (do_absorption) do_calc = .true.
 #endif
@@ -696,21 +696,21 @@ implicit none
      endif
 
      if ((.not. did_anything .or. do_calc) .and. (do_E .or. do_F .or. do_V .or. do_local)) then
-	did_anything = .true.
-	extra_calc_args = ""
-	if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
-	if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
-	if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
+        did_anything = .true.
+        extra_calc_args = ""
+        if (do_E) extra_calc_args = trim(extra_calc_args)//" energy"
+        if (do_F) extra_calc_args = trim(extra_calc_args)//" force"
+        if (do_V) extra_calc_args = trim(extra_calc_args)//" virial"
         if (do_local) then
            if (do_E) extra_calc_args = trim(extra_calc_args)//" local_energy"
            if (do_v) extra_calc_args = trim(extra_calc_args)//" local_virial"
         endif
 
-	call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
-	HANDLE_ERROR(error)
-	if (do_E) call get_param_value(at, 'energy', E0)
-	if (do_F) call assign_property_pointer(at, "force", F0)
-	if (do_V) call get_param_value(at, "virial", V0)
+        call calc(pot, at, args_str = trim(calc_args)//" "//trim(extra_calc_args), error=error)
+        HANDLE_ERROR(error)
+        if (do_E) call get_param_value(at, 'energy', E0)
+        if (do_F) call assign_property_pointer(at, "force", F0)
+        if (do_V) call get_param_value(at, "virial", V0)
         if (do_local) then
            if (do_E) call assign_property_pointer(at, "local_energy", local_E0)
            if (do_v) call assign_property_pointer(at, "local_virial", local_v0)
@@ -784,7 +784,7 @@ implicit none
 
 #ifdef HAVE_GAP
      if ( has_descriptor_str ) then
-	did_anything = .true.
+        did_anything = .true.
         call descriptor_sizes(eval_descriptor,at,n_descriptors,n_cross)
         allocate(descriptor_array(descriptor_dimensions(eval_descriptor),n_descriptors))
         if(do_grad_descriptor) &
@@ -822,7 +822,7 @@ implicit none
      call write(at, 'stdout', prefix='AT',real_format=trim(real_format))
 
      call finalise(at)
-      
+
   enddo
 
 #ifdef HAVE_GAP

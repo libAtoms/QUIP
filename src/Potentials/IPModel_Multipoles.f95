@@ -31,7 +31,7 @@
 !X
 !X IPModel_Multipoles
 !X
-!% Multipoles interatomic potential: 
+!% Multipoles interatomic potential:
 !%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -63,31 +63,31 @@ integer, parameter :: IPMultipoles_Method_Direct = 1
 integer, parameter :: IPMultipoles_Method_Yukawa = 2
 integer, parameter :: IPMultipoles_Method_Ewald  = 3
 
-integer, parameter :: Multipole_Position_Atomic = 1                
-integer, parameter :: Multipole_Position_Centre_of_Mass = 2        
-integer, parameter :: Multipole_Position_M_Site = 3                
-                                                                   
-integer, parameter :: Charge_Method_None = 0                       
-integer, parameter :: Charge_Method_Fixed = 1                      
-integer, parameter :: Charge_Method_GAP = 2                        
-integer, parameter :: Charge_Method_Partridge_Schwenke = 3         
-                                                                   
-integer, parameter :: Dipole_Method_None = 0                       
-integer, parameter :: Dipole_Method_Partridge_Schwenke = 1         
-integer, parameter :: Dipole_Method_GAP = 2                        
-                                                                   
-integer, parameter :: Polarisation_Method_None = 0                 
-integer, parameter :: Polarisation_Method_FPI = 1                  
-integer, parameter :: Polarisation_Method_GMRES = 2                
-integer, parameter :: Polarisation_Method_QR = 3                   
-                                                                   
-integer, parameter :: Damping_None = 0                             
-integer, parameter :: Damping_Exp = 1                              
-integer, parameter :: Damping_Erf = 2                              
-integer, parameter :: Damping_Erf_Uniform = 3                      
-                                                                   
-integer, parameter :: Screening_None = 0                           
-integer, parameter :: Screening_Yukawa = 1                         
+integer, parameter :: Multipole_Position_Atomic = 1
+integer, parameter :: Multipole_Position_Centre_of_Mass = 2
+integer, parameter :: Multipole_Position_M_Site = 3
+
+integer, parameter :: Charge_Method_None = 0
+integer, parameter :: Charge_Method_Fixed = 1
+integer, parameter :: Charge_Method_GAP = 2
+integer, parameter :: Charge_Method_Partridge_Schwenke = 3
+
+integer, parameter :: Dipole_Method_None = 0
+integer, parameter :: Dipole_Method_Partridge_Schwenke = 1
+integer, parameter :: Dipole_Method_GAP = 2
+
+integer, parameter :: Polarisation_Method_None = 0
+integer, parameter :: Polarisation_Method_FPI = 1
+integer, parameter :: Polarisation_Method_GMRES = 2
+integer, parameter :: Polarisation_Method_QR = 3
+
+integer, parameter :: Damping_None = 0
+integer, parameter :: Damping_Exp = 1
+integer, parameter :: Damping_Erf = 2
+integer, parameter :: Damping_Erf_Uniform = 3
+
+integer, parameter :: Screening_None = 0
+integer, parameter :: Screening_Yukawa = 1
 integer, parameter :: Screening_Erfc_Uniform = 2
 
 public :: IPModel_Multipoles
@@ -167,7 +167,7 @@ subroutine IPModel_Multipoles_Calc(this, at, e, local_e, f, virial, local_virial
    type(IPModel_Multipoles), intent(inout):: this
    type(Atoms), intent(inout)      :: at
    real(dp), intent(out), optional :: e, local_e(:)
-   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+   real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
    real(dp), intent(out), optional :: virial(3,3)
    character(len=*), optional      :: args_str
    type(MPI_Context), intent(in), optional :: mpi
@@ -324,7 +324,7 @@ subroutine IPModel_Multipoles_read_params_xml(this, param_str)
 end subroutine IPModel_Multipoles_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -387,7 +387,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       read (value, *) parse_ip%multipoles%dipole_tolerance
 
       call QUIP_FoX_get_value(attributes, 'intermolecular_only', value, status)
-      if (status == 0) then 
+      if (status == 0) then
         read (value, *) parse_ip%multipoles%intermolecular_only
       endif
 
@@ -524,7 +524,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     call QUIP_FoX_get_value(attributes, "n_sites", value, status)
     if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find number of sites")
     n_sites=string_to_int(value)
-    allocate(parse_ip%multipoles%monomer_types(ti)%site_types(n_sites))    
+    allocate(parse_ip%multipoles%monomer_types(ti)%site_types(n_sites))
     if(parse_ip%multipoles%intermolecular_only) then
       n_pairs=(n_sites*(n_sites-1))/2
       call reallocate(parse_ip%multipoles%monomer_types(ti)%excluded_pairs,2,n_pairs,zero=.true.)
@@ -535,11 +535,11 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
           parse_ip%multipoles%monomer_types(ti)%excluded_pairs(1,cursor)=i
           parse_ip%multipoles%monomer_types(ti)%excluded_pairs(2,cursor)=j
         end do
-      end do          
+      end do
     end if
-      
+
     call QUIP_FoX_get_value(attributes, "step", value, status)
-    if (status /= 0) value = '1D-08'  
+    if (status /= 0) value = '1D-08'
     read (value, *) parse_ip%multipoles%monomer_types(ti)%step
 
     call QUIP_FoX_get_value(attributes, "gammaM", value, status)
@@ -563,31 +563,31 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (tj > size(parse_ip%multipoles%monomer_types(ti)%site_types)) call system_abort("IPModel_Multipoles_read_params_xml got site type="//tj//" > n_sites="//size(parse_ip%multipoles%monomer_types(ti)%site_types))
     call QUIP_FoX_get_value(attributes, "charge", value, status)
     if (status == 0) then
-      read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge    
+      read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = 1
     else
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge = 0.0_dp
     end if
 
     call QUIP_FoX_get_value(attributes, "pos_type", value, status)
-    if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find site pos_type ")    
+    if (status /= 0) call system_abort ("IPModel_Multipoles_read_params_xml cannot find site pos_type ")
     read (value, *) pos_type_str
 
     if (trim(pos_type_str) /= "") then
         select case(lower_case(trim(pos_type_str)))
-  	 case("atom")
+           case("atom")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Atomic
-  	 case("com")
+           case("com")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_Centre_of_Mass
-  	 case("m-site")
+           case("m-site")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%pos_type = Multipole_Position_M_Site
          case default
-           call system_abort ("IPModel_Multipoles_read_params_xml: pos_type "//trim(value)//" unknown")         
+           call system_abort ("IPModel_Multipoles_read_params_xml: pos_type "//trim(value)//" unknown")
         end select
     end if
 
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
-    if (status /= 0) value='0'    
+    if (status /= 0) value='0'
     read (value, *) parse_ip%multipoles%monomer_types(ti)%site_types(tj)%atomic_number
 
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d = 0
@@ -599,13 +599,13 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       select case(lower_case(trim(moments_method_str)))
          case("none")
            continue
-  	 case("fixed")
+           case("fixed")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge_method = Charge_Method_Fixed
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
-  	 case("gap")
+           case("gap")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge_method = Charge_Method_GAP
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
-  	 case("partridge_schwenke")
+           case("partridge_schwenke")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%charge_method = Charge_Method_Partridge_Schwenke
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 1
       case default
@@ -620,10 +620,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       select case(lower_case(trim(moments_method_str)))
          case("none")
            continue
-  	 case("gap")
+           case("gap")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%dipole_method = Dipole_Method_GAP
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 3
-  	 case("partridge_schwenke")
+           case("partridge_schwenke")
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%dipole_method = Dipole_Method_Partridge_Schwenke
            parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d =  parse_ip%multipoles%monomer_types(ti)%site_types(tj)%d + 3
       case default
@@ -632,7 +632,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     end if
 
     call QUIP_FoX_get_value(attributes, "pol_alpha", value, status)
-    if (status /= 0) then 
+    if (status /= 0) then
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.false.
     else
       parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable=.true.
@@ -649,7 +649,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damped = parse_ip%multipoles%monomer_types(ti)%site_types(tj)%polarisable
 
     call QUIP_FoX_get_value(attributes, "damp_rad", value, status)
-    if (status /= 0) then 
+    if (status /= 0) then
       if (parse_ip%multipoles%calc_opts%damping==Damping_Erf) then
         parse_ip%multipoles%monomer_types(ti)%site_types(tj)%damp_rad = (alpha_au*sqrt(2.0_dp/PI)/3.0_dp)**(1.0_dp/3.0_dp)*BOHR
       else if (parse_ip%multipoles%calc_opts%damping==Damping_Exp) then

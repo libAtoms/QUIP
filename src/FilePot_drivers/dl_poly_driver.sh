@@ -39,7 +39,7 @@
 # Si x y z 2.0  has 2 oxygen neighbours
 # Distance units are Angstrom
 
-# Output: first line is total energy. Subsequent lines are in 
+# Output: first line is total energy. Subsequent lines are in
 # format "Element Name Fx Fy Fz Q" where (Fx,Fy,Fz) is the force
 # on atom and Q the charge of atom. Force units are eV/A and
 # charge units multiples of e.
@@ -65,7 +65,7 @@ function print_property {
     awk 'NR == 2 {
   match($0,/Properties="?([^" ]*)/,a);
   nf = split(a[1],b,/:/);
-  
+
   sum=0;
   for (i = 1; i <= nf; i+=3) {
     if(b[i] != "'$2'")
@@ -111,8 +111,8 @@ echo
 # Check we've got species table entry for all species
 for s in $species; do
     if ! grep -Eq "^$s" $species_table; then
-	echo dl_poly_driver: No species table entry for element $s
-	exit 1
+        echo dl_poly_driver: No species table entry for element $s
+        exit 1
     fi
 done
 
@@ -161,7 +161,7 @@ cat $template >> FIELD
 #  split(species,s1)
 #  for (s in s1) sp[s1[s]]=1
 #}
-#NR > 1 && $1 in sp && $2 in sp { 
+#NR > 1 && $1 in sp && $2 in sp {
 #  lines[n++] = $0
 #}
 #END {
@@ -177,7 +177,7 @@ cat $template >> FIELD
 #  split(species,s1)
 #  for (s in s1) sp[s1[s]]=1
 #}
-#NR > 1 && $1 in sp && $2 in sp && $3 in sp { 
+#NR > 1 && $1 in sp && $2 in sp && $3 in sp {
 #  lines[n++] = $0
 #}
 #END {

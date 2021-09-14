@@ -33,16 +33,16 @@
 !X  Atoms module
 !X
 !% An atoms object contains atomic numbers, all dynamical variables
-!% and connectivity information for all the atoms in the simulation cell. 
+!% and connectivity information for all the atoms in the simulation cell.
 !% It is initialised like this:
-!%> 	  call initialise(MyAtoms,N,lattice)
+!%>           call initialise(MyAtoms,N,lattice)
 !% where 'N' is the number of atoms to allocate space for and 'lattice' is a $3\times3$
 !% matrix of lattice vectors given as column vectors, so that lattice(:,i) is the i-th lattice vector.
-!% 
+!%
 !% Atoms also contains a Connection object, which stores distance information about
 !% the atom neighbours after 'calc_connect' has been called. Rather than using a minimum
 !% image convention, all neighbours are stored up to a radius of 'cutoff', including images.
-!% 
+!%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -237,8 +237,8 @@ module  atoms_module
      module procedure atoms_set_lattice
   end interface set_lattice
 
-  !% Select a subset of the atoms in an atoms object, either using a logical 
-  !% mask array or a Table, in which case the first 'int' column is taken to 
+  !% Select a subset of the atoms in an atoms object, either using a logical
+  !% mask array or a Table, in which case the first 'int' column is taken to
   !% be a list of the atoms that should be retained.
   private :: atoms_select
   interface select
@@ -416,7 +416,7 @@ contains
     else
        ! By default, we just add properties for Z, species name and position
        call initialise(this%properties)
-       
+
        call add_property(this, 'Z', 0, error=error)
        PASS_ERROR(error)
        call add_property(this, 'pos', 0.0_dp, n_cols=3, error=error)
@@ -425,14 +425,14 @@ contains
             error=error)
        PASS_ERROR(error)
     end if
- 
+
     call set_comm_property(this, 'Z', &
          comm_atoms=.true., comm_ghosts=.true.)
     call set_comm_property(this, 'pos', &
          comm_atoms=.true., comm_ghosts=.true.)
     call set_comm_property(this, 'species', &
          comm_atoms=.true.)
- 
+
     call atoms_repoint(this)
 
     stack_size = 3*N*8/1024
@@ -444,7 +444,7 @@ contains
        stack_size = int(stack_size/1024)*1024
        stack_size_err = increase_stack(stack_size)
        if (stack_size_err /= 0) then
-	call print("Atoms_Initialise: error calling increase_stack err = "// stack_size_err)
+        call print("Atoms_Initialise: error calling increase_stack err = "// stack_size_err)
        endif
     end if
 
@@ -606,7 +606,7 @@ contains
 !       to%ref_count = 0
        return
     end if
-    
+
     call atoms_initialise(to, from%N, from%lattice, from%properties, from%params, from%fixed_size, from%Nbuffer)
 
     to%cutoff       = from%cutoff
@@ -631,23 +631,23 @@ contains
 
       ess_max_len = 0
       do i=1, size(ess)
-	 if (ess(i)%len > ess_max_len) ess_max_len = ess(i)%len
+         if (ess(i)%len > ess_max_len) ess_max_len = ess(i)%len
       end do
    end function ess_max_len
 
   !% Make a copy of the atoms object 'from' without including
   !% connectivity information. Useful for saving the state of a
   !% dynamical simulation without incurring too great a memory
-  !% cost. 
+  !% cost.
   subroutine atoms_copy_without_connect(to, from, properties, properties_array, error)
 
     type(Atoms), intent(inout) :: to
     type(Atoms), intent(in)    :: from
     character(len=*), optional, intent(in) :: properties
     character(len=*), optional, intent(in) :: properties_array(:)
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
     character(len=ess_max_len(from%properties%keys)) :: tmp_properties_array(from%properties%n)
-    integer n_properties    
+    integer n_properties
 
     INIT_ERROR(error)
     ASSERT(is_initialised(from), "atoms_copy_without_connect: 'from' object is not initialised", error)
@@ -665,7 +665,7 @@ contains
           call parse_string(properties, ':', tmp_properties_array, n_properties, error=error)
           PASS_ERROR(error)
           call subset(from%properties, tmp_properties_array(1:n_properties), to%properties, error=error)
-          PASS_ERROR(error)          
+          PASS_ERROR(error)
        end if
     else
        call deepcopy(to%properties, from%properties, error=error)
@@ -797,49 +797,49 @@ contains
     logical :: atoms_has_property
 
     atoms_has_property = has_key(this%properties, name)
-    
+
   end function atoms_has_property
 
    subroutine atoms_set_param_value_int(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       integer, intent(in) :: value
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_int
    subroutine atoms_set_param_value_int_a(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       integer, intent(in) :: value(:)
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_int_a
    subroutine atoms_set_param_value_real(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       real(dp), intent(in) :: value
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_real
    subroutine atoms_set_param_value_real_a(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       real(dp), intent(in) :: value(:)
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_real_a
    subroutine atoms_set_param_value_real_a2(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       real(dp), intent(in) :: value(:,:)
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_real_a2
    subroutine atoms_set_param_value_logical(this, key, value)
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       logical, intent(in) :: value
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_logical
 
@@ -847,7 +847,7 @@ contains
       type(Atoms), intent(inout) :: this
       character(len=*), intent(in) :: key
       character(len=*), intent(in) :: value
-      
+
       call set_value(this%params, key, value)
    end subroutine atoms_set_param_value_str
 
@@ -856,10 +856,10 @@ contains
       character(len=*), intent(in) :: key
       integer, intent(out) :: value
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get int value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get int value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_int
    subroutine atoms_get_param_value_int_a(this, key, value, error)
@@ -867,10 +867,10 @@ contains
       character(len=*), intent(in) :: key
       integer, intent(out) :: value(:)
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get int array value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get int array value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_int_a
    subroutine atoms_get_param_value_real(this, key, value, error)
@@ -878,12 +878,12 @@ contains
       character(len=*), intent(in) :: key
       real(dp), intent(out) :: value
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
          call verbosity_push(PRINT_ANALYSIS)
          call print(this)
-	 RAISE_ERROR("atoms_get_param_value failed to get real value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get real value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_real
    subroutine atoms_get_param_value_real_a(this, key, value, error)
@@ -891,10 +891,10 @@ contains
       character(len=*), intent(in) :: key
       real(dp), intent(out) :: value(:)
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_real_a
    subroutine atoms_get_param_value_real_a2(this, key, value, error)
@@ -902,10 +902,10 @@ contains
       character(len=*), intent(in) :: key
       real(dp), intent(out) :: value(:,:)
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get real array value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_real_a2
    subroutine atoms_get_param_value_str(this, key, value, error)
@@ -913,10 +913,10 @@ contains
       character(len=*), intent(in) :: key
       character(STRING_LENGTH), intent(out) :: value
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get str value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get str value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_str
    subroutine atoms_get_param_value_es(this, key, value, error)
@@ -924,10 +924,10 @@ contains
       character(len=*), intent(in) :: key
       type(Extendable_Str), intent(inout) :: value
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get es value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get es value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_es
    subroutine atoms_get_param_value_logical(this, key, value, error)
@@ -935,10 +935,10 @@ contains
       character(len=*), intent(in) :: key
       logical, intent(out) :: value
       integer, intent(out), optional :: error
-      
+
       INIT_ERROR(error)
       if (.not. get_value(this%params, key, value)) then
-	 RAISE_ERROR("atoms_get_param_value failed to get logical value for key='"//trim(key)//"' from this%params", error)
+         RAISE_ERROR("atoms_get_param_value failed to get logical value for key='"//trim(key)//"' from this%params", error)
       endif
    end subroutine atoms_get_param_value_logical
 
@@ -946,14 +946,14 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !% Set the cutoff to at least the requested value
-  !% Optionally set 'cutoff_skin' at the same time.   
+  !% Optionally set 'cutoff_skin' at the same time.
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine atoms_set_cutoff_minimum(this, cutoff, cutoff_skin)
     type(Atoms),      intent(inout) :: this
     real(dp),         intent(in)    :: cutoff
-    real(dp), optional, intent(in)  :: cutoff_skin    
+    real(dp), optional, intent(in)  :: cutoff_skin
 
     this%cutoff = max(this%cutoff, cutoff)
     this%cutoff_skin = max(this%cutoff_skin, cutoff_skin)
@@ -1041,7 +1041,7 @@ contains
        if (reconnect) then
           call calc_connect(this)
           return
-       end if           
+       end if
     end if
 
     if (present(remap)) then
@@ -1088,7 +1088,7 @@ contains
     type(Atoms), intent(inout) :: this
     integer, dimension(:), intent(in) :: Z
     real(dp), optional, dimension(:), intent(in) :: mass
-    
+
     integer i
 
     this%Z = Z
@@ -1103,11 +1103,11 @@ contains
           this%species(1:len(ElementName(Z(i))),i) = s2a(ElementName(Z(i)))
        end do
     end if
-    
+
   end subroutine atoms_set_atoms
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
   ! Simple query functions
   !
   !xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -1127,9 +1127,9 @@ contains
     integer, intent(in) :: i
     real(dp), optional, intent(in) :: max_dist, max_factor
     type(Connection), optional, intent(in), target :: alt_connect
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
     integer :: n
-    
+
     INIT_ERROR(error)
     if (present(alt_connect)) then
        n = n_neighbours(alt_connect, this, i, max_dist, max_factor, error)
@@ -1148,7 +1148,7 @@ contains
     type(Table), pointer, intent(out) :: t
     logical, intent(out) :: is_j
     type(Connection), optional, intent(in), target :: alt_connect
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
     integer :: j
 
     INIT_ERROR(error)
@@ -1205,7 +1205,7 @@ contains
   !% and ``intent(out)`` in Fortran are converted to ``intent(in,out)`` for quippy. ::
   !%>
   !%>    r = farray(0.0)
-  !%>    u = fzeros(3)    
+  !%>    u = fzeros(3)
   !%>    for i in frange(at.n):
   !%>        for n in frange(at.n_neighbours(i)):
   !%>            j = at.neighbour(i, n, distance=r, diff=u)
@@ -1220,7 +1220,7 @@ contains
     real(dp), optional, intent(in)  :: max_dist
     integer,  optional, intent(out) :: jn
     type(Connection), optional, intent(in), target :: alt_connect
-    integer, intent(out), optional :: error     
+    integer, intent(out), optional :: error
 
     INIT_ERROR(error)
     if (present(alt_connect)) then
@@ -1240,7 +1240,7 @@ contains
   ! Adding and Removing atoms: adding/removing single or multiple atoms
   ! For the atoms variable in Dynamical System, this should be called
   ! shift there to avoid inconsistencies with DS's data
-  ! 
+  !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine add_atom_single(this, pos, Z, mass, travel, error)
@@ -1293,7 +1293,7 @@ contains
 
     logical :: has_mass, has_velo, has_acc, has_travel
 
-    INIT_ERROR(error)    
+    INIT_ERROR(error)
 
     if (this%fixed_size) then
        RAISE_ERROR("add_atom_multiple: Atoms object cannot be resized (this%fixed_size = .true.)", error)
@@ -1302,7 +1302,7 @@ contains
     oldN = this%N
     this%N = this%N + size(Z)
     this%Ndomain = this%N
-    
+
     !Check the sizes of the input arrays for consistency
     call check_size('Pos',pos,(/3,size(Z)/),'Add_Atom',error)
     PASS_ERROR(error)
@@ -1419,7 +1419,7 @@ contains
        RAISE_ERROR('Atoms_Add: this atoms has no Z property', error)
     end if
     this%z(oldN+1:this%N) = Z
-    
+
     ! set species from Z
     if (.not. has_key(this%properties, 'species')) then
        RAISE_ERROR('Atoms_Add: this atoms has no species property', error)
@@ -1439,7 +1439,7 @@ contains
           this%travel(:,oldN+1:this%N) = 0
        end if
     end if
-    
+
     ! Set masks to 1 if properties for them exist
     if (has_key(this%properties, 'move_mask')) &
          this%move_mask(oldN+1:this%N) = 1
@@ -1447,7 +1447,7 @@ contains
          this%damp_mask(oldN+1:this%N) = 1
     if (has_key(this%properties, 'thermostat_region')) &
          this%thermostat_region(oldN+1:this%N) = 1
-    
+
     ! ... and now the real properties
     if (has_key(this%properties, 'mass')) then
        if (has_mass) then
@@ -1469,7 +1469,7 @@ contains
        RAISE_ERROR('Atoms_Add: this atoms has no pos property', error)
     end if
     this%pos(:,oldN+1:this%N) = pos
-    
+
     if (has_velo .and. has_key(this%properties, 'velo')) &
          this%velo(:,oldN+1:this%N) = velo
 
@@ -1540,7 +1540,7 @@ contains
     INIT_ERROR(error)
 
     ! Resize property data arrays, copying old data.
-    ! this will break any existing pointers so we call atoms_repoint() 
+    ! this will break any existing pointers so we call atoms_repoint()
     ! immediately after (note that user-held pointers will stay broken, there
     ! is no way to fix this since Fortran does not allow pointer-to-pointer
     ! types)
@@ -1664,7 +1664,7 @@ contains
     ! ---
 
     integer  :: i, j
-    
+
     integer, allocatable :: new_indices(:)
 
     ! ---
@@ -1688,7 +1688,7 @@ contains
           j = j + 1
        endif
     enddo
-    
+
     ! update N
     this%N = j-1
     this%Ndomain = this%N
@@ -1704,7 +1704,7 @@ contains
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
   !% Map atomic fractional positions back into the unit cell
   !% $-0.5 \le t_x,t_y,t_z < 0.5$
   !
@@ -1735,22 +1735,22 @@ contains
     do i=1,this%N
       call map_into_cell(this%pos(:,i), this%lattice, this%g, shift, mapped)
       if (mapped) then
-	 this%travel(:,i) = this%travel(:,i) - shift
-	 if (this%connect%initialised) then
-	   do n=1,atoms_n_neighbours(this, i)  ! Loop over all atom i's neighbours
+         this%travel(:,i) = this%travel(:,i) - shift
+         if (this%connect%initialised) then
+           do n=1,atoms_n_neighbours(this, i)  ! Loop over all atom i's neighbours
 
-	      j = atoms_neighbour(this, i, n, index=m) ! get neighbour
+              j = atoms_neighbour(this, i, n, index=m) ! get neighbour
 
-	      ! now update the data for atom i and the current neighbour
-	      if (i < j) then
-		 this%connect%neighbour1(i)%t%int(2:4,m) = this%connect%neighbour1(i)%t%int(2:4,m) + shift
-	      else if (i > j) then
-		 this%connect%neighbour1(j)%t%int(2:4,m) = this%connect%neighbour1(j)%t%int(2:4,m) - shift
+              ! now update the data for atom i and the current neighbour
+              if (i < j) then
+                 this%connect%neighbour1(i)%t%int(2:4,m) = this%connect%neighbour1(i)%t%int(2:4,m) + shift
+              else if (i > j) then
+                 this%connect%neighbour1(j)%t%int(2:4,m) = this%connect%neighbour1(j)%t%int(2:4,m) - shift
               else
                  ! do nothing when i == j
-	      end if
-	   end do
-	end if ! this%connect%initialised
+              end if
+           end do
+        end if ! this%connect%initialised
       end if ! mapped
     end do ! i=1..N
 
@@ -1760,7 +1760,7 @@ contains
 
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  ! 
+  !
   !% Unskew lattice so the cosines of the lattice angles fall between
   !% $-0.5$ and $0.5$
   !
@@ -1782,9 +1782,9 @@ contains
        do i = 1, 3
           lengths(i) = sqrt(sum(lattice(:,i)**2))
        enddo
- 
+
        k = 0
-  
+
        do i = 1, 3
           do j = i+1, 3
              k = k+1
@@ -1838,8 +1838,8 @@ contains
     integer,     intent(in)    :: i,j,k
     real(dp)                   :: cosine
     real(dp), dimension(3)     :: ij, ik
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     INIT_ERROR(error)
     if ((i == j) .or. (i == k)) then
        RAISE_ERROR('Cosine: i == j or i == k', error)
@@ -1853,7 +1853,7 @@ contains
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
-  !% Cosine of the angle n--i--m where {$n,m$} are the {$n$th, $m$th} neighbours of i 
+  !% Cosine of the angle n--i--m where {$n,m$} are the {$n$th, $m$th} neighbours of i
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -1881,7 +1881,7 @@ contains
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  !% Given two atoms $i$ and $j$ and a shift returns the direction 
+  !% Given two atoms $i$ and $j$ and a shift returns the direction
   !% cosines of the differnece vector from $i$ to $j$.
   function direction_cosines(this,i,j,shift)
 
@@ -1900,8 +1900,8 @@ contains
     type(Atoms), intent(in) :: this
     integer,     intent(in)    :: i,j
     real(dp), dimension(3)     :: direction_cosines_min_image, diffv
-    integer, intent(out), optional :: error     
-    
+    integer, intent(out), optional :: error
+
     INIT_ERROR(error)
     if (i == j) then
        RAISE_ERROR('Cosines: i == j', error)
@@ -1922,8 +1922,8 @@ contains
 
       INIT_ERROR(error)
       if (.not. assign_pointer(this, 'map_shift', map_shift)) then
-	 call add_property(this, 'map_shift', 0, 3)
-	 if (.not. assign_pointer(this, 'map_shift', map_shift)) then
+         call add_property(this, 'map_shift', 0, 3)
+         if (.not. assign_pointer(this, 'map_shift', map_shift)) then
             RAISE_ERROR("partition_atoms impossibly failed to assign map_shift pointer", error)
          end if
       endif
@@ -2049,7 +2049,7 @@ contains
    !% If an 'index_list' is present, just calculate it for that subset of atoms (then the origin atom is
    !% the first in this list unless it is specified separately).
    !%
-   !% Note: Because the origin can be specified separately it need not be one of the atoms in the 
+   !% Note: Because the origin can be specified separately it need not be one of the atoms in the
    !% calculation.
    function centre_of_mass(at,index_list,mask,origin,error) result(CoM)
 
@@ -2104,25 +2104,25 @@ contains
            if (index_list(i) > at%N .or. index_list(i) < 1) then
               RAISE_ERROR('centre_of_mass: Invalid atom in index_list', error)
            end if
-	   if (my_origin > 0) then
-	      CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
-	   else
-	      CoM = CoM + at%mass(index_list(i)) * at%pos(:,index_list(i))
-	   endif
+           if (my_origin > 0) then
+              CoM = CoM + at%mass(index_list(i)) * diff_min_image(at,my_origin,index_list(i))
+           else
+              CoM = CoM + at%mass(index_list(i)) * at%pos(:,index_list(i))
+           endif
            M_Tot = M_Tot + at%mass(index_list(i))
         end do
 
      else
 
         do i = 1, at%N
-	   if (present(mask)) then
-	      if (.not. mask(i)) cycle
-	   endif
-	   if (my_origin > 0) then
-	      CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
-	   else
-	      CoM = CoM + at%mass(i) * at%pos(:,i)
-	   endif
+           if (present(mask)) then
+              if (.not. mask(i)) cycle
+           endif
+           if (my_origin > 0) then
+              CoM = CoM + at%mass(i) * diff_min_image(at,my_origin,i)
+           else
+              CoM = CoM + at%mass(i) * at%pos(:,i)
+           endif
            M_Tot = M_Tot + at%mass(i)
         end do
 
@@ -2130,7 +2130,7 @@ contains
 
      CoM = CoM / M_Tot
      if (my_origin > 0) then
-	CoM = CoM + at%pos(:,my_origin)
+        CoM = CoM + at%pos(:,my_origin)
      endif
 
    end function centre_of_mass
@@ -2148,7 +2148,7 @@ contains
    !% ellipsoid. One large e-value suggests roughly linear clustering, two similar and one small e-values suggest
    !% a planar distribution, while three similar e-values suggests almost spherical distribution (when copies of
    !% the atoms reflected through the origin atom are also considered).
-   !% 
+   !%
    !% To acheive a more spherical distribution, atoms along the e-vector(s) with the smallest e-value(s) should be
    !% added to the index list (See 'CosAngle_To_Line' below).
    !%
@@ -2159,7 +2159,7 @@ contains
    !% eigenvalue 1 and the other eigenvectors have eigenvalue 0.
    !%
    !% The eigenvalues of the averaged matrix sum to 1.
-   !% 
+   !%
    subroutine directionality(this,origin,list,evalues,evectors,method,error)
 
      type(Atoms),                      intent(in)  :: this     !% The input atoms structure
@@ -2174,7 +2174,7 @@ contains
      !local variables
      integer                                       :: i, j, k, l, n, my_method, lwork, info, jshift(3)
      real(dp), dimension(3)                        :: r_ij,rhat_ij
-     real(dp), dimension(3,3)                      :: A, B 
+     real(dp), dimension(3,3)                      :: A, B
      real(dp), allocatable, dimension(:,:)         :: vectors, u
      real(dp), allocatable, dimension(:)           :: work
 
@@ -2237,7 +2237,7 @@ contains
            end if
            r_ij = diff(this,i,j,jshift)
            vectors(n,:) = r_ij / norm(r_ij)
-        end do   
+        end do
 
         call dgesvd('N','A',list%N,3,vectors,list%N,evalues,u,list%N,evectors,3,work,lwork,info)
         !No left singular vectors, all right singular vectors
@@ -2267,9 +2267,9 @@ contains
    !% between 'atom' and 'test_atom'
    !%
    !% The idea is that this will be called with the origin atom from 'Directionality' as 'atom',
-   !% the eigenvector associated with the smallest eigenvalue as 'dir' and a potentially new 
+   !% the eigenvector associated with the smallest eigenvalue as 'dir' and a potentially new
    !% atom to connect to 'atom' with a spline as 'test_atom'.
-   !% 
+   !%
    !% If the result is close to 1 then accept the 'test_atom', and reject if close to zero
 
    function cosangle_to_line(this,atom,dir,test_atom,error)
@@ -2305,7 +2305,7 @@ contains
 
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
    !
-   ! I/O procedures  
+   ! I/O procedures
    !
    !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -2346,9 +2346,9 @@ contains
       call print(this%properties)
 
       if (this%connect%initialised) then
-	call verbosity_push_decrement()
-	call print(this%connect, my_out)
-	call verbosity_pop()
+        call verbosity_push_decrement()
+        call print(this%connect, my_out)
+        call verbosity_pop()
       end if
 
       call print('',PRINT_NORMAL, my_out)
@@ -2382,7 +2382,7 @@ contains
 
      dict_prop_names_string = ""
      do i=1,this%N
-	if (my_with_types) then
+        if (my_with_types) then
 
            select case(this%entries(i)%type)
            case(T_INTEGER_A)
@@ -2407,19 +2407,19 @@ contains
               RAISE_ERROR('dict_prop_names_string: bad property type='//type//' in properties argument', error)
            end select
 
-	  write(tmp,'(i0)') n_cols ! Number of columns for this property
-	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'// &
-				 prop_type//':'//trim(tmp)//':'
-	else
-	  dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'
-	endif
+          write(tmp,'(i0)') n_cols ! Number of columns for this property
+          dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'// &
+                                 prop_type//':'//trim(tmp)//':'
+        else
+          dict_prop_names_string=trim(dict_prop_names_string)//string(this%keys(i))//':'
+        endif
      end do
      ! Remove trailing ':'
      dict_prop_names_string = dict_prop_names_string(1:len_trim(dict_prop_names_string)-1)
    end function dict_prop_names_string
 
   !Termination_Bond_Rescale
-  !% Calculates the rescale ratio of a Z1--H bond 
+  !% Calculates the rescale ratio of a Z1--H bond
   !% generate from a Z1--Z2 bond.
   function termination_bond_rescale(z1,z2)
     integer,  intent(in) :: z1, z2
@@ -2491,7 +2491,7 @@ contains
     character(*), intent(in) :: prop
     type(Table), intent(inout) :: list
     integer, intent(out), optional :: error
-    
+
     integer :: i
     integer, dimension(:), pointer :: p
 
@@ -2506,7 +2506,7 @@ contains
   end subroutine property_to_list
 
   !% Convert the Table 'list' to a single column integer property in 'at',
-  !% with atoms in list marked with a 1 and absent 
+  !% with atoms in list marked with a 1 and absent
   subroutine list_to_property(at, list, prop, error)
     type(Atoms), intent(inout) :: at
     type(Table), intent(in) :: list
@@ -2525,7 +2525,7 @@ contains
 
     p = 0 ! Set all entries to zero
     p(int_part(list,1)) = 1 ! Set entries in 'list' to 1
-    
+
   end subroutine list_to_property
 
   !% Find atoms which have integer property 'prop' with value 'value'
@@ -2564,19 +2564,19 @@ contains
 
     integer :: i
     integer, allocatable, dimension(:) :: inarray
-    
+
     call allocate(outlist,1,0,0,0)
-    
+
     allocate(inarray(inlist%N))
     inarray = int_part(inlist,1)
-    
+
     do i=1,at%N
        if (.not. is_in_array(inarray,i)) &
             call append(outlist,i)
     end do
 
     deallocate(inarray)
-    
+
   end subroutine complement
 
 
@@ -2657,28 +2657,28 @@ contains
     do while (count(is_in_cluster) /= last_n_in_cluster)
       last_n_in_cluster = count(is_in_cluster)
       do i=1, this%N
-	if (is_in_cluster(i)) then
-	  do ji=1, atoms_n_neighbours(this, i)
-	    j = atoms_neighbour(this, i, ji, shift=shift)
-	    is_in_cluster(j) = .true.
-	  end do
-	end if
+        if (is_in_cluster(i)) then
+          do ji=1, atoms_n_neighbours(this, i)
+            j = atoms_neighbour(this, i, ji, shift=shift)
+            is_in_cluster(j) = .true.
+          end do
+        end if
       end do
     end do
     allocate(cluster_list(count(is_in_cluster)))
     ji = 0
     do i=1, this%N
       if (is_in_cluster(i)) then
-	ji = ji + 1
-	cluster_list(ji) = i
+        ji = ji + 1
+        cluster_list(ji) = i
       endif
     end do
 
     ! initialize shifts
     do i=1, this%N
       do ji=1, atoms_n_neighbours(this, i)
-	j = atoms_neighbour(this, i, ji, shift=shift)
-	shifts(:,ji,i) = shift
+        j = atoms_neighbour(this, i, ji, shift=shift)
+        shifts(:,ji,i) = shift
       end do
     end do
 
@@ -2689,46 +2689,46 @@ contains
     do while (any(shifts(dir_indices,:,cluster_list(:)) /= 0))
       ! look for atoms i that have been touched
       do i=1, this%N
-	if (.not. is_in_cluster(i)) cycle
-	if (touched(i)) then
-	  ! look at neighbors of i
-	  do ji=1, atoms_n_neighbours(this,i)
-	    j = atoms_neighbour(this, i, ji)
-	    ! if neighbor has 0 shift, it doesn't need to move
-	    if (any(shifts(dir_indices,ji,i) /= 0)) then
-	      ! atom j does need to move
-	      ! atoms with non-zero shift should not have been touched before
-	      if (touched(j)) then
+        if (.not. is_in_cluster(i)) cycle
+        if (touched(i)) then
+          ! look at neighbors of i
+          do ji=1, atoms_n_neighbours(this,i)
+            j = atoms_neighbour(this, i, ji)
+            ! if neighbor has 0 shift, it doesn't need to move
+            if (any(shifts(dir_indices,ji,i) /= 0)) then
+              ! atom j does need to move
+              ! atoms with non-zero shift should not have been touched before
+              if (touched(j)) then
                  RAISE_ERROR("coalesce_in_one_periodic_image tried to move atom " // j // " twice", error)
-	      endif
+              endif
 
-	      ! shift atom to zero out shift
+              ! shift atom to zero out shift
               do k=1,3
                  if (dir_mask(k)) this%pos(:,j) = this%pos(:,j) + shifts(k,ji,i) * this%lattice(:,k)
               end do
 
-	      ! fix shifts of j's neighbours
-	      delta_shift = merge(shifts(:,ji,i), (/0, 0, 0/), dir_mask)
-	      do jji=1, atoms_n_neighbours(this, j)
-		! fix shifts from j to its neighbors
-		jj = atoms_neighbour(this, j, jji)
-		shifts(:,jji,j) = shifts(:,jji,j) + delta_shift(:)
-		! fix shifts from j's neighbours to it
-		do ki=1, atoms_n_neighbours(this, jj)
-		  k = atoms_neighbour(this, jj, ki)
-		  if (k == j) then
-		    shifts(:,ki,jj) = shifts(:,ki,jj) - delta_shift(:)
-		  endif
-		end do ! ki
-	      end do ! jji
-	      ! shifts(:,ji,i) = 0
-	      touched(j) = .true.
-	    else
-	      ! atom j doesn't need to move
-	      touched(j) = .true.
-	    endif ! any(shift) /= 0
-	  end do ! ji
-	endif ! touched i
+              ! fix shifts of j's neighbours
+              delta_shift = merge(shifts(:,ji,i), (/0, 0, 0/), dir_mask)
+              do jji=1, atoms_n_neighbours(this, j)
+                ! fix shifts from j to its neighbors
+                jj = atoms_neighbour(this, j, jji)
+                shifts(:,jji,j) = shifts(:,jji,j) + delta_shift(:)
+                ! fix shifts from j's neighbours to it
+                do ki=1, atoms_n_neighbours(this, jj)
+                  k = atoms_neighbour(this, jj, ki)
+                  if (k == j) then
+                    shifts(:,ki,jj) = shifts(:,ki,jj) - delta_shift(:)
+                  endif
+                end do ! ki
+              end do ! jji
+              ! shifts(:,ji,i) = 0
+              touched(j) = .true.
+            else
+              ! atom j doesn't need to move
+              touched(j) = .true.
+            endif ! any(shift) /= 0
+          end do ! ji
+        endif ! touched i
       end do ! i
     end do ! some shift isn't zero
 
@@ -2777,29 +2777,29 @@ contains
     ! Loop over neighbouring cells, applying PBC
     do k2 = min_cell_image_Nc, max_cell_image_Nc
 
-       ! the stored cell we are in 
-       if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1 
+       ! the stored cell we are in
+       if(cellsNc > 1) k3 = mod(k+k2-1+cellsNc,cellsNc)+1
 
        ! the shift we need to get to the cell image
        k4 = (k+k2-k3)/cellsNc
 
        do j2 = min_cell_image_Nb, max_cell_image_Nb
-	  ! the stored cell we are in                 
-	  if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1 
+          ! the stored cell we are in
+          if(cellsNb > 1) j3 = mod(j+j2-1+cellsNb,cellsNb)+1
 
-	  ! the shift we need to get to the cell image
-	  j4 = (j+j2-j3)/cellsNb
+          ! the shift we need to get to the cell image
+          j4 = (j+j2-j3)/cellsNb
 
-	  do i2 = min_cell_image_Na, max_cell_image_Na
-	     ! the stored cell we are in                 
-	     if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1 
+          do i2 = min_cell_image_Na, max_cell_image_Na
+             ! the stored cell we are in
+             if(cellsNa > 1) i3 = mod(i+i2-1+cellsNa,cellsNa)+1
 
-	     ! the shift we need to get to the cell image
-	     i4 = (i+i2-i3)/cellsNa
+             ! the shift we need to get to the cell image
+             i4 = (i+i2-i3)/cellsNa
 
-	     ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
-	     ! with shift (i4,j4,k4)
-	     ! loop over it's atoms and test connectivity if atom1 < atom2
+             ! The cell we are currently testing atom1 against is cell(i3,j3,k3)
+             ! with shift (i4,j4,k4)
+             ! loop over it's atoms and test connectivity if atom1 < atom2
 
              atom_i = this%connect%cell_heads(i3, j3, k3)
              atom_i_loop: do while (atom_i > 0)
@@ -2809,19 +2809,19 @@ contains
                       cycle atom_i_loop
                    endif
                 end if
-		pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
+                pos = this%pos(:,atom_i) + ( this%lattice .mult. (/ i4, j4, k4 /) )
                 cur_diff = pos - r
-		cur_dist = norm(cur_diff)
-		if (cur_dist < min_dist) then
-		  min_dist = cur_dist
+                cur_dist = norm(cur_diff)
+                if (cur_dist < min_dist) then
+                  min_dist = cur_dist
                   min_diff = cur_diff
-		  closest_atom = atom_i
-		endif
+                  closest_atom = atom_i
+                endif
 
                 atom_i = this%connect%next_atom_in_cell(atom_i)
-	     end do atom_i_loop
+             end do atom_i_loop
 
-	  end do
+          end do
        end do
     end do
 
@@ -2848,7 +2848,7 @@ contains
     endif
 
     is_min_image = .true.
-    ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j) 
+    ! First we give the neighbour1 (i <= j) then the neighbour2 entries (i > j)
     if (use_connect%initialised) then
 
        if (.not. associated(use_connect%neighbour1(i)%t)) then
@@ -3123,7 +3123,7 @@ contains
              end do
           end if
        end if
-       
+
        ! Is it a per-atom 3x3 matrix, arranged as a 9 column property?
        if (assign_pointer(this%properties, string(this%properties%keys(i)), v2)) then
           if (has_key(rank2_d, string(this%properties%keys(i))) .and. size(v2, 1) == 9) then
@@ -3152,7 +3152,7 @@ contains
     q = rotation(axis, angle)
     R = rotation_matrix(q)
     call transform_basis(this, R, rank1, rank2)
-    
+
   end subroutine atoms_rotate
 
   !% Convert from a single index in range 1..this%N to a CASTEP-style (element, index) pair
@@ -3166,7 +3166,7 @@ contains
     do j=1,index
        if (this%z(index) == this%z(j)) z_index = z_index + 1
     end do
-  
+
   end function atoms_index_to_z_index
 
   !% Inverse of atoms_index_to_z_index
@@ -3176,7 +3176,7 @@ contains
     integer, intent(out), optional :: error
     integer :: index
     integer :: nz
-    
+
     INIT_ERROR(error)
 
     nz = 0
@@ -3184,7 +3184,7 @@ contains
        if(this%z(index) == z) nz = nz + 1
        if (nz == z_index) return
     end do
-    
+
     RAISE_ERROR('atoms_z_index_to_index: index pair ('//z//','//z_index//') not found', error)
 
   end function atoms_z_index_to_index
@@ -3203,10 +3203,10 @@ contains
     is_nearest_neighbour_abs_index = .false.
     do ji=1, atoms_n_neighbours(this, i)
       if (atoms_neighbour(this, i, ji, distance=d, alt_connect=alt_connect) == j) then
-	if (d < bond_length(this%Z(i),this%Z(j))*this%nneightol) then
-	  is_nearest_neighbour_abs_index = .true.
-	  return
-	endif
+        if (d < bond_length(this%Z(i),this%Z(j))*this%nneightol) then
+          is_nearest_neighbour_abs_index = .true.
+          return
+        endif
       endif
     end do
   end function is_nearest_neighbour_abs_index
@@ -3248,7 +3248,7 @@ contains
        origin, extent, own_neighbour, store_is_min_image, store_n_neighb, error)
     type(Atoms), intent(inout), target           :: this
     real(dp), intent(in) :: cutoff_factor, cutoff_break_factor
-    type(Connection), intent(inout), target, optional :: alt_connect    
+    type(Connection), intent(inout), target, optional :: alt_connect
     real(dp), optional, intent(in) :: origin(3), extent(3,3)
     logical, optional, intent(in) :: own_neighbour, store_is_min_image, store_n_neighb
     integer, intent(out), optional :: error
@@ -3280,7 +3280,7 @@ contains
   !% own periodic images.
   !% If 'cutoff_skin' is present, effective cutoff is increased by this
   !% amount, and full recalculation of connectivity is only done when
-  !% any atom has moved more than 0.5*cutoff_skin - otherwise 
+  !% any atom has moved more than 0.5*cutoff_skin - otherwise
   !% calc_dists() is called to update the stored distance tables.
   subroutine atoms_calc_connect(this, alt_connect, own_neighbour, store_is_min_image, skip_zero_zero_bonds, store_n_neighb, max_pos_change, did_rebuild, error)
     type(Atoms),                intent(inout)  :: this
@@ -3371,7 +3371,7 @@ contains
    do i=1, this%N
       ii = find_in_array(ElementName, a2s(this%species(:,i)))
       if (ii < 1) then
-	 RAISE_ERROR("failed to match name of atom "//i//" '"//a2s(this%species(:,i))//"'", error)
+         RAISE_ERROR("failed to match name of atom "//i//" '"//a2s(this%species(:,i))//"'", error)
       endif
       this%Z(i) = ii-1
    end do
@@ -3390,18 +3390,18 @@ contains
     my_persistent = optional_default(.true., persistent)
     if (.not. my_persistent) then
        if (.not. allocated(save_prev_pos)) then
-	 allocate(save_prev_pos(3, at%N))
-	 save_prev_pos = at%pos
+         allocate(save_prev_pos(3, at%N))
+         save_prev_pos = at%pos
        else
-	 if (size(save_prev_pos,2) /= at%N) then
-	    call system_abort("undo_pbc_jumps got not persistent, but shape(save_prev_pos) "//shape(save_prev_pos)//" does not match shape(at%pos) "//shape(at%pos))
-	 endif
+         if (size(save_prev_pos,2) /= at%N) then
+            call system_abort("undo_pbc_jumps got not persistent, but shape(save_prev_pos) "//shape(save_prev_pos)//" does not match shape(at%pos) "//shape(at%pos))
+         endif
        endif
        prev_pos_p => save_prev_pos
     else
        if (.not. assign_pointer(at, 'prev_pos', prev_pos_p)) then
-	  call add_property(at, 'prev_pos', 0.0_dp, n_cols=3, ptr2=prev_pos_p)
-	  prev_pos_p = at%pos
+          call add_property(at, 'prev_pos', 0.0_dp, n_cols=3, ptr2=prev_pos_p)
+          prev_pos_p = at%pos
        endif
     end if
 
@@ -3432,17 +3432,17 @@ contains
     if (my_persistent) then
       ! get orig_CoM from at%params
       if (.not. get_value(at%params, 'orig_CoM', orig_CoM)) then
-	 orig_CoM = CoM
-	 call set_value(at%params, 'orig_CoM', orig_CoM)
+         orig_CoM = CoM
+         call set_value(at%params, 'orig_CoM', orig_CoM)
       endif
     else
       ! get orig_CoM from save_orig_CoM
       if (.not. allocated(save_orig_CoM)) then
-	 allocate(save_orig_CoM(3))
-	 save_orig_CoM = CoM
-	 orig_CoM = CoM
+         allocate(save_orig_CoM(3))
+         save_orig_CoM = CoM
+         orig_CoM = CoM
       else
-	 orig_CoM = save_orig_CoM
+         orig_CoM = save_orig_CoM
       endif
     endif
 
@@ -3470,18 +3470,18 @@ contains
     ! get/save orig_pos
     if (.not. my_persistent) then
        if (.not. allocated(save_orig_pos)) then
-	 allocate(save_orig_pos(3, at%N))
-	 save_orig_pos = at%pos
+         allocate(save_orig_pos(3, at%N))
+         save_orig_pos = at%pos
        else
-	 if (size(save_orig_pos,2) /= at%N) then
-	    call system_abort("calc_msd got not persistent, but shape(save_orig_pos) "//shape(save_orig_pos)//" does not match shape(at%pos) "//shape(at%pos))
-	 endif
+         if (size(save_orig_pos,2) /= at%N) then
+            call system_abort("calc_msd got not persistent, but shape(save_orig_pos) "//shape(save_orig_pos)//" does not match shape(at%pos) "//shape(at%pos))
+         endif
        endif
        orig_pos_p => save_orig_pos
     else
        if (.not. assign_pointer(at, 'orig_pos', orig_pos_p)) then
-	  call add_property(at, 'orig_pos', 0.0_dp, n_cols=3, ptr2=orig_pos_p)
-	  orig_pos_p = at%pos
+          call add_property(at, 'orig_pos', 0.0_dp, n_cols=3, ptr2=orig_pos_p)
+          orig_pos_p = at%pos
        endif
     end if
     if (my_reset_msd) orig_pos_p = at%pos
@@ -3517,20 +3517,20 @@ contains
 
     if (.not. my_persistent) then
        if (.not. allocated(save_smooth_pos)) then ! first config
-	 allocate(save_smooth_pos(3, at%N))
-	 save_smooth_pos = at%pos
-	 save_smooth_lattice = at%lattice
+         allocate(save_smooth_pos(3, at%N))
+         save_smooth_pos = at%pos
+         save_smooth_lattice = at%lattice
        else ! later config
-	 if (size(save_smooth_pos,2) /= at%N) then
-	    call system_abort("calc_msd got not persistent, but shape(save_smooth_pos) "//shape(save_smooth_pos)//" does not match shape(at%pos) "//shape(at%pos))
-	 endif
+         if (size(save_smooth_pos,2) /= at%N) then
+            call system_abort("calc_msd got not persistent, but shape(save_smooth_pos) "//shape(save_smooth_pos)//" does not match shape(at%pos) "//shape(at%pos))
+         endif
        endif
        smooth_pos_p => save_smooth_pos
        call add_property_from_pointer(at, 'smooth_pos', smooth_pos_p)
     else ! persistent
        if (.not. assign_pointer(at, 'smooth_pos', smooth_pos_p)) then
-	  call add_property(at, 'smooth_pos', 0.0_dp, n_cols=3, ptr2=smooth_pos_p)
-	  smooth_pos_p = at%pos
+          call add_property(at, 'smooth_pos', 0.0_dp, n_cols=3, ptr2=smooth_pos_p)
+          smooth_pos_p = at%pos
        endif
        call get_param_value(at, 'smooth_lattice', save_smooth_lattice)
     end if

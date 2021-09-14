@@ -35,14 +35,14 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  
+
  subroutine linear_square(x,afunc)
     real(dp) :: x, afunc(:)
 
     afunc(1) = x*x
     afunc(2) = x
     afunc(3) = 1
-  
+
   end subroutine linear_square
 
   subroutine potential_bulk_modulus(pot, at, B, V0, minimise_bulk, eps, args_str)
@@ -53,7 +53,7 @@
     real(dp), intent(in), optional :: eps
     character(len=*), intent(in), optional :: args_str
 
-    integer  :: i,j, steps 
+    integer  :: i,j, steps
     real(dp) :: E(11), V(11), a(3), chisq, use_eps
     type(Atoms) :: at0, at1
     logical :: do_minimise_bulk
@@ -70,9 +70,9 @@
        call verbosity_pop()
     end if
 
-    do i = 1, 11 
+    do i = 1, 11
        at1 = at0
-       call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*use_eps), scale_positions=.true.)  
+       call set_lattice(at1, at1%lattice*(1.0_dp - real(i-6,dp)*use_eps), scale_positions=.true.)
        V(i) = cell_volume(at1)
        call set_cutoff (at1, cutoff(pot)+1.0_dp)
        call calc_connect(at1)
@@ -91,12 +91,12 @@
 
     call least_squares(V, E, (/ ( 1.0_dp, j=1,11) /), &
          a, chisq, linear_square)
- 
+
     V0 = -a(2)/(2*a(1))
     B = -1.0*a(2)*EV_A3_IN_GPA
 
   end subroutine potential_bulk_modulus
- 
+
 !% We define a potential energy function $E(r)$, and then a scaled function
 !% \[
 !% E\'(r) = \beta E(\alpha r)
@@ -109,7 +109,7 @@
 !% \begin{eqnarray*}
 !% a_0' & = & \frac{a_0}{\alpha} \\ V_0' & = & \frac{V_0}{\alpha^3}
 !% \end{eqnarray*}
-!% The scaled bulk modulus is 
+!% The scaled bulk modulus is
 !% \begin{eqnarray*}
 !% B' & = & V \frac{\partial^2 E'}{\partial V^2} \\ & = & \beta \alpha^3 V \frac{\partial^2E}{\partial V^2} \\ & = & \beta \alpha^3 B
 !% \end{eqnarray*}
@@ -118,18 +118,18 @@
 !%   \alpha & = & \left( \frac{V_0}{V_0'} \right)^\frac{1}{3} = \frac{a_0}{a_0'} \\   \beta  & = & \frac{B'}{B \alpha^3}
 !% \end{eqnarray*}
 !% where $a_0$ and $a_0\'$ are the lattice constants before and after rescaling.
-!% 
-!% For QM/MM force mixing, where we label the QM potential as region 1 and the classical (MM) potential 
-!% as region 2, the aim is to rescale the QM potential to match the MM lattice constant $a_2$ and bulk 
+!%
+!% For QM/MM force mixing, where we label the QM potential as region 1 and the classical (MM) potential
+!% as region 2, the aim is to rescale the QM potential to match the MM lattice constant $a_2$ and bulk
 !% modulus $B_2$, so we have
 !% \begin{eqnarray*}
-!%   \alpha & = & \frac{a_1}{a_2} \\ \beta  & = & \frac{B_2}{B_1 \alpha^3} 
+!%   \alpha & = & \frac{a_1}{a_2} \\ \beta  & = & \frac{B_2}{B_1 \alpha^3}
 !% \end{eqnarray*}
 !% where $a_1$ and $B_1$ are the unmodified QM lattice constant and bulk modulus, respectively.
 !% Note that this is equivalent to rescaling the MM \emph{positions} to match the QM lattice constant.
 
   subroutine do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
-			       r_scale_pot1, E_scale_pot1, do_tb_defaults)
+                               r_scale_pot1, E_scale_pot1, do_tb_defaults)
     type(Atoms), intent(inout) :: reference_bulk
     type(Potential), intent(inout), target :: region1_pot, region2_pot
     logical, intent(in) :: minimise_bulk, do_rescale_r, do_rescale_E, do_tb_defaults
@@ -154,7 +154,7 @@
       call print("MINIMISING bulk in region1 potential", PRINT_VERBOSE)
       call verbosity_push_decrement()
       it = minim(region1_pot, at=bulk_region1, method='cg', convergence_tol=0.001_dp, max_steps=100, linminroutine='NR_LINMIN', &
-	do_print = .false., do_lat = .true., args_str='solver=DIAG SCF_NONE')
+        do_print = .false., do_lat = .true., args_str='solver=DIAG SCF_NONE')
       call verbosity_pop()
     endif
     call calc(region1_pot, bulk_region1, energy=e_bulk, args_str='solver=DIAG SCF_NONE')
@@ -184,7 +184,7 @@
       call print("MINIMISING bulk in region2 potential", PRINT_VERBOSE)
       call verbosity_push_decrement()
       it = minim(region2_pot, at=bulk_region2, method='cg', convergence_tol=0.001_dp, max_steps=100, linminroutine='NR_LINMIN', &
-	do_print = .false., do_lat = .true.)
+        do_print = .false., do_lat = .true.)
       call verbosity_pop()
     end if
     call calc(region2_pot, bulk_region2, energy=e_bulk)
@@ -226,7 +226,7 @@
   end subroutine do_reference_bulk
 
   subroutine do_minimise_mm(relax_pot, at, minim_mm_method, minim_mm_tol, minim_mm_max_steps, &
-      minim_mm_linminroutine, minim_mm_do_pos, minim_mm_do_lat, minim_mm_do_print, & 
+      minim_mm_linminroutine, minim_mm_do_pos, minim_mm_do_lat, minim_mm_do_print, &
       minim_mm_args_str, minim_mm_eps_guess, minim_inoutput_movie,  &
       minim_cinoutput_movie, &
       constrained_list)
@@ -249,12 +249,12 @@
     if (.not. assign_pointer(at, "fixed_pot", fixed_pot)) then
       call add_property(at, "fixed_pot", 0)
       if (.not. assign_pointer(at, "fixed_pot", fixed_pot)) &
-	call system_abort("do_minimise_mm failed to assign pointer for property 'fixed_pot'")
+        call system_abort("do_minimise_mm failed to assign pointer for property 'fixed_pot'")
     endif
 
     if (minval(constrained_list) < 1 .or. maxval(constrained_list) > size(fixed_pot)) then
       call print("do_minimise_mm: size(fixed_pot) " // size(fixed_pot) // &
-	" size(constrained_list) " // size(constrained_list), PRINT_ALWAYS)
+        " size(constrained_list) " // size(constrained_list), PRINT_ALWAYS)
       call print("do_minimise_mm: constrained_list", PRINT_ALWAYS)
       call print(constrained_list, PRINT_ALWAYS)
       call system_abort("do_minimise_mm with invalid value in constrained list")
@@ -266,9 +266,9 @@
     call verbosity_push_decrement()
     mainlog%prefix="NESTED_MINIM"
     mm_steps = minim(relax_pot, at, minim_mm_method, minim_mm_tol, minim_mm_max_steps, &
-	linminroutine=minim_mm_linminroutine, do_pos=minim_mm_do_pos, do_lat=minim_mm_do_lat, &
-	do_print=minim_mm_do_print, args_str=minim_mm_args_str, &
-	eps_guess=minim_mm_eps_guess, print_inoutput=minim_inoutput_movie, &
+        linminroutine=minim_mm_linminroutine, do_pos=minim_mm_do_pos, do_lat=minim_mm_do_lat, &
+        do_print=minim_mm_do_print, args_str=minim_mm_args_str, &
+        eps_guess=minim_mm_eps_guess, print_inoutput=minim_inoutput_movie, &
         print_cinoutput=minim_cinoutput_movie)
     mainlog%prefix=""
     call verbosity_pop()

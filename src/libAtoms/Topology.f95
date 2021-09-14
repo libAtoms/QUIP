@@ -33,18 +33,18 @@
 module topology_module
 
   use error_module
-  use system_module          
-  use units_module           
-  use extendable_str_module  
-  use linearalgebra_module   
-  use dictionary_module      
-  use table_module           
-  use periodictable_module   
-  use connection_module           
-  use atoms_types_module           
-  use atoms_module           
-  use clusters_module        
-  use structures_module      
+  use system_module
+  use units_module
+  use extendable_str_module
+  use linearalgebra_module
+  use dictionary_module
+  use table_module
+  use periodictable_module
+  use connection_module
+  use atoms_types_module
+  use atoms_module
+  use clusters_module
+  use structures_module
 
 
   implicit none
@@ -160,26 +160,26 @@ contains
     ! find desired position field (pos, avgpos, whatever)
     if (present(pos_field_for_connectivity)) then
       if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) then
-	RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
+        RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
       endif
       if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else if (.not. assign_pointer(at, 'avgpos', use_pos)) then
       call print("WARNING: calc_topology can't find default pos field 'avgpos', trying to use pos instead")
       if (.not. assign_pointer(at, 'pos', use_pos)) then
-	RAISE_ERROR("calc_topology can't find avgpos or pos fields",error)
+        RAISE_ERROR("calc_topology can't find avgpos or pos fields",error)
       endif
       use_pos_is_pos = .true.
     endif
 
     do_find_silica_residue = optional_default(.false.,find_silica_residue)
     do_have_titania_potential = optional_default(.false.,have_titania_potential)
-  
+
     ! copy desired pos to pos, and new connectivity
     !NB don't do if use_pos => pos
     if (.not. use_pos_is_pos) at_copy%pos = use_pos
     if (do_find_silica_residue) then
        call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
-       call calc_connect(at_copy, alt_connect=t_connect)       
+       call calc_connect(at_copy, alt_connect=t_connect)
     elseif (do_have_titania_potential) then
        call set_cutoff(at_copy,1.3*bond_length(22, 8))
        call calc_connect(at_copy, alt_connect=t_connect)
@@ -195,9 +195,9 @@ contains
 
     ! now create labels using this connectivity object
     call create_residue_labels_internal(at,do_CHARMM,intrares_impropers,heuristics_nneighb_only=do_nneighb_only,alt_connect=t_connect,&
-	 find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
-	 silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
-	 find_molecules=find_molecules, remove_Si_H_silica_bonds=remove_Si_H_silica_bonds, &
+         find_silica_residue=do_find_silica_residue, silica_pos_dep_charges=silica_pos_dep_charges, &
+         silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential, &
+         find_molecules=find_molecules, remove_Si_H_silica_bonds=remove_Si_H_silica_bonds, &
          remove_Ti_H_titania_bonds=remove_Ti_H_titania_bonds, error=error)
     PASS_ERROR(error)
     call finalise(t_connect)
@@ -328,7 +328,7 @@ integer :: j,atom_i, ji
 
 !!!!!!!!!!!  TITANIA POTENTIAL  !!!!!!!!!!
     if (titania_potential) then
-  ! TIO residue if Ti atom is present in the atoms structure 
+  ! TIO residue if Ti atom is present in the atoms structure
        if (any(at%Z(1:at%N).eq.22)) then
           call print('|-Looking for TIO residue, not from the library...')
           call print('| |-Found... will be treated as 1 molecule, 1 residue...')
@@ -439,7 +439,7 @@ integer :: j,atom_i, ji
                 RAISE_ERROR('Non O/H atom '//atom_i//'!?', error)
              endif
           enddo
-          
+
           !Add all the titanium atoms together
           call initialise(TiOH_list,4,0,0,0,0)
           call append (TiOH_list,atom_Ti)
@@ -452,7 +452,7 @@ integer :: j,atom_i, ji
           !call create_pos_dep_charges(at,TiOH_list,charge) !,residue_names=cha_res_name(residue_type%int(1,residue_number(1:at%N))))
           atom_charge = 1.2_dp
           do i=1,at%n
-             if(at%Z(i).eq.8) atom_charge(i) = -0.6_dp 
+             if(at%Z(i).eq.8) atom_charge(i) = -0.6_dp
              call print('   '//i//'   '//atom_charge(i),verbosity=PRINT_ANALYSIS)
           enddo
           call print("overall titania charge: "//sum(atom_charge(TiOH_list%int(1,1:TiOH_list%N))))
@@ -467,7 +467,7 @@ integer :: j,atom_i, ji
 
     endif
 !!!!!!!!!!!!!! END TITANIA POTENTIAL !!!!!!!!!!!!!!!!
-    
+
 
 !!!!!!!!!!!!!!! DANNY POTENTIAL !!!!!!!!!!!!!!!!
     if (find_silica) then
@@ -570,7 +570,7 @@ integer :: j,atom_i, ji
                    if (hydrogen.lt.O_neighb%N) then
                       if(find_in_array(at%Z(O_neighb%int(1,hydrogen+1:O_neighb%N)),1).gt.0) then
                          RAISE_ERROR('More than 1 H neighbours of O '//atom_i, error)
-		      endif
+                      endif
                    endif
                 else
                    atom_name(atom_i) = 'OSB' !bridging O
@@ -624,7 +624,7 @@ integer :: j,atom_i, ji
     endif
 !!!!!!!!!!!!!!! END DANNY POTENTIAL !!!!!!!!!!!!!!!!
 
-    do 
+    do
 
        ! Pull the next residue template from the library
        if (my_do_charmm) then
@@ -656,7 +656,7 @@ integer :: j,atom_i, ji
        call find_motif(at,motif,list,mask=unidentified,nneighb_only=heuristics_nneighb_only,alt_connect=use_connect) !,hysteretic_neighbours=use_hysteretic_neighbours)
 
        if (list%N > 0) then
-          
+
           call print('| |-Found '//list%N//' occurrences of '//cres_name//' with charge '//(sum(at_charges(1:size(at_charges)))))
           mol_charge_sum = mol_charge_sum + list%N * sum(at_charges(1:size(at_charges)))
 
@@ -668,9 +668,9 @@ integer :: j,atom_i, ji
 !1 row is 1 residue
              unidentified(list%int(:,m)) = .false.
 
-	     do i_motif_at=1, size(list%int,1)
-	       motif_atom_num(list%int(i_motif_at,m)) = i_motif_at
-	     end do
+             do i_motif_at=1, size(list%int,1)
+               motif_atom_num(list%int(i_motif_at,m)) = i_motif_at
+             end do
 
              !Store the residue info
              nres = nres + 1
@@ -681,10 +681,10 @@ integer :: j,atom_i, ji
                   !        residue_type(1,j)   = k        k-th residue in the library file, in order
                   !        cha_res_name(k)   = 'ALA'    name of the k-th residue in the library file
                   !then atom 'i' is in a residue 'ALA'
-	     atom_subgroup(list%int(:,m)) = at_subgroups
+             atom_subgroup(list%int(:,m)) = at_subgroups
              atom_name(list%int(:,m)) = at_names
              atom_name_PDB(list%int(:,m)) = at_names_PDB
-             if (my_do_charmm) then 
+             if (my_do_charmm) then
                 atom_charge(list%int(:,m)) = at_charges
                ! intraresidual IMPROPERs
                 if (present(intrares_impropers)) then
@@ -714,15 +714,15 @@ integer :: j,atom_i, ji
        call print(count(unidentified)//' unidentified atoms',verbosity=PRINT_ALWAYS)
        call print(find(unidentified))
        do i=1,at%N
-	  if (unidentified(i)) then
-	    call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
-	      ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=PRINT_ALWAYS)
-	    call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//n_neighbours(at,i,alt_connect=alt_connect),verbosity=PRINT_ALWAYS)
-	    do ji=1, n_neighbours(at, i, alt_connect=alt_connect)
-	      j = neighbour(at, i, ji, alt_connect=alt_connect)
-	      call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=PRINT_ALWAYS)
-	    end do
-	  endif
+          if (unidentified(i)) then
+            call print(ElementName(at%Z(i))//' atom '//i//' has avgpos: '//round(at%pos(1,i),5)//&
+              ' '//round(at%pos(2,i),5)//' '//round(at%pos(3,i),5),verbosity=PRINT_ALWAYS)
+            call print(ElementName(at%Z(i))//' atom '//i//' has number of neighbours: '//n_neighbours(at,i,alt_connect=alt_connect),verbosity=PRINT_ALWAYS)
+            do ji=1, n_neighbours(at, i, alt_connect=alt_connect)
+              j = neighbour(at, i, ji, alt_connect=alt_connect)
+              call print("  neighbour " // j // " is of type " // ElementName(at%Z(j)), verbosity=PRINT_ALWAYS)
+            end do
+          endif
        enddo
 
       call print(at%connect)
@@ -794,7 +794,7 @@ integer :: j,atom_i, ji
              end if ! allocated(molecules)
           end do ! i=1,size(molecules)
           deallocate(molecules)
-       else 
+       else
           ! find_molecules is F, assume we have just one molecule
           ! we set molecule name to residue name of first atom
 
@@ -853,36 +853,36 @@ integer :: j,atom_i, ji
     last_mol_id = 0
     do while (any(mol_id == 0))
       do seed_at=last_seed+1, at%N
-	if (mol_id(seed_at) /= 0) cycle
+        if (mol_id(seed_at) /= 0) cycle
 
-	! find molecule from seed
-	call initialise(cur_molec)
-	call append(cur_molec, (/ seed_at, 0, 0, 0 /) )
-	added_something = .true.
-	! look for neighbours
-	do while (added_something)
-	   call initialise(next_atoms)
-	   call bfs_step(at,cur_molec,next_atoms,nneighb_only = heuristics_nneighb_only, min_images_only = .true., alt_connect=alt_connect)
-	   if (next_atoms%N > 0) then
-	    added_something = .true.
-	    call append(cur_molec, next_atoms)
-	   else
-	    added_something = .false.
-	   endif
-	end do
+        ! find molecule from seed
+        call initialise(cur_molec)
+        call append(cur_molec, (/ seed_at, 0, 0, 0 /) )
+        added_something = .true.
+        ! look for neighbours
+        do while (added_something)
+           call initialise(next_atoms)
+           call bfs_step(at,cur_molec,next_atoms,nneighb_only = heuristics_nneighb_only, min_images_only = .true., alt_connect=alt_connect)
+           if (next_atoms%N > 0) then
+            added_something = .true.
+            call append(cur_molec, next_atoms)
+           else
+            added_something = .false.
+           endif
+        end do
 
-	! set mol_id
-	mol_id(cur_molec%int(1,1:cur_molec%N)) = last_mol_id+1
-	! store in molecules
-	if (present(molecules)) then
-	  allocate(molecules(last_mol_id+1)%i_a(cur_molec%N))
-	  molecules(last_mol_id+1)%i_a = cur_molec%int(1,1:cur_molec%N)
-	endif
-	call finalise(cur_molec)
+        ! set mol_id
+        mol_id(cur_molec%int(1,1:cur_molec%N)) = last_mol_id+1
+        ! store in molecules
+        if (present(molecules)) then
+          allocate(molecules(last_mol_id+1)%i_a(cur_molec%N))
+          molecules(last_mol_id+1)%i_a = cur_molec%int(1,1:cur_molec%N)
+        endif
+        call finalise(cur_molec)
 
-	last_mol_id = last_mol_id + 1
+        last_mol_id = last_mol_id + 1
 
-	last_seed = seed_at
+        last_seed = seed_at
       end do ! seed_at
     end do ! while any(mol_id == 0)
 
@@ -896,7 +896,7 @@ integer :: j,atom_i, ji
   !% do_CHARMM=.true. is the default
   !
   subroutine next_motif(library,res_name,pdb_name,motif,atom_names,atom_charges,atom_names_PDB, n_impr,imp_atoms,do_CHARMM,at_subgroups,header_line)
-    
+
     type(Inoutput),                   intent(in)  :: library
     character(4),                     intent(out) :: res_name
     character(3),                     intent(out) :: pdb_name
@@ -936,8 +936,8 @@ integer :: j,atom_i, ji
     do while(status==0)
        line = read_line(library,status)
        if (present(header_line)) then
-	 if (len_trim(header_line) > 0) header_line=trim(header_line)//quip_new_line
-	 header_line=trim(header_line)//trim(line)
+         if (len_trim(header_line) > 0) header_line=trim(header_line)//quip_new_line
+         header_line=trim(header_line)//trim(line)
        endif
        if (line(1:8)=='%residue') exit
     end do
@@ -1015,18 +1015,18 @@ integer :: j,atom_i, ji
 
     if (present(at_subgroups)) then
       if (allocated(at_subgroups)) then
-	if (size(at_subgroups) /= n_at) deallocate(at_subgroups)
+        if (size(at_subgroups) /= n_at) deallocate(at_subgroups)
       endif
       if (.not. allocated(at_subgroups)) allocate(at_subgroups(n_at))
       at_subgroups = tmp_at_subgroups(1:n_at)
     endif
 
     call finalise(motif_table)
-    
+
   end subroutine next_motif
 
   !% Writes PDB format using the pdb_format passed as an input
-  !% printing charges into the last column of PDB file 
+  !% printing charges into the last column of PDB file
   !% Sample lines:
   !%ATOM      1  CT3 ALA A   1       0.767   0.801  13.311  0.00  0.00     ALA   C  -0.2700
   !%ATOM      2   HA ALA A   1       0.074  -0.060  13.188  0.00  0.00     ALA   H   0.0900
@@ -1058,13 +1058,13 @@ integer :: j,atom_i, ji
     call print('   PDB file: '//trim(pdb%filename))
 !    call print('REMARK'//at%N,file=pdb)
 !lattice information could be added in a line like this:
-!CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1          
+!CRYST1    1.000    1.000    1.000  90.00  90.00  90.00 P 1           1
     call get_lattice_params(at%lattice, cell_lengths(1), cell_lengths(2), cell_lengths(3), &
-					cell_angles(1), cell_angles(2), cell_angles(3))
+                                        cell_angles(1), cell_angles(2), cell_angles(3))
     sor=''
     write(sor, '(a6,3f9.3,3f7.2,a16)') 'CRYST1', cell_lengths(:), DEGREES_PER_RADIAN*cell_angles(:), ' P 1           1'
     call print(sor, file=pdb)
-    
+
 !    if ((trim(my_run_type_string).eq.'QMMM_CORE') .or. &
 !        (trim(my_run_type_string).eq.'QMMM_EXTENDED')) then
 !       qm_flag_index = get_property(at,'cluster_mark')
@@ -1153,7 +1153,7 @@ integer :: j,atom_i, ji
   end subroutine write_brookhaven_pdb_file
 
   !% Writes modified PDB format for accurate coordinates and charges, for CP2K
-  !% Use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file 
+  !% Use CHARGE_EXTENDED keyword i.e. reads charges from the last column of PDB file
   !% Sample line:
   !%ATOM      1  CT3 ALA A   1       0.76700000   0.80100000  13.31100000  0.00  0.00     ALA   C  -0.27
   !%ATOM      2   HA ALA A   1       0.07400000  -0.06000000  13.18800000  0.00  0.00     ALA   H   0.09
@@ -1168,7 +1168,7 @@ integer :: j,atom_i, ji
 !    character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,1x,i4,1x,3x,3f13.8,2f6.2,10x,a2,2x,f6.4)'
     character(*), parameter  :: pdb_format = '(a6,i5,1x,a4,1x,a4,i5,1x,3x,3f13.8,2f6.2,5x,a4,1x,a2,2x,f7.4)'
 
-  !CP2K modified PDB format 
+  !CP2K modified PDB format
   !       sor(1:6)   = 'ATOM  '
   !       sor(7:11)  = mm
   !       sor(13:16) = this%atom_type(mm)
@@ -1223,12 +1223,12 @@ integer :: j,atom_i, ji
     use_pos_is_pos = .false.
     if (present(pos_field_for_connectivity)) then
       if (.not. assign_pointer(at, trim(pos_field_for_connectivity), use_pos)) then
-	RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
+        RAISE_ERROR("calc_topology can't find pos field '"//trim(pos_field_for_connectivity)//"'", error)
       endif
       if (trim(pos_field_for_connectivity) == 'pos') use_pos_is_pos = .true.
     else
       if (.not. assign_pointer(at, 'avgpos', use_pos)) then
-	RAISE_ERROR("calc_topology can't find default pos field avgpos", error)
+        RAISE_ERROR("calc_topology can't find default pos field avgpos", error)
       endif
     endif
 
@@ -1238,13 +1238,13 @@ integer :: j,atom_i, ji
 
     if (do_add_silica_23body) then
        call set_cutoff(at_copy,SILICA_2BODY_CUTOFF)
-       call calc_connect(at_copy, alt_connect=t_connect)       
+       call calc_connect(at_copy, alt_connect=t_connect)
     else
        ! use hysteretic connect to get nearest neighbour cutoff
        ! will use default cutoff, which is the same as heuristics_nneighb_only=.true.
        call calc_connect_hysteretic(at, DEFAULT_NNEIGHTOL, DEFAULT_NNEIGHTOL, alt_connect=t_connect)
     endif
-    
+
 
     call break_form_bonds(at, t_connect, form_bond, break_bond, error=error)
     PASS_ERROR(error)
@@ -1950,7 +1950,7 @@ call print('PSF| '//impropers%n//' impropers')
                 if (add_silica_23body) then !only add 2 and 3 body for silica, skip dihedrals
                    if (at%Z(atom_j).eq.14) cycle
                 endif
-                
+
                 if (do_remove_qmmm_link_bonds) then
                    ! skip angle if it spans the QM-MM boundary
                    if ( .not. (all(cluster_mark( (/atom_j, angles%int(1:3,i)/) ) == HYBRID_NO_MARK) .or. &
@@ -1959,7 +1959,7 @@ call print('PSF| '//impropers%n//' impropers')
                       cycle
                    end if
                 end if
-          
+
                 call append(dihedrals,(/atom_j,angles%int(1,i),angles%int(2,i),angles%int(3,i)/))
              endif
           endif
@@ -2004,7 +2004,7 @@ call print('PSF| '//impropers%n//' impropers')
     call system_timer('create_dihedral_list')
 
   end subroutine create_dihedral_list
-  
+
   !% Create $impropers$ table simply use the $angles$ table.
   !% For intraresidual impropers, use the input table,
   !% the backbone residues can be calculated.
@@ -2016,10 +2016,10 @@ call print('PSF| '//impropers%n//' impropers')
   type(Table),           intent(in)  :: angles
   type(Table),           intent(out) :: impropers
   type(Table), optional, intent(in)  :: intrares_impropers
-  logical, intent(in), optional :: remove_qmmm_link_bonds  
+  logical, intent(in), optional :: remove_qmmm_link_bonds
   character(len=*), intent(in), optional :: run_suffix
-  
-  logical do_remove_qmmm_link_bonds  
+
+  logical do_remove_qmmm_link_bonds
   character(STRING_LENGTH) :: my_run_suffix
   integer, dimension(4) :: imp_atoms
   integer               :: nn,mm
@@ -2548,7 +2548,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
   subroutine find_AB_monomer(at,atomic_number,monomer_cutoff,AB_index,error)
 
      type(atoms), intent(in) :: at
-     integer, dimension(2), intent(in) :: atomic_number 
+     integer, dimension(2), intent(in) :: atomic_number
      real(dp), intent(in) :: monomer_cutoff
      integer, dimension(:,:), intent(out) :: AB_index
      integer, intent(out), optional :: error
@@ -2600,7 +2600,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
 
   endsubroutine find_AB_monomer
 
-       
+
    subroutine break_form_bonds(at, conn, form_bond, break_bond, error)
       type(Atoms), intent(in) :: at
       type(Connection), intent(inout) :: conn
@@ -2615,37 +2615,37 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
       INIT_ERROR(error)
 
        if (present(form_bond)) then
-	 if (all(form_bond >= 1) .and. all(form_bond <= at%N)) then
-	    bond_exists = .false.
-	    do ji=1, n_neighbours(at, form_bond(1), alt_connect=conn)
-	       j = neighbour(at, form_bond(1), ji, shift=shift, alt_connect=conn)
-	       if (j == form_bond(2)) then
-		  bond_exists = .true.
-		  exit
-	       endif
-	    end do
-	    if (.not. bond_exists) then
-	       form_bond_dist = distance_min_image(at, form_bond(1), form_bond(2), shift=shift)
-	       call add_bond(conn, at%pos, at%lattice, form_bond(1), form_bond(2), shift, form_bond_dist, error=error)
-	       PASS_ERROR(error)
-	    endif
-	 endif ! valid atom #s
+         if (all(form_bond >= 1) .and. all(form_bond <= at%N)) then
+            bond_exists = .false.
+            do ji=1, n_neighbours(at, form_bond(1), alt_connect=conn)
+               j = neighbour(at, form_bond(1), ji, shift=shift, alt_connect=conn)
+               if (j == form_bond(2)) then
+                  bond_exists = .true.
+                  exit
+               endif
+            end do
+            if (.not. bond_exists) then
+               form_bond_dist = distance_min_image(at, form_bond(1), form_bond(2), shift=shift)
+               call add_bond(conn, at%pos, at%lattice, form_bond(1), form_bond(2), shift, form_bond_dist, error=error)
+               PASS_ERROR(error)
+            endif
+         endif ! valid atom #s
        endif ! present(form_bond)
        if (present(break_bond)) then
-	 if (all(break_bond >= 1) .and. all(break_bond <= at%N)) then
-	    bond_exists = .false.
-	    do ji=1, n_neighbours(at, break_bond(1), alt_connect=conn)
-	       j = neighbour(at, break_bond(1), ji, shift=shift, alt_connect=conn)
-	       if (j == break_bond(2)) then
-		  bond_exists = .true.
-		  exit
-	       endif
-	    end do
-	    if (bond_exists) then
-	       call remove_bond(conn, break_bond(1), break_bond(2), shift, error=error)
-	       PASS_ERROR(error)
-	    endif
-	 endif ! valid atom #s
+         if (all(break_bond >= 1) .and. all(break_bond <= at%N)) then
+            bond_exists = .false.
+            do ji=1, n_neighbours(at, break_bond(1), alt_connect=conn)
+               j = neighbour(at, break_bond(1), ji, shift=shift, alt_connect=conn)
+               if (j == break_bond(2)) then
+                  bond_exists = .true.
+                  exit
+               endif
+            end do
+            if (bond_exists) then
+               call remove_bond(conn, break_bond(1), break_bond(2), shift, error=error)
+               PASS_ERROR(error)
+            endif
+         endif ! valid atom #s
        endif ! present(break_bond)
    end subroutine break_form_bonds
 
@@ -2666,94 +2666,94 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
        found_N = i
 !call print("atom i is a N, continuing")
        do ji=2, size(motif,2) ! look for alpha-C
-	 j=motif(i,ji); if (j == 0) exit
+         j=motif(i,ji); if (j == 0) exit
 !call print("check atom j "//j//" Z=" // motif(j,1))
-	 if (motif(j,1) == 6) then ! j is a possible alpha-C
+         if (motif(j,1) == 6) then ! j is a possible alpha-C
 !call print("atom j is a C, continuing")
-	   found_aC = j
-	   do ki=2, size(motif,2) ! look for possible carboxyl-C
-	     k = motif(j,ki); if (k == 0) exit
+           found_aC = j
+           do ki=2, size(motif,2) ! look for possible carboxyl-C
+             k = motif(j,ki); if (k == 0) exit
 !call print("check atom k " //k//" Z=" // motif(k,1))
-	     if (motif(k,1) == 6) then ! k is a possible carboxyl-C
+             if (motif(k,1) == 6) then ! k is a possible carboxyl-C
 !call print("atom k  is a C, continuing")
-	       found_cC = k
-	       do li=2, size(motif,2) ! loook for possible carboxyl-O
-		 l = motif(k, li); if (l == 0) exit
+               found_cC = k
+               do li=2, size(motif,2) ! loook for possible carboxyl-O
+                 l = motif(k, li); if (l == 0) exit
 !call print("check atom l "//l//" Z=" // motif(l,1))
-		 if (motif(l,1) == 8 .and. count(motif(l,2:) /= 0) == 1) then ! found carboxyl O
+                 if (motif(l,1) == 8 .and. count(motif(l,2:) /= 0) == 1) then ! found carboxyl O
 !call print("atom l is an O with coord 1, continuing")
 
-		     ii = 1
-		     backbone(ii,1) = found_N
-		     do mi=2, size(motif,2) ! find neighbours of N for backbone
-		       m = motif(found_N, mi); if (m == 0) exit
+                     ii = 1
+                     backbone(ii,1) = found_N
+                     do mi=2, size(motif,2) ! find neighbours of N for backbone
+                       m = motif(found_N, mi); if (m == 0) exit
 !call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of N")
-		       if (m == found_aC) cycle
-		       if (motif(m,1) == 1) then
+                       if (m == found_aC) cycle
+                       if (motif(m,1) == 1) then
 !call print("neighbor m is a H, adding to backbone")
-			 ii = ii + 1
-			 backbone(ii,1) = m
-		       else if (motif(m,1) == 6) then 
-			 is_proline = .true.
-		       else
-			 call print("find_motif_backbone confused by neighbor of N", PRINT_VERBOSE)
-			 backbone = 0
-			 return
-		       endif
-		     end do ! mi
+                         ii = ii + 1
+                         backbone(ii,1) = m
+                       else if (motif(m,1) == 6) then
+                         is_proline = .true.
+                       else
+                         call print("find_motif_backbone confused by neighbor of N", PRINT_VERBOSE)
+                         backbone = 0
+                         return
+                       endif
+                     end do ! mi
 
-		     ii = 1
-		     backbone(ii,2) = found_aC
-		     do mi=2, size(motif,2) ! find neighbours of alpha-C for backbone
-		       m = motif(found_aC, mi); if (m == 0) exit
+                     ii = 1
+                     backbone(ii,2) = found_aC
+                     do mi=2, size(motif,2) ! find neighbours of alpha-C for backbone
+                       m = motif(found_aC, mi); if (m == 0) exit
 !call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of alpha-C")
-		       if (m == found_N .or. m == found_cC) cycle
-		       if (motif(m,1) == 1) then
+                       if (m == found_N .or. m == found_cC) cycle
+                       if (motif(m,1) == 1) then
 !call print("neighbor m is a H, adding to backbone")
-			 ii = ii + 1
-			 backbone(ii,2) = m
-		       else if (motif(m,1) /= 6) then 
-			  call print("find_motif_backbone confused by neighbor of alpha-C, neither H or C", PRINT_VERBOSE)
-			  backbone = 0
-			  return
-		       endif
-		     end do ! mi
+                         ii = ii + 1
+                         backbone(ii,2) = m
+                       else if (motif(m,1) /= 6) then
+                          call print("find_motif_backbone confused by neighbor of alpha-C, neither H or C", PRINT_VERBOSE)
+                          backbone = 0
+                          return
+                       endif
+                     end do ! mi
 
-		     ii = 1
-		     backbone(ii,3) = found_cC
-		     do mi=2, size(motif,2) ! find neighbours of carboxyl-C for backbone
-		       m = motif(found_cC, mi); if (m == 0) exit
+                     ii = 1
+                     backbone(ii,3) = found_cC
+                     do mi=2, size(motif,2) ! find neighbours of carboxyl-C for backbone
+                       m = motif(found_cC, mi); if (m == 0) exit
 !call print("neighbor m " // m // " Z="//motif(m,1)// " neighbor of carboxyl-C")
-		       if (m == found_aC) cycle
-		       if (motif(m,1) == 8) then
+                       if (m == found_aC) cycle
+                       if (motif(m,1) == 8) then
 !call print("neighbor m is an O, adding to backbone")
-			 ii = ii + 1
-			 backbone(ii,3) = m
-			 do ni=2, size(motif,2) ! look for OH
-			   n = motif(m, ni); if (n == 0) exit
-			   if (n == found_cC) cycle
+                         ii = ii + 1
+                         backbone(ii,3) = m
+                         do ni=2, size(motif,2) ! look for OH
+                           n = motif(m, ni); if (n == 0) exit
+                           if (n == found_cC) cycle
 !call print("neighbor n " // n // " Z="//motif(n,1)// " neighbor of carboxyl-C-O")
-			   if (motif(n,1) == 1) then
+                           if (motif(n,1) == 1) then
 !call print("neighbor n is an H, adding to backbone")
-			     ii = ii + 1
-			     backbone(ii,3) = n
-			   else
-			     call print("find_motif_backbone confused by non-H neighbor of carboxyl-O", PRINT_VERBOSE)
-			     backbone = 0
-			     return
-			   endif
-			 end do
-		       else
-			 call print("find_motif_backbone confused by neighbor of carboxyl-C", PRINT_VERBOSE)
-			 backbone = 0
-			 return
-		       endif
-		     end do ! mi
-		 endif ! found carboxyl O
-	       end do ! li
-	     endif ! carboxyl-C
-	   end do ! ki
-	 endif ! found alpha C
+                             ii = ii + 1
+                             backbone(ii,3) = n
+                           else
+                             call print("find_motif_backbone confused by non-H neighbor of carboxyl-O", PRINT_VERBOSE)
+                             backbone = 0
+                             return
+                           endif
+                         end do
+                       else
+                         call print("find_motif_backbone confused by neighbor of carboxyl-C", PRINT_VERBOSE)
+                         backbone = 0
+                         return
+                       endif
+                     end do ! mi
+                 endif ! found carboxyl O
+               end do ! li
+             endif ! carboxyl-C
+           end do ! ki
+         endif ! found alpha C
        end do ! ji
      end  do ! i
    end function find_motif_backbone
@@ -3010,7 +3010,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
    ! also returns a set of diffs, which are vectors between the mean positions of the shifted versions of these pairs.
       type(atoms), intent(in) :: at
       integer, dimension(:,:), allocatable, intent(out) :: monomer_pairs ! 2 x n: (index into monomer_one_index, index into monomer_two_index)
-      real(dp),dimension(:,:), allocatable, intent(out) :: mean_pos_diffs ! 
+      real(dp),dimension(:,:), allocatable, intent(out) :: mean_pos_diffs !
       integer, dimension(:), allocatable, intent(out) :: pairs_diffs_map
       integer, intent(in), dimension(:,:) :: monomer_one_index, monomer_two_index
       logical, intent(in) :: monomers_identical, double_count
@@ -3239,7 +3239,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
       n_triplets = n_triplets + 1
       call reallocate(monomer_triplets,3,n_triplets,copy=.true.)
       monomer_triplets(:,n_triplets) = triplet
-      pos_ijk = n_triplets      
+      pos_ijk = n_triplets
 
       n_shifts = n_shifts + 1
       call reallocate(triplets_shifts,6,n_shifts,copy=.true.)
@@ -3292,8 +3292,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
        j=pairs_one_two( 2, map_one_two(pos_ij) )
        diff_ij = diffs_one_two(:,pos_ij)
        shift_ij = shifts_one_two(:,pos_ij)
-       
-       do pos_ik=1,size(map_one_three)                   ! loop over monomers k of type 3 also paired with i 
+
+       do pos_ik=1,size(map_one_three)                   ! loop over monomers k of type 3 also paired with i
          if (i /= pairs_one_three( 1, map_one_three(pos_ik) ) ) cycle
 
          k =pairs_one_three( 2 , map_one_three(pos_ik) )
@@ -3306,8 +3306,8 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
          if (two_three_identical .and. all(shift_jk .eq. 0) .and. j==k ) cycle ! skip if  j and k are same monomer
 
 !         if (two_three_identical .and. k .lt. j) cycle
-!         if (two_three_identical .and. all(shift_jk .eq. 0) .and. j .ge. k ) cycle 
-!         if (two_three_identical .and. j .ge. k ) cycle 
+!         if (two_three_identical .and. all(shift_jk .eq. 0) .and. j .ge. k ) cycle
+!         if (two_three_identical .and. j .ge. k ) cycle
 
          ! check that is a valid triplet - i.e. two sides of the triangle are within cutoff length
          ! find minimum  intermolecular distance (excluding Hydrogen) between each monomer pair
@@ -3327,7 +3327,7 @@ call print("atom type " // trim(a2s(atom_type(:,imp_atoms(4)))), PRINT_ANALYSIS)
      if(allocated(triplets_shifts)) deallocate(triplets_shifts)
 !call print("triplets diffs")
 !call print(triplets_diffs)
-end subroutine find_monomer_triplets  
+end subroutine find_monomer_triplets
 
 
 subroutine add_triplet_if_new(monomer_triplets,triplets_diffs,triplets_diffs_map,triplets_shifts,i,j,k,diff_ij,diff_ik,shift_ij,shift_ik,two_three_identical)
@@ -3362,16 +3362,16 @@ subroutine add_triplet_if_new(monomer_triplets,triplets_diffs,triplets_diffs_map
       if (two_three_identical) then
         shift_mask =  (/  triplets_shifts(1,:) .eq. shift_ik(1)  /)   .and. &
                       (/  triplets_shifts(2,:) .eq. shift_ik(2)  /)   .and. &
-                      (/  triplets_shifts(3,:) .eq. shift_ik(3)  /)   .and. &         
+                      (/  triplets_shifts(3,:) .eq. shift_ik(3)  /)   .and. &
 
                       (/  triplets_shifts(4,:) .eq. shift_ij(1)  /)   .and. &
                       (/  triplets_shifts(5,:) .eq. shift_ij(2)  /)   .and. &
-                      (/  triplets_shifts(6,:) .eq. shift_ij(3)  /) 
+                      (/  triplets_shifts(6,:) .eq. shift_ij(3)  /)
 
         temp1d = maxloc(monomer_triplets(1,:), monomer_triplets(1,:) .eq. i .and. monomer_triplets(2,:) .eq. k .and. monomer_triplets(3,:) .eq. j)
         pos_ikj = temp1d(1)
         temp1d=maxloc(triplets_diffs_map,triplets_diffs_map .eq. pos_ikj .and. shift_mask)
-        if (temp1d(1) /= 0) then 
+        if (temp1d(1) /= 0) then
           deallocate(shift_mask)
           return
         end if
@@ -3385,16 +3385,16 @@ subroutine add_triplet_if_new(monomer_triplets,triplets_diffs,triplets_diffs_map
         n_triplets = n_triplets + 1
         call reallocate(monomer_triplets,3,n_triplets,copy=.true.)
         monomer_triplets(:,n_triplets) = triplet
-        pos_ijk=n_triplets      
+        pos_ijk=n_triplets
       end if
 
       shift_mask =  (/  triplets_shifts(1,:) .eq. shift_ij(1)  /)   .and. &       ! check if this shift already present for this triplet
                     (/  triplets_shifts(2,:) .eq. shift_ij(2)  /)   .and. &
-                    (/  triplets_shifts(3,:) .eq. shift_ij(3)  /)   .and. &         
+                    (/  triplets_shifts(3,:) .eq. shift_ij(3)  /)   .and. &
 
                     (/  triplets_shifts(4,:) .eq. shift_ik(1)  /)   .and. &
                     (/  triplets_shifts(5,:) .eq. shift_ik(2)  /)   .and. &
-                    (/  triplets_shifts(6,:) .eq. shift_ik(3)  /) 
+                    (/  triplets_shifts(6,:) .eq. shift_ik(3)  /)
 
       temp1d=maxloc(triplets_diffs_map,triplets_diffs_map .eq. pos_ijk .and. shift_mask)
       deallocate(shift_mask)
@@ -3408,7 +3408,7 @@ subroutine add_triplet_if_new(monomer_triplets,triplets_diffs,triplets_diffs_map
         triplets_shifts(:,n_shifts) = (/shift_ij,shift_ik/)
         triplets_diffs(:,n_shifts) = (/diff_ij,diff_ik/)
         triplets_diffs_map(n_shifts) = pos_ijk
-      end if      
+      end if
 end subroutine add_triplet_if_new
 
 function calc_mean_pos(at,indices) result (pos)

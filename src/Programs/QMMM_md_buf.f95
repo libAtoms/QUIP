@@ -51,8 +51,8 @@ program qmmm_md
   character(len=STRING_LENGTH)         :: Run_Type_array(6)               !_MM_, QS, QMMM_EXTENDED or QMMM_CORE
 
   !Force calc.
-  type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot 
-  type(Potential)                     :: evbsub_cp2k_fast_pot, evbsub_cp2k_slow_pot 
+  type(Potential)                     :: cp2k_fast_pot, cp2k_slow_pot
+  type(Potential)                     :: evbsub_cp2k_fast_pot, evbsub_cp2k_slow_pot
   type(Potential)                     :: pot, empty_qm_pot
   type(Potential)                     :: evbsub_pot, evbsub_empty_qm_pot
   real(dp)                            :: energy,check,TI_force, TI_corr
@@ -207,19 +207,19 @@ program qmmm_md
       call param_register(params_in, 'Seed', '-1', Seed, help_string="No help yet.  This source file was $LastChangedBy$")
 
       call param_register(params_in, 'qm_list_filename', '', qm_list_filename,  &
-	help_string="Filename containing list of atoms for (extended) QM region (in funny format).  Mutually exclusive with qm_region_pt_ctr and qm_region_atom_ctr")
+        help_string="Filename containing list of atoms for (extended) QM region (in funny format).  Mutually exclusive with qm_region_pt_ctr and qm_region_atom_ctr")
       call param_register(params_in, 'qm_region_pt_ctr', 'F', qm_region_pt_ctr, &
-	help_string="Use Cartesian point to center (extended) QM region.  Mutually exclusive with qm_list_filename and qm_region_atom_ctr")
+        help_string="Use Cartesian point to center (extended) QM region.  Mutually exclusive with qm_list_filename and qm_region_atom_ctr")
       call param_register(params_in, 'qm_region_ctr', '(/0.0 0.0 0.0/)', qm_region_ctr, help_string="Centre of the (extended) QM region in space.")
       call param_register(params_in, 'qm_region_atom_ctr', '0', qm_region_atom_ctr, help_string="Atom to center (extended) QM region about.  Mutually exclusive with qm_region_pt_ctr and qm_list_filename")
 
       call param_register(params_in, 'qm_core_list_filename', '', qm_core_list_filename, &
-	help_string="Filename containing list of atoms for core QM region (in funny format).  Mutually exclusive with qm_core_region_pt_ctr and qm_core_region_atom_ctr")
+        help_string="Filename containing list of atoms for core QM region (in funny format).  Mutually exclusive with qm_core_region_pt_ctr and qm_core_region_atom_ctr")
       call param_register(params_in, 'qm_core_region_pt_ctr', 'F', qm_core_region_pt_ctr, &
-	help_string="Use Cartesian point to center core QM region.  Mutually exclusive with qm_core_list_filename and qm_core_region_atom_ctr")
+        help_string="Use Cartesian point to center core QM region.  Mutually exclusive with qm_core_list_filename and qm_core_region_atom_ctr")
       call param_register(params_in, 'qm_core_region_ctr', '(/0.0 0.0 0.0/)', qm_core_region_ctr, help_string="Centre of the QM core region in space.")
       call param_register(params_in, 'qm_core_region_atom_ctr', '0', qm_core_region_atom_ctr, &
-	help_string="Atom to center core QM region about.  Mutually exclusive with qm_core_region_pt_ctr and qm_core_list_filename")
+        help_string="Atom to center core QM region about.  Mutually exclusive with qm_core_region_pt_ctr and qm_core_list_filename")
 
       call param_register(params_in, 'print_prop', 'all', print_prop, help_string="No help yet.  This source file was $LastChangedBy$")
       call param_register(params_in, 'print_forces', 'T', print_forces, help_string="whether to print forces at time>0 on the mainlog")
@@ -273,18 +273,18 @@ program qmmm_md
     !CHECK INPUT PARAMETERS
 
       if (Run_Type1(1:13) == 'QMMM_EXTENDED' .or. Run_Type2(1:13) == 'QMMM_EXTENDED') then
-	if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
-	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
-			      ", need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr// &
-			      "/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
-	endif
+        if (count((/qm_region_pt_ctr, qm_region_atom_ctr /= 0, len_trim(qm_list_filename) /= 0 /)) /= 1) then
+            call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
+                              ", need exactly one of qm_region_pt_ctr, qm_region_atom_ctr="//qm_region_atom_ctr// &
+                              "/=0, len_trim(qm_list_filename='"//trim(qm_list_filename)//"') /= 0")
+        endif
       endif
       if (Run_Type1(1:9) == 'QMMM_CORE' .or. Run_Type2(1:9) == 'QMMM_CORE') then
-	if (count((/qm_core_region_pt_ctr, qm_core_region_atom_ctr /= 0, len_trim(qm_core_list_filename) /= 0 /)) /= 1) then
-	    call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
-			      ", need exactly one of qm_core_region_pt_ctr, qm_core_region_atom_ctr="//qm_core_region_atom_ctr// &
-			      "/=0, len_trim(qm_core_list_filename='"//trim(qm_core_list_filename)//"') /= 0")
-	endif
+        if (count((/qm_core_region_pt_ctr, qm_core_region_atom_ctr /= 0, len_trim(qm_core_list_filename) /= 0 /)) /= 1) then
+            call system_abort("Doing Run_Type1="//trim(Run_Type1)//" Run_Type2="//trim(Run_Type2)//&
+                              ", need exactly one of qm_core_region_pt_ctr, qm_core_region_atom_ctr="//qm_core_region_atom_ctr// &
+                              "/=0, len_trim(qm_core_list_filename='"//trim(qm_core_list_filename)//"') /= 0")
+        endif
       endif
 
       if (Seed.gt.0) call system_reseed_rng(Seed)
@@ -309,27 +309,27 @@ program qmmm_md
          call print('RunType2 set to NONE')
       endif
       if ((trim(Run_Type1)).eq.'QMMM_EXTENDED' .and..not.any(trim(Run_Type2).eq.Run_Type_array(3:6))) &
-	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
+        call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
       if ((trim(Run_Type1)).eq.'QMMM_CORE' .and..not.any(trim(Run_Type2).eq.Run_Type_array(4:6))) &
-	call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
+        call system_abort('Run_Type1 must be higher level of accuracy than Run_Type2')
 
 !check PSF printing
       if (trim(PSF_Print) == 'NO_PSF' .or. trim(PSF_Print) == 'USE_EXISTING_PSF') then
-	 topology_print_rate=-1
-	 driver_PSF_Print=PSF_Print
+         topology_print_rate=-1
+         driver_PSF_Print=PSF_Print
       else if (trim(PSF_Print) == 'DRIVER_AT_0') then
-	 topology_print_rate=0
+         topology_print_rate=0
       else if (len(PSF_Print) > 13) then
-	 if (PSF_Print(1:13) == 'DRIVER_EVERY_') then
-	    read(unit=PSF_Print(14:len_trim(PSF_Print)),fmt=*,iostat=stat) topology_print_rate
-	    if (stat /= 0) &
-	       call system_abort("PSF_Print='"//trim(PSF_Print)//"' unable to parse N from DRIVER_EVERY_N '"// &
-	 	 PSF_Print(14:len_trim(PSF_Print))//"'")
-	 else
-	   call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
-	 endif
+         if (PSF_Print(1:13) == 'DRIVER_EVERY_') then
+            read(unit=PSF_Print(14:len_trim(PSF_Print)),fmt=*,iostat=stat) topology_print_rate
+            if (stat /= 0) &
+               call system_abort("PSF_Print='"//trim(PSF_Print)//"' unable to parse N from DRIVER_EVERY_N '"// &
+                  PSF_Print(14:len_trim(PSF_Print))//"'")
+         else
+           call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
+         endif
       else
-	 call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
+         call system_abort("Unknown PSF_Print '"//trim(PSF_Print)//"'")
       endif
 
     !PRINT INPUT PARAMETERS
@@ -345,9 +345,9 @@ program qmmm_md
          call print('  Thermostat_Type 1: Langevin everywhere')
          call print('  Langevin_Tau '//Langevin_Tau)
          call print('  adaptive Langevin '//adaptive_Langevin)
-	 if (adaptive_Langevin) then
-	    call print('  Adaptive Langevin, Nose_Hoover_Tau '//Nose_Hoover_Tau)
-	 endif
+         if (adaptive_Langevin) then
+            call print('  Adaptive Langevin, Nose_Hoover_Tau '//Nose_Hoover_Tau)
+         endif
       elseif (Thermostat_Type.eq.2) then
          call print('  Thermostat_Type 1: Nose-Hoover everywhere')
          call print('  Nose_Hoover_Tau '//Nose_Hoover_Tau)
@@ -374,11 +374,11 @@ program qmmm_md
          call print('  Thermostat_Type 8: separate Langevin for each atom, useful only for adaptive Langevin')
          call print('  Langevin_Tau ' // Langevin_Tau)
          call print('  Nose_Hoover_Tau ' // Nose_Hoover_Tau)
-	 if (.not.adaptive_Langevin) then
-	    call system_abort("Thermostat_Type=8 makes sense only for adaptive langevin and Nose_Hoover_Tau > 0, otherwise just use regular Langevin Thermostat_Type=1")
-	 endif
+         if (.not.adaptive_Langevin) then
+            call system_abort("Thermostat_Type=8 makes sense only for adaptive langevin and Nose_Hoover_Tau > 0, otherwise just use regular Langevin Thermostat_Type=1")
+         endif
       else
-	 call print('  Thermostat_Type '//thermostat_type//' unknown')
+         call print('  Thermostat_Type '//thermostat_type//' unknown')
       endif
       call print('  PSF_Print '//PSF_Print)
       call print('  nneightol '//nneightol)
@@ -390,18 +390,18 @@ program qmmm_md
       call print('  Outer_Buffer_Radius '//round(Outer_Buffer_Radius,3))
       call print('  Min_Connect_Cutoff '//round(Min_Connect_cutoff,3))
       call print('  Simulation_Temperature '//round(Simulation_Temperature,3))
-      call print('  coord_file '//coord_file) 
-      call print('  latest_coord_file '//latest_coord_file) 
-      call print('  traj_file '//traj_file) 
+      call print('  coord_file '//coord_file)
+      call print('  latest_coord_file '//latest_coord_file)
+      call print('  traj_file '//traj_file)
       if (len_trim(qm_list_filename) /= 0) then
          call print('  qm_list_filename '//trim(qm_list_filename))
       else if (qm_region_pt_ctr .or. qm_region_atom_ctr /= 0) then
-	 if (qm_region_pt_ctr) then
-	   call print('  QM extended region is centred around qm_region_ctr= '//qm_region_ctr)
-	 else
-	   call print('  QM extended region is centred around atom '//qm_region_atom_ctr)
-	   qm_region_pt_ctr = .true.
-	 endif
+         if (qm_region_pt_ctr) then
+           call print('  QM extended region is centred around qm_region_ctr= '//qm_region_ctr)
+         else
+           call print('  QM extended region is centred around atom '//qm_region_atom_ctr)
+           qm_region_pt_ctr = .true.
+         endif
          call print('  Inner_QM_Region_Radius '//round(Inner_QM_Region_Radius,3))
          call print('  Outer_QM_Region_Radius '//round(Outer_QM_Region_Radius,3))
          call print('  use_spline '//use_spline)
@@ -418,17 +418,17 @@ program qmmm_md
       if (len_trim(qm_core_list_filename) /= 0) then
          call print('  qm_core_list_filename '//trim(qm_core_list_filename))
       else if (qm_core_region_pt_ctr .or. qm_core_region_atom_ctr /= 0) then
-	 if (qm_core_region_pt_ctr) then
-	   call print('  QM core is centred around qm_core_region_ctr= '//qm_core_region_ctr)
-	 else
-	   call print('  QM core is centred around atom '//qm_core_region_atom_ctr)
-	   qm_core_region_pt_ctr = .true.
-	 endif
+         if (qm_core_region_pt_ctr) then
+           call print('  QM core is centred around qm_core_region_ctr= '//qm_core_region_ctr)
+         else
+           call print('  QM core is centred around atom '//qm_core_region_atom_ctr)
+           qm_core_region_pt_ctr = .true.
+         endif
          call print('  Inner_QM_Core_Region_Radius '//round(Inner_QM_Core_Region_Radius,3))
          call print('  Outer_QM_Core_Region_Radius '//round(Outer_QM_Core_Region_Radius,3))
       endif
-      call print('  Residue_Library '//Residue_Library) 
-      call print('  restraint_constraint_xml_file '//restraint_constraint_xml_file) 
+      call print('  Residue_Library '//Residue_Library)
+      call print('  restraint_constraint_xml_file '//restraint_constraint_xml_file)
       call print('  Charge '//Charge)
       call print('  Buffer_general '//Buffer_general)
       call print('  Continue '//Continue_it)
@@ -457,28 +457,28 @@ program qmmm_md
       backup_i=1
       backup_coord_file=trim(traj_file)//".backup_"//backup_i
       do while (is_file_readable(trim(backup_coord_file)))
-	backup_i = backup_i + 1
-	backup_coord_file=trim(traj_file)//".backup_"//backup_i
+        backup_i = backup_i + 1
+        backup_coord_file=trim(traj_file)//".backup_"//backup_i
       end do
       call print("WARNING:      to backup_coord_file " // trim(backup_coord_file))
       call system("cp "//trim(traj_file)//" "//trim(backup_coord_file))
     endif
 
     call initialise(traj_xyz,traj_file,action=OUTPUT)
-  
+
   !READ COORDINATES
 
     call print('Reading in the coordinates from file '//trim(coord_file)//'...')
     call read(my_atoms,coord_file)
- 
+
     call initialise(ds,my_atoms)
 
     if (Continue_it) then
       if (get_value(my_atoms%params,'Time',ds%t)) then
-	  call print('Found Time in atoms%params'//ds%t)
+          call print('Found Time in atoms%params'//ds%t)
       endif
     endif
- 
+
     if (len_trim(restraint_constraint_xml_file) > 0) then
        call initialise(restraint_constraint_xml_es)
        call read(restraint_constraint_xml_es, restraint_constraint_xml_file, convert_to_string=.true.)
@@ -487,7 +487,7 @@ program qmmm_md
     endif
 
     ds%avg_time = avg_time
- 
+
   !THERMOSTAT
     call add_QMMM_md_buf_thermostats(ds, thermostat_type, Simulation_Temperature)
     call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
@@ -495,9 +495,9 @@ program qmmm_md
 
     call finalise(my_atoms)
     call add_property(ds%atoms,'pot',0.0_dp) ! always do this, it's just 0 if spline isn't active - no need to change print_props
- 
+
     if (.not. has_property(ds%atoms, 'force')) call add_property(ds%atoms, 'force', 0.0_dp, n_cols=3)
- 
+
   !PRINT CONSTRAINTS AND RESTRAINTS
 
    if (ds%Nconstraints > 0) then
@@ -546,11 +546,11 @@ program qmmm_md
     ! topology calculation
     if (trim(Run_Type1).ne.'QS') then
        if (.not.Continue_it) then
-	  ! residues are needed here for heuristics based on them (e.g. don't break residue, don't break molecule)
-	  ! in update_QM_region() (and also buffer cluster creating in potential_simple_calc())
+          ! residues are needed here for heuristics based on them (e.g. don't break residue, don't break molecule)
+          ! in update_QM_region() (and also buffer cluster creating in potential_simple_calc())
           call set_value(ds%atoms%params,'Library',trim(Residue_Library))
-	  call map_into_cell(ds%atoms)
-	  call calc_dists(ds%atoms)
+          call map_into_cell(ds%atoms)
+          call calc_dists(ds%atoms)
           call create_residue_labels_arb_pos(ds%atoms,do_CHARMM=.true.,intrares_impropers=intrares_impropers,&
                find_silica_residue=have_silica_potential,silica_pos_dep_charges=silica_pos_dep_charges, &
                silica_charge_transfer=silica_charge_transfer, have_titania_potential=have_titania_potential)
@@ -571,18 +571,18 @@ program qmmm_md
 
        !(re)initialise QM region -- marks overwritten!
        if (reinitialise_qm_region .or. .not. Continue_it) then
-	  if (have_QMMM_extended) then
-	     call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
-	       qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
-	       first_time=.true., qm_seed=qm_seed_extended, error=error)
-	     HANDLE_ERROR(error)
-	  endif
-	  if (have_QMMM_core) then
-	    call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
-	       qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
-	       first_time=.true., qm_seed=qm_seed_core, error=error)
-	     HANDLE_ERROR(error)
-	  endif
+          if (have_QMMM_extended) then
+             call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, qm_region_atom_ctr, &
+               qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
+               first_time=.true., qm_seed=qm_seed_extended, error=error)
+             HANDLE_ERROR(error)
+          endif
+          if (have_QMMM_core) then
+            call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, qm_core_region_atom_ctr, &
+               qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, use_create_cluster_info_for_core, &
+               first_time=.true., qm_seed=qm_seed_core, error=error)
+             HANDLE_ERROR(error)
+          endif
 
           call print('hybrid, hybrid_mark and old_hybrid_mark properties added')
        endif ! .not. Continue_it
@@ -595,14 +595,14 @@ program qmmm_md
 
     if (trim(Run_Type1).ne.'QS') then
        if (.not.Continue_it) then
-	  ! topology check cannot be done until after QM region has been marked
+          ! topology check cannot be done until after QM region has been marked
           call check_topology(ds%atoms)
        end if
     end if
 
 
   !CHARGE
- 
+
     if (trim(Run_Type1).eq.'QS') then
        call set_value(ds%atoms%params,'Charge',Charge)
     endif
@@ -615,54 +615,54 @@ program qmmm_md
     ! set up pot
     if (trim(Run_Type2) == 'NONE') then ! no force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
-	  call print("SETUP_POT EVBSUB_POT")
+          call print("SETUP_POT EVBSUB_POT")
           call setup_pot(evbsub_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_pot)
-	  call print("INITIALISE_POT EVB")
+          call print("INITIALISE_POT EVB")
        else
-	  call print("SETUP_POT POT")
+          call print("SETUP_POT POT")
           call setup_pot(pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
        ! set up mm only pot, in case we need it for empty QM core
        if (EVB) then
-	  call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
+          call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
           call setup_pot(evbsub_empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(empty_qm_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_empty_qm_pot)
-	  call print("INITIALISE_POT EVB")
+          call print("INITIALISE_POT EVB")
        else
-	  call print("SETUP_POT EMPTY_QM_POT")
+          call print("SETUP_POT EMPTY_QM_POT")
           call setup_pot(empty_qm_pot, 'MM', filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
     else ! doing force mixing
        if (EVB.and.trim(Run_Type1)=='MM') then
           call print("WARNING: Force Mixing with MM as the slow potential!")
-	  call print("SETUP_POT EVBSUB_CP2K_SLOW_POT")
+          call print("SETUP_POT EVBSUB_CP2K_SLOW_POT")
           call setup_pot(evbsub_cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(cp2k_slow_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_slow_pot)
-	  call print("INITIALISE_POT EVB")
+          call print("INITIALISE_POT EVB")
        else
-	  call print("SETUP_POT CP2K_SLOW_POT")
+          call print("SETUP_POT CP2K_SLOW_POT")
           call setup_pot(cp2k_slow_pot, Run_Type1, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
        endif
        if (EVB.and.trim(Run_Type2)=='MM') then
-	  call print("SETUP_POT EVBSUB_CP2K_FAST_POT")
+          call print("SETUP_POT EVBSUB_CP2K_FAST_POT")
           call setup_pot(evbsub_cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           call initialise(cp2k_fast_pot,args_str='EVB=T',  &
              !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
              !' form_bond={1 2} break_bond={2 6} ', &
              pot1=evbsub_cp2k_fast_pot)
-	  call print("INITIALISE_POT EVB")
+          call print("INITIALISE_POT EVB")
        else
-	  call print("SETUP_POT CP2K_FAST_POT")
+          call print("SETUP_POT CP2K_FAST_POT")
           call setup_pot(cp2k_fast_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           ! recalculate connectivity since cutoff of mm_internal
           if (cutoff(cp2k_fast_pot) > use_cutoff) then
@@ -673,49 +673,49 @@ program qmmm_md
           end if
        endif
        if (distance_ramp) then
-	 if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
-	 weight_interpolation='distance_ramp'
+         if (.not. qm_region_pt_ctr) call system_abort("Distance ramp needs qm_region_pt_ctr (or qm_region_atom_ctr)")
+         weight_interpolation='distance_ramp'
        else
-	 weight_interpolation='hop_ramp'
+         weight_interpolation='hop_ramp'
        endif
        call initialise(pot,args_str='ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
-	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
-	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
-	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
-	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+          ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
+          ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+          ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
+          ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
           ' hysteretic_buffer_nneighb_only=T'//&
-	  ' weight_interpolation='//trim(weight_interpolation)// &
-	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
-	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
+          ' weight_interpolation='//trim(weight_interpolation)// &
+          ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
+          ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster &
 !next line is for playing with silica carving
 !          //' even_electrons=T terminate=T cluster_same_lattice=T termination_clash_check=T' &
           //' have_silica_potential='//have_silica_potential// ' res_num_silica'//res_num_silica & !lam81
-          //' have_titania_potential='//have_titania_potential & 
-	  //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
-	  pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
+          //' have_titania_potential='//have_titania_potential &
+          //' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)), &
+          pot1=cp2k_fast_pot, pot2=cp2k_slow_pot)
        call print('INITIALISE_POT ForceMixing=T use_buffer_for_fitting=T add_cut_H_in_fitlist=T'// &
-	  ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
-	  ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
-	  ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
-	  ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
+          ' method=conserve_momentum conserve_momentum_weight_method=mass calc_weights=T'// &
+          ' min_images_only=F lotf_nneighb_only=F fit_hops=1 hysteretic_buffer=T'// &
+          ' hysteretic_buffer_inner_radius='//Inner_Buffer_Radius// &
+          ' hysteretic_buffer_outer_radius='//Outer_Buffer_Radius// &
           ' hysteretic_buffer_nneighb_only=T'//&
-	  ' weight_interpolation='//trim(weight_interpolation)// &
-	  ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
-	  ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster // &
-	  ' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)))
+          ' weight_interpolation='//trim(weight_interpolation)// &
+          ' distance_ramp_inner_radius='//distance_ramp_inner_radius//' distance_ramp_outer_radius='//distance_ramp_outer_radius// &
+          ' single_cluster=T little_clusters=F carve_cluster='//do_carve_cluster // &
+          ' construct_buffer_use_only_heavy_atoms='//(.not.(buffer_general)))
 
        ! if Run_Type2 = QMMM_CORE, we'll crash if QM core is ever empty
        if (trim(Run_Type2) == 'MM') then
           if (EVB) then
-	     call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
+             call print("SETUP_POT EVBSUB_EMPTY_QM_POT")
              call setup_pot(evbsub_empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
              call initialise(empty_qm_pot,args_str='EVB=T',  &
                 !' topology_suffix1=_EVB1 topology_suffix2=_EVB2'// &
                 !' form_bond={1 2} break_bond={2 6} ', &
                 pot1=evbsub_empty_qm_pot)
-	     call print("INITIALISE_POT EVB")
+             call print("INITIALISE_POT EVB")
           else
-	     call print("SETUP_POT EMPTY_QM_POT")
+             call print("SETUP_POT EMPTY_QM_POT")
              call setup_pot(empty_qm_pot, Run_Type2, filepot_program, tmp_run_dir_i, mm_internal_init_args, mm_internal_param_filename)
           endif
        endif
@@ -743,17 +743,17 @@ call print("MAIN CALLED CALC EVB")
      !spline force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
         allocate(add_force(1:3,1:ds%atoms%N))
-	call verbosity_push_decrement()
-	  call print('Force due to added spline potential (eV/A):')
-	  call print('atom     F(x)     F(y)     F(z)')
+        call verbosity_push_decrement()
+          call print('Force due to added spline potential (eV/A):')
+          call print('atom     F(x)     F(y)     F(z)')
           if (.not.(assign_pointer(ds%atoms, "pot", spline_pot_val_p))) &
              call system_abort("couldn't find pot property")
-	  do i = 1, ds%atoms%N
-	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
-	     spline_pot_val_p(i) = spline_pot_val
-	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
-	  enddo
-	call verbosity_pop()
+          do i = 1, ds%atoms%N
+             add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
+             spline_pot_val_p(i) = spline_pot_val
+             call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
+          enddo
+        call verbosity_pop()
         call print('Sum of the forces: '//sum(add_force(1,1:ds%atoms%N))//' '//sum(add_force(2,1:ds%atoms%N))//' '//sum(add_force(3,1:ds%atoms%N)))
         f = sumBUFFER(f1+add_force,ds%atoms)
         deallocate(add_force)
@@ -767,7 +767,7 @@ call print("MAIN CALLED CALC EVB")
   !THERMOSTATTING now - hybrid_mark was updated only in calc
      call set_thermostat_regions(ds%atoms, Thermostat_Type, Thermostat_7_rs, qm_region_ctr)
      call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
-	 Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
+         Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
 
   !PRINT DS,CONSTRAINT
      call ds_print_status(ds, 'E',energy)
@@ -784,15 +784,15 @@ call print("MAIN CALLED CALC EVB")
                       ds%constraint(i)%lambdaR//" "// &
                       ds%constraint(i)%lambdaV//" "// &
                       ds%constraint(i)%Z_coll)
-	   if (ds%constraint(i)%N /= 3) then
-	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
-	   else
-	      TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
-								   f(1:3,ds%constraint(i)%atom(2)), &
-								   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
-	      call print('constrained bond length diff: '//round(check,10))
-	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
-	   endif
+           if (ds%constraint(i)%N /= 3) then
+              call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
+           else
+              TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
+                                                                   f(1:3,ds%constraint(i)%atom(2)), &
+                                                                   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
+              call print('constrained bond length diff: '//round(check,10))
+              call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+           endif
         enddo
         call print_cv(ds,Time_Step,.true.)
      endif
@@ -801,10 +801,10 @@ call print("MAIN CALLED CALC EVB")
      !----------------------------------------------------
     if (trim(print_prop).eq.'all') then
         call write(ds%atoms,traj_xyz,real_format='%17.10f', error=error)
-	HANDLE_ERROR(error)
+        HANDLE_ERROR(error)
     else
         call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f',error=error)
-	HANDLE_ERROR(error)
+        HANDLE_ERROR(error)
     endif
     call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
     call write(ds%atoms,latest_xyz,real_format='%17.10f',error=error)
@@ -815,7 +815,7 @@ call print("MAIN CALLED CALC EVB")
 
     if (print_forces_at0) then
        do i=1,ds%atoms%N
-	  call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+          call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
        enddo
     endif
 
@@ -828,11 +828,11 @@ call print("MAIN CALLED CALC EVB")
      call set_value(ds%atoms%params,'Time',ds%t)
      if (trim(print_prop).eq.'all') then
          call write(ds%atoms,traj_xyz,real_format='%17.10f',error=error)
-	 HANDLE_ERROR(error)
+         HANDLE_ERROR(error)
 !         call write(ds%atoms,xyz,real_format='%17.10f')
      else
          call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f', error=error)
-	 HANDLE_ERROR(error)
+         HANDLE_ERROR(error)
 !         call write(ds%atoms,xyz,real_format='%17.10f')
          !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
      endif
@@ -879,12 +879,12 @@ call print("MAIN CALLED CALC EVB")
      if (mod(n,update_QM_region_interval) == 0) then
      !NB should we really recalculate residue labels, so heuristics that keep residues together function here?  probably
        if (have_QMMM_extended) call update_QM_region(ds%atoms, '_extended', qm_region_pt_ctr, qm_region_ctr, &
-	 qm_region_atom_ctr, qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, &
-	 use_create_cluster_info_for_core, first_time=.false., qm_seed=qm_seed_extended, error=error)
+         qm_region_atom_ctr, qm_list_filename, Inner_QM_Region_Radius, Outer_QM_Region_Radius, buffer_general, &
+         use_create_cluster_info_for_core, first_time=.false., qm_seed=qm_seed_extended, error=error)
        HANDLE_ERROR(error)
        if (have_QMMM_core) call update_QM_region(ds%atoms, '_core', qm_core_region_pt_ctr, qm_core_region_ctr, &
-	 qm_core_region_atom_ctr, qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, &
-	 use_create_cluster_info_for_core, first_time=.false., qm_seed=qm_seed_core, error=error)
+         qm_core_region_atom_ctr, qm_core_list_filename, Inner_QM_Core_Region_Radius, Outer_QM_Core_Region_Radius, buffer_general, &
+         use_create_cluster_info_for_core, first_time=.false., qm_seed=qm_seed_core, error=error)
        HANDLE_ERROR(error)
      endif
 
@@ -893,7 +893,7 @@ call print("MAIN CALLED CALC EVB")
      if (Topology_Print_rate > 0) then !every #th step
         if (mod(n,Topology_Print_rate) == 0) then    !recalc connectivity & generate PSF (at every n-th step) and then use it
            driver_PSF_Print = 'DRIVER_PRINT_AND_SAVE'
-	else
+        else
            driver_PSF_Print = 'USE_EXISTING_PSF'
         endif
      endif
@@ -902,18 +902,18 @@ call print("MAIN CALLED CALC EVB")
 
     !SPLINE force calculation, if needed
      if (qm_region_pt_ctr.and.use_spline) then
-	call verbosity_push_decrement()
-	  call print('Force due to added spline potential (eV/A):')
-	  call print('atom     F(x)     F(y)     F(z)')
-	  allocate(add_force(1:3,1:ds%atoms%N))
+        call verbosity_push_decrement()
+          call print('Force due to added spline potential (eV/A):')
+          call print('atom     F(x)     F(y)     F(z)')
+          allocate(add_force(1:3,1:ds%atoms%N))
           if (.not.(assign_pointer(ds%atoms, "pot", spline_pot_val_p))) &
              call system_abort("couldn't find pot property")
-	  do i = 1, ds%atoms%N
-	     add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
-	     spline_pot_val_p(i) = spline_pot_val
-	     call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
-	  enddo
-	call verbosity_pop()
+          do i = 1, ds%atoms%N
+             add_force(1:3,i) = spline_force(ds%atoms,i,my_spline, pot=spline_pot_val)
+             spline_pot_val_p(i) = spline_pot_val
+             call print('  '//i//'    '//round(add_force(1,i),5)//'  '//round(add_force(2,i),5)//'  '//round(add_force(3,i),5))
+          enddo
+        call verbosity_pop()
         call print('Sum of the forces: '//sum(add_force(1,1:ds%atoms%N))//' '//sum(add_force(2,1:ds%atoms%N))//' '//sum(add_force(3,1:ds%atoms%N)))
         f = sumBUFFER(f1+add_force,ds%atoms)
         deallocate(add_force)
@@ -923,14 +923,14 @@ call print("MAIN CALLED CALC EVB")
 
      if (print_forces) then
        do i=1,ds%atoms%N
-	   call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
+           call print('FFF '//f(1,i)//' '//f(2,i)//' '//f(3,i))
        enddo
      endif
 
   !THERMOSTATTING now - hybrid_mark was updated only in calc
        call set_thermostat_regions(ds%atoms, Thermostat_Type, Thermostat_7_rs, qm_region_ctr)
        call set_thermostat_masses(ds%atoms, Thermostat_Type, Simulation_Temperature, &
-	 Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
+         Inner_QM_Region_Radius, Outer_QM_Region_Radius, Inner_Buffer_Radius, Outer_Buffer_Radius, Thermostat_7_rs)
 
   !ADVANCE VERLET 2
 
@@ -946,7 +946,7 @@ call print("MAIN CALLED CALC EVB")
         if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'E')
      else
         call ds_print_status(ds, 'I',energy)
-	if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'I')
+        if (ds%Nrestraints > 0) call print_restraint_stuff(ds, restraint_stuff, 'I')
      end if
 
      !Thermostat (only if not per-atom)
@@ -962,15 +962,15 @@ call print("MAIN CALLED CALC EVB")
                       ds%constraint(i)%lambdaR//" "// &
                       ds%constraint(i)%lambdaV//" "// &
                       ds%constraint(i)%Z_coll)
-	   if (ds%constraint(i)%N /= 3) then
-	      call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
-	   else
-	      TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
-								   f(1:3,ds%constraint(i)%atom(2)), &
-								   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
-	      call print('constrained bond length diff: '//round(check,10))
-	      call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
-	   endif
+           if (ds%constraint(i)%N /= 3) then
+              call print("WARNING: constraint " // i // " does not involve 3 atoms, ignoring", PRINT_ALWAYS)
+           else
+              TI_force = force_on_collective_variable(ds%atoms, (/ f(1:3,ds%constraint(i)%atom(1)), &
+                                                                   f(1:3,ds%constraint(i)%atom(2)), &
+                                                                   f(1:3,ds%constraint(i)%atom(3)) /), ds%constraint(i)%atom(1:3), TI_corr, check)
+              call print('constrained bond length diff: '//round(check,10))
+              call print('force on colvar '//i//' :'//round(TI_force,10)//' '//round(TI_corr,10))
+           endif
         enddo
         call print_cv(ds,Time_Step,.false.)
      endif
@@ -980,17 +980,17 @@ call print("MAIN CALLED CALC EVB")
         call set_value(ds%atoms%params,'Time',ds%t)
         if (trim(print_prop).eq.'all') then
             call write(ds%atoms,traj_xyz,real_format='%17.10f',error=error)
-	    HANDLE_ERROR(error)
+            HANDLE_ERROR(error)
 !            call write(ds%atoms,xyz,real_format='%17.10f')
         else
             call write(ds%atoms,traj_xyz,properties=trim(print_prop),real_format='%17.10f',error=error)
-	    HANDLE_ERROR(error)
+            HANDLE_ERROR(error)
 !            call write(ds%atoms,xyz,real_format='%17.10f')
             !call write(ds%atoms,xyz,properties=trim(print_prop),real_format='%17.10f')
         endif
         call initialise(latest_xyz,trim(latest_coord_file)//".new",action=OUTPUT)
         call write(ds%atoms,latest_xyz,real_format='%17.10f',error=error)
-	HANDLE_ERROR(error)
+        HANDLE_ERROR(error)
         call finalise(latest_xyz)
         call system("mv "//trim(latest_coord_file)//".new "//trim(latest_coord_file))
      end if
@@ -1007,21 +1007,21 @@ call print("MAIN CALLED CALC EVB")
 
      if (H_extra_heat_r(2) >= H_extra_heat_r(1)) then
        do i=1, ds%atoms%N
-	if (ds%atoms%Z(i) == 1) then
-	  r = distance_min_image(ds%atoms, i, H_extra_heat_ctr)
-	  if (r >= H_extra_heat_r(1) .and. r <= H_extra_heat_r(2)) ds%atoms%velo(:,i) = H_extra_heat_velo_factor*ds%atoms%velo(:,i)
-	endif
+        if (ds%atoms%Z(i) == 1) then
+          r = distance_min_image(ds%atoms, i, H_extra_heat_ctr)
+          if (r >= H_extra_heat_r(1) .and. r <= H_extra_heat_r(2)) ds%atoms%velo(:,i) = H_extra_heat_velo_factor*ds%atoms%velo(:,i)
+        endif
        end do
      endif
      if (nH_extra_heat_r(2) >= nH_extra_heat_r(1)) then
        do i=1, ds%atoms%N
-	if (ds%atoms%Z(i) /= 1) then
-	  r = distance_min_image(ds%atoms, i, nH_extra_heat_ctr)
-	  if (r >= nH_extra_heat_r(1) .and. r <= nH_extra_heat_r(2)) ds%atoms%velo(:,i) = nH_extra_heat_velo_factor*ds%atoms%velo(:,i)
-	endif
+        if (ds%atoms%Z(i) /= 1) then
+          r = distance_min_image(ds%atoms, i, nH_extra_heat_ctr)
+          if (r >= nH_extra_heat_r(1) .and. r <= nH_extra_heat_r(2)) ds%atoms%velo(:,i) = nH_extra_heat_velo_factor*ds%atoms%velo(:,i)
+        endif
        end do
      endif
-     
+
   !ADVANCE VERLET 1
 
      call advance_verlet1(ds, Time_Step)
@@ -1134,7 +1134,7 @@ contains
   subroutine check_topology(my_atoms)
 
     type(Atoms), intent(in)      :: my_atoms
-  
+
     integer                                 :: i, N
     logical                                 :: is_bad_H
     integer,                        pointer :: qm_flag_p(:), qm_core_flag_p(:)
@@ -1149,20 +1149,20 @@ contains
 
      N = 0
      do i=1,my_atoms%N
-	is_bad_H = .false.
-	if (any((/'H3O','HYD','HWP'/).eq.trim(a2s(atom_res_name_p(:,i))))) then
-	  if (associated(qm_flag_p)) then
-	    if (qm_flag_p(i) /= 1) is_bad_H = .true.
-	  endif
-	  if (associated(qm_core_flag_p)) then
-	    if (qm_core_flag_p(i) /= 1) is_bad_H = .true.
-	  endif
-	  if (.not. associated(qm_flag_p) .and. .not. associated(qm_core_flag_p)) is_bad_H = .true.
-	endif
-	if (is_bad_H) then
-	  N = N + 1
-	  call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
-	endif
+        is_bad_H = .false.
+        if (any((/'H3O','HYD','HWP'/).eq.trim(a2s(atom_res_name_p(:,i))))) then
+          if (associated(qm_flag_p)) then
+            if (qm_flag_p(i) /= 1) is_bad_H = .true.
+          endif
+          if (associated(qm_core_flag_p)) then
+            if (qm_core_flag_p(i) /= 1) is_bad_H = .true.
+          endif
+          if (.not. associated(qm_flag_p) .and. .not. associated(qm_core_flag_p)) is_bad_H = .true.
+        endif
+        if (is_bad_H) then
+          N = N + 1
+          call print('ERROR: classical or buffer atom '//i//'has atom_res_name '//trim(a2s(atom_res_name_p(:,i))))
+        endif
      enddo
      if (N > 0) call system_abort('Wrong topology calculated: found H3O, HYD, or HWP in MM or buffer atom.')
 
@@ -1332,7 +1332,7 @@ contains
     do n=1,num_qm_atoms
        call parse_line(qmlistfile,' ',fields,num_fields,status)
        if (status /= 0) then
-	 call system_abort("Failed to read qm_list atom #"//n//", I/O error "//status)
+         call system_abort("Failed to read qm_list atom #"//n//", I/O error "//status)
        endif
        qmatom = string_to_int(fields(1))
        if (my_verbose) call print(n//'th quantum atom is: '//qmatom)
@@ -1373,8 +1373,8 @@ contains
   end subroutine print_qm_region
 
   subroutine do_calc_call(pot, empty_qm_pot, at, Run_Type1, Run_Type2, EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, &
-			  distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, extra_calc_args, &
-			  do_carve_cluster, driver_PSF_Print, f1, energy)
+                          distance_ramp, qm_region_ctr, qm_core_region_ctr, cp2k_calc_args, evb_args_str, extra_calc_args, &
+                          do_carve_cluster, driver_PSF_Print, f1, energy)
      type(Potential), intent(inout) :: pot, empty_qm_pot
      type(Atoms), intent(inout) :: at
      logical, intent(in) :: EVB_MM, qm_region_pt_ctr, qm_core_region_pt_ctr, distance_ramp, do_carve_cluster
@@ -1393,8 +1393,8 @@ contains
         if (.not.(assign_pointer(at, "hybrid_mark_core", qm_flag_p))) &
            call system_abort("couldn't find hybrid_mark_core property")
         if (.not.any(qm_flag_p(1:at%N).eq.HYBRID_ACTIVE_MARK)) empty_QM_core = .true.
-	if (empty_QM_core .and. trim(Run_Type2) == 'QMMM_CORE') &
-	  call system_abort("Can't handle Run_Type2=QMMM_CORE but QM core appears empty")
+        if (empty_QM_core .and. trim(Run_Type2) == 'QMMM_CORE') &
+          call system_abort("Can't handle Run_Type2=QMMM_CORE but QM core appears empty")
      endif
      empty_QM_extended = .false.
      if (qm_region_pt_ctr) then
@@ -1420,38 +1420,38 @@ contains
              ' PSF_Print='//trim(driver_PSF_Print)//'"'
         else
            args_str=trim(cp2k_calc_args) // &
-	     ' '//trim(cp2k_driver_run_type_args(Run_Type1))// &
+             ' '//trim(cp2k_driver_run_type_args(Run_Type1))// &
              ' PSF_Print='//trim(driver_PSF_Print) !// &
-!	     ' clean_up_files=F'
+!             ' clean_up_files=F'
         endif
         call print('ARGS_STR | '//trim(args_str))
-	if (Run_Type1(1:4) == 'QMMM') then
-	  if ( qm_region_pt_ctr .and. empty_QM_extended) then
-	    call print('WARNING: Empty QM extended region. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
-	    call print("CALC_POT '"//trim(args_str)//"'")
-	    call calc(empty_qm_pot,at,energy=energy,force=f1,args_str=trim(args_str))
-	    if (assign_pointer(at, 'force', force_p)) force_p = f1
-	    return
-	  else
-	    args_str = trim(args_str) // &
-	      ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
-	      ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
-	  endif
+        if (Run_Type1(1:4) == 'QMMM') then
+          if ( qm_region_pt_ctr .and. empty_QM_extended) then
+            call print('WARNING: Empty QM extended region. MM run will be performed instead of QM/MM.', PRINT_ALWAYS)
+            call print("CALC_POT '"//trim(args_str)//"'")
+            call calc(empty_qm_pot,at,energy=energy,force=f1,args_str=trim(args_str))
+            if (assign_pointer(at, 'force', force_p)) force_p = f1
+            return
+          else
+            args_str = trim(args_str) // &
+              ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
+              ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
+          endif
           !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
           if (trim(Run_Type1) == 'QMMM_EXTENDED') then
             args_str = trim(args_str) // ' run_suffix=_extended'
           elseif (trim(Run_Type1) == 'QMMM_CORE') then
             args_str = trim(args_str) // ' run_suffix=_core'
           endif
-	endif
-	if (Run_Type1(1:4) == 'QMMM' .and. trim(Run_Type2)=="NONE") then
+        endif
+        if (Run_Type1(1:4) == 'QMMM' .and. trim(Run_Type2)=="NONE") then
           !potential simple will not calculate energy with single_cluster=T
-	  call print("CALC_POT '"//trim(args_str)//"'")
-	  call calc(pot,at,force=f1,args_str=trim(args_str))
+          call print("CALC_POT '"//trim(args_str)//"'")
+          call calc(pot,at,force=f1,args_str=trim(args_str))
           energy=0.0_dp
-	else
-	  call print("CALC_POT '"//trim(args_str)//"'")
-	  call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
+        else
+          call print("CALC_POT '"//trim(args_str)//"'")
+          call calc(pot,at,energy=energy,force=f1,args_str=trim(args_str))
         endif
      else ! do force mixing
 
@@ -1464,9 +1464,9 @@ contains
           slow_args_str=trim(cp2k_calc_args) // ' '//trim(cp2k_driver_run_type_args(Run_Type1)) //' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        endif
        if (Run_Type1(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
-	 slow_args_str = trim(slow_args_str) // &
+         slow_args_str = trim(slow_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
-	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
+           ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type1) == 'QMMM_EXTENDED') then
            slow_args_str = trim(slow_args_str) // ' run_suffix=_extended'
@@ -1486,9 +1486,9 @@ contains
           fast_args_str=trim(cp2k_calc_args) // ' '// trim(cp2k_driver_run_type_args(Run_Type2))//' PSF_Print='//trim(driver_PSF_print) !//' clean_up_files=F'
        endif
        if (Run_Type2(1:4) == 'QMMM' .and. .not. (qm_region_pt_ctr .and. empty_QM_core)) then
-	 fast_args_str = trim(fast_args_str) // &
+         fast_args_str = trim(fast_args_str) // &
            ' single_cluster=T carve_cluster='//do_carve_cluster//' cluster_hopping_nneighb_only=F cluster_heuristics_nneighb_only=T ' // &
-	   ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
+           ' termination_clash_check=T terminate=T even_electrons=F auto_centre'
          !run_suffix to save hybrid_mark, cluster_mark & old_cluster_mark under different name for QMMM_extended & QMMM_core
          if (trim(Run_Type2) == 'QMMM_EXTENDED') then
            fast_args_str = trim(fast_args_str) // ' run_suffix=_extended'
@@ -1501,17 +1501,17 @@ contains
        ! cluster_hopping_nneighb_only=F so that create_hybrid_weights will be able to find all the atoms
        args_str='cluster_hopping_nneighb_only=F qm_args_str={'//trim(slow_args_str)//' '//trim(extra_calc_args)//'} mm_args_str={'//trim(fast_args_str)//' '//trim(extra_calc_args)//'} run_suffix=_extended'
        if (distance_ramp) then
-	 args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
+         args_str = trim(args_str) // ' distance_ramp_centre='//qm_region_ctr
        endif
        call print('ARGS_STR | '//trim(args_str))
        if (qm_region_pt_ctr .and. empty_QM_extended) then
-	 call system_abort("Got to end of force mixing part of do_calc_call, but (qm_region_ptr_ctr .and. empty_QM_extended) is true.  Should never happen!")
-!	 if (trim(Run_Type2) /= 'MM') &
-!	   call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
-!	 call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
+         call system_abort("Got to end of force mixing part of do_calc_call, but (qm_region_ptr_ctr .and. empty_QM_extended) is true.  Should never happen!")
+!         if (trim(Run_Type2) /= 'MM') &
+!           call system_abort("Doing force mixing, but Run_Type2='"//trim(Run_Type2)//"' /= MM")
+!         call calc(empty_qm_pot,at,force=f1,args_str=trim(fast_args_str))
        else
-	 call print("CALC_POT '"//trim(args_str)//"'")
-	 call calc(pot,at,force=f1,args_str=trim(args_str))
+         call print("CALC_POT '"//trim(args_str)//"'")
+         call calc(pot,at,force=f1,args_str=trim(args_str))
        endif
        energy=0._dp !no energy
      endif ! do force mixing
@@ -1532,9 +1532,9 @@ contains
     else ! QMMM
       cp2k_driver_run_type_args = "Run_Type=QMMM"
       if (run_type(1:9) == 'QMMM_CORE') then
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F run_suffix=_core'
+        cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=F run_suffix=_core'
       else
-	cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T run_suffix=_extended'
+        cp2k_driver_run_type_args = trim(cp2k_driver_run_type_args)//' use_buffer=T run_suffix=_extended'
       endif
     endif
   end function cp2k_driver_run_type_args
@@ -1577,54 +1577,54 @@ contains
 
     select case(Thermostat_Type)
       case(0)
-	call print("No thermostat, NVE!!", PRINT_ALWAYS)
+        call print("No thermostat, NVE!!", PRINT_ALWAYS)
       case(1)
-	if (adaptive_Langevin) then
-	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp)
-	   call print('Added single adaptive Langevin Thermostat')
-	else
-	   Nose_Hoover_Tau = -1.0_dp
-	   call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau)
-	   call print('Added single Langevin Thermostat')
-	endif
+        if (adaptive_Langevin) then
+           call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp)
+           call print('Added single adaptive Langevin Thermostat')
+        else
+           Nose_Hoover_Tau = -1.0_dp
+           call add_thermostat(ds,type=THERMOSTAT_LANGEVIN,T=T,tau=Langevin_Tau)
+           call print('Added single Langevin Thermostat')
+        endif
       case(2)
-	call add_thermostat(ds,type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
-	call print('Added single Nose-Hoover Thermostat')
+        call add_thermostat(ds,type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp)
+        call print('Added single Nose-Hoover Thermostat')
       case(3)
-	call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER,n=ds%atoms%N,T=T,Q=1.0_dp, gamma=0.0_dp)
-	ds%print_thermostat_temps = .false.
-	call print("Added 1 Nose-Hoover thermostat for each atom")
+        call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER,n=ds%atoms%N,T=T,Q=1.0_dp, gamma=0.0_dp)
+        ds%print_thermostat_temps = .false.
+        call print("Added 1 Nose-Hoover thermostat for each atom")
       case(4)
-	call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
-	ds%print_thermostat_temps = .false.
-	call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
+        call add_thermostats(ds,type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,n=ds%atoms%N, T=T,Q=1.0_dp, tau=Langevin_Tau)
+        ds%print_thermostat_temps = .false.
+        call print("Added 1 Nose-Hoover-Langevin thermostat for each atom")
       case(5)
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp) ! MM
-	call print("Added 1 Nose-Hoover for QM+buffer heavy, 1 Nose-Hoover for QM+buffer H, and 1 Nose-Hoover-Langevin for MM")
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! heavy QM+buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T, Q=1.0_dp, gamma=0.0_dp) ! H QM+buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER_LANGEVIN,T=T,tau=Langevin_Tau,Q=1.0_dp) ! MM
+        call print("Added 1 Nose-Hoover for QM+buffer heavy, 1 Nose-Hoover for QM+buffer H, and 1 Nose-Hoover-Langevin for MM")
       case(6)
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
-	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
+        call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
       case(7)
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
-	call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
-	call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy QM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H QM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H buffer
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! heavy MM
+        call add_thermostat(ds, type=THERMOSTAT_NOSE_HOOVER,T=T,Q=1.0_dp, gamma=0.0_dp) ! H MM
+        call print("Added 6 Nose-Hoover thermostats, 3 regions (QM, Buffer, MM) x 2 kinds (H, heavy)")
       case(8)
-	call add_thermostats(ds,type=THERMOSTAT_LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)
-	ds%print_thermostat_temps = .false.
-	call print("Added 1 Langevin thermostat for each atom")
+        call add_thermostats(ds,type=THERMOSTAT_LANGEVIN,n=ds%atoms%N, T=T, tau=Langevin_Tau, Q=1.0_dp)
+        ds%print_thermostat_temps = .false.
+        call print("Added 1 Langevin thermostat for each atom")
       case default
-	call system_abort("add_thermostats: Unknown Thermostat_Type="//Thermostat_type)
+        call system_abort("add_thermostats: Unknown Thermostat_Type="//Thermostat_type)
     end select
   end subroutine add_QMMM_md_buf_thermostats
 
@@ -1656,31 +1656,31 @@ contains
       Ndof_MM_H = 3*n_H - ndof_QM_H - ndof_Buffer_H
       Ndof_MM_heavy = 3*n_heavy - ndof_QM_heavy - ndof_Buffer_heavy
       call print("Thermostat_type == 7, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
-	Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
+        Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
     else
       if (.not. assign_pointer(at, "cluster_mark_extended", cluster_mark_p)) then
-	QM_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius + Outer_QM_Region_Radius)/2.0_dp)**3
-	Buffer_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius+Inner_Buffer_Radius + Outer_QM_Region_Radius+Outer_Buffer_Radius)/2.0_dp)**3 - QM_vol
-	cell_vol = cell_volume(at)
-	n_H = count(at%Z == 1)
-	n_heavy = at%N - n_H
-	Ndof_QM_H = 3*int(QM_vol * n_H/cell_vol)
-	Ndof_QM_heavy = 3*int(QM_vol * n_heavy/cell_vol)
-	Ndof_Buffer_H = 3*int(Buffer_vol * n_H/cell_vol)
-	Ndof_Buffer_heavy = 3*int(Buffer_vol * n_heavy/cell_vol)
-	Ndof_MM_H = 3*n_H - ndof_QM_H - ndof_Buffer_H
-	Ndof_MM_heavy = 3*n_heavy - ndof_QM_heavy - ndof_Buffer_heavy
-	call print("no cluster_mark_extended, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
-	  Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
+        QM_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius + Outer_QM_Region_Radius)/2.0_dp)**3
+        Buffer_vol = 4.0_dp/3.0_dp*PI*((Inner_QM_Region_Radius+Inner_Buffer_Radius + Outer_QM_Region_Radius+Outer_Buffer_Radius)/2.0_dp)**3 - QM_vol
+        cell_vol = cell_volume(at)
+        n_H = count(at%Z == 1)
+        n_heavy = at%N - n_H
+        Ndof_QM_H = 3*int(QM_vol * n_H/cell_vol)
+        Ndof_QM_heavy = 3*int(QM_vol * n_heavy/cell_vol)
+        Ndof_Buffer_H = 3*int(Buffer_vol * n_H/cell_vol)
+        Ndof_Buffer_heavy = 3*int(Buffer_vol * n_heavy/cell_vol)
+        Ndof_MM_H = 3*n_H - ndof_QM_H - ndof_Buffer_H
+        Ndof_MM_heavy = 3*n_heavy - ndof_QM_heavy - ndof_Buffer_heavy
+        call print("no cluster_mark_extended, estimating NDOFs from volumes QM,Buffer,cell " // QM_vol // " " // &
+          Buffer_vol//" "//cell_vol // " density H,heavy" // (n_H/cell_vol) // " " // (n_heavy/cell_vol))
       else
-	Ndof_QM_H = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK .and. at%Z == 1)
-	Ndof_QM_heavy = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK) - Ndof_QM_H
-	Ndof_Buffer_H = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK .and. at%Z == 1)
-	Ndof_Buffer_heavy = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK) - Ndof_Buffer_H
-	n_H = count(at%Z == 1)
-	n_heavy = at%N - n_H
-	Ndof_MM_H = 3*n_H - (Ndof_QM_H+Ndof_Buffer_H)
-	Ndof_MM_heavy = 3*n_heavy - (Ndof_QM_heavy+Ndof_Buffer_heavy)
+        Ndof_QM_H = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK .and. at%Z == 1)
+        Ndof_QM_heavy = 3*count(cluster_mark_p == HYBRID_ACTIVE_MARK) - Ndof_QM_H
+        Ndof_Buffer_H = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK .and. at%Z == 1)
+        Ndof_Buffer_heavy = 3*count(cluster_mark_p == HYBRID_BUFFER_MARK) - Ndof_Buffer_H
+        n_H = count(at%Z == 1)
+        n_heavy = at%N - n_H
+        Ndof_MM_H = 3*n_H - (Ndof_QM_H+Ndof_Buffer_H)
+        Ndof_MM_heavy = 3*n_heavy - (Ndof_QM_heavy+Ndof_Buffer_heavy)
       endif
     endif
 
@@ -1689,37 +1689,37 @@ contains
 
     select case(Thermostat_Type)
       case (0)
-	continue
+        continue
       case (1,2)
-	if (Nose_Hoover_tau > 0.0_dp) then
-	   ds%thermostat(1)%Q = nose_hoover_mass(Ndof=3*at%N, T=T, tau=Nose_Hoover_tau)
-	else
-	   ds%thermostat(1)%Q = -1.0_dp
-	endif
+        if (Nose_Hoover_tau > 0.0_dp) then
+           ds%thermostat(1)%Q = nose_hoover_mass(Ndof=3*at%N, T=T, tau=Nose_Hoover_tau)
+        else
+           ds%thermostat(1)%Q = -1.0_dp
+        endif
       case(3, 4, 8)
-	do i=1, ds%atoms%N
-	  ds%thermostat(i)%Q = nose_hoover_mass(Ndof=3, T=T, tau=Nose_Hoover_tau)
-	end do
+        do i=1, ds%atoms%N
+          ds%thermostat(i)%Q = nose_hoover_mass(Ndof=3, T=T, tau=Nose_Hoover_tau)
+        end do
       case(5)
-	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy+Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H+Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_MM_H+Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy+Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H+Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_MM_H+Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
       case(6)
-	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(4)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(5)%Q = nose_hoover_mass(Ndof=Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(6)%Q = nose_hoover_mass(Ndof=Ndof_MM_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(4)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(5)%Q = nose_hoover_mass(Ndof=Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(6)%Q = nose_hoover_mass(Ndof=Ndof_MM_H, T=T, tau=Nose_Hoover_tau)
       case(7)
-	ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(4)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(5)%Q = nose_hoover_mass(Ndof=Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
-	ds%thermostat(6)%Q = nose_hoover_mass(Ndof=Ndof_MM_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(1)%Q = nose_hoover_mass(Ndof=Ndof_QM_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(2)%Q = nose_hoover_mass(Ndof=Ndof_QM_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(3)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(4)%Q = nose_hoover_mass(Ndof=Ndof_Buffer_H, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(5)%Q = nose_hoover_mass(Ndof=Ndof_MM_heavy, T=T, tau=Nose_Hoover_tau)
+        ds%thermostat(6)%Q = nose_hoover_mass(Ndof=Ndof_MM_H, T=T, tau=Nose_Hoover_tau)
       case default
-	call system_abort("set_thermostat_masses: Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
+        call system_abort("set_thermostat_masses: Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
     end select
   end subroutine set_thermostat_masses
 
@@ -1732,71 +1732,71 @@ contains
     real(dp) :: r
 
     select case(Thermostat_Type)
-      case(0) 
-	  continue
+      case(0)
+          continue
       case(1, 2)
-	  at%thermostat_region = 1
+          at%thermostat_region = 1
       case(3, 4, 8)
-	  do i=1, ds%atoms%N
-	    at%thermostat_region(i) = i
-	  end do
+          do i=1, ds%atoms%N
+            at%thermostat_region(i) = i
+          end do
       case (5)
-	if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
-	  call system_abort("set_thermostat_region failed to find cluster_mark_extended for thermostat_type="//thermostat_type)
-	at%thermostat_region = 3 ! MM
-	where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z /= 1) ! QM+Buffer heave
-	  at%thermostat_region = 1
-	end where
-	where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z == 1) ! QM+Buffer H
-	  at%thermostat_region = 2
-	end where
+        if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
+          call system_abort("set_thermostat_region failed to find cluster_mark_extended for thermostat_type="//thermostat_type)
+        at%thermostat_region = 3 ! MM
+        where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z /= 1) ! QM+Buffer heave
+          at%thermostat_region = 1
+        end where
+        where ((cluster_mark_p /= HYBRID_NO_MARK .and. cluster_mark_p /= HYBRID_TERM_MARK) .and. at%Z == 1) ! QM+Buffer H
+          at%thermostat_region = 2
+        end where
       case(6)
-	if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
-	  call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
-	where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z /= 1) ! QM heavy
-	  at%thermostat_region = 1
-	end where
-	where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z == 1) ! QM H
-	  at%thermostat_region = 2
-	end where
-	where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! Buffer heavy
-	  at%thermostat_region = 3
-	end where
-	where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z == 1) ! Buffer H
-	  at%thermostat_region = 4
-	end where
-	where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! MM heavy
-	  at%thermostat_region = 5
-	end where
-	where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z == 1) ! MM H
-	  at%thermostat_region = 6
-	end where
+        if (.not. assign_pointer(at, 'cluster_mark_extended', cluster_mark_p)) &
+          call system_abort("set_thermostat_region failed to find cluster_mark for thermostat_type="//thermostat_type)
+        where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z /= 1) ! QM heavy
+          at%thermostat_region = 1
+        end where
+        where ((cluster_mark_p == HYBRID_ACTIVE_MARK) .and. at%Z == 1) ! QM H
+          at%thermostat_region = 2
+        end where
+        where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! Buffer heavy
+          at%thermostat_region = 3
+        end where
+        where ((cluster_mark_p == HYBRID_BUFFER_MARK) .and. at%Z == 1) ! Buffer H
+          at%thermostat_region = 4
+        end where
+        where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z /= 1) ! MM heavy
+          at%thermostat_region = 5
+        end where
+        where ((cluster_mark_p /= HYBRID_ACTIVE_MARK .and. cluster_mark_p /= HYBRID_BUFFER_MARK) .and. at%Z == 1) ! MM H
+          at%thermostat_region = 6
+        end where
       case (7)
-	call print("Thermostat=7, center at " // thermostat_7_centre, PRINT_ALWAYS)
-	do i=1, at%N
-	  r = distance_min_image(at, i, thermostat_7_centre)
-	  if (r < Thermostat_7_rs(1)) then
-	    if (at%Z(i) /= 1) then
-	      at%thermostat_region(i) = 1
-	    else
-	      at%thermostat_region(i) = 2
-	    endif
-	  else if (r < Thermostat_7_rs(2)) then
-	    if (at%Z(i) /= 1) then
-	      at%thermostat_region(i) = 3
-	    else
-	      at%thermostat_region(i) = 4
-	    endif
-	  else
-	    if (at%Z(i) /= 1) then
-	      at%thermostat_region(i) = 5
-	    else
-	      at%thermostat_region(i) = 6
-	    endif
-	  endif
-	end do
+        call print("Thermostat=7, center at " // thermostat_7_centre, PRINT_ALWAYS)
+        do i=1, at%N
+          r = distance_min_image(at, i, thermostat_7_centre)
+          if (r < Thermostat_7_rs(1)) then
+            if (at%Z(i) /= 1) then
+              at%thermostat_region(i) = 1
+            else
+              at%thermostat_region(i) = 2
+            endif
+          else if (r < Thermostat_7_rs(2)) then
+            if (at%Z(i) /= 1) then
+              at%thermostat_region(i) = 3
+            else
+              at%thermostat_region(i) = 4
+            endif
+          else
+            if (at%Z(i) /= 1) then
+              at%thermostat_region(i) = 5
+            else
+              at%thermostat_region(i) = 6
+            endif
+          endif
+        end do
       case default
-	call system_abort("set_thermostat_regions: Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
+        call system_abort("set_thermostat_regions: Unknown thermostat_type="//thermostat_type//" in set_thermostat_masses")
     end select
   end subroutine set_thermostat_regions
 
@@ -1816,7 +1816,7 @@ contains
    subroutine get_restraint_stuff(ds, restraint_stuff)
      type(DynamicalSystem), intent(in) :: ds
      real(dp), allocatable, intent(inout) :: restraint_stuff(:,:)
- 
+
      integer :: i_r, n_s
 
     ! count number to print in summary n_s
@@ -1832,16 +1832,16 @@ contains
     if (.not. allocated(restraint_stuff)) then
        allocate(restraint_stuff(5,n_s))
     endif
- 
+
      n_s = 0
      do i_r = 1, ds%Nrestraints
        if (ds%restraint(i_r)%print_summary) then
-	  n_s = n_s + 1
-	  restraint_stuff(1,n_s) = ds%restraint(i_r)%target_v
-	  restraint_stuff(2,n_s) = ds%restraint(i_r)%C
-	  restraint_stuff(3,n_s) = ds%restraint(i_r)%E
-	  restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
-	  restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
+          n_s = n_s + 1
+          restraint_stuff(1,n_s) = ds%restraint(i_r)%target_v
+          restraint_stuff(2,n_s) = ds%restraint(i_r)%C
+          restraint_stuff(3,n_s) = ds%restraint(i_r)%E
+          restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
+          restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
        endif
      end do
    end subroutine get_restraint_stuff
@@ -1903,21 +1903,21 @@ contains
 
     if (qm_region_pt_ctr) then
        if (first_time) then
-	 call map_into_cell(ds_atoms)
-	 call calc_dists(ds_atoms)
+         call map_into_cell(ds_atoms)
+         call calc_dists(ds_atoms)
        endif
        if (qm_region_atom_ctr /= 0) qm_region_ctr = ds_atoms%pos(:,qm_region_atom_ctr)
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius, &
-	 origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
-	 cluster_hopping_nneighb_only=.false., cluster_heuristics_nneighb_only=.true., &
-	 use_create_cluster_info=use_create_cluster_info_for_core,&
-	 list_changed=list_changed1, res_num_silica=res_num_silica, &
+         origin=qm_region_ctr,add_only_heavy_atoms=(.not. buffer_general), &
+         cluster_hopping_nneighb_only=.false., cluster_heuristics_nneighb_only=.true., &
+         use_create_cluster_info=use_create_cluster_info_for_core,&
+         list_changed=list_changed1, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)
       PASS_ERROR(error)
        if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
        if (list_changed1) then
-	  call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
+          call print('Region with postfix "'//trim(mark_postfix)//'" has changed')
        endif
     else ! not qm_region_pt_ctr
        !QM region centred around an atom list
@@ -1925,11 +1925,11 @@ contains
        if (first_time) then !reinitialise QM region
 
          !read QM seed
-	 call read_qmlist(ds_atoms,qm_list_filename,qm_seed)
+         call read_qmlist(ds_atoms,qm_list_filename,qm_seed)
 
          if (.not. (assign_pointer(ds_atoms, 'hybrid'//trim(mark_postfix), hybrid_p))) call system_abort("??")
-	 if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
-	 if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
+         if (.not.(assign_pointer(ds_atoms, "hybrid_mark"//trim(mark_postfix), hybrid_mark_p))) call system_abort('??')
+         if (.not.(assign_pointer(ds_atoms, "cluster_mark"//trim(mark_postfix), cluster_mark_p))) call system_abort('??')
 
           !call print("MARKSX0 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
           !call print("MARKSX0 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
@@ -1939,9 +1939,9 @@ contains
          hybrid_p(1:ds_atoms%N) = HYBRID_NO_MARK
          hybrid_p(int_part(qm_seed,1)) = HYBRID_ACTIVE_MARK
          hybrid_mark_p(1:ds_atoms%n) = hybrid_p(1:ds_atoms%n)
-	 call print('hybrid_mark '//count(hybrid_mark_p.eq.1))
-	 cluster_mark_p(1:ds_atoms%N) = hybrid_mark_p(1:ds_atoms%N)
-	 call print('cluster_mark '//count(cluster_mark_p.eq.1))
+         call print('hybrid_mark '//count(hybrid_mark_p.eq.1))
+         cluster_mark_p(1:ds_atoms%N) = hybrid_mark_p(1:ds_atoms%N)
+         call print('cluster_mark '//count(cluster_mark_p.eq.1))
 
           !call print("MARKSX1 "//count(hybrid_p(1:ds_atoms%N)==1)//" + "//count(hybrid_p(1:ds_atoms%N)==2)//" hybrid atoms",PRINT_ANALYSIS)
           !call print("MARKSX1 "//count(hybrid_mark_p(1:ds_atoms%N)==1)//" + "//count(hybrid_mark_p(1:ds_atoms%N)==2)//" hybrid_mark atoms",PRINT_ANALYSIS)
@@ -1959,9 +1959,9 @@ contains
        !extend QM region around seed atoms
        !update hybrid_*, hybrid_mark_*, old_hybrid_mark_*
        call create_pos_or_list_centred_hybrid_region(ds_atoms,inner_radius,outer_radius,atomlist=qm_seed, &
-	 add_only_heavy_atoms=(.not. buffer_general),cluster_hopping_nneighb_only=.false.,cluster_heuristics_nneighb_only=.true.,min_images_only=.true., &
-	 use_create_cluster_info=use_create_cluster_info_for_core,&
-	 list_changed=list_changed1, res_num_silica=res_num_silica, &
+         add_only_heavy_atoms=(.not. buffer_general),cluster_hopping_nneighb_only=.false.,cluster_heuristics_nneighb_only=.true.,min_images_only=.true., &
+         use_create_cluster_info=use_create_cluster_info_for_core,&
+         list_changed=list_changed1, res_num_silica=res_num_silica, &
          mark_postfix=trim(mark_postfix), error=error)
       PASS_ERROR(error)
 

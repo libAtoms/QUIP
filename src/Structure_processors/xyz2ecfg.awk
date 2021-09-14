@@ -181,7 +181,7 @@ BEGIN {
   match(comment,/Lattice="([^"]*)/,a);
   lat=a[1];
   split(lat,lattice);
-   
+
 
   for (x=0; x<3; x++)
     for (y=0; y<3; y++) {
@@ -194,23 +194,23 @@ BEGIN {
   + r[2,0]*(r[0,1]*r[1,2] - r[1,1]*r[0,2]);
 
   g[0,0] = ((r[1,1] * r[2,2]) -\
-	    (r[1,2] * r[2,1]))/det;
+            (r[1,2] * r[2,1]))/det;
   g[1,0] = ((r[0,2] * r[2,1]) -\
-	    (r[0,1] * r[2,2]))/det;
+            (r[0,1] * r[2,2]))/det;
   g[2,0] = ((r[0,1] * r[1,2]) -\
-	    (r[0,2] * r[1,1]))/det;
+            (r[0,2] * r[1,1]))/det;
   g[0,1] = ((r[1,2] * r[2,0]) -\
-	    (r[1,0] * r[2,2]))/det;
+            (r[1,0] * r[2,2]))/det;
   g[1,1] = ((r[0,0] * r[2,2]) -\
-	     (r[0,2] * r[2,0]))/det;
+             (r[0,2] * r[2,0]))/det;
   g[2,1] = ((r[0,2] * r[1,0]) -\
-	     (r[0,0] * r[1,2]))/det;
+             (r[0,0] * r[1,2]))/det;
   g[0,2] = ((r[1,0] * r[2,1]) -\
-	     (r[1,1] * r[2,0]))/det;
+             (r[1,1] * r[2,0]))/det;
   g[1,2] = ((r[0,1] * r[2,0]) -\
-	    (r[0,0] * r[2,1]))/det;
+            (r[0,0] * r[2,1]))/det;
   g[2,2] = ((r[0,0] * r[1,1]) -\
-	     (r[0,1] * r[1,0]))/det;
+             (r[0,1] * r[1,0]))/det;
 
   print ".NO_VELOCITY." >> cfgfile;
 
@@ -226,7 +226,7 @@ BEGIN {
     if (i % 3 == 0) {
       for (j=0; j<a[i]; j++) {
         lines[p]="auxiliary["p"] = "name;
-	p=p+1;
+        p=p+1;
       }
     }
   }
@@ -238,7 +238,7 @@ BEGIN {
 
   for (i=0; i<natoms; i++) {
     getline;
-    
+
     print $1 >> cfgfile;
     print mass[$1] >> cfgfile;
 
@@ -254,7 +254,7 @@ BEGIN {
 
     for (j=5;j<=NF;j++) printf "%16.8f",$j >> cfgfile;
     printf "\n" >> cfgfile;
-  }     
+  }
 
   close(cfgfile);
   frame=frame+1;

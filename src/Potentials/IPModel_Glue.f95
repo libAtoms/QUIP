@@ -2,11 +2,11 @@
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
 !X     QUIP: quantum mechanical and interatomic potential simulation package
-!X     
-!X     Portions written by Noam Bernstein, while working at the
-!X     Naval Research Laboratory, Washington DC. 
 !X
-!X     Portions written by Gabor Csanyi, Copyright 2006-2007.   
+!X     Portions written by Noam Bernstein, while working at the
+!X     Naval Research Laboratory, Washington DC.
+!X
+!X     Portions written by Gabor Csanyi, Copyright 2006-2007.
 !X
 !X     When using this software,  please cite the following reference:
 !X
@@ -121,7 +121,7 @@ subroutine IPModel_Glue_Finalise(this)
 
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
-  
+
   if (allocated(this%spline_data_density)) then
      do i=1,this%n_types
         if(allocated(this%spline_data_density(i)%data)) deallocate(this%spline_data_density(i)%data)
@@ -180,7 +180,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   type(IPModel_Glue), intent(inout):: this
   type(Atoms), intent(inout)      :: at
   real(dp), intent(out), optional :: e, local_e(:)
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)
   character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -188,7 +188,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
   type(Dictionary) :: params
   logical, dimension(:), pointer :: atom_mask_pointer
-  real(dp), dimension(:), allocatable :: local_e_in, rho_local 
+  real(dp), dimension(:), allocatable :: local_e_in, rho_local
   real(dp), dimension(:,:), allocatable :: f_in
   real(dp), dimension(:,:,:), allocatable :: local_virial_in
   logical :: has_atom_mask_name
@@ -196,13 +196,13 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E, unknown_type
   ! Loop variables
-  integer :: i, ji, j, ti, tj  
+  integer :: i, ji, j, ti, tj
 
   real(dp) :: r_ij_mag, r_ij_hat(3), pair_e_ij, dpair_e_ij ! Neighbour vector info
 
   ! For calculating forces and the virial tensor
   real(dp) :: dpotential_drho_drho_i_drij(3), dpotential_drho
-    
+
   INIT_ERROR(error)
 
 
@@ -277,13 +277,13 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
      ! Get the type of this species from its atomic number
      ti = get_type(this%type_of_atomic_num, at%Z(i), unknown_type=unknown_type)
      if( unknown_type ) cycle
- 
+
      ! Iterate over our nighbours
      do ji = 1, n_neighbours(at, i)
         j = neighbour(at, i, ji, distance = r_ij_mag)
         tj = get_type(this%type_of_atomic_num, at%Z(j), unknown_type=unknown_type)
         if( unknown_type ) cycle
- 
+
         if (r_ij_mag < glue_cutoff(this, tj)) then ! Skip atoms beyond the cutoff
            rho_local(i) = rho_local(i) + eam_density(this, tj, r_ij_mag)
         endif
@@ -338,7 +338,7 @@ subroutine IPModel_Glue_Calc(this, at, e, local_e, f, virial, local_virial, args
 
     if(present(local_e) .or. present(e)) local_e_in(i) = local_e_in(i) + eam_spline_potential(this, ti, rho_local(i))
   end do ! i
-!$omp end parallel do  
+!$omp end parallel do
 
 
   if(present(e)) e = sum(local_e_in)
@@ -359,7 +359,7 @@ function glue_cutoff(this, ti, error)
   integer, intent(in) :: ti
   integer, intent(out), optional :: error
   real(dp) :: glue_cutoff
-  
+
   INIT_ERROR(error)
 
   if( .not. this%density(ti)%initialised ) then
@@ -375,11 +375,11 @@ function pair_cutoff(this, ti, tj, error)
   integer, intent(in) :: ti, tj
   integer, intent(out), optional :: error
   real(dp) :: pair_cutoff
-  
+
   INIT_ERROR(error)
 
   if( .not. this%pair(ti,tj)%initialised ) then
-     pair_cutoff = 0.0_dp 
+     pair_cutoff = 0.0_dp
   else
      pair_cutoff = max_knot(this%pair(ti,tj))
   endif
@@ -392,7 +392,7 @@ function eam_density(this, ti, r, error)
   real(dp), intent(in) :: r
   integer, intent(out), optional :: error
   real(dp) :: eam_density
-  
+
   INIT_ERROR(error)
 
   if( .not. this%density(ti)%initialised ) then
@@ -401,7 +401,7 @@ function eam_density(this, ti, r, error)
 
   if (r < glue_cutoff(this, ti)) then
      if(this%do_density_spline(ti)) then
-        eam_density = spline_value(this%density(ti),r) 
+        eam_density = spline_value(this%density(ti),r)
      else
         eam_density = this%poly(ti)*(glue_cutoff(this, ti)-r)**3
      endif
@@ -553,7 +553,7 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
 
   ! Initialise the spline data structures with the spline data
   do ti = 1, this%n_types
-  
+
      if(allocated(this%spline_data_density(ti)%data)) then
         call initialise(this%density(ti), this%spline_data_density(ti)%data(:,1), this%spline_data_density(ti)%data(:,2), &
            this%spline_data_density(ti)%y1, this%spline_data_density(ti)%yn)
@@ -588,7 +588,7 @@ subroutine IPModel_Glue_read_params_xml(this, param_str)
 end subroutine IPModel_Glue_read_params_xml
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -636,7 +636,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
       parse_ip%atomic_num = 0
- 
+
       ! Allocate n_types spline data objects for further allocation
       allocate(parse_ip%spline_data_density(parse_ip%n_types))
       allocate(parse_ip%spline_data_potential(parse_ip%n_types))
@@ -706,44 +706,44 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     call QUIP_FoX_get_value(attributes, "density_y1", value, status) ! endpoint derivative
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_y1")
-    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%y1 
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%y1
 
     call QUIP_FoX_get_value(attributes, "density_yn", value, status) ! endpoint derivative
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml density but no density_yn")
-    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%yn 
+    read (value, *) parse_ip%spline_data_density(parse_curr_type_i)%yn
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_density(parse_curr_type_i)%data(num_points,2))
-  
+
   elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. name == 'potential_density') then
-    
+
     ! Potential supplied as density vs. energy
     parse_in_density_potential = .true.
     parse_curr_point = 1
 
     call QUIP_FoX_get_value(attributes, "num_points", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml potential_density but no num_points")
-    read (value, *) num_points ! 
+    read (value, *) num_points !
 
     call QUIP_FoX_get_value(attributes, "y1", value, status) ! endpoint derivative
     if (status /= 0) then
        parse_ip%spline_data_potential(parse_curr_type_i)%y1 = 2.0e30_dp
     else
-       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%y1 
+       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%y1
     endif
 
     call QUIP_FoX_get_value(attributes, "yn", value, status) ! endpoint derivative
     if (status /= 0) then
        parse_ip%spline_data_potential(parse_curr_type_i)%yn = 2.0e30_dp
     else
-       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%yn 
+       read (value, *) parse_ip%spline_data_potential(parse_curr_type_i)%yn
     endif
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_potential(parse_curr_type_i)%data(num_points,2))
-  
+
   elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. name == 'potential_neighbours') then
-    
+
     ! Potential supplied as distance to nearest neighbour vs. energy, along with number of neighbours
     parse_in_neighbours_potential = .true.
     parse_curr_point = 1
@@ -758,44 +758,44 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_potential(parse_curr_type_i)%data(num_points,2))
-    
+
   elseif (parse_in_ip .and. parse_curr_type_i /= 0 .and. parse_curr_type_j /= 0 .and. name == 'potential_pair') then
-    
+
     ! Pair potential
     parse_in_potential_pair = .true.
     parse_curr_point = 1
 
     call QUIP_FoX_get_value(attributes, "num_points", value, status)
     if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml potential_pair but no num_points")
-    read (value, *) num_points 
+    read (value, *) num_points
 
     call QUIP_FoX_get_value(attributes, "y1", value, status) ! endpoint derivative
     if (status /= 0) then
        parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%y1 = 0.0_dp
     else
-       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%y1 
+       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%y1
     endif
 
     call QUIP_FoX_get_value(attributes, "yn", value, status) ! endpoint derivative
     if (status /= 0) then
        parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%yn = 0.0_dp
     else
-       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%yn 
+       read (value, *) parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%yn
     endif
 
     ! Allocate num_points in the current type
     allocate(parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data(num_points,2))
-  
+
   elseif (parse_in_ip .and. name == 'point') then
-    
+
     if (parse_in_density_potential) then
 
       !
       !  Potential defined as a rho->E map
       !
-      
+
       if (parse_curr_point > size(parse_ip%spline_data_potential(parse_curr_type_i)%data,1)) call system_abort ("IPModel_Glue got too " // &
-	"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_density")
+        "many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_density")
 
       call QUIP_FoX_get_value(attributes, "rho", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find rho")
@@ -810,7 +810,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
    elseif (parse_in_potential_pair) then
 
       if (parse_curr_point > size(parse_ip%spline_data_pair(parse_curr_type_i,parse_curr_type_j)%data,1)) call system_abort ("IPModel_Glue got too " // &
-	"many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_pair")
+        "many points " // parse_curr_point // " type " // parse_curr_type_i // " in potential_pair")
 
       call QUIP_FoX_get_value(attributes, "r", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find r")
@@ -834,7 +834,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "a", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find a")
       read (value, *) v
-      
+
       ! This implies that the denstiy must be defined above the potential
       parse_ip%spline_data_potential(parse_curr_type_i)%data(parse_curr_point,1) = eam_density(parse_ip, parse_curr_type_i, v) * parse_n_neighbours
 
@@ -857,7 +857,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "a", value, status)
       if (status /= 0) call system_abort ("IPModel_Glue_read_params_xml cannot find a")
       read (value, *) v
-      
+
       ! This implies that the denstiy must be defined above the potential
       parse_ip%spline_data_density(parse_curr_type_i)%data(parse_curr_point,1) = v
 

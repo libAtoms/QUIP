@@ -155,7 +155,7 @@
 
        call do_reference_bulk(reference_bulk, qmpot, mmpot, minimise_bulk, do_rescale_r, do_rescale_E, &
             this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
-      
+
        if (this%r_scale_pot1 <= 0.0_dp) this%r_scale_pot1 = 1.0_dp
        if (this%E_scale_pot1 <= 0.0_dp) this%E_scale_pot1 = 1.0_dp
        if (do_rescale_r) call print ("Rescaling positions in QM potential by " // this%r_scale_pot1 // " to match lattice constants")
@@ -181,7 +181,7 @@
 
   recursive subroutine Potential_FM_finalise(this)
     type(Potential_FM), intent(inout) :: this
-    
+
     nullify(this%mmpot)
     nullify(this%qmpot)
     call finalise(this%embedlist)
@@ -399,7 +399,7 @@
     call assign_property_pointer(at, trim(calc_force), at_force_ptr, error=error)
     PASS_ERROR(error)
 
-    if (calc_weights) then 
+    if (calc_weights) then
 
        call system_timer('calc_weights')
 
@@ -415,7 +415,7 @@
        endif
 
        if(any((hybrid.ne.HYBRID_ACTIVE_MARK).and.(hybrid.ne.HYBRID_NO_MARK))) then
-	 RAISE_ERROR('Potential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).', error)
+         RAISE_ERROR('Potential_FM_calc: hybrid property must contain only 1 (for QM) and 0 (anywhere else).', error)
        endif
           !update only the active region, the buffer region will be updated in create_hybrid_weights
 
@@ -430,7 +430,7 @@
        if (count(hybrid_mark == HYBRID_ACTIVE_MARK) == 0) then
             RAISE_ERROR('Potential_ForceMixing_Calc: zero active atoms and calc_weights was specified', error)
        endif
-       
+
        create_hybrid_weights_params_str = write_string(calc_create_hybrid_weights_params)
        call finalise(calc_create_hybrid_weights_params)
        call create_hybrid_weights(at, create_hybrid_weights_params_str)
@@ -488,10 +488,10 @@
        call read_string(params, qm_args_str)
 
        call set_value(params, 'force='//trim(calc_force))
-       
+
        !! TODO - possibly want to set more default options in the qm_args_str here
        if (.not. has_key(params, 'buffer_hops')) &
- 	 call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
+          call set_value(params, 'buffer_hops', qm_little_clusters_buffer_hops)
 
        call set_value(params, 'randomise_buffer', randomise_buffer)
        call set_value(params, 'calc_weights', calc_weights) ! Let QM know if we changed the weights
@@ -521,7 +521,7 @@
              ! Mark active and buffer atoms
              hybrid_mask = hybrid_mark /= HYBRID_NO_MARK
           else if (trim(atom_mask) == "active_plus_cutoff") then
-             ! Mark active atom and their neighbours (within QM pot cutoff) 
+             ! Mark active atom and their neighbours (within QM pot cutoff)
              hybrid_mask = hybrid_mark == HYBRID_ACTIVE_MARK
              do i=1,at%n
                 if (hybrid_mark(i) == HYBRID_ACTIVE_MARK) then
@@ -543,7 +543,7 @@
        call finalise(params)
 
        ! Do the QM. If qm_args_str contatins 'single_cluster' or 'little_clusters' options
-       ! then potential calc() will do cluster carving. If it contains 'atom_mask_name' we 
+       ! then potential calc() will do cluster carving. If it contains 'atom_mask_name' we
        ! don't make a cluster, but only compute forces on marked atoms.
        call calc(this%qmpot, at, args_str=qm_args_str, error=error)
        f_qm = at_force_ptr
@@ -562,7 +562,7 @@
           if (this%use_buffer_for_fitting) then
              if (trim(method).ne.'conserve_momentum') then
                 RAISE_ERROR('use_buffer_for_fitting=T only works for method=conserve_momentum', error)
-	     endif
+             endif
              !create lists according to hybrid_mark property, use BUFFER/TRANS/BUFFER_OUTER_LAYER as fitlist
              call create_embed_and_fit_lists_from_cluster_mark(at,this%embedlist,this%fitlist, mark_name='hybrid_mark'//trim(run_suffix))
 !             if (this%add_cut_H_in_fitlist) then !no cut H on the fitlist's border
@@ -586,7 +586,7 @@
     end if
 
     if (method(1:4) == 'lotf') then
-       
+
        if (trim(method) == 'lotf_adj_pot_svd' .or. trim(method) == 'lotf_adj_pot_minim') then
 
           if (trim(method) == 'lotf_adj_pot_svd') then
@@ -594,19 +594,19 @@
           else
              AP_method = 'minim'
           end if
-          
+
           ! Optimise the adjustable potential
           allocate(df(3,this%fitlist%N))
           df = 0.0_dp
           df(:,1:this%embedlist%N) = f_qm(:,embed) - f_mm(:,embed)
-    
+
           if (lotf_do_init) then
              call print('Initialising adjustable potential with map='//lotf_do_map, PRINT_VERBOSE)
              call adjustable_potential_init(at, this%fitlist, directionN=this%embedlist%N, &
                   method=AP_method, nnonly=lotf_nneighb_only, &
                   spring_hops=lotf_spring_hops, map=lotf_do_map)
           end if
-            
+
           if (lotf_do_qm .and. lotf_do_fit) then
              call system_timer('lotf_adj_pot_fit')
              call adjustable_potential_optimise(at, df, method=AP_method)
@@ -619,10 +619,10 @@
           else
              call adjustable_potential_force(at, df, power=dV_dt)
           end if
-       
+
           at_force_ptr = f_mm                   ! Start with classical forces
           at_force_ptr(:,fit) = at_force_ptr(:,fit) + df   ! Add correction in fit region
-       
+
           deallocate(df)
 
        else if (trim(this%method) == 'lotf_adj_pot_sw') then
@@ -632,7 +632,7 @@
           ! old style adj pot: SW with variable parameters
 
 !!$          allocate(df(3,this%fitlist%N))
-!!$       
+!!$
 !!$          ! old style method: we fit to QM force in embed region and MM force in outer fit region,
 !!$          ! not to force difference
 !!$          df = f_mm(:,fit)
@@ -649,7 +649,7 @@
 !!$          else
 !!$             call adjustable_potential_force(at, df)
 !!$          end if
-!!$       
+!!$
 !!$          f = f_mm           ! start with classical forces
 !!$          f(:,fit) = df      ! replace with fitted force
 !!$
@@ -658,7 +658,7 @@
        end if
 
     else if (trim(method) == 'conserve_momentum') then
-       
+
        call verbosity_push(PRINT_NORMAL)
 
        call print('Conserving momentum using fit list with '//this%fitlist%N//' atoms', PRINT_VERBOSE)
@@ -686,7 +686,7 @@
        if (weight_method == USER_WEIGHT) then
           if (.not. assign_pointer(at, 'conserve_momentum_weight', conserve_momentum_weight)) then
                RAISE_ERROR('Potential_FM_Calc: missing property conserve_momentum_weight', error)
-	  endif
+          endif
        end if
 
        allocate(df(3,at%N),df_fit(3,this%fitlist%N))
@@ -695,7 +695,7 @@
             RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
        endif
 
-       ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
+       ! Straight forward force mixing using weight_region1 created by create_hybrid_weights()
        do i=1,at%N
           df(:,i) = (weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)) - f_mm(:,i)
        end do
@@ -709,14 +709,14 @@
           case(UNIFORM_WEIGHT)
              weight = 1.0_dp
           case(MASS_WEIGHT)
-	     if (.not. associated(at%mass)) then
-	        RAISE_ERROR('Potential_FM_Calc MASS_WEIGHT, but at%mass is not associated', error)
-	     endif
+             if (.not. associated(at%mass)) then
+                RAISE_ERROR('Potential_FM_Calc MASS_WEIGHT, but at%mass is not associated', error)
+             endif
              weight = at%mass(fit(i))
           case(MASS2_WEIGHT)
-	     if (.not. associated(at%mass)) then
-	        RAISE_ERROR('Potential_FM_Calc MASS2_WEIGHT, but at%mass is not associated', error)
-	     endif
+             if (.not. associated(at%mass)) then
+                RAISE_ERROR('Potential_FM_Calc MASS2_WEIGHT, but at%mass is not associated', error)
+             endif
              weight = at%mass(fit(i))*at%mass(fit(i))
           case(USER_WEIGHT)
              weight = conserve_momentum_weight(fit(i))
@@ -739,14 +739,14 @@
        call verbosity_pop()
 
        deallocate(df, df_fit)
-       
+
     else if (method(1:12) == 'force_mixing') then
 
        if (.not. assign_pointer(at, 'weight_region1'//trim(run_suffix), weight_region1)) then
             RAISE_ERROR('Potential_FM_Calc: missing weight_region1 property - try setting calc_weights=T in args_str', error)
        endif
 
-       ! Straight forward force mixing using weight_region1 created by create_hybrid_weights() 
+       ! Straight forward force mixing using weight_region1 created by create_hybrid_weights()
        do i=1,at%N
           at_force_ptr(:,i) = weight_region1(i)*f_qm(:,i) + (1.0_dp - weight_region1(i))*f_mm(:,i)
        end do
@@ -754,12 +754,12 @@
     else
        RAISE_ERROR('Potential_FM_calc: unknown method '//trim(method), error)
     end if
-       
+
     deallocate(f_mm,f_qm)
 
     if (allocated(embed)) deallocate(embed)
     if (allocated(fit))   deallocate(fit)
-    
+
   end subroutine Potential_FM_calc
 
 
