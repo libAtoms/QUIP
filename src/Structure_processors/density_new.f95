@@ -123,9 +123,9 @@ implicit none
       n_bins(2:3) = 1
       call print("random_samples " // random_samples)
       if (random_samples) then
-	call print("n_samples " // n_samples(1))
+        call print("n_samples " // n_samples(1))
       else
-	call print("n_theta " // n_samples(1) // " n_phi " // n_samples(2))
+        call print("n_theta " // n_samples(1) // " n_phi " // n_samples(2))
       endif
     else
       call print("min_p " // min_p)
@@ -151,41 +151,41 @@ implicit none
       call print("Printing autocorrelations")
       call print("# Autocorrelation", file=outfile)
       do i_lag=0, autocorrelation_max_lag
-	call print(i_lag // " " // reshape(autocorr(1:n_bins(1),1:n_bins(2),1:n_bins(3),i_lag+1), &
-					      (/ n_bins(1)*n_bins(2)*n_bins(3) /)),  file=outfile)
+        call print(i_lag // " " // reshape(autocorr(1:n_bins(1),1:n_bins(2),1:n_bins(3),i_lag+1), &
+                                              (/ n_bins(1)*n_bins(2)*n_bins(3) /)),  file=outfile)
       end do
     endif
 
     if (mean) then
       if (autocorrelation) then
-	call print("", file=outfile)
-	call print("", file=outfile)
+        call print("", file=outfile)
+        call print("", file=outfile)
       endif
       allocate(histo_mean(n_bins(1), n_bins(2), n_bins(3)))
       allocate(histo_var(n_bins(1), n_bins(2), n_bins(3)))
       call calc_mean_var_3array(histograms(:,:,:,1:n_histos), histo_mean, histo_var)
 
       if (radial_histo) then
-	call print("# Density (#/vol) ", file=outfile)
-	call print("# r mean var n_samples", file=outfile)
-	do i1=1, n_bins(1)
-	  call print(histo_grid(1,i1,1,1) // " " // histo_mean(i1, 1, 1) // " " // &
-	  histo_var(i1, 1, 1) // " " // n_histos, file=outfile)
-	end do
+        call print("# Density (#/vol) ", file=outfile)
+        call print("# r mean var n_samples", file=outfile)
+        do i1=1, n_bins(1)
+          call print(histo_grid(1,i1,1,1) // " " // histo_mean(i1, 1, 1) // " " // &
+          histo_var(i1, 1, 1) // " " // n_histos, file=outfile)
+        end do
       else
-	call print("# Density (#/vol)", file=outfile)
-	call print("# x y z   mean   var  n_samples", file=outfile)
-	do i1=1,n_bins(1)
-	do i2=1,n_bins(2)
-	do i3=1,n_bins(3)
-	  call print( histo_grid(:,i1,i2,i3) // &
-		      " " // histo_mean(i1, i2, i3) // &
-		      " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
-	end do
+        call print("# Density (#/vol)", file=outfile)
+        call print("# x y z   mean   var  n_samples", file=outfile)
+        do i1=1,n_bins(1)
+        do i2=1,n_bins(2)
+        do i3=1,n_bins(3)
+          call print( histo_grid(:,i1,i2,i3) // &
+                      " " // histo_mean(i1, i2, i3) // &
+                      " " // histo_var(i1, i2, i3) // " " // n_histos, file=outfile)
+        end do
         call print('', file=outfile)
-	end do
+        end do
         call print('', file=outfile)
-	end do
+        end do
       endif
     end if
 
@@ -203,19 +203,19 @@ implicit none
       arg_line_no = arg_line_no + 1
       args_str = read_line(commandfile, status=status)
       if (status == 0) then
-	call print("got arguments line '"//trim(args_str)//"'")
-	call initialise(cli_params)
-	call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
-	  mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
-	  radial_histo, radial_center, random_samples, n_samples, &
-	  sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
-	if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
-	  call print_usage()
-	  call system_abort("could not parse argument line "//arg_line_no//" from file '"//trim(commandfilename//"'"))
-	end if
-	call finalise(cli_params)
+        call print("got arguments line '"//trim(args_str)//"'")
+        call initialise(cli_params)
+        call register_cli_params(cli_params,.false., infilename, infile_is_list, outfilename, commandfilename, &
+          mask_str, min_p, bin_width, n_bins, decimation, min_time, max_time, gaussian_smoothing, gaussian_sigma, &
+          radial_histo, radial_center, random_samples, n_samples, &
+          sort_Time, no_Time_dups, mean, mean_decorrelation_time, autocorrelation, autocorrelation_max_lag, quiet)
+        if (.not. param_read_line(cli_params, trim(args_str), ignore_unknown = .true.)) then
+          call print_usage()
+          call system_abort("could not parse argument line "//arg_line_no//" from file '"//trim(commandfilename//"'"))
+        end if
+        call finalise(cli_params)
       else
-	have_params = .false.
+        have_params = .false.
       endif
     endif
 
@@ -346,7 +346,7 @@ contains
     do lag=1, max_lag
       t_sum = 0.0_dp
       do i=1, nt-lag
-	t_sum = t_sum + (v(i)-mean)*(v(i+lag)-mean)
+        t_sum = t_sum + (v(i)-mean)*(v(i+lag)-mean)
       end do
       autocorrelation(lag) = t_sum/real(nt-lag,dp)
     end do
@@ -372,7 +372,7 @@ contains
     do lag=0, max_lag
       t_sum = 0.0_dp
       do i=1, nt-lag
-	t_sum(1:n1,1:n2,1:n3) = t_sum(1:n1,1:n2,1:n3) + (v(1:n1,1:n2,1:n3,i)-mean)*(v(1:n1,1:n2,1:n3,i+lag)-mean)
+        t_sum(1:n1,1:n2,1:n3) = t_sum(1:n1,1:n2,1:n3) + (v(1:n1,1:n2,1:n3,i)-mean)*(v(1:n1,1:n2,1:n3,i+lag)-mean)
       end do
       autocorrelation(1:n1,1:n2,1:n3,lag+1) = t_sum(1:n1,1:n2,1:n3)/real(nt-lag,dp)
     end do
@@ -399,7 +399,7 @@ contains
     integer :: n_samples(2)
     character(len=*), optional, intent(in) :: mask_str
     logical, optional :: quiet
-    
+
     real(dp) :: last_time, cur_time
     type(atoms_ll_entry), pointer :: entry
     logical :: do_this_histo, first_histo
@@ -431,28 +431,28 @@ contains
     do while (associated(entry))
       do_this_histo = .false.
       if (interval > 0.0_dp) then
-	if (cur_time < last_time) &
-	  call system_abort("calc_histos called with interval="//interval//" > 0, but unsorted sequence: cur_time="// &
-			    cur_time//" < last_time="//last_time)
-	if (.not. get_value(entry%at%params, "Time", cur_time)) &
-	  call system_abort("calc_histos called with interval="//interval//" > 0, but no Time value in entry")
-	if ((cur_time .feq. last_time) .or. (cur_time >= last_time+interval)) then
-	  do_this_histo = .true.
-	  if (cur_time >= last_time+interval) last_time = cur_time
-	endif
+        if (cur_time < last_time) &
+          call system_abort("calc_histos called with interval="//interval//" > 0, but unsorted sequence: cur_time="// &
+                            cur_time//" < last_time="//last_time)
+        if (.not. get_value(entry%at%params, "Time", cur_time)) &
+          call system_abort("calc_histos called with interval="//interval//" > 0, but no Time value in entry")
+        if ((cur_time .feq. last_time) .or. (cur_time >= last_time+interval)) then
+          do_this_histo = .true.
+          if (cur_time >= last_time+interval) last_time = cur_time
+        endif
       else
-	do_this_histo = .true.
+        do_this_histo = .true.
       endif
       if (do_this_histo) then
-	! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
-	n_histos = n_histos + 1
+        ! if (get_value(entry%at%params, "Time", cur_time)) call print("doing histo for config with time " // cur_time)
+        n_histos = n_histos + 1
         if (.not. my_quiet) then
           if (mod(n_histos,1000) == 1) write (mainlog%unit,'(I4,a)') int(n_histos/1000)," "
           if (mod(n_histos,10) == 0) write (mainlog%unit,'(I1,$)') mod(n_histos/10,10)
           if (mod(n_histos,1000) == 0) write (mainlog%unit,'(a)') " "
         endif
-	call reallocate_histos(histograms, n_histos, n_bins)
-	if (radial_histo) then
+        call reallocate_histos(histograms, n_histos, n_bins)
+        if (radial_histo) then
           if (first_histo) then
             call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, radial_center, bin_width(1), n_bins(1), gaussian_sigma, &
               theta, phi, w, mask_str, histo_grid(1,:,1,1))
@@ -460,7 +460,7 @@ contains
             call sample_radial_mesh_Gaussians(histograms(:,1,1,n_histos), entry%at, radial_center, bin_width(1), n_bins(1), gaussian_sigma, &
               theta, phi, w, mask_str)
           endif
-	else ! rectilinear
+        else ! rectilinear
           if (gaussian) then
             if (first_histo) then
               call sample_rectilinear_mesh_Gaussians(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, gaussian_sigma, mask_str, histo_grid(:,:,:,:))
@@ -474,7 +474,7 @@ contains
               call calc_histogram(histograms(:,:,:,n_histos), entry%at, min_p, bin_width, n_bins, mask_str)
             endif
           endif
-	endif
+        endif
       endif
       entry => entry%next
     end do
@@ -498,9 +498,9 @@ contains
     do p_i=1, n_p
       phi(ii) = (p_i-1)*2.0_dp*PI/real(n_p,dp)
       if (mod(n_t,2) == 0) then
-	theta(ii) = (t_i-1.5_dp-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+        theta(ii) = (t_i-1.5_dp-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
       else
-	theta(ii) = (t_i-1-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
+        theta(ii) = (t_i-1-floor((n_t-1)/2.0_dp))*PI/real(n_t,dp)
       endif
       ! not oversample top and bottom of spehre
       w(ii) = cos(theta(ii))
@@ -527,9 +527,9 @@ contains
     do ii = 1, n
       p_norm = 2.0_dp
       do while (p_norm > 1.0_dp)
-	p = 0.0_dp
-	call randomise(p, 2.0_dp)
-	p_norm = norm(p)
+        p = 0.0_dp
+        call randomise(p, 2.0_dp)
+        p_norm = norm(p)
       end do
       phi(ii) = atan2(p(2),p(1))
       theta(ii) = acos(p(3)/p_norm)
@@ -557,7 +557,7 @@ contains
 
     my_accumulate = optional_default(.false., accumulate)
     if (.not. my_accumulate) histogram = 0.0_dp
-    
+
     allocate(mask_a(at%N))
     call is_in_mask(mask_a, at, mask_str)
 
@@ -582,16 +582,16 @@ contains
       if (.not. mask_a(at_i)) cycle
       r = norm(at%pos(:,at_i))
       do bin_i=1, n_bins
-	bin_r = (bin_i-1)*bin_width
-	do sample_i=1,size(theta)
-	  p(1) = radial_center(1)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
-	  p(2) = radial_center(2)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
-	  p(3) = radial_center(3)+bin_r*sin(theta(sample_i))
-	  dist = distance_min_image(at,p,at%pos(:,at_i))
+        bin_r = (bin_i-1)*bin_width
+        do sample_i=1,size(theta)
+          p(1) = radial_center(1)+bin_r*cos(phi(sample_i))*cos(theta(sample_i))
+          p(2) = radial_center(2)+bin_r*sin(phi(sample_i))*cos(theta(sample_i))
+          p(3) = radial_center(3)+bin_r*sin(theta(sample_i))
+          dist = distance_min_image(at,p,at%pos(:,at_i))
 !Include all the atoms, slow but minimises error
-!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+!          if (dist > 4.0_dp*gaussian_sigma) cycle
           histogram(bin_i) = histogram(bin_i) + exp(-0.5_dp*(dist/(gaussian_sigma))**2)*w(sample_i)
-	end do ! sample_i
+        end do ! sample_i
       end do ! bin_i
     end do ! at_i
 
@@ -728,14 +728,14 @@ contains
     if (mask_str(1:1)=='@') then
       call parse_atom_mask(mask_str,atom_indices)
       do i=1, atom_indices%N
-	mask_a(atom_indices%int(1,i)) = .true.
+        mask_a(atom_indices%int(1,i)) = .true.
       end do
     else if (scan(mask_str,'=')/=0) then
       call system_abort("property type mask not supported yet")
     else
       Zmask = Atomic_Number(mask_str)
       do i=1, at%N
-	if (at%Z(i) == Zmask) mask_a(i) = .true.
+        if (at%Z(i) == Zmask) mask_a(i) = .true.
       end do
     end if
   end subroutine is_in_mask
@@ -753,15 +753,15 @@ contains
       t_histos = histos
       deallocate(histos)
       if (size(t_histos,4) <= 0) then
-	new_size = 10
+        new_size = 10
       else if (size(t_histos,4) < 1000) then
-	new_size = 2*size(t_histos,4)
+        new_size = 2*size(t_histos,4)
       else
-	new_size = floor(1.25*size(t_histos,4))
+        new_size = floor(1.25*size(t_histos,4))
       endif
       allocate(histos(size(t_histos,1), size(t_histos,2), size(t_histos,3), new_size))
       histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),1:size(t_histos,4)) = &
-	t_histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),1:size(t_histos,4))
+        t_histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),1:size(t_histos,4))
       histos(1:size(t_histos,1),1:size(t_histos,2),1:size(t_histos,3),size(t_histos,4)+1:size(histos,4)) = 0.0_dp
       deallocate(t_histos)
     else
@@ -782,7 +782,7 @@ contains
       do i1=1, size(a,1)
       do i2=1, size(a,2)
       do i3=1, size(a,3)
-	var(i1,i2,i3) = sum((a(i1,i2,i3,:)-mean(i1,i2,i3))**2)/real(n,dp)
+        var(i1,i2,i3) = sum((a(i1,i2,i3,:)-mean(i1,i2,i3))**2)/real(n,dp)
       end do
       end do
       end do

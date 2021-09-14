@@ -32,8 +32,8 @@
 !X  libAtoms module
 !X
 !% This is a container module, "use" it if you want to use libatoms stuff:
-!%> 	  use libAtoms_module
-!% 
+!%>           use libAtoms_module
+!%
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

@@ -314,14 +314,14 @@ subroutine TB_Print(this, file)
       call print("eval_F_fillings", file=file)
       call Print (this%eval_F_fillings, file=file)
       call verbosity_push_decrement()
-	call print("evecs", file=file)
-	call Print (this%evecs, file=file)
-	call print("dm", file=file)
-	call Print (this%dm, file=file)
-	call print("Hdm", file=file)
-	call Print (this%Hdm, file=file)
-	call print("gf", file=file)
-	call Print (this%gf, file=file)
+        call print("evecs", file=file)
+        call Print (this%evecs, file=file)
+        call print("dm", file=file)
+        call Print (this%dm, file=file)
+        call print("Hdm", file=file)
+        call Print (this%Hdm, file=file)
+        call print("gf", file=file)
+        call Print (this%gf, file=file)
       call verbosity_pop()
     call verbosity_pop()
   call verbosity_pop()
@@ -412,13 +412,13 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
   if (present(AF)) then
     if (present(use_fermi_E)) then
       if (use_fermi_E) then
-	if (AF%n_poles == 0) then
-	  call system_abort("Called solve_diag with use_fermi_E and AF that is uninitialized")
-	endif
+        if (AF%n_poles == 0) then
+          call system_abort("Called solve_diag with use_fermi_E and AF that is uninitialized")
+        endif
       else
-	if (AF%band_width .feq. 0.0_dp) then
-	  call system_abort("Called solve_diag with .not. use_fermi_E and AF that has no band_width")
-	endif
+        if (AF%band_width .feq. 0.0_dp) then
+          call system_abort("Called solve_diag with .not. use_fermi_E and AF that has no band_width")
+        endif
       endif
     endif
   endif
@@ -431,29 +431,29 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
     if (my_use_prev_charge) then
 
       if (assign_pointer(this%at, 'local_N', local_N)) then
-	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_N", PRINT_VERBOSE)
+        call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_N", PRINT_VERBOSE)
       else
-	call print("TB_solve_diag got use_prev_charge, but no local_N value is defined", PRINT_ALWAYS)
+        call print("TB_solve_diag got use_prev_charge, but no local_N value is defined", PRINT_ALWAYS)
       endif
       if (assign_pointer(this%at, 'local_mom', local_mom)) then
-	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_mom", PRINT_VERBOSE)
+        call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_mom", PRINT_VERBOSE)
       else
-	call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", PRINT_ALWAYS)
+        call print("TB_solve_diag got use_prev_charge, but no local_mom value is defined", PRINT_ALWAYS)
       endif
       if (assign_pointer(this%at, 'local_pot', local_pot)) then
-	call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_pot", PRINT_VERBOSE)
+        call print("TB_solve_diag calling set_atomic_n_mom(this%tbsys%scf) using this%at:local_pot", PRINT_VERBOSE)
       else
-	call print("TB_solve_diag got use_prev_charge, but no local_pot value is defined", PRINT_ALWAYS)
+        call print("TB_solve_diag got use_prev_charge, but no local_pot value is defined", PRINT_ALWAYS)
       endif
 
       call scf_set_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
 
       if (get_value(this%at%params, 'global_N', global_N)) then
-	call print("TB_solve_diag calling set_global_N(this%tbsys%scf from this%at:global_N", PRINT_VERBOSE)
-	call scf_set_global_N(this%tbsys, w_n, global_N)
+        call print("TB_solve_diag calling set_global_N(this%tbsys%scf from this%at:global_N", PRINT_VERBOSE)
+        call scf_set_global_N(this%tbsys, w_n, global_N)
       else
-	call scf_set_global_N(this%tbsys, w_n)
-	call print("TB_solve_diag got use_prev_charge, but no global_N value is defined", PRINT_ALWAYS)
+        call scf_set_global_N(this%tbsys, w_n)
+        call print("TB_solve_diag got use_prev_charge, but no global_N value is defined", PRINT_ALWAYS)
       endif
 
     else
@@ -495,21 +495,21 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (this%tbsys%tbmodel%is_orthogonal) then
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
+        call diagonalise(this%tbsys%H, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%evals, ignore_symmetry = .true., error = diag_error)
+        call diagonalise(this%tbsys%H, this%evals, ignore_symmetry = .true., error = diag_error)
       end if
     else
       if (do_evecs) then
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
+        call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, this%evecs, ignore_symmetry = .true., error = diag_error)
       else
-	call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, ignore_symmetry = .true., error = diag_error)
+        call diagonalise(this%tbsys%H, this%tbsys%S, this%evals, ignore_symmetry = .true., error = diag_error)
       endif
     endif
 
     if (diag_error /= 0) then
       if (this%mpi%my_proc == 0) then
-	call write(this%at, "atom_dump_bad_diagonalise."//mpi_id()//".xyz")
+        call write(this%at, "atom_dump_bad_diagonalise."//mpi_id()//".xyz")
       endif
       RAISE_ERROR_WITH_KIND(diag_error, "TB_solve_diag got error " // diag_error // " from diagonalise", error)
     endif
@@ -527,14 +527,14 @@ subroutine TB_solve_diag(this, need_evecs, use_fermi_E, fermi_E, w_n, use_prev_c
 
     if (current_verbosity() >= PRINT_VERBOSE) then
       if (this%tbsys%scf%active) then
-	if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom) .or. &
-	    assign_pointer(this%at, 'local_pot', local_pot)) then
-	   call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
-	endif
-	if (get_value(this%at%params, 'global_N', global_N)) then
-	  call scf_get_global_N(this%tbsys, global_N)
-	  call set_value(this%at%params, 'global_N', global_N)
-	endif
+        if (assign_pointer(this%at, 'local_N', local_N) .or. assign_pointer(this%at, 'local_mom', local_mom) .or. &
+            assign_pointer(this%at, 'local_pot', local_pot)) then
+           call scf_get_atomic_n_mom(this%tbsys, local_N, local_mom, local_pot)
+        endif
+        if (get_value(this%at%params, 'global_N', global_N)) then
+          call scf_get_global_N(this%tbsys, global_N)
+          call set_value(this%at%params, 'global_N', global_N)
+        endif
       endif
       call write(this%at, 'stdout', prefix="SCF_ITER_"//iter)
     endif ! VERBOSE
@@ -658,7 +658,7 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
     case ('DIAG')
       call system_timer("TB_calc/DIAG_calc_diag")
       my_energy = calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N_p, forces, virial, &
-	use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, dH=dH, dS=dS, index=index, error=error)
+        use_prev_charge = use_prev_charge, AF=AF, do_evecs = do_evecs, dH=dH, dS=dS, index=index, error=error)
       call system_timer("TB_calc/DIAG_calc_diag")
     case ('GF')
       call system_timer("TB_calc/GF_calc_GF")
@@ -671,22 +671,22 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
       if (present(virial)) call system_abort("No virial with GF (yet?)")
 
       if (.not. has_Fermi_T(my_fermi_T, this%tbsys%tbmodel, Fermi_T, this%calc_args_str)) &
-	call system_abort("TB_calc called without Fermi_T for model without default Fermi_T")
+        call system_abort("TB_calc called without Fermi_T for model without default Fermi_T")
       if (.not. has_band_width(my_band_width, this%tbsys%tbmodel, band_width, this%calc_args_str)) &
-	call system_abort("TB_calc called without band_width for model without default band_width")
+        call system_abort("TB_calc called without band_width for model without default band_width")
 
       ! default to constant mu, for now at least
       my_use_fermi_E = optional_default(.true., use_fermi_E)
 
       if (my_use_Fermi_E .and. .not. present(AF)) then
-	  if (.not. has_Fermi_E(my_Fermi_E, this%tbsys%tbmodel, Fermi_E, this%calc_args_str)) &
-	    call system_abort("Called TB_calc with use_Fermi_E but neither AF nor Fermi_E nor TB Model with default Fermi_E")
+          if (.not. has_Fermi_E(my_Fermi_E, this%tbsys%tbmodel, Fermi_E, this%calc_args_str)) &
+            call system_abort("Called TB_calc with use_Fermi_E but neither AF nor Fermi_E nor TB Model with default Fermi_E")
       endif
 
       if (present(AF)) then
-	my_AF = AF
+        my_AF = AF
       else
-	call Initialise(my_AF, my_Fermi_E, my_Fermi_T, my_band_width)
+        call Initialise(my_AF, my_Fermi_E, my_Fermi_T, my_band_width)
       end if
       call system_timer("TB_calc/DIAG_GF_prep")
 
@@ -696,9 +696,9 @@ subroutine TB_calc(this, at, energy, local_e, forces, virial, local_virial, args
           AF = my_AF)
       call system_timer("TB_calc/DIAG_GF_calc_diag")
       if (present(forces)) then
-	call system_timer("TB_calc/DIAG_GF_calc_GF")
-	my_energy = calc_GF(this, use_fermi_E = .true., local_e = local_e, local_N = local_N_p, forces = forces, AF = my_AF)
-	call system_timer("TB_calc/DIAG_GF_calc_GF")
+        call system_timer("TB_calc/DIAG_GF_calc_GF")
+        my_energy = calc_GF(this, use_fermi_E = .true., local_e = local_e, local_N = local_N_p, forces = forces, AF = my_AF)
+        call system_timer("TB_calc/DIAG_GF_calc_GF")
       endif
       call finalise(my_AF)
       call system_timer("TB_calc/DIAG_GF")
@@ -812,11 +812,11 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
   if (present(local_N)) then
     if (associated(local_N)) then
       if (size(local_N) == this%at%N) then
-	do_local_N = .true.
+        do_local_N = .true.
       else
-	if (size(local_N) /= 0) &
-	  call system_abort("TB_calc_diag called with size(local_N)="//size(local_N)// &
-			    " not 0, and not matching this%at%N="//this%at%N)
+        if (size(local_N) /= 0) &
+          call system_abort("TB_calc_diag called with size(local_N)="//size(local_N)// &
+                            " not 0, and not matching this%at%N="//this%at%N)
       endif
     endif
   endif
@@ -826,14 +826,14 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
       do_local_e = .true.
     else
       if (size(local_e) /= 0) &
-	call system_abort("TB_calc_diag called with size(local_e)="//size(local_e)// &
-	                  " not 0, and not matching this%at%N="//this%at%N)
+        call system_abort("TB_calc_diag called with size(local_e)="//size(local_e)// &
+                          " not 0, and not matching this%at%N="//this%at%N)
     endif
   endif
 
   u_do_evecs = optional_default(.false., do_evecs) .or. present(forces) .or. present(virial) .or. &
-	     do_local_e .or. associated(w_e) .or. &
-	     do_local_N .or. associated(w_n) .or. this%tbsys%scf%active
+             do_local_e .or. associated(w_e) .or. &
+             do_local_N .or. associated(w_n) .or. this%tbsys%scf%active
   if (u_do_evecs) call print("evecs are needed", PRINT_VERBOSE)
 
   if (.not. has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str)) &
@@ -896,7 +896,7 @@ function TB_calc_diag(this, use_fermi_E, fermi_E, fermi_T, local_e, local_N, for
     call calc_local_atomic_energy(this, u_local_e)
     call local_scf_e_correction(this%tbsys, this%at, local_e_scf, global_e_scf, w_n)
     call print("TB_calc_diag got sum(local_energies) eval " // sum(u_local_e) // &
-	       " scf " // sum(local_e_scf) // " rep " // sum(local_e_rep), PRINT_VERBOSE)
+               " scf " // sum(local_e_scf) // " rep " // sum(local_e_rep), PRINT_VERBOSE)
     u_local_e = u_local_e + local_e_scf + local_e_rep
 
     if (associated(w_e)) then
@@ -990,11 +990,11 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
   if (present(local_N)) then
     if (associated(local_N)) then
       if (size(local_N) == this%at%N) then
-	do_local_N = .true.
+        do_local_N = .true.
       else
-	if (size(local_N) /= 0) &
-	  call system_abort("TB_calc_diag called with size(local_N)="//size(local_N)// &
-			    " not 0, and not matching this%at%N="//this%at%N)
+        if (size(local_N) /= 0) &
+          call system_abort("TB_calc_diag called with size(local_N)="//size(local_N)// &
+                            " not 0, and not matching this%at%N="//this%at%N)
       endif
     endif
   endif
@@ -1004,8 +1004,8 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
       do_local_e = .true.
     else
       if (size(local_e) /= 0) &
-	call system_abort("TB_calc_diag called with size(local_e)="//size(local_e)// &
-	                  " not 0, and not matching this%at%N="//this%at%N)
+        call system_abort("TB_calc_diag called with size(local_e)="//size(local_e)// &
+                          " not 0, and not matching this%at%N="//this%at%N)
     endif
   endif
 
@@ -1062,7 +1062,7 @@ function TB_calc_GF(this, use_fermi_E, fermi_E, fermi_T, band_width, local_e, lo
         has_fermi_T(this%fermi_T, this%tbsys%tbmodel, fermi_T, this%calc_args_str) .and. &
         has_band_width(use_band_width, this%tbsys%tbmodel, band_width, this%calc_args_str)) then
       call print("Initialising ApproxFermi using fermi_e " // this%fermi_e // " fermi_T " // this%fermi_T // &
-	" band_width "// use_band_width, PRINT_VERBOSE)
+        " band_width "// use_band_width, PRINT_VERBOSE)
       call Initialise(u_AF, this%Fermi_E, this%fermi_T, use_band_width)
     else
       call system_abort("find_new_fermi_E is false, but we are missing fermi_e, fermi_T or band_width for Initialise(AF...)")
@@ -1145,7 +1145,7 @@ subroutine calc_local_atomic_energy_GF(this, local_e)
   real(dp), intent(inout) :: local_e(:)
 
   local_e = local_ksum(this%gf%tbsys%kpoints, atom_orbital_sum(this%gf%tbsys, &
-			real(partial_TraceMult(this%gf%dm, this%gf%tbsys%H, &
+                        real(partial_TraceMult(this%gf%dm, this%gf%tbsys%H, &
     a_H=.true., b_H=.false.))))
   call ksum_distrib_inplace(this%gf%tbsys%kpoints, local_e)
 end subroutine calc_local_atomic_energy_GF
@@ -1155,7 +1155,7 @@ subroutine calc_local_atomic_num_GF(this, local_N)
   real(dp), intent(inout) :: local_N(:)
 
   local_N = local_ksum(this%gf%tbsys%kpoints, atom_orbital_sum(this%gf%tbsys, &
-			real(partial_TraceMult(this%gf%dm, this%gf%tbsys%S, &
+                        real(partial_TraceMult(this%gf%dm, this%gf%tbsys%S, &
     a_H=.true., b_H=.false.))))
   call ksum_distrib_inplace(this%gf%tbsys%kpoints, local_N)
 end subroutine calc_local_atomic_num_GF
@@ -1165,7 +1165,7 @@ subroutine calc_local_atomic_energy(this, local_e)
   real(dp), intent(inout) :: local_e(:)
 
   local_e = local_ksum(this%tbsys%kpoints, atom_orbital_sum(this%tbsys, &
-			real(partial_TraceMult(this%dm, this%tbsys%H, &
+                        real(partial_TraceMult(this%dm, this%tbsys%H, &
     a_H=.true., b_H=.false.))))
   call ksum_distrib_inplace(this%tbsys%kpoints, local_e)
 end subroutine calc_local_atomic_energy
@@ -1178,7 +1178,7 @@ subroutine calc_local_atomic_num(this, local_N)
     local_N = local_ksum(this%tbsys%kpoints, atom_orbital_sum(this%tbsys, Re_diag(this%dm)))
   else
     local_N = local_ksum(this%tbsys%kpoints, atom_orbital_sum(this%tbsys, &
-			  real(partial_TraceMult(this%dm, this%tbsys%S, &
+                          real(partial_TraceMult(this%dm, this%tbsys%S, &
       a_H=.true., b_H=.false.))))
   endif
   call ksum_distrib_inplace(this%tbsys%kpoints, local_N)
@@ -1288,11 +1288,11 @@ function calculate_forces_diag(this, dH, dS, index) result(forces)
       a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
     if (.not. this%tbsys%tbmodel%is_orthogonal) then
       forces(1,i) = forces(1,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(1), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
       forces(2,i) = forces(2,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(2), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
       forces(3,i) = forces(3,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(3), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
     endif
   end do
 
@@ -1335,11 +1335,11 @@ function calculate_virial_diag(this) result(virial)
       a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
     if (.not. this%tbsys%tbmodel%is_orthogonal) then
       virial(1,i) = virial(1,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(1), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
       virial(2,i) = virial(2,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(2), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
       virial(3,i) = virial(3,i) + local_ksum(this%tbsys%kpoints, real(TraceMult(this%Hdm,this%tbsys%dS(3), &
-	a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
     endif
   end do
 
@@ -1389,11 +1389,11 @@ function calculate_forces_GF(this, w_e, w_n) result (forces)
       a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
     if (.not. this%gf%tbsys%tbmodel%is_orthogonal) then
       forces(1,i) = forces(1,i) - local_ksum(this%gf%tbsys%kpoints, real(TraceMult(this%gf%mod_dm_S, this%gf%tbsys%dS(1), &
-	a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
       forces(2,i) = forces(2,i) - local_ksum(this%gf%tbsys%kpoints, real(TraceMult(this%gf%mod_dm_S, this%gf%tbsys%dS(2), &
-	a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
       forces(3,i) = forces(3,i) - local_ksum(this%gf%tbsys%kpoints, real(TraceMult(this%gf%mod_dm_S, this%gf%tbsys%dS(3), &
-	a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
+        a_H=.false., b_H=.true., diag_mask=d_mask, offdiag_mask=od_mask)))
     endif
   end do
 
@@ -1487,10 +1487,10 @@ function scf_f_correction_GF(gf, at, w_e, w_n) result(forces)
     do i=1, N_atoms
       call fill_dmatrices(gf%tbsys, at, i, diag_mask=d_mask, offdiag_mask=od_mask)
       do j=1, 3
-	call add_term_d2SCFE_dn2_times_vec(gf%tbsys%scf%terms(1), gf%tbsys, dn_dr_mat(j,i,:), dlpot)
+        call add_term_d2SCFE_dn2_times_vec(gf%tbsys%scf%terms(1), gf%tbsys, dn_dr_mat(j,i,:), dlpot)
 
-	call multDiagRL(sp_Stwid, sp_S, dlpot)
-	forces(j,i) = forces(j,i) + local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%mod_dm_H, sp_Stwid, a_H=.false., b_H=.true.)))
+        call multDiagRL(sp_Stwid, sp_S, dlpot)
+        forces(j,i) = forces(j,i) + local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%mod_dm_H, sp_Stwid, a_H=.false., b_H=.true.)))
 
         ! Tr [ mod_dm 0.5 (lpot dS lpot) ] was necessary in SIMPLE (C+) version, since dH_ij/dr didn't
         ! include 0.5 ( lpot(i) + lpot(j) dS_ij/dr.  Here it does include it, so this
@@ -1512,7 +1512,7 @@ function scf_f_correction_GF(gf, at, w_e, w_n) result(forces)
     ! correct forces by derivative of double counting terms
     do i=1, N_atoms
       do j=1, 3
-	forces(j,i) = forces(j,i) - sum(ww_e(:)*dlpot(:)*dn_dr_mat(j,i,:))
+        forces(j,i) = forces(j,i) - sum(ww_e(:)*dlpot(:)*dn_dr_mat(j,i,:))
       end do
     end do
 
@@ -1531,11 +1531,11 @@ function scf_f_correction_GF(gf, at, w_e, w_n) result(forces)
     do i=1, at%N
       call fill_dmatrices(gf%tbsys, at, i, diag_mask=d_mask, offdiag_mask=od_mask)
       do j=1, 3
-	call add_term_d2SCFE_dgNdn(gf%tbsys%scf%terms(1), gf%tbsys, w_n, dlpot)
-	dlpot = dlpot*dgN_dr_vec(j,i)
+        call add_term_d2SCFE_dgNdn(gf%tbsys%scf%terms(1), gf%tbsys, w_n, dlpot)
+        dlpot = dlpot*dgN_dr_vec(j,i)
 
-	call multDiagRL(sp_Stwid, sp_S, dlpot)
-	forces(j,i) = forces(j,i) + local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%mod_dm_H, sp_Stwid, a_H=.false., b_H=.true.)))
+        call multDiagRL(sp_Stwid, sp_S, dlpot)
+        forces(j,i) = forces(j,i) + local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%mod_dm_H, sp_Stwid, a_H=.false., b_H=.true.)))
 
         ! Tr [ mod_dm 0.5 (lpot dS lpot) ] was necessary in SIMPLE (C+) version, since dH_ij/dr didn't
         ! include 0.5 ( lpot(i) + lpot(j) dS_ij/dr.  Here we do, so this
@@ -1639,37 +1639,37 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
 
       call fill_dmatrices(gf%tbsys, at, i, diag_mask=d_mask, offdiag_mask=od_mask)
       do j=1, 3
-	! Tr [ rho dS/dr WI ]
+        ! Tr [ rho dS/dr WI ]
         if (.not. gf%tbsys%tbmodel%is_orthogonal) then
           if (ip == 1 .and. gf%mpi_across_poles%my_proc == 0) then
-	    dn0_dr = local_ksum(gf%tbsys%kpoints, &
-	      real(partial_TraceMult(gf%dm, gf%tbsys%dS(j), a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+            dn0_dr = local_ksum(gf%tbsys%kpoints, &
+              real(partial_TraceMult(gf%dm, gf%tbsys%dS(j), a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
             call ksum_distrib_inplace(gf%tbsys%kpoints, dn0_dr)
             do ii=1, N_eff
               !NB sign determined empirically :(
               t_dn0_dr_mat(j,i,ii) = -dn0_dr(ii)
             end do
           end if
-	end if
+        end if
 
-	dn0_dr = 0.0_dp
+        dn0_dr = 0.0_dp
 
-	! Tr [ drho0/dr S WI ] = Tr [ sum_i ( a_i z_i G_i dS/dr G_i - a_i G_i dH0/dr G_i ) S WI =
+        ! Tr [ drho0/dr S WI ] = Tr [ sum_i ( a_i z_i G_i dS/dr G_i - a_i G_i dH0/dr G_i ) S WI =
         !    Tr [ sum_i a_i z_i G_i dS/dr G_i S WI - sum_i a_i G_i dH0/dr G_i S WI
         if (.not. gf%tbsys%tbmodel%is_orthogonal) then
           call matrix_product_sub(G_dAdr,  gf%G(ip), gf%tbsys%dS(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
-	  dn0_dr = dn0_dr + real(az*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
+          dn0_dr = dn0_dr + real(az*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
         endif
 
-	call matrix_product_sub(G_dAdr, gf%G(ip), gf%tbsys%dH(j), diag_mask=d_mask, offdiag_mask=od_mask)
+        call matrix_product_sub(G_dAdr, gf%G(ip), gf%tbsys%dH(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
-	dn0_dr = dn0_dr - real(a*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
+        dn0_dr = dn0_dr - real(a*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
 
-	call ksum_distrib_inplace(gf%tbsys%kpoints, dn0_dr)
+        call ksum_distrib_inplace(gf%tbsys%kpoints, dn0_dr)
 
         ! factor of 2 folded into a and az (or explicit evaluation of G(conjg(z)))
-	t_dn0_dr_mat(j,i,:) = t_dn0_dr_mat(j,i,:) - dn0_dr(:)
+        t_dn0_dr_mat(j,i,:) = t_dn0_dr_mat(j,i,:) - dn0_dr(:)
 
       end do ! j
     end do ! i
@@ -1724,12 +1724,12 @@ subroutine calc_dn_dr_mat(gf, at, dn_dr_mat)
           if (.not. gf%tbsys%tbmodel%is_orthogonal) then
             call matrix_product_sub(G_dAdr,  gf%G_conjg(ip), gf%tbsys%dS(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
-	    dn0_dr = dn0_dr + real(az*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
+            dn0_dr = dn0_dr + real(az*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
           endif
 
           call matrix_product_sub(G_dAdr, gf%G_conjg(ip), gf%tbsys%dH(j), diag_mask=d_mask, offdiag_mask=od_mask)
 
-	  dn0_dr = dn0_dr - real(a*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
+          dn0_dr = dn0_dr - real(a*local_ksum(gf%tbsys%kpoints, partial_TraceMult(G_dAdr, GS)))
           call ksum_distrib_inplace(gf%tbsys%kpoints, dn0_dr)
 
           ! factor of 2 folded into a and az (or explicit evaluation of G(conjg(z)))
@@ -1898,7 +1898,7 @@ subroutine calc_dgN_dr_vec(gf, at, dgN_dr_vec, w_n, sp_S, sp_Stwid)
   !NB sign set empirically
   ! factor of 2 shifted into aGWNSG
   dgN_dr_denom = 1.0_dp + ksum_distrib(gf%tbsys%kpoints, real(local_ksum(gf%tbsys%kpoints, TraceMult(sp_Stwid, aGWNSG, &
-				       a_H=.true., b_H=.false.))))
+                                       a_H=.true., b_H=.false.))))
 
   dgN_dr_vec = 0.0_dp
 
@@ -1906,18 +1906,18 @@ subroutine calc_dgN_dr_vec(gf, at, dgN_dr_vec, w_n, sp_S, sp_Stwid)
     call fill_dmatrices(gf%tbsys, at, i, diag_mask=d_mask, offdiag_mask=od_mask)
     do j=1, 3
       if (.not. gf%tbsys%tbmodel%is_orthogonal) then
-	! Tr [ dS/dr rho wN ]
-	! NB sign set empirically
-	dgN_dr_vec(j,i) = dgN_dr_vec(j,i) - sum(ww_n * &
-					    local_ksum(gf%tbsys%kpoints, real(partial_TraceMult(gf%tbsys%dS(j), gf%dm, &
-					    a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask))))
-	! factor of 2 shifted into aGWNSG and azGWNSG
-	dgN_dr_vec(j,i) = dgN_dr_vec(j,i) - local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%tbsys%dS(j), azGWNSG, &
-					               a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+        ! Tr [ dS/dr rho wN ]
+        ! NB sign set empirically
+        dgN_dr_vec(j,i) = dgN_dr_vec(j,i) - sum(ww_n * &
+                                            local_ksum(gf%tbsys%kpoints, real(partial_TraceMult(gf%tbsys%dS(j), gf%dm, &
+                                            a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask))))
+        ! factor of 2 shifted into aGWNSG and azGWNSG
+        dgN_dr_vec(j,i) = dgN_dr_vec(j,i) - local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%tbsys%dS(j), azGWNSG, &
+                                                       a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
       end if
       dgN_dr_vec(j,i) = dgN_dr_vec(j,i) + &
         local_ksum(gf%tbsys%kpoints, real(TraceMult(gf%tbsys%dH(j), aGWNSG, &
-					  a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
+                                          a_H=.true., b_H=.false., diag_mask=d_mask, offdiag_mask=od_mask)))
 
       ! NB SIMPLE (C+) implementation needs to add something because its dH_ij/dr doesn't
       !  include the 0.5 (lpot(i) + lpot(j) dS_ij/dr part
@@ -2089,50 +2089,50 @@ subroutine TB_find_fermi_E(this, AF, w_n)
     do while (abs(N_try-N_e) > this%fermi_E_precision)
       e_try = (e_min + e_max) / 2.0_dp
       if (this%tbsys%noncollinear) then
-	degeneracy = 1.0_dp
+        degeneracy = 1.0_dp
       else
-	degeneracy = 2.0_dp
+        degeneracy = 2.0_dp
       endif
       if (present(AF)) then
-	AF%z = AF%z - AF%fermi_E + e_try
-	AF%fermi_E = e_try
-	call calc_fermi_factors(this%E_fillings, this%evals, AF = AF, degeneracy=degeneracy)
+        AF%z = AF%z - AF%fermi_E + e_try
+        AF%fermi_E = e_try
+        call calc_fermi_factors(this%E_fillings, this%evals, AF = AF, degeneracy=degeneracy)
       else
-	call calc_fermi_factors(this%E_fillings, this%evals, fermi_E = e_try, fermi_T = this%fermi_T, degeneracy=degeneracy)
+        call calc_fermi_factors(this%E_fillings, this%evals, fermi_E = e_try, fermi_T = this%fermi_T, degeneracy=degeneracy)
       endif
       if (have_w_n) then
-	! could be done more efficiency, by precomputing for each state the
-	! occupation on each atom
-	call calc_dm_from_evecs(this, .false.)
-	call calc_local_atomic_num(this, local_N)
-	N_try = sum(w_n*local_N)
+        ! could be done more efficiency, by precomputing for each state the
+        ! occupation on each atom
+        call calc_dm_from_evecs(this, .false.)
+        call calc_local_atomic_num(this, local_N)
+        N_try = sum(w_n*local_N)
       else
-	N_try = ksum_dup(this%tbsys%kpoints, sum(this%E_fillings%data_d,dim=1))
+        N_try = ksum_dup(this%tbsys%kpoints, sum(this%E_fillings%data_d,dim=1))
       endif
       call Print("find_Fermi_E e_try n_try " // (iter+1) // " " // e_try // " " // n_try, PRINT_ANALYSIS)
       if (N_try < N_e) then
-	e_min = e_try
+        e_min = e_try
       else
-	e_max = e_try
+        e_max = e_try
       endif
       iter = iter + 1
       if (iter .gt. max_iter) then
-	call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
-	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
-	call print("this%evals", PRINT_ALWAYS)
-	call verbosity_push(PRINT_NORMAL)
-	call print(this%evals)
-	call verbosity_pop()
-	call system_abort("Ran out of iterations in find_fermi_E")
+        call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
+        call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
+        call print("this%evals", PRINT_ALWAYS)
+        call verbosity_push(PRINT_NORMAL)
+        call print(this%evals)
+        call verbosity_pop()
+        call system_abort("Ran out of iterations in find_fermi_E")
       endif
       if ((abs(N_try-N_e) > this%fermi_E_precision) .and. (e_min == e_max)) then
-	call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
-	call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
-	call print("this%evals", PRINT_ALWAYS)
-	call verbosity_push(PRINT_NORMAL)
-	call print(this%evals)
-	call verbosity_pop()
-	call system_abort("Ran out of precision in find_fermi_E")
+        call print("N_e " // N_e // " N_try " // N_try, PRINT_ALWAYS)
+        call print("e_min " // e_min // " e_max " // e_max // " e_try " // e_try, PRINT_ALWAYS)
+        call print("this%evals", PRINT_ALWAYS)
+        call verbosity_push(PRINT_NORMAL)
+        call print(this%evals)
+        call verbosity_pop()
+        call system_abort("Ran out of precision in find_fermi_E")
       endif
     end do
 
@@ -2287,25 +2287,25 @@ subroutine absorption(this, polarization, freqs, gamma, a)
     absorption_contrib = 0.0_dp
     do ik=1, this%evecs%n_matrices
       do i=1, this%evecs%N
-	do f=i+1, this%evecs%N
-	  if ((this%E_fillings%data_d(i,ik) .fne. 0.0_dp) .and. (this%E_fillings%data_d(f,ik) .fne. 1.0_dp)) then
-	    if (dipole_evecs(1)%is_complex) then
-	      absorption_contrib(ik) = absorption_contrib(ik) + &
-			  ( (abs(dipole_evecs(1)%data_z(ik)%data(i,f)*polarization_hat(1) + &
-				 dipole_evecs(2)%data_z(ik)%data(i,f)*polarization_hat(2) + &
-				 dipole_evecs(3)%data_z(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
-			  ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
-			    ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
-	    else
-	      absorption_contrib(ik) = absorption_contrib(ik) + &
-			  ( (abs(dipole_evecs(1)%data_d(ik)%data(i,f)*polarization_hat(1) + &
-				 dipole_evecs(2)%data_d(ik)%data(i,f)*polarization_hat(2) + &
-				 dipole_evecs(3)%data_d(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
-			  ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
-			    ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
-	    endif
-	  endif
-	end do ! f
+        do f=i+1, this%evecs%N
+          if ((this%E_fillings%data_d(i,ik) .fne. 0.0_dp) .and. (this%E_fillings%data_d(f,ik) .fne. 1.0_dp)) then
+            if (dipole_evecs(1)%is_complex) then
+              absorption_contrib(ik) = absorption_contrib(ik) + &
+                          ( (abs(dipole_evecs(1)%data_z(ik)%data(i,f)*polarization_hat(1) + &
+                                 dipole_evecs(2)%data_z(ik)%data(i,f)*polarization_hat(2) + &
+                                 dipole_evecs(3)%data_z(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
+                          ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
+                            ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
+            else
+              absorption_contrib(ik) = absorption_contrib(ik) + &
+                          ( (abs(dipole_evecs(1)%data_d(ik)%data(i,f)*polarization_hat(1) + &
+                                 dipole_evecs(2)%data_d(ik)%data(i,f)*polarization_hat(2) + &
+                                 dipole_evecs(3)%data_d(ik)%data(i,f)*polarization_hat(3))**2)/(freqs(i_freq)) ) * &
+                          ( (this%E_fillings%data_d(i,ik)/2.0_dp*(1.0_dp-this%E_fillings%data_d(f,ik)/2.0_dp)) / &
+                            ((this%evals%data_d(f,ik)-this%evals%data_d(i,ik)-freqs(i_freq))**2 + gamma**2) )
+            endif
+          endif
+        end do ! f
       end do ! i
     end do ! ik
 

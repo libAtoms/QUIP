@@ -93,8 +93,8 @@ implicit none
       r = distance_min_image(bulk, i, qm_center_i)
       if (r <= r_qm) then
         call add_atoms(cluster_qm, bulk%pos(:,i), bulk%Z(i))
-	if (i == qm_center_i) qm_center_i_cluster = cluster_qm%N
-	call print("atom " // i // " n_neigh " // atoms_n_neighbours(bulk, i))
+        if (i == qm_center_i) qm_center_i_cluster = cluster_qm%N
+        call print("atom " // i // " n_neigh " // atoms_n_neighbours(bulk, i))
         do ii=1, atoms_n_neighbours(bulk, i)
           j = atoms_neighbour(bulk, i, ii)
           call add_atoms(cluster_qm, bulk%pos(:,j), bulk%Z(j))
@@ -179,7 +179,7 @@ implicit none
   allocate(f(3,cluster_qm%N))
   f = 0.0_dp
   call calc(pot, cluster_qm, f=f, args_str=calc_args)
- 
+
   do i=1, cluster_qm%N
     if (i == qm_center_i_cluster) then
       call print(" " // r_qm // " " // i // " " // cluster_qm%pos(:,i) // " " // f(:,i) // " CTR")
@@ -187,7 +187,7 @@ implicit none
       call print(" " // r_qm // " " // i // " " // cluster_qm%pos(:,i) // " " // f(:,i))
     endif
   end do
-  
+
   call finalise(pot)
   call system_finalise()
 

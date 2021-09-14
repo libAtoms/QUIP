@@ -38,7 +38,7 @@
 !%>   command=path_to_command
 !% and three optional parameters
 !%>   property_list=prop1:T1:N1:prop2:T2:N2...
-!% which defaults to 'pos', 
+!% which defaults to 'pos',
 !%>    filename=<string>
 !% which defaults to 'filepot', and
 !%>   min_cutoff=cutoff
@@ -46,21 +46,21 @@
 !% than $2*min_cutoff$ in any direction then it will be replicated before
 !% being written to the file. The forces are taken from the primitive cell
 !% and the energy is reduced by a factor of the number of repeated copies.
-!% 
+!%
 !% The command takes 2 arguments, the names of the input and the output files.
 !% command output is in extended xyz form.
 !%
 !% energy and virial (both optional) are passed via the comment, labeled as
 !%     'energy=E' and 'virial="vxx vxy vxz vyx vyy vyz vzx vzy vzz"'.
 !%
-!%  per atoms data is at least atomic type and optionally 
-!%     a local energy (labeled 'local_e:R:1') 
-!%  and 
+!%  per atoms data is at least atomic type and optionally
+!%     a local energy (labeled 'local_e:R:1')
+!%  and
 !%  forces (labeled 'force:R:3')
 !%
 !% right now (14/2/2008) the atoms_xyz reader requires the 1st 3 columns after
 !%   the atomic type to be the position.
-!% 
+!%
 !% If you ask for some quantity from FilePot_Calc and it's not in the output file, it
 !% returns an error status or crashes (if err isn't present).
 !X
@@ -251,7 +251,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   character(len=STRING_LENGTH) :: read_extra_property_list, read_extra_param_list, property_list, tmp_properties_array(100)
   type(Dictionary) :: cli
   logical :: FilePot_log, filename_override
-  
+
   INIT_ERROR(error)
 
   if (present(energy)) energy = 0.0_dp
@@ -282,7 +282,7 @@ subroutine FilePot_Calc(this, at, energy, local_e, forces, virial, local_virial,
   ! master process. Function does not return on any node until external command is finished.
 
   if (.not. this%mpi%active .or.  (this%mpi%active .and. this%mpi%my_proc == 0)) then
-     
+
      if(this%mpi%active) then
         xyzfile=(trim(this%filename)//"."//this%mpi%my_proc//".xyz")
         outfile=(trim(this%filename)//"."//this%mpi%my_proc//".out")
@@ -441,21 +441,21 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
 
   if (present(local_e)) then
     if (.not. assign_pointer(at_out, 'local_e', local_e_p)) then
-	RAISE_ERROR("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", error)
+        RAISE_ERROR("filepot_read_output needed local_e, but couldn't find local_e in '"//trim(outfile)//"'", error)
     endif
     local_e = local_e_p
   endif
 
   if (present(forces)) then
     if (.not. assign_pointer(at_out, 'force', forces_p)) then
-	RAISE_ERROR("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", error)
+        RAISE_ERROR("filepot_read_output needed forces, but couldn't find force in '"//trim(outfile)//"'", error)
     endif
     forces = forces_p
   endif
 
   if (present(local_virial)) then
     if (.not. assign_pointer(at_out, 'local_virial', local_virial_p)) then
-	RAISE_ERROR("filepot_read_output needed local_virial, but couldn't find local_virial in '"//trim(outfile)//"'", error)
+        RAISE_ERROR("filepot_read_output needed local_virial, but couldn't find local_virial in '"//trim(outfile)//"'", error)
     endif
     local_virial = local_virial_p
   endif
@@ -463,7 +463,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
   if (len_trim(read_extra_property_list) > 0) then
      call copy_properties(at, at_out, trim(read_extra_property_list))
   endif
-  
+
   if (len_trim(read_extra_param_list) > 0) then
      call parse_string(read_extra_param_list, ':', tmp_params_array, n_params, error=error)
      PASS_ERROR(error)
@@ -480,7 +480,7 @@ subroutine filepot_read_output(outfile, at, nx, ny, nz, energy, local_e, forces,
            call print("FilePot copying param key "//trim(copy_keys(n_copy)), PRINT_VERBOSE)
         end if
      end do
-     
+
      call subset(at_out%params, copy_keys(1:n_copy), at%params, out_no_initialise=.true.)
   end if
 

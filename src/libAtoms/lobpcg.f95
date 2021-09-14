@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   subroutine matrix_general_diagonlise_lobpcg_sandia(A, M, evals, evecs, block_size, &
-        				      precond, no_guess, err)
+                                              precond, no_guess, err)
     real(dp),intent(in), dimension(:,:) :: A
     real(dp),intent(in), dimension(:,:) :: M
     real(dp),intent(inout), dimension(:) :: evals
@@ -116,7 +116,7 @@
       endif
 
       if (first_eval > 1) then
-	call matrix_product_sub(X(1:N,1:bs), M(1:N,1:N), X_twid(1:N,1:bs))
+        call matrix_product_sub(X(1:N,1:bs), M(1:N,1:N), X_twid(1:N,1:bs))
         call orthogonalise_col_vectors(X_twid(1:N,1:bs), evecs(1:N,1:first_eval-1), X(1:N,1:bs))
       endif
 
@@ -143,7 +143,7 @@
         S(1:N,1:bs) = X(1:N,1:bs)
         S(1:N,bs+1:bs+cbs) = PI(1:N,1:cbs)
 
-	call matrix_product_sub(M_HI(1:N,1:cbs), M(1:N,1:N), HI(1:N,1:cbs))
+        call matrix_product_sub(M_HI(1:N,1:cbs), M(1:N,1:N), HI(1:N,1:cbs))
         call orthogonalise_col_vectors(HI(1:N,1:cbs), S(1:N,1:bs+cbs), M_HI(1:N,1:cbs))
 
         if (first_eval > 1) then
@@ -168,7 +168,7 @@
         if (iter == 1) then
           YI = 0.0_dp
         endif
-	prev_cbs = cbs
+        prev_cbs = cbs
         cbs = 0
         max_r = 0.0_dp
         do i=1, bs
@@ -184,7 +184,7 @@
         max_r_hist(1:9) = max_r_hist(2:10)
         max_r_hist(10) = max_r
 
-	if (prev_cbs < cbs) then
+        if (prev_cbs < cbs) then
           call print("diverging, but block partially converged " // (bs-cbs), PRINT_VERBOSE)
           done = .true.
           n_needed = n_evecs-first_eval+1
@@ -192,14 +192,14 @@
           ! copy all evecs and converged evals
           evecs(1:N,first_eval:min(first_eval+(bs)-1,n_evecs)) = X(1:N,1:min(bs,n_needed))
           evals(first_eval:min(first_eval+(bs-cbs)-1,n_evecs)) = Y_evals(1:min(bs-cbs,n_needed))
-	else if (cbs == 0) then ! all converged
+        else if (cbs == 0) then ! all converged
           done = .true.
           n_needed = n_evecs-first_eval+1
           got_n_evals = got_n_evals + bs
           ! copy converged evecs/evals
           evecs(1:N,first_eval:min(last_eval,n_evecs)) = X(1:N,1:min(bs,n_needed))
           evals(first_eval:min(last_eval,n_evecs)) = Y_evals(1:min(bs,n_needed))
-	else if (got_n_evals+(bs-cbs) >= n_evecs) then
+        else if (got_n_evals+(bs-cbs) >= n_evecs) then
           call print("enough evecs done, but block partially converged " // (bs-cbs), PRINT_VERBOSE)
           done = .true.
           n_needed = n_evecs-first_eval+1
@@ -218,7 +218,7 @@
         else
           done = .false.
           YI(1:bs,1:cbs) = 0.0_dp
-	  call matrix_product_sub(M_YI(1:nrr,1:bs), rr_M(1:nrr,1:nrr), YI(1:nrr, 1:bs))
+          call matrix_product_sub(M_YI(1:nrr,1:bs), rr_M(1:nrr,1:nrr), YI(1:nrr, 1:bs))
           call orthogonalise_col_vectors(YI(1:nrr,1:cbs), Y(1:nrr,1:bs), M_YI(1:nrr,1:cbs))
 
           call matrix_product_sub(PI(1:N,1:cbs), S(1:N,1:nrr), YI(1:nrr,1:cbs))
@@ -326,7 +326,7 @@
   end subroutine rr_solve
 
 !  subroutine matrix_general_diagonlise_lobpcg(B, A, evals, evecs, n_evecs, block_size, &
-!					      precond, no_guess, largest, err)
+!                                              precond, no_guess, largest, err)
 !    real(dp),intent(in), dimension(:,:) :: A
 !    real(dp),intent(in), dimension(:,:) :: B
 !    real(dp),intent(inout), dimension(:) :: evals
@@ -392,7 +392,7 @@
 !    if (my_no_guess) then
 !      evecs = 0.0_dp
 !      do i=1, n_evecs
-!	call randomise(evecs(:,i), 1.0_dp)
+!        call randomise(evecs(:,i), 1.0_dp)
 !      end do
 !    endif
 !
@@ -408,8 +408,8 @@
 !
 !      ! A orthogonalize evecs_block w.r.t. previous blocks
 !      do ii_block=1, i_block-1
-!	call orthogonalise_col_vectors(evecs_block, &
-!	    evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
+!        call orthogonalise_col_vectors(evecs_block, &
+!            evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
 !      end do
 !
 !      call print("orthogonalized evecs_block", PRINT_ANALYSIS)
@@ -421,162 +421,162 @@
 !      do while (iter <= max_n_iter .and. .not. done)
 !        call print("doing iter " // iter, PRINT_NERD)
 !
-!	! evaluate eigenvalues
-!	call matrix_product_sub(A_evecs_block, A, evecs_block)
-!	call matrix_product_sub(B_evecs_block, B, evecs_block)
-!	if (iter == 1) &
-!	  evals_block(:) = sum(evecs_block*B_evecs_block,1)/ &
-!			   sum(evecs_block*A_evecs_block,1)
+!      ! evaluate eigenvalues
+!      call matrix_product_sub(A_evecs_block, A, evecs_block)
+!      call matrix_product_sub(B_evecs_block, B, evecs_block)
+!      if (iter == 1) &
+!        evals_block(:) = sum(evecs_block*B_evecs_block,1)/ &
+!                         sum(evecs_block*A_evecs_block,1)
 !
-!	call print("evals_block", PRINT_NERD)
-!	call print(evals_block, PRINT_NERD)
-!	call print("evecs_block", PRINT_ANALYSIS)
-!	call print(evecs_block, PRINT_ANALYSIS)
+!        call print("evals_block", PRINT_NERD)
+!        call print(evals_block, PRINT_NERD)
+!        call print("evecs_block", PRINT_ANALYSIS)
+!        call print(evecs_block, PRINT_ANALYSIS)
 !
-!	! evaluate residual
-!	do i=1, block_size
-!	  R(:,i) = B_evecs_block(:,i) - evals_block(i)*A_evecs_block(:,i)
-!	end do
+!        ! evaluate residual
+!        do i=1, block_size
+!          R(:,i) = B_evecs_block(:,i) - evals_block(i)*A_evecs_block(:,i)
+!        end do
 !
-!	call print("R", PRINT_ANALYSIS)
-!	call print(R, PRINT_ANALYSIS)
+!        call print("R", PRINT_ANALYSIS)
+!        call print(R, PRINT_ANALYSIS)
 !
-!	mainlog%default_real_precision=16
-!	call print("residual max " // maxval(abs(R)), PRINT_VERBOSE)
-!	mainlog%default_real_precision=8
-!	done = (maxval(abs(R)) < 1.0e-8_dp)
+!        mainlog%default_real_precision=16
+!        call print("residual max " // maxval(abs(R)), PRINT_VERBOSE)
+!        mainlog%default_real_precision=8
+!        done = (maxval(abs(R)) < 1.0e-8_dp)
 !
-!	if (.not. done) then
+!        if (.not. done) then
 !
-!	  ! precondition
-!	  if (present(precond)) then
-!	    call matrix_product_sub(W, precond, R)
-!	  else
-!	    W = R
-!	  endif
+!          ! precondition
+!          if (present(precond)) then
+!            call matrix_product_sub(W, precond, R)
+!          else
+!            W = R
+!          endif
 !
 !          call print("W", PRINT_ANALYSIS)
 !          call print(W, PRINT_ANALYSIS)
 !
-!	  ! A orthogonalize W w.r.t. previous blocks
-!	  do ii_block=1, i_block-1
-!	    call orthogonalise_col_vectors(W, &
-!		evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
-!	  end do
+!          ! A orthogonalize W w.r.t. previous blocks
+!          do ii_block=1, i_block-1
+!            call orthogonalise_col_vectors(W, &
+!                evecs(:,(ii_block-1)*my_block_size+1:ii_block*my_block_size), A)
+!          end do
 !
-!	  call print("orthogonalized W", PRINT_ANALYSIS)
-!	  call print(W, PRINT_ANALYSIS)
+!          call print("orthogonalized W", PRINT_ANALYSIS)
+!          call print(W, PRINT_ANALYSIS)
 !
-!	  call print("P", PRINT_ANALYSIS)
-!	  call print(P, PRINT_ANALYSIS)
+!          call print("P", PRINT_ANALYSIS)
+!          call print(P, PRINT_ANALYSIS)
 !
-!	  ! evaluate Rayleigh-Ritz basis
-!	  RR_basis(:,1:my_block_size) = evecs_block
-!	  RR_basis(:,my_block_size+1:2*my_block_size) = W
-!	  RR_basis(:,2*my_block_size+1:3*my_block_size) = P
+!          ! evaluate Rayleigh-Ritz basis
+!          RR_basis(:,1:my_block_size) = evecs_block
+!          RR_basis(:,my_block_size+1:2*my_block_size) = W
+!          RR_basis(:,2*my_block_size+1:3*my_block_size) = P
 !
 !
-!	  call print("RR_basis", PRINT_ANALYSIS)
-!	  call print(RR_basis, PRINT_ANALYSIS)
+!          call print("RR_basis", PRINT_ANALYSIS)
+!          call print(RR_basis, PRINT_ANALYSIS)
 !
-!	  ! evaluate Rayleigh-Ritz matrices
-!	  call matrix_product_sub(RR_basis_AorB, A, RR_basis)
+!          ! evaluate Rayleigh-Ritz matrices
+!          call matrix_product_sub(RR_basis_AorB, A, RR_basis)
 !
-!	  call matrix_product_sub(RR_mat_A, RR_basis_AorB, RR_basis, &
-!	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_A", PRINT_ANALYSIS)
-!	  call print(RR_mat_A, PRINT_ANALYSIS)
-!	  call matrix_product_sub(RR_basis_AorB, B, RR_basis)
-!	  call matrix_product_sub(RR_mat_B, RR_basis_AorB, RR_basis, &
-!	    m1_transpose=.true., m2_transpose=.false.)
-!	  call print("RR_mat_B", PRINT_ANALYSIS)
-!	  call print(RR_mat_B, PRINT_ANALYSIS)
+!          call matrix_product_sub(RR_mat_A, RR_basis_AorB, RR_basis, &
+!            m1_transpose=.true., m2_transpose=.false.)
+!          call print("RR_mat_A", PRINT_ANALYSIS)
+!          call print(RR_mat_A, PRINT_ANALYSIS)
+!          call matrix_product_sub(RR_basis_AorB, B, RR_basis)
+!          call matrix_product_sub(RR_mat_B, RR_basis_AorB, RR_basis, &
+!            m1_transpose=.true., m2_transpose=.false.)
+!          call print("RR_mat_B", PRINT_ANALYSIS)
+!          call print(RR_mat_B, PRINT_ANALYSIS)
 !
-!	  ! diagonalise Rayleigh-Ritz matrix
-!	  if (iter == 1) then
-!	    call diagonalise(RR_mat_B(1:2*block_size,1:2*block_size), &
-!	      RR_mat_A(1:2*block_size,1:2*block_size), &
-!	      RR_evals(1:2*block_size), RR_evecs(1:2*block_size,1:2*block_size))
-!	      call print("RR_evals", PRINT_NERD)
-!	      call print(RR_evals(1:2*block_size), PRINT_NERD)
-!	      call print("RR_evecs", PRINT_ANALYSIS)
-!	      call print(RR_evecs(1:2*block_size,1:2*block_size), PRINT_ANALYSIS)
-!	  else
-!	    call diagonalise(RR_mat_B, RR_mat_A, RR_evals, RR_evecs)
-!	    call print("RR_evals", PRINT_NERD)
-!	    call print(RR_evals, PRINT_NERD)
-!	    call print("RR_evecs", PRINT_ANALYSIS)
-!	    call print(RR_evecs, PRINT_ANALYSIS)
-!	  endif
+!          ! diagonalise Rayleigh-Ritz matrix
+!          if (iter == 1) then
+!            call diagonalise(RR_mat_B(1:2*block_size,1:2*block_size), &
+!              RR_mat_A(1:2*block_size,1:2*block_size), &
+!              RR_evals(1:2*block_size), RR_evecs(1:2*block_size,1:2*block_size))
+!              call print("RR_evals", PRINT_NERD)
+!              call print(RR_evals(1:2*block_size), PRINT_NERD)
+!              call print("RR_evecs", PRINT_ANALYSIS)
+!              call print(RR_evecs(1:2*block_size,1:2*block_size), PRINT_ANALYSIS)
+!          else
+!            call diagonalise(RR_mat_B, RR_mat_A, RR_evals, RR_evecs)
+!            call print("RR_evals", PRINT_NERD)
+!            call print(RR_evals, PRINT_NERD)
+!            call print("RR_evecs", PRINT_ANALYSIS)
+!            call print(RR_evecs, PRINT_ANALYSIS)
+!          endif
 !
-!	  if (iter == 1) then
-!	    i_max = 2*my_block_size
-!	    if (my_largest) then
-!	      rr_min = 2*my_block_size
-!	      rr_max = my_block_size+1
-!	      rr_step = -1
-!	    else
-!	      rr_min = my_block_size+1
-!	      rr_max = 2*my_block_size
-!	      rr_step = 1
-!	    endif
-!	  else
-!	    i_max = 3*my_block_size
-!	    if (my_largest) then
-!	      rr_min = 3*my_block_size
-!	      rr_max = 2*my_block_size+1
-!	      rr_step = -1
-!	    else
-!	      rr_min = 2*my_block_size+1
-!	      rr_max = 3*my_block_size
-!	      rr_step = 1
-!	    endif
-!	  endif
+!          if (iter == 1) then
+!            i_max = 2*my_block_size
+!            if (my_largest) then
+!              rr_min = 2*my_block_size
+!              rr_max = my_block_size+1
+!              rr_step = -1
+!            else
+!              rr_min = my_block_size+1
+!              rr_max = 2*my_block_size
+!              rr_step = 1
+!            endif
+!          else
+!            i_max = 3*my_block_size
+!            if (my_largest) then
+!              rr_min = 3*my_block_size
+!              rr_max = 2*my_block_size+1
+!              rr_step = -1
+!            else
+!              rr_min = 2*my_block_size+1
+!              rr_max = 3*my_block_size
+!              rr_step = 1
+!            endif
+!          endif
 !
-!	  ! Create new evecs from Rayleigh-Ritz vectors
-!	  call matrix_product_sub(evecs_block, RR_basis(:,1:i_max), &
-!					       RR_evecs(1:i_max,rr_min:rr_max:rr_step))
+!          ! Create new evecs from Rayleigh-Ritz vectors
+!          call matrix_product_sub(evecs_block, RR_basis(:,1:i_max), &
+!                                               RR_evecs(1:i_max,rr_min:rr_max:rr_step))
 !
-!	  ! copy Rayleigh-Ritz evals (ignored, because of orthogonalization)
-!	  evals_block = RR_evals(rr_min:rr_max:rr_step)
+!          ! copy Rayleigh-Ritz evals (ignored, because of orthogonalization)
+!          evals_block = RR_evals(rr_min:rr_max:rr_step)
 !
-!	  ! Create new Ps from Rayleigh-Ritz vectors
-!	  RR_evecs(1:my_block_size,:) = 0.0_dp
-!	  call matrix_product_sub(P, RR_basis(:,1:i_max), RR_evecs(1:i_max,rr_min:rr_max:rr_step))
+!          ! Create new Ps from Rayleigh-Ritz vectors
+!          RR_evecs(1:my_block_size,:) = 0.0_dp
+!          call matrix_product_sub(P, RR_basis(:,1:i_max), RR_evecs(1:i_max,rr_min:rr_max:rr_step))
 !
-!	  iter = iter + 1
-!	end if
+!          iter = iter + 1
+!        end if
 !      end do ! while not converged
 !
 !      if (.not. done) then
-!	if (present(err)) then
-!	  err = 1
-!	  deallocate(evecs_block)
-!	  deallocate(A_evecs_block)
-!	  deallocate(B_evecs_block)
-!	  deallocate(evals_block)
-!	  deallocate(tt)
-!	  deallocate(R)
-!	  deallocate(W)
-!	  deallocate(P)
-!	  deallocate(RR_basis)
-!	  deallocate(RR_basis_AorB)
-!	  deallocate(RR_mat_A)
-!	  deallocate(RR_mat_B)
-!	  deallocate(RR_evecs)
-!	  deallocate(RR_evals)
-!	  return
-!	else
-!	  call system_abort("matrix_general_diagonalise_lobpcg failed to converge in " // &
-!	    iter // " iterations")
-!	endif
+!        if (present(err)) then
+!          err = 1
+!          deallocate(evecs_block)
+!          deallocate(A_evecs_block)
+!          deallocate(B_evecs_block)
+!          deallocate(evals_block)
+!          deallocate(tt)
+!          deallocate(R)
+!          deallocate(W)
+!          deallocate(P)
+!          deallocate(RR_basis)
+!          deallocate(RR_basis_AorB)
+!          deallocate(RR_mat_A)
+!          deallocate(RR_mat_B)
+!          deallocate(RR_evecs)
+!          deallocate(RR_evals)
+!          return
+!        else
+!          call system_abort("matrix_general_diagonalise_lobpcg failed to converge in " // &
+!            iter // " iterations")
+!        endif
 !      endif
 !
 !      ! copy blocks back into main arrays
 !      evecs(:,(i_block-1)*my_block_size+1:i_block*my_block_size) = evecs_block
 !      evals((i_block-1)*my_block_size+1:i_block*my_block_size) = evals_block
 !      call print("block " // i_block // " took " // iter // " iterations")
-!      
+!
 !    end do ! i_block
 !
 !    if (present(err)) err = 0
@@ -611,12 +611,12 @@
 !
 !    if (present(A)) then
 !      if (size(A,2) /= size(V1,1)) &
-!	call system_abort("called orthogonalise_col_vectors with V1 size not matching A size")
+!        call system_abort("called orthogonalise_col_vectors with V1 size not matching A size")
 !      if (size(A,1) /= size(V2,1)) &
-!	call system_abort("called orthogonalise_col_vectors with V2 size not matching A size")
+!        call system_abort("called orthogonalise_col_vectors with V2 size not matching A size")
 !    else
 !      if (size(V1,1) /= size(V2,1)) &
-!	call system_abort("called orthogonalise_col_vectors with V1 size not matching V2 size")
+!        call system_abort("called orthogonalise_col_vectors with V1 size not matching V2 size")
 !    endif
 !
 !    if (present(A)) then
@@ -656,12 +656,12 @@
 
     if (present(A_V1)) then
       if (size(A_V1,1) /= size(V1,1)) &
-	call system_abort("called orthogonalise_col_vectors with V1 size not matching A_V1 size")
+        call system_abort("called orthogonalise_col_vectors with V1 size not matching A_V1 size")
       if (size(A_V1,2) /= size(V1,2)) &
-	call system_abort("called orthogonalise_col_vectors with V1 size not matching A_V1 size")
+        call system_abort("called orthogonalise_col_vectors with V1 size not matching A_V1 size")
     else
       if (size(V1,1) /= size(V2,1)) &
-	call system_abort("called orthogonalise_col_vectors with V1 size not matching V2 size")
+        call system_abort("called orthogonalise_col_vectors with V1 size not matching V2 size")
     endif
 
     allocate(V2_V2T(size(V2,1), size(V2,1)))
@@ -670,14 +670,14 @@
     if (present(A_V1)) then
       call matrix_product_sub(V1, V2_V2T, A_V1, lhs_factor=1.0_dp, rhs_factor=-1.0_dp)
       do i=1, size(V1,2)
-	mag = sqrt(sum(V1(:,i)*A_V1(:,i)))
-	V1(:,i) = V1(:,i)/mag
-	A_V1(:,i) = A_V1(:,i)/mag
+        mag = sqrt(sum(V1(:,i)*A_V1(:,i)))
+        V1(:,i) = V1(:,i)/mag
+        A_V1(:,i) = A_V1(:,i)/mag
       end do
     else
       call matrix_product_sub(V1, V2_V2T, V1, lhs_factor=1.0_dp, rhs_factor=-1.0_dp)
       do i=1, size(V1,2)
-	V1(:,i) = V1(:,i)/sqrt(sum(V1(:,i)*V1(:,i)))
+        V1(:,i) = V1(:,i)/sqrt(sum(V1(:,i)*V1(:,i)))
       end do
     endif
 

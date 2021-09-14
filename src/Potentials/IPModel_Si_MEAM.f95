@@ -29,10 +29,10 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_Si_MEAM  module 
+!X IPModel_Si_MEAM  module
 !X
 !% Module for the Modified Embedded Atom Method potential for Si
-!% The IPModel_Si_MEAM object contains all the parameters read 
+!% The IPModel_Si_MEAM object contains all the parameters read
 !% from an 'Si_MEAN_params' XML stanza.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -141,7 +141,7 @@ subroutine IPModel_Si_MEAM_Finalise(this)
       enddo
     end do
   end do
-    
+
   if(allocated(this%phi)) deallocate(this%phi)
   if(allocated(this%rho)) deallocate(this%rho)
   if(allocated(this%f)) deallocate(this%f)
@@ -163,7 +163,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
   type(Atoms), intent(in) :: at
   real(dp), intent(out), optional :: e !% \texttt{e} = System total energy
   real(dp), dimension(:), intent(out), optional :: local_e !% \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), dimension(3,3), intent(out), optional :: virial   !% Virial
    character(len=*), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -171,7 +171,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
 
   !local
   integer  :: i, j, k, n, nn, ti, tj, tk
-  
+
   real(dp) :: r_ij, r_ik, n_i, f_ij, f_ik, theta_jik, g_jik, U_i, phi_ij, &
             & dphi_ij, df_ij, df_ik, dg_jik, dU_i, drho_ij
   real(dp), dimension(3)  :: u_ij, u_ik, dn_i, dn_j, dn_i_dr_ij, diff_ij, diff_ik
@@ -228,9 +228,9 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
   do i = 1, at%N
 
      if (present(mpi)) then
-	if(mpi%active) then
-	   if(mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	endif
+        if(mpi%active) then
+           if(mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+        endif
      endif
 
      if(associated(atom_mask_pointer)) then
@@ -269,7 +269,7 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
            if(present(f)) dn_i = dn_i + dn_i_dr_ij
            if(present(virial)) dn_i_drij_outer_rij = dn_i_drij_outer_rij + (dn_i_dr_ij .outer. u_ij) * r_ij
         endif
- 
+
         f_ij = spline_value(this%f(ti,tj),r_ij)
         if(present(f) .or. present(virial)) df_ij = spline_deriv(this%f(ti,tj),r_ij)
 
@@ -368,18 +368,18 @@ subroutine IPModel_Si_MEAM_Calc(this, at, e, local_e, f, virial, local_virial, a
      if (present(virial)) call sum_in_place(mpi, virial)
   endif
 
-endsubroutine IPModel_Si_MEAM_Calc   
+endsubroutine IPModel_Si_MEAM_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !X XML param reader functions
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer status
@@ -389,7 +389,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   integer :: n_types
   real(dp) :: v
 
-  if (name == 'Si_MEAM_params') then 
+  if (name == 'Si_MEAM_params') then
 
     if (parse_in_ip) &
       call system_abort("IPModel_startElement_handler entered Si_MEAM_params with parse_in true. Probably a bug in FoX (4.0.1, e.g.)")
@@ -412,7 +412,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, "n_types", value, status)
@@ -458,7 +458,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -536,9 +536,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'Si_MEAM_params') then
@@ -564,7 +564,7 @@ subroutine IPModel_endElement_handler(URI, localname, name)
           & spline_x, spline_y, yp1, ypn)
           if( parse_cur_type_j /= parse_cur_type_k ) &
           &   call initialise(parse_ip%g(parse_cur_type_i,parse_cur_type_k,parse_cur_type_j), &
-          & spline_x, spline_y, yp1, ypn) 
+          & spline_x, spline_y, yp1, ypn)
         case default
           call system_abort('')
       endselect
@@ -602,7 +602,7 @@ end subroutine IPModel_Si_MEAM_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of potential parameters: number of different types, cutoff radius, atomic numbers, ect.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -639,7 +639,7 @@ subroutine IPModel_Si_MEAM_Print (this, file)
     end do
     call verbosity_pop()
   end do
-    
+
 end subroutine IPModel_Si_MEAM_Print
 
 endmodule IPModel_Si_MEAM_module

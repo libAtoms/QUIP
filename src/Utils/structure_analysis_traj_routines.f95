@@ -443,11 +443,11 @@ subroutine is_in_mask(mask_a, at, mask_str)
     end do
   else if (scan(mask_str,'=')/=0) then ! arbitrary property
     call split_string(mask_str,'=','""', fields,n_fields)
-    if (assign_pointer(at, trim(fields(1)), p_i)) then 
+    if (assign_pointer(at, trim(fields(1)), p_i)) then
        ! integer match
        read (unit=fields(2), fmt=*) i_val
        mask_a = (p_i == i_val)
-    else if (assign_pointer(at, trim(fields(1)), p_l)) then 
+    else if (assign_pointer(at, trim(fields(1)), p_l)) then
        ! integer match
        read (unit=fields(2), fmt=*) l_val
        mask_a = (p_l .eqv. l_val)
@@ -499,11 +499,11 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
   if (present(quantity)) then
     select case (quantity)
       case("1")
-	quantity_1 = .true.
+        quantity_1 = .true.
       case("KE")
-	quantity_KE = .true.
+        quantity_KE = .true.
       case default
-	call system_abort("density_sample_radial_mesh_Gaussians called with unknown quantity='"//trim(quantity)//"'")
+        call system_abort("density_sample_radial_mesh_Gaussians called with unknown quantity='"//trim(quantity)//"'")
     end select
   else
     quantity_1 = .true.
@@ -546,9 +546,9 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
     endif
     if (quantity_KE) then
       if (associated(at%velo)) then
-	sample_weight = kinetic_energy(ElementMass(at%Z(at_i)), at%velo(1:3,at_i))
+        sample_weight = kinetic_energy(ElementMass(at%Z(at_i)), at%velo(1:3,at_i))
       else
-	sample_weight = 0.0_dp
+        sample_weight = 0.0_dp
       endif
     endif
     d = distance_min_image(at,use_center_pos,at%pos(:,at_i))
@@ -565,17 +565,17 @@ subroutine density_sample_radial_mesh_Gaussians(histogram, at, center_pos, cente
       if (exp_arg > -20.0_dp) em = exp(exp_arg)
       ! should really fix d->0 limit
       if (d .feq. 0.0_dp) then
-	h_val = 0.0_dp
-	exp_arg = -r0**2/s_sq
-	if (exp_arg > -20.0_dp) &
-	  h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
+        h_val = 0.0_dp
+        exp_arg = -r0**2/s_sq
+        if (exp_arg > -20.0_dp) &
+          h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
       else if (r0 .feq. 0.0_dp) then
-	h_val = 0.0_dp
-	exp_arg = -d**2/s_sq
-	if (exp_arg > -20.0_dp) &
-	  h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
+        h_val = 0.0_dp
+        exp_arg = -d**2/s_sq
+        if (exp_arg > -20.0_dp) &
+          h_val = exp(exp_arg) / (PI_THREE_HALVES * s_cu)
       else
-	h_val = (r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)) /  (4.0_dp * PI * r0**2)
+        h_val = (r0/(SQROOT_PI * gaussian_sigma * d) * (em - ep)) /  (4.0_dp * PI * r0**2)
       endif
       histogram(rad_sample_i) = histogram(rad_sample_i) +  sample_weight*h_val
     end do ! rad_sample_i
@@ -826,13 +826,13 @@ subroutine rdfd_calc(rdfd, at, zone_center, zone_atom_center, bin_width, n_bins,
     !calc which zone the atom is in
     if (zone_width > 0.0_dp) then
       if (zone_atom_center > 0) then
-	 if (zone_atom_center <= at%N) then
-	    my_zone_center = at%pos(:,zone_atom_center)
-	 else
-	    call system_abort("rdfd_calc got zone_atom_center="//zone_atom_center//" out of range (1.."//at%N//")")
-	 endif
+         if (zone_atom_center <= at%N) then
+            my_zone_center = at%pos(:,zone_atom_center)
+         else
+            call system_abort("rdfd_calc got zone_atom_center="//zone_atom_center//" out of range (1.."//at%N//")")
+         endif
       else
-	 my_zone_center = zone_center
+         my_zone_center = zone_center
       endif
       r = distance_min_image(at, my_zone_center, at%pos(:,i_at))
       i_zone = int(r/zone_width)+1
@@ -903,7 +903,7 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
   allocate(mask_a(at%N))
   call is_in_mask(mask_a, at, mask_str)
 
-  doing_KE = (trim(property) == 'KE') 
+  doing_KE = (trim(property) == 'KE')
 
   if (len_trim(property) == 0) &
     call system_abort("propdf_radial_calc has no property specified.  Are you sure you passed a propdf_radial_property value?")
@@ -920,7 +920,7 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
     if (.not. assign_pointer(at, trim(property), prop_a)) then
        prop_is_scalar = .false.
        if (.not. assign_pointer(at, trim(property), prop_3a)) then
-	  call system_abort("propdf_radial_calc failed to assign 1- or 3-array real(dp) pointer for property '"//trim(property))
+          call system_abort("propdf_radial_calc failed to assign 1- or 3-array real(dp) pointer for property '"//trim(property))
        endif
     endif
   endif
@@ -962,15 +962,15 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
     if (doing_KE) then
       !calc KE for this atom
       if (has_mass) then
-	quant = kinetic_energy(at%mass(i_at), at%velo(:,i_at))
+        quant = kinetic_energy(at%mass(i_at), at%velo(:,i_at))
       else
-	quant = kinetic_energy(ElementMass(at%Z(i_at)), at%velo(:,i_at))
+        quant = kinetic_energy(ElementMass(at%Z(i_at)), at%velo(:,i_at))
       endif
     else
       if (prop_is_scalar) then
-	quant = prop_a(i_at)
+        quant = prop_a(i_at)
       else
-	quant = norm(prop_3a(:,i_at))
+        quant = norm(prop_3a(:,i_at))
       endif
     endif
     i_bin_ctr = quant/bin_width
@@ -989,8 +989,8 @@ subroutine propdf_radial_calc(histograms, at, bin_width, n_bins, &
 end subroutine propdf_radial_calc
 
 subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist_bins, zone_width, n_zones, &
-		     center_mask_str, neighbour_1_mask_str, neighbour_1_max_dist, neighbour_2_mask_str, & 
-		     dist_bin_rc2, angle_bin_pos, dist_bin_pos, zone_pos)
+                     center_mask_str, neighbour_1_mask_str, neighbour_1_max_dist, neighbour_2_mask_str, &
+                     dist_bin_rc2, angle_bin_pos, dist_bin_pos, zone_pos)
   real(dp), intent(inout) :: adfd(:,:,:)
   type(Atoms), intent(inout) :: at
   real(dp), intent(in) :: zone_center(3), dist_bin_width, zone_width
@@ -1019,7 +1019,7 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
   if (present(zone_pos)) then
     if (zone_width > 0.0_dp) then
       do i_zone= 1, n_zones
-	zone_pos(i_zone) = (real(i_zone,dp)-0.5_dp)*zone_width
+        zone_pos(i_zone) = (real(i_zone,dp)-0.5_dp)*zone_width
       end do
     else
       zone_pos(1) = -1.0_dp
@@ -1055,21 +1055,21 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
       if (r_ij == 0.0_dp) cycle
       if (.not. neighbour_1_mask_a(j_at)) cycle
       if (neighbour_1_max_dist > 0.0_dp) then
-	if (r_ij > neighbour_1_max_dist) cycle
+        if (r_ij > neighbour_1_max_dist) cycle
       else
-	if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
+        if (r_ij > bond_length(at%Z(i_at),at%Z(j_at))*at%nneightol) cycle
       endif
       do ki=1, n_neighbours(at, i_at)
-	k_at = neighbour(at, i_at, ki, shift=sk, cosines=c_ik, distance=r_ik)
-	if (r_ik == 0.0_dp .or. (k_at == j_at .and. all (sj == sk))) cycle
-	if (.not. neighbour_2_mask_a(k_at)) cycle
-	r_jk = distance_min_image(at, j_at, k_at)
-	if (dist_bin_rc2) then
-	   i_dist_bin = int(r_ik/dist_bin_width)+1
-	else
-	   i_dist_bin = int(r_jk/dist_bin_width)+1
-	endif
-	if (i_dist_bin > n_dist_bins) cycle
+        k_at = neighbour(at, i_at, ki, shift=sk, cosines=c_ik, distance=r_ik)
+        if (r_ik == 0.0_dp .or. (k_at == j_at .and. all (sj == sk))) cycle
+        if (.not. neighbour_2_mask_a(k_at)) cycle
+        r_jk = distance_min_image(at, j_at, k_at)
+        if (dist_bin_rc2) then
+           i_dist_bin = int(r_ik/dist_bin_width)+1
+        else
+           i_dist_bin = int(r_jk/dist_bin_width)+1
+        endif
+        if (i_dist_bin > n_dist_bins) cycle
 ! call print("doing triplet ijk " // i_at // " " // j_at // " "// k_at, PRINT_ALWAYS)
 ! call print("  Zijk " // at%Z(i_at) // " " // at%Z(j_at) // " " // at%Z(k_at), PRINT_ALWAYS)
 ! call print("  pi " // at%pos(:,i_at), PRINT_ALWAYS)
@@ -1081,9 +1081,9 @@ subroutine adfd_calc(adfd, at, zone_center, n_angle_bins, dist_bin_width, n_dist
         ! jik_angle = angle(diff_min_image(at,i_at,j_at), diff_min_image(at,i_at,k_at))
         jik_angle = angle(c_ij, c_ik)
 ! call print("  r_ij " // r_ij // " r_jk " // r_jk // " jik_angle " // (jik_angle*180.0/PI), PRINT_ALWAYS)
-	i_angle_bin = int(jik_angle/angle_bin_width)+1
-	if (i_angle_bin > n_angle_bins) i_angle_bin = n_angle_bins
-	adfd(i_angle_bin,i_dist_bin,i_zone) = adfd(i_angle_bin,i_dist_bin,i_zone) + 1.0_dp ! /(2.0_dp*PI*sin(jik_angle))
+        i_angle_bin = int(jik_angle/angle_bin_width)+1
+        if (i_angle_bin > n_angle_bins) i_angle_bin = n_angle_bins
+        adfd(i_angle_bin,i_dist_bin,i_zone) = adfd(i_angle_bin,i_dist_bin,i_zone) + 1.0_dp ! /(2.0_dp*PI*sin(jik_angle))
       end do ! k_at
     end do ! j_at
   end do ! i_at
@@ -1427,7 +1427,7 @@ subroutine density_axial_calc(histogram, at, axis, silica_center_i,n_bins, gauss
         ax_sample_r = (real(ax_sample_i,dp)-0.5_dp)*bin_width
         dist = abs(r - ax_sample_r)
 !Include all the atoms, slow but minimises error
-!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+!          if (dist > 4.0_dp*gaussian_sigma) cycle
           exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
           if (exp_arg > -20.0_dp) then ! good to about 1e-8
             histogram(ax_sample_i) = histogram(ax_sample_i) + exp(exp_arg)/(gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
@@ -1611,7 +1611,7 @@ integer :: H1, O1, i, j, k, O2, num_atoms, hbond_type
              num_hbond_sample_r = (real(num_hbond_sample_i,dp)-0.5_dp)*bin_width
              dist = abs(r - num_hbond_sample_r)
 !!!!!!Include all the atoms, slow but minimises error
-!!!!!!	  if (dist > 4.0_dp*gaussian_sigma) cycle
+!!!!!!          if (dist > 4.0_dp*gaussian_sigma) cycle
                exp_arg = -0.5_dp*(dist/(gaussian_sigma))**2
                if (exp_arg > -20.0_dp) then ! good to about 1e-8
                  histogram(num_hbond_sample_i,hbond_type) = histogram(num_hbond_sample_i,hbond_type) + exp(exp_arg)/(gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
@@ -1743,7 +1743,7 @@ real(dp) :: dist, exp_arg
         call print("WARNING! water(?) oxygen with non H neighbour will be skipped!")
         cycle
      endif
- 
+
      !We've found a water molecule.
 
      !Build histogram
@@ -1781,7 +1781,7 @@ real(dp) :: dist, exp_arg
          if (norm(diff_min_image(at,O,H1)).gt.1.2_dp) call system_abort('too long O-H1 bond (atoms '//O//'-'//H1//'): '//norm(diff_min_image(at,O,H1)))
          if (norm(diff_min_image(at,O,H2)).gt.1.2_dp) call system_abort('too long O-H2 bond (atoms '//O//'-'//H2//'): '//norm(diff_min_image(at,O,H2)))
 !call print ('dipole '//dipole(1:3))
-    
+
          ! a.dot.b = |a|*|b|*cos(angle)
          orientation_angle = dot_product((dipole(1:3)),surface_normal(1:3)) / &
                              sqrt(dot_product(dipole(1:3),dipole(1:3))) / &
@@ -1815,7 +1815,7 @@ real(dp) :: dist, exp_arg
           sample_r = (real(sample_i,dp)-0.5_dp)*pos_bin_width
           dist = abs(r - sample_r)
           !Include all the atoms, slow but minimises error
-          !	  if (dist > 4.0_dp*gaussian_sigma) cycle
+          !if (dist > 4.0_dp*gaussian_sigma) cycle
             exp_arg = -0.5_dp*(dist/(pos_gaussian_sigma))**2
             if (exp_arg > -20.0_dp) then ! good to about 1e-8
               histogram(int(orientation_angle/angle_bin_width)+1,sample_i) = histogram(int(orientation_angle/angle_bin_width)+1,sample_i) + exp(exp_arg)/(pos_gaussian_sigma*sqrt(2.0_dp*PI)) !Gaussian in 1 dimension
@@ -1837,7 +1837,7 @@ real(dp) :: dist, exp_arg
   !normalise for different solid angles of each angle_bin
   do sample_i=1, n_angle_bins
      histogram(sample_i,1:n_pos_bins) = histogram(sample_i,1:n_pos_bins) / angle_bin_w(sample_i)
-  enddo 
+  enddo
 
 end subroutine water_orientation_calc
 

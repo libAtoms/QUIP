@@ -30,10 +30,10 @@
 
 !X
 !X  Table module
-!X  
+!X
 !% A 'Table' is an extensible 2D array of integers, reals, strings and logicals.
-!% The lengths of all rows are the same and the number of rows will grow and shrink 
-!% as datais appended or deleted. Extra columns can also be appended, although this 
+!% The lengths of all rows are the same and the number of rows will grow and shrink
+!% as datais appended or deleted. Extra columns can also be appended, although this
 !% is envisaged to be required less often. Any of the number of integers,
 !% number of reals, number of strings and number of logicals can be zero
 !%
@@ -118,8 +118,8 @@ module table_module
 !!$  interface assignment(=)
 !!$     module procedure  table_assign_table
 !!$  end interface
- 
- 
+
+
   !% Append rows to a table. Overloaded to be able to append single elements,
   !% arrays or other tables.
   interface append
@@ -129,7 +129,7 @@ module table_module
      module procedure table_append_int_element_and_real_element
      module procedure table_append_int_row_real_element
      module procedure table_append_int_element_real_row
-     module procedure table_append_int_array, table_append_real_array 
+     module procedure table_append_int_array, table_append_real_array
      module procedure table_append_str_array, table_append_logical_array
   end interface append
 
@@ -279,10 +279,10 @@ contains
        end if
 
        ! Beware, interface change!
-       if (.not. present(Nint) .or. .not. present(Nreal) .or. & 
+       if (.not. present(Nint) .or. .not. present(Nreal) .or. &
             .not. present(Nstr)  .or. .not. present(Nlogical)) then
           call print('WARNING: The interface to table_allocate (allocate(table,...) and', PRINT_ALWAYS)
-	  call print('         initialise(table,...)) has changed!', PRINT_ALWAYS)
+          call print('         initialise(table,...)) has changed!', PRINT_ALWAYS)
           call print(' from call allocate(table,Nint,Nreal,length)', PRINT_ALWAYS)
           call print(' to   call allocate(table,Nint,Nreal,Nstr,Nlogical,length)', PRINT_ALWAYS)
           call print('Please update your code!', PRINT_ALWAYS)
@@ -301,21 +301,21 @@ contains
           if (this%realsize > 0) allocate(this%real(this%realsize,this%max_length))
        else
           this%realsize = 0
-       end if     
+       end if
 
        if (present(Nstr)) then
           this%strsize = max(Nstr,0)
           if (this%strsize > 0) allocate(this%str(this%strsize,this%max_length))
        else
           this%strsize = 0
-       end if     
+       end if
 
        if (present(Nlogical)) then
           this%logicalsize = max(Nlogical,0)
           if (this%logicalsize > 0) allocate(this%logical(this%logicalsize,this%max_length))
        else
           this%logicalsize = 0
-       end if     
+       end if
     else
 
        ! Change the length of the table, keeping the data
@@ -539,7 +539,7 @@ contains
             reshape(use_logicalpart, (/1,logicalsize/)))
 
        deallocate(use_intpart, use_realpart, use_strpart, use_logicalpart)
-       
+
        return
     end if
 
@@ -565,7 +565,7 @@ contains
           this%int(:,this%N+1) = intpart
        else
           ! use default value of zero
-          this%int(:,this%N+1) = 0 
+          this%int(:,this%N+1) = 0
        end if
     end if
 
@@ -603,10 +603,10 @@ contains
     end if
 
     ! Now increment the number of valid table rows
-    this%N = this%N+1 
+    this%N = this%N+1
   end subroutine table_append_row
 
-  
+
   !Appending 2D arrays to tables
 
   subroutine table_append_int_array(this,intpart)
@@ -659,7 +659,7 @@ contains
        datasize(1) = size(intpart,1)
        datalength(1) = size(intpart,2)
     end if
-    
+
     datasize(2) = 0
     datalength(2) = 0
     if (present(realpart)) then
@@ -697,7 +697,7 @@ contains
     end do
 
     thissize = (/this%intsize,this%realsize,this%strsize,this%logicalsize/)
-       
+
     !Check if the table has been allocated and allocate if not, or check for correct size
     if (all(thissize == 0)) then
        call table_allocate(this,datasize(1),datasize(2),datasize(3),datasize(4),length)
@@ -778,7 +778,7 @@ contains
   end subroutine table_append_int_element_and_real_element
 
   !overloaded append for mixed scalar and row input
-  subroutine table_append_int_element_real_row(this,intpart,realpart) 
+  subroutine table_append_int_element_real_row(this,intpart,realpart)
     type(table), intent(inout) :: this
     integer,     intent(in)    :: intpart
     real(dp),    intent(in)    :: realpart(:)
@@ -787,8 +787,8 @@ contains
 
   end subroutine table_append_int_element_real_row
 
-  !overloaded append for mixed scalar and row input 
-  subroutine table_append_int_row_real_element(this,intpart,realpart) 
+  !overloaded append for mixed scalar and row input
+  subroutine table_append_int_row_real_element(this,intpart,realpart)
     type(table), intent(inout) :: this
     integer,     intent(in)    :: intpart(:)
     real(dp),    intent(in)    :: realpart
@@ -1072,12 +1072,12 @@ contains
 
     if (allocated(this%int)) then
       if (size(this%int,1) < this%intsize+n_cols) then
-	allocate(t(this%intsize,this%N))
-	t = this%int(1:this%intsize, 1:this%N)
-	deallocate(this%int)
-	allocate(this%int(this%intsize+n_cols,this%max_length))
-	this%int(1:this%intsize, 1:this%N) = t(1:this%intsize, 1:this%N)
-	this%int(this%intsize+1:this%intsize+n_cols,:) = 0
+        allocate(t(this%intsize,this%N))
+        t = this%int(1:this%intsize, 1:this%N)
+        deallocate(this%int)
+        allocate(this%int(this%intsize+n_cols,this%max_length))
+        this%int(1:this%intsize, 1:this%N) = t(1:this%intsize, 1:this%N)
+        this%int(this%intsize+1:this%intsize+n_cols,:) = 0
       endif
       this%intsize = this%intsize + n_cols
     else
@@ -1098,12 +1098,12 @@ contains
 
     if (allocated(this%real)) then
       if (size(this%real,1) < this%realsize+n_cols) then
-	allocate(t(this%realsize,this%N))
-	t = this%real(1:this%realsize, 1:this%N)
-	deallocate(this%real)
-	allocate(this%real(this%realsize+n_cols,this%max_length))
-	this%real(1:this%realsize, 1:this%N) = t(1:this%realsize, 1:this%N)
-	this%real(this%realsize+1:this%realsize+n_cols,:) = 0
+        allocate(t(this%realsize,this%N))
+        t = this%real(1:this%realsize, 1:this%N)
+        deallocate(this%real)
+        allocate(this%real(this%realsize+n_cols,this%max_length))
+        this%real(1:this%realsize, 1:this%N) = t(1:this%realsize, 1:this%N)
+        this%real(this%realsize+1:this%realsize+n_cols,:) = 0
       endif
       this%realsize = this%realsize + n_cols
     else
@@ -1124,12 +1124,12 @@ contains
 
     if (allocated(this%str)) then
       if (size(this%str,1) < this%strsize+n_cols) then
-	allocate(t(this%strsize,this%N))
-	t = this%str(1:this%strsize, 1:this%N)
-	deallocate(this%str)
-	allocate(this%str(this%strsize+n_cols,this%max_length))
-	this%str(1:this%strsize, 1:this%N) = t(1:this%strsize, 1:this%N)
-	this%str(this%strsize+1:this%strsize+n_cols,:) = repeat(' ',TABLE_STRING_LENGTH)
+        allocate(t(this%strsize,this%N))
+        t = this%str(1:this%strsize, 1:this%N)
+        deallocate(this%str)
+        allocate(this%str(this%strsize+n_cols,this%max_length))
+        this%str(1:this%strsize, 1:this%N) = t(1:this%strsize, 1:this%N)
+        this%str(this%strsize+1:this%strsize+n_cols,:) = repeat(' ',TABLE_STRING_LENGTH)
       endif
       this%strsize = this%strsize + n_cols
     else
@@ -1151,12 +1151,12 @@ contains
 
     if (allocated(this%logical)) then
       if (size(this%logical,1) < this%logicalsize+n_cols) then
-	allocate(t(this%logicalsize,this%N))
-	t = this%logical(1:this%logicalsize, 1:this%N)
-	deallocate(this%logical)
-	allocate(this%logical(this%logicalsize+n_cols,this%max_length))
-	this%logical(1:this%logicalsize, 1:this%N) = t(1:this%logicalsize, 1:this%N)
-	this%logical(this%logicalsize+1:this%logicalsize+n_cols,:) = .false.
+        allocate(t(this%logicalsize,this%N))
+        t = this%logical(1:this%logicalsize, 1:this%N)
+        deallocate(this%logical)
+        allocate(this%logical(this%logicalsize+n_cols,this%max_length))
+        this%logical(1:this%logicalsize, 1:this%N) = t(1:this%logicalsize, 1:this%N)
+        this%logical(this%logicalsize+1:this%logicalsize+n_cols,:) = .false.
       endif
       this%logicalsize = this%logicalsize + n_cols
     else
@@ -1213,14 +1213,14 @@ contains
          call system_abort('table_insert: at least one of intpart/realpart/strpart/logicalpart must be present')
 
     !First check if we need to insert -- FIXME: these parameters are not optional in append()
-    if (pos == this%N+1) then 
+    if (pos == this%N+1) then
        call append(this,intpart,realpart,strpart,logicalpart)
        return
     end if
 
     !Make sure memory is available
     if (this%N+1 > this%max_length) call allocate(this,max_length=this%N+this%increment)
-    
+
     !Shift everything from 'pos' to 'N' down a line and insert new data
     if (this%intsize > 0) then
        if (.not. present(intpart)) call system_abort('table_insert: missing intpart')
@@ -1243,7 +1243,7 @@ contains
        this%logical(:,pos) = logicalpart
     end if
 
-   
+
     !Update the row counter
     this%N = this%N + 1
 
@@ -1290,7 +1290,7 @@ contains
 
         if (int_array_ge(this%int(sort_cols,i),this%int(sort_cols,i-1))) cycle
 
-	! i is smaller than i-1, start moving it back
+        ! i is smaller than i-1, start moving it back
         tmp_intpart = this%int(:,i)
         if (have_reals)    tmp_realpart    = this%real(:,i)
         if (have_strs)     tmp_strpart     = this%str(:,i)
@@ -1299,9 +1299,9 @@ contains
 
         j = i-1
 
-        do while (j >= 1) 
+        do while (j >= 1)
 
-	   ! if tmp (orig i, now j+1) is greater than this j, no need to move it further
+           ! if tmp (orig i, now j+1) is greater than this j, no need to move it further
            if (int_array_gt(tmp_intpart(sort_cols), this%int(sort_cols,j))) exit
 
            this%int(:,j+1) = this%int(:,j)
@@ -1318,7 +1318,7 @@ contains
               idx(j+1) = idx(j)
               idx(j) = vi
            end if
-           j = j - 1          
+           j = j - 1
 
         end do
 
@@ -1349,7 +1349,7 @@ contains
     if (this%N < 1) return
     ilow = 1; ihigh = this%N
     done = .false.
-    
+
     if ( int_array_gt(this%int(:,ilow),intpart) .or. int_array_lt(this%int(:,ihigh),intpart) ) done = .true.
     if (.not.done) then
        if (all(this%int(1:size(intpart),ilow) == intpart)) then
@@ -1360,7 +1360,7 @@ contains
           done = .true.
        end if
     end if
-     
+
     do while(.not.done)
         index = (ihigh + ilow) / 2
         if (index == ilow) then              ! value is not present. exit
@@ -1374,7 +1374,7 @@ contains
            ihigh = index
         end if
      end do
-     
+
    end function table_search
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1416,7 +1416,7 @@ contains
 
     this%N=this%N-1
 
-    ! maybe we can reduce the memory 
+    ! maybe we can reduce the memory
     call reduce_allocation(this)
 
   end subroutine table_record_delete_by_index
@@ -1475,13 +1475,13 @@ contains
     if (.not.allocated(this%int)) &
          call system_abort('table_record_delete_by_value: you cannot delete by value from a table without an int part')
 
-    if (size(n).ne.size(this%int,1)) &  
-         call system_abort('table_record_delete_by_value: the row you are trying to delete has the wrong size')  
+    if (size(n).ne.size(this%int,1)) &
+         call system_abort('table_record_delete_by_value: the row you are trying to delete has the wrong size')
 
     do i=1,this%N
        if ( all(this%int(:,i) == n(:)) ) then
-	call delete(this, i, keep_order)
-	exit
+        call delete(this, i, keep_order)
+        exit
        end if
     end do
     !maybe we can reduce the memory
@@ -1500,12 +1500,12 @@ contains
   subroutine table_wipe(this,zero)
     type(Table),       intent(inout) :: this
     logical, optional, intent(in)    :: zero
-    
+
     if (present(zero)) then
        if (zero) call table_zero(this)
     end if
 
-    this%N = 0   
+    this%N = 0
 
   end subroutine table_wipe
 
@@ -1521,7 +1521,7 @@ contains
     type(table), intent(in):: this
     integer,     intent(in)   :: n
     integer                   :: i
-    
+
     i = table_find_row(this, (/n/))
 
   end function table_find_element
@@ -1536,8 +1536,8 @@ contains
     if (this%intsize == 0) &
          call system_abort('Table_Find_Row: Table has no int part')
 
-    if (size(n) /= this%intsize) &  
-         call system_abort('Table_Find_Row: Row  being searched for has wrong size')  
+    if (size(n) /= this%intsize) &
+         call system_abort('Table_Find_Row: Row  being searched for has wrong size')
 
     ! I've removed call to int_part() here as found to be bottleneck when profiling (jrk33)
     i = find_in_array(this%int(:,1:this%n), n, mask)
@@ -1546,7 +1546,7 @@ contains
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !
   !
-  ! printing 
+  ! printing
   !
   !
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -1556,7 +1556,7 @@ contains
     integer,     intent(in), optional :: verbosity
     call table_print(this, verbosity, mainlog)
   end subroutine table_print_mainlog
-  
+
 
   subroutine table_print(this,verbosity,file,real_format,int_format,str_format,logical_format,mask)
     type(table),    intent(in)        :: this
@@ -1705,7 +1705,7 @@ contains
     integer,     dimension(this%intsize,this%N) :: table_int_part
 
     if (this%intsize == 0) call system_abort('table_int_part: Table has no integer part')
-    
+
     table_int_part = this%int(:,1:this%N)
 
   end function table_int_part
@@ -1715,7 +1715,7 @@ contains
     real(dp),    dimension(this%realsize,this%N ) :: table_real_part
 
     if (this%realsize == 0) call system_abort('table_real_part: Table has no real part')
-    
+
     table_real_part = this%real(:,1:this%N)
 
   end function table_real_part
@@ -1725,7 +1725,7 @@ contains
     character(TABLE_STRING_LENGTH), dimension(this%strsize,this%N ) :: table_str_part
 
     if (this%strsize == 0) call system_abort('table_str_part: Table has no str part')
-    
+
     table_str_part = this%str(:,1:this%N)
 
   end function table_str_part
@@ -1735,7 +1735,7 @@ contains
     logical, dimension(this%logicalsize,this%N )  :: table_logical_part
 
     if (this%logicalsize == 0) call system_abort('table_logical_part: Table has no logical part')
-    
+
     table_logical_part = this%logical(:,1:this%N)
 
   end function table_logical_part
@@ -1760,7 +1760,7 @@ contains
 
     if (any(rows > this%N)) &
       call system_abort('subtable: Row out of range size(rows) ' // size(rows) // ' minval ' // minval(rows) // ' maxval ' // maxval(rows) // ' this%N ' // this%N)
-    
+
     if(present(intcols)) then
        if(any(intcols > 0 .and. intcols > this%intsize)) call system_abort('subtable: Integer column out of range')
        allocate(use_intcols(count(intcols > 0)))
@@ -1769,7 +1769,7 @@ contains
        allocate(use_intcols(this%intsize))
        use_intcols = (/ (i, i=1,this%intsize ) /)
     end if
-    
+
     if(present(realcols)) then
        if(any(realcols > 0 .and. realcols > this%realsize)) call system_abort('subtable: Real column out of range')
        allocate(use_realcols(count(realcols > 0)))
@@ -1778,7 +1778,7 @@ contains
        allocate(use_realcols(this%realsize))
        use_realcols = (/ (i, i=1,this%realsize )/)
     end if
-    
+
     if(present(strcols)) then
        if(any(strcols > 0 .and. strcols > this%strsize)) call system_abort('subtable: Str column out of range')
        allocate(use_strcols(count(strcols > 0)))
@@ -1787,7 +1787,7 @@ contains
        allocate(use_strcols(this%strsize))
        use_strcols = (/ (i, i=1,this%strsize ) /)
     end if
-    
+
     if(present(logicalcols)) then
        if(any(logicalcols > 0 .and. logicalcols > this%logicalsize)) call system_abort('subtable: Logical column out of range')
        allocate(use_logicalcols(count(logicalcols > 0)))
@@ -1804,7 +1804,7 @@ contains
 
     if (this%intsize /= 0 .and. this%realsize /= 0 .and. this%strsize /= 0 .and. this%logicalsize /= 0) then
        ! case 0
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             realpart_2d=this%real(use_realcols,rows), &
             strpart_2d=this%str(use_strcols,rows), &
@@ -1819,44 +1819,44 @@ contains
 
     else if (this%intsize /= 0 .and. this%realsize /= 0 .and. this%strsize == 0 .and. this%logicalsize /= 0) then
        ! case 2
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             realpart_2d=this%real(use_realcols,rows), &
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize /= 0 .and. this%realsize /= 0 .and. this%strsize == 0 .and. this%logicalsize == 0) then
        ! case 3
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             realpart_2d=this%real(use_realcols,rows))
 
     else if (this%intsize /= 0 .and. this%realsize == 0 .and. this%strsize /= 0 .and. this%logicalsize /= 0) then
        ! case 4
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             strpart_2d=this%str(use_strcols,rows), &
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize /= 0 .and. this%realsize == 0 .and. this%strsize /= 0 .and. this%logicalsize == 0) then
        ! case 5
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             strpart_2d=this%str(use_strcols,rows))
 
     else if (this%intsize /= 0 .and. this%realsize == 0 .and. this%strsize == 0 .and. this%logicalsize /= 0) then
        ! case 6
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows),&
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize /= 0 .and. this%realsize == 0 .and. this%strsize == 0 .and. this%logicalsize == 0) then
        ! case 7
-       
+
        call append(subtable,intpart_2d=this%int(use_intcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize /= 0 .and. this%strsize /= 0 .and. this%logicalsize /= 0) then
        ! case 8
-       
+
        call append(subtable, &
             realpart_2d=this%real(use_realcols,rows), &
             strpart_2d=this%str(use_strcols,rows), &
@@ -1871,39 +1871,39 @@ contains
 
     else if (this%intsize == 0 .and. this%realsize /= 0 .and. this%strsize == 0 .and. this%logicalsize /= 0) then
        ! case 10
-       
+
        call append(subtable, &
             realpart_2d=this%real(use_realcols,rows), &
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize /= 0 .and. this%strsize == 0 .and. this%logicalsize == 0) then
        ! case 11
-       
+
        call append(subtable, &
             realpart_2d=this%real(use_realcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize == 0 .and. this%strsize /= 0 .and. this%logicalsize /= 0) then
        ! case 12
-       
+
        call append(subtable, &
             strpart_2d=this%str(use_strcols,rows), &
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize == 0 .and. this%strsize /= 0 .and. this%logicalsize == 0) then
        ! case 13
-       
+
        call append(subtable, &
             strpart_2d=this%str(use_strcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize == 0 .and. this%strsize == 0 .and. this%logicalsize /= 0) then
        ! case 14
-       
+
        call append(subtable, &
             logicalpart_2d=this%logical(use_logicalcols,rows))
 
     else if (this%intsize == 0 .and. this%realsize == 0 .and. this%strsize == 0 .and. this%logicalsize == 0) then
        ! case 15
-       
+
        call system_abort('subtable: source table is empty')
 
     end if
@@ -1929,7 +1929,7 @@ contains
     integer, dimension(:), intent(in) :: cols
     type(Table)                       :: int_subtable
     integer, dimension(0)             :: realcols
-    
+
     int_subtable = subtable(this,rows,cols,realcols)
 
   end function int_subtable
@@ -1951,7 +1951,7 @@ contains
     end do
     rms_diff_list = rms_diff_list / real(list%N*size(array1,1),dp)
     rms_diff_list = sqrt(rms_diff_list)
-  end function rms_diff_list   
+  end function rms_diff_list
 
   subroutine table_select(to, from, row_mask, row_list)
     type(table), intent(inout) :: to
@@ -2059,7 +2059,7 @@ subroutine table_bcast(mpi, this)
   integer :: tmp_intsize, tmp_realsize, tmp_logicalsize, tmp_strsize, tmp_max_length
 
   if (.not. mpi%active) return
-  
+
   if (mpi%my_proc == 0) then
 
      tmp_max_length  = this%max_length
@@ -2096,7 +2096,7 @@ subroutine table_bcast(mpi, this)
      if (this%intsize     /= 0) call bcast(mpi, this%int)
      if (this%realsize    /= 0) call bcast(mpi, this%real)
      if (this%strsize     /= 0) call bcast(mpi, this%str)
-     if (this%logicalsize /= 0) call bcast(mpi, this%logical)     
+     if (this%logicalsize /= 0) call bcast(mpi, this%logical)
   end if
 
 end subroutine table_bcast
@@ -2106,7 +2106,7 @@ end subroutine table_bcast
 !% The destination will be overriden.
 subroutine table_copy_entry(this, src, dst)
   implicit none
-  
+
   type(Table), intent(inout)  :: this
   integer, intent(in)         :: src
   integer, intent(in)         :: dst

@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_KIM module  
+!X IPModel_KIM module
 !X
 !% Module for KIM (Knowledgebase of Interatomic potential Models)
 !%
@@ -60,7 +60,7 @@ use KIM_API
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
@@ -77,7 +77,7 @@ type IPModel_KIM
   integer, pointer :: atomTypeOfZ(:) => null()
   character(len=512), pointer :: model_optional_outputs(:) => null()
 
-  logical :: kim_model_has_energy, kim_model_has_forces, kim_model_has_particleenergy, kim_model_has_virial 
+  logical :: kim_model_has_energy, kim_model_has_forces, kim_model_has_particleenergy, kim_model_has_virial
 
 end type IPModel_KIM
 
@@ -145,9 +145,9 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
       ! KIM routines to initialise pkim based on this%KIM_Test_name string
       kim_error = KIM_API_string_init_f(this%pkim, string(test_kim_es)//char(0), this%KIM_Model_name)
       if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_str_testname_f failed", kim_error) /= KIM_STATUS_OK) then
-	call print(test_kim_es)
-	call system_abort("IPModel_KIM_Initialise_str: kim_api_init_str_testname_f with Test='"//trim(this%KIM_Test_name)// &
-	  "' and Model='"//trim(this%KIM_Model_name)//"' failed")
+        call print(test_kim_es)
+        call system_abort("IPModel_KIM_Initialise_str: kim_api_init_str_testname_f with Test='"//trim(this%KIM_Test_name)// &
+          "' and Model='"//trim(this%KIM_Model_name)//"' failed")
       endif
 
    else
@@ -156,7 +156,7 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
     kim_error = KIM_API_init_f(this%pkim, this%KIM_Test_name, this%KIM_Model_name)
     if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_init_f failed", kim_error) /= KIM_STATUS_OK) &
       call system_abort("IPModel_KIM_Initialise_str: kim_api_init_f with Test='"//trim(this%KIM_Test_name)// &
-	"' and Model='"//trim(this%KIM_Model_name)//"' failed")
+        "' and Model='"//trim(this%KIM_Model_name)//"' failed")
 #ifndef KIM_NO_AUTOGENERATE_TEST_KIM
   endif
 #endif
@@ -173,12 +173,12 @@ subroutine IPModel_KIM_Initialise_str(this, args_str, param_str)
   do at_type_i=1, n_atom_types
     ! replace null termination with space padding (C -> Fortran)
     do j=1, KIM_KEY_STRING_LENGTH
-	if (atom_types_list(at_type_i)(j:j) == char(0)) then
-	    do k=j, KIM_KEY_STRING_LENGTH
-		atom_types_list(at_type_i)(k:k) = ' '
-	    end do
-	    exit
-	endif
+        if (atom_types_list(at_type_i)(j:j) == char(0)) then
+            do k=j, KIM_KEY_STRING_LENGTH
+                atom_types_list(at_type_i)(k:k) = ' '
+            end do
+            exit
+        endif
     end do
     kim_at_type_code = KIM_API_get_partcl_type_code_f(this%pkim, trim(atom_types_list(at_type_i)), kim_error)
     if (KIM_API_report_error_f(__LINE__, __FILE__, "KIM_API_get_partcl_type_code_f failed", kim_error) /= KIM_STATUS_OK) &
@@ -288,7 +288,7 @@ subroutine IPModel_KIM_Finalise(this)
 end subroutine IPModel_KIM_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -296,8 +296,8 @@ end subroutine IPModel_KIM_Finalise
 subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_KIM), intent(inout) :: this
   type(Atoms), intent(inout), target :: at
-  real(dp), intent(out), target, optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), target, optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), target, optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), target, optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -329,7 +329,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
     if (len_trim(args_str) > 0) then
       n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
       if (n_extra_calcs > 0) then
-	RAISE_ERROR("No extra calcs supported, found "//n_extra_calcs//" in args_str " // trim(args_str), error)
+        RAISE_ERROR("No extra calcs supported, found "//n_extra_calcs//" in args_str " // trim(args_str), error)
       endif
     endif
   endif
@@ -369,9 +369,9 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
      p_f => f
   else
      if (this%kim_model_has_forces) then
-	allocate(t_f(3, at%N))
+        allocate(t_f(3, at%N))
      else
-	allocate(t_f(1, 1))
+        allocate(t_f(1, 1))
      endif
      p_f => t_f
   endif
@@ -381,9 +381,9 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
      p_f => f
   else
      if (this%kim_model_has_particleenergy) then
-	allocate(t_local_e(at%N))
+        allocate(t_local_e(at%N))
      else
-	allocate(t_local_e(1))
+        allocate(t_local_e(1))
      endif
      p_local_e => t_local_e
   endif
@@ -442,7 +442,7 @@ subroutine IPModel_KIM_Calc(this, at, e, local_e, f, virial, local_virial, args_
 end subroutine IPModel_KIM_Calc
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of KIM parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -515,30 +515,30 @@ subroutine write_test_kim_file_from_model(this, test_kim_es)
     call find_section(test_kim_es, "CONVENTIONS", sec_start, sec_end)
     if (sec_start > 0) then
        call substr_replace(test_kim_es, sec_start, sec_end, &
-	   "CONVENTIONS:"//quip_new_line// &
-	   "  OneBasedLists flag"//quip_new_line// &
-	   "  Neigh_BothAccess flag"//quip_new_line// &
-	   "  NEIGH_RVEC_F flag"//quip_new_line//quip_new_line// &
-	   "################################################################################")
+           "CONVENTIONS:"//quip_new_line// &
+           "  OneBasedLists flag"//quip_new_line// &
+           "  Neigh_BothAccess flag"//quip_new_line// &
+           "  NEIGH_RVEC_F flag"//quip_new_line//quip_new_line// &
+           "################################################################################")
     else
-    	call system_abort("write_test_kim_file_from_model failed to find CONVENTIONS section")
+            call system_abort("write_test_kim_file_from_model failed to find CONVENTIONS section")
     endif
 
     ! set MODEL_INPUT section to what QUIP supports
     call find_section(test_kim_es, "MODEL_INPUT", sec_start, sec_end)
     if (sec_start > 0) then
        call substr_replace(test_kim_es, sec_start, sec_end, &
-	    "MODEL_INPUT:"//quip_new_line// &
-	    "# Name                      Type         Unit                Shape              Requirements"//quip_new_line// &
-	    "numberOfParticles           integer      none                []"//quip_new_line// &
-	    "numberParticleTypes         integer      none                []"//quip_new_line// &
-	    "particleTypes               integer      none                [numberOfParticles]"//quip_new_line// &
-	    "coordinates                 real*8       length              [numberOfParticles,3]"//quip_new_line// &
-	    "get_neigh                   method       none                []"//quip_new_line// &
-	    "neighObject                 pointer      none                []"//quip_new_line// &
-	    "#######################################################################################################")
+            "MODEL_INPUT:"//quip_new_line// &
+            "# Name                      Type         Unit                Shape              Requirements"//quip_new_line// &
+            "numberOfParticles           integer      none                []"//quip_new_line// &
+            "numberParticleTypes         integer      none                []"//quip_new_line// &
+            "particleTypes               integer      none                [numberOfParticles]"//quip_new_line// &
+            "coordinates                 real*8       length              [numberOfParticles,3]"//quip_new_line// &
+            "get_neigh                   method       none                []"//quip_new_line// &
+            "neighObject                 pointer      none                []"//quip_new_line// &
+            "#######################################################################################################")
     else
-    	call system_abort("write_test_kim_file_from_model failed to find MODEL_INPUT section")
+            call system_abort("write_test_kim_file_from_model failed to find MODEL_INPUT section")
     endif
 
     ! promise to use every model output
@@ -556,31 +556,31 @@ subroutine write_test_kim_file_from_model(this, test_kim_es)
     this%kim_model_has_virial = (kim_error == KIM_STATUS_OK)
 
     test_model_output = &
-	 "destroy                     method       none                []"//quip_new_line// &
-	 "compute                     method       none                []"//quip_new_line// &
-	 "cutoff                      real*8       length              []"//quip_new_line
+         "destroy                     method       none                []"//quip_new_line// &
+         "compute                     method       none                []"//quip_new_line// &
+         "cutoff                      real*8       length              []"//quip_new_line
     if (this%kim_model_has_energy) &
       test_model_output = trim(test_model_output)// &
-	 "energy                      real*8       energy              []"//quip_new_line
+         "energy                      real*8       energy              []"//quip_new_line
     if (this%kim_model_has_forces) &
       test_model_output = trim(test_model_output)// &
-	 "forces                      real*8       force      [numberOfParticles,3]"//quip_new_line
+         "forces                      real*8       force      [numberOfParticles,3]"//quip_new_line
     if (this%kim_model_has_particleenergy) &
       test_model_output = trim(test_model_output)// &
-	 "particleEnergy              real*8       energy     [numberOfParticles]"//quip_new_line
+         "particleEnergy              real*8       energy     [numberOfParticles]"//quip_new_line
     if (this%kim_model_has_virial) &
       test_model_output = trim(test_model_output)// &
-	 "virial                      real*8       energy               [6]"//quip_new_line
+         "virial                      real*8       energy               [6]"//quip_new_line
 
     call find_section(test_kim_es, "MODEL_OUTPUT", sec_start, sec_end)
     if (sec_start > 0) then
        call substr_replace(test_kim_es, sec_start, sec_end, &
-	    "MODEL_OUTPUT:"//quip_new_line// &
-	    "# Name                      Type         Unit                Shape        "//quip_new_line// &
-	    trim(test_model_output)// &
-	    "#######################################################################################################")
+            "MODEL_OUTPUT:"//quip_new_line// &
+            "# Name                      Type         Unit                Shape        "//quip_new_line// &
+            trim(test_model_output)// &
+            "#######################################################################################################")
     else
-    	call system_abort("write_test_kim_file_from_model failed to find MODEL_OUTPUT section")
+            call system_abort("write_test_kim_file_from_model failed to find MODEL_OUTPUT section")
     endif
 
 end subroutine write_test_kim_file_from_model
@@ -599,17 +599,17 @@ subroutine find_section(test_kim_es, sec_name, sec_start, sec_end)
     cur_sec_loc = find_section_label(test_kim_es, 1, cur_sec_name)
     do while (cur_sec_loc > 0)
       if (trim(cur_sec_name) == trim(sec_name)) then
-	 sec_start = cur_sec_loc
-	 next_sec_loc = find_section_label(test_kim_es, cur_sec_loc+len_trim(cur_sec_name)+1)
-	 if (next_sec_loc <= 0) then
-	    sec_end = test_kim_es%len
-	 else
-	    sec_end = next_sec_loc - 2
-	 endif
-	 return
+         sec_start = cur_sec_loc
+         next_sec_loc = find_section_label(test_kim_es, cur_sec_loc+len_trim(cur_sec_name)+1)
+         if (next_sec_loc <= 0) then
+            sec_end = test_kim_es%len
+         else
+            sec_end = next_sec_loc - 2
+         endif
+         return
       endif
       cur_sec_loc = find_section_label(test_kim_es, cur_sec_loc+len_trim(cur_sec_name)+1, cur_sec_name)
-    end do 
+    end do
 
 end subroutine find_section
 
@@ -632,30 +632,30 @@ function find_section_label(test_kim_es, start, sec_name) result(sec_loc)
       is_section_char = (scan(substr(test_kim_es,i,i),"ABCDEFGHIJKLMNOPQRSTUVWXYZ_") > 0)
       is_section_end = (substr(test_kim_es,i,i) == ':')
       if (after_newline) then
-	 if (is_section_char) then
-	    in_section = .true.
-	    t_sec_name = substr(test_kim_es, i, i)
-	 endif
+         if (is_section_char) then
+            in_section = .true.
+            t_sec_name = substr(test_kim_es, i, i)
+         endif
       else ! not after newline
-	 if (in_section) then
-	    if (is_section_end) then
-	       sec_loc = i-len_trim(t_sec_name)
-	       if (present(sec_name)) sec_name = trim(t_sec_name)
-	       return
-	    else if (is_section_char) then
-	       t_sec_name = trim(t_sec_name) // substr(test_kim_es, i, i)
-	    else
-	       sec_loc = -1
-	       in_section = .false.
-	    endif
-	 endif
+         if (in_section) then
+            if (is_section_end) then
+               sec_loc = i-len_trim(t_sec_name)
+               if (present(sec_name)) sec_name = trim(t_sec_name)
+               return
+            else if (is_section_char) then
+               t_sec_name = trim(t_sec_name) // substr(test_kim_es, i, i)
+            else
+               sec_loc = -1
+               in_section = .false.
+            endif
+         endif
       endif
       after_newline = is_newline
    end do
 
    sec_loc = -1
    in_section = .false.
- 
+
 end function find_section_label
 
 function KIM_L(l)

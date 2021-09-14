@@ -67,10 +67,10 @@ use libatoms_module
 ! call print_xyz(current, mainlog)
     else
       do i=1, current%N
-	dummy = distance_min_image(current, current%pos(:,i), prev%pos(:,i), shift=shift)
-	if (any(shift /= 0)) then
-	  current%pos(:,i) = current%pos(:,i) - (current%lattice .mult. shift)
-	endif
+        dummy = distance_min_image(current, current%pos(:,i), prev%pos(:,i), shift=shift)
+        if (any(shift /= 0)) then
+          current%pos(:,i) = current%pos(:,i) - (current%lattice .mult. shift)
+        endif
       end do
       mean%pos = mean%pos + current%pos
       prev = current
@@ -105,7 +105,7 @@ use libatoms_module
       dummy = distance_min_image(current, current%pos(:,i), prev%pos(:,i), shift=shift)
 ! call print("dummy " // dummy // " shift " // shift)
       if (any(shift /= 0)) then
-	current%pos(:,i) = current%pos(:,i) - (current%lattice .mult. shift)
+        current%pos(:,i) = current%pos(:,i) - (current%lattice .mult. shift)
       endif
     end do
     prev = current

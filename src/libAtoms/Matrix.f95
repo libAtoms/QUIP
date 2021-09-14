@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X Matrix module 
+!X Matrix module
 !X
 !% This module handles the math of real and complex matrices.
 !% The objects 'MatrixD' and 'MatrixZ' correspond to real and complex matrices,
@@ -88,8 +88,8 @@ interface Wipe
 end interface Wipe
 
 !% Set at zero some elements of real and complex matrices.
-!% Adding the optional logical values (\texttt{d_mask} and \texttt{od_mask}), the diagonal and 
-!% off-diagonal elements are selected. 
+!% Adding the optional logical values (\texttt{d_mask} and \texttt{od_mask}), the diagonal and
+!% off-diagonal elements are selected.
 public :: Zero
 interface Zero
   module procedure MatrixD_Zero, MatrixZ_Zero
@@ -145,21 +145,21 @@ interface diag_spinor
   module procedure Matrix_diag_spinorD, Matrix_diag_spinorZ
 end interface diag_spinor
 
-!% Compute the sum of two matrices (complex or real) \texttt{m$_1$} and \texttt{m$_2$} weighted by  
+!% Compute the sum of two matrices (complex or real) \texttt{m$_1$} and \texttt{m$_2$} weighted by
 !% complex factors  \texttt{f1} and  \texttt{f2}. The result is a complex matrix.
 public :: scaled_sum
 interface scaled_sum
   module procedure Matrix_scaled_sum_ZZZ, Matrix_scaled_sum_ZDD
 end interface scaled_sum
 
-!% Add to a given matrix the elements of an other matrix  \texttt{m$_1$} weighted by a 
+!% Add to a given matrix the elements of an other matrix  \texttt{m$_1$} weighted by a
 !% complex factor \texttt{f1}.
 public :: scaled_accum
 interface scaled_accum
   module procedure Matrix_scaled_accum_DZ, Matrix_scaled_accum_ZZ
 end interface scaled_accum
 
-!% Compute the inverse of a given matrix. 
+!% Compute the inverse of a given matrix.
 public :: inverse
 interface inverse
   module procedure MatrixD_inverse, MatrixZ_inverse
@@ -215,7 +215,7 @@ subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
   call Finalise(this)
 
   call matrixany_initialise(N, M, NB, MB, scalapack_obj, this%N, this%M, this%l_N, this%l_M, &
-			    this%ScaLAPACK_Info_obj)
+                            this%ScaLAPACK_Info_obj)
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixD_Initialise "//this%l_N//" "//this%l_M, size(this%data)*REAL_SIZE)
@@ -313,7 +313,7 @@ subroutine MatrixZ_Initialise(this, N, M, NB, MB, scalapack_obj)
   call Finalise(this)
 
   call matrixany_initialise(N, M, NB, MB, scalapack_obj, this%N, this%M, this%l_N, this%l_M, &
-			    this%ScaLAPACK_Info_obj)
+                            this%ScaLAPACK_Info_obj)
 
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
@@ -348,7 +348,7 @@ subroutine MatrixZ_Initialise_mat(this, from)
 end subroutine MatrixZ_Initialise_mat
 
 subroutine matrixany_initialise(N, M, NB, MB, scalapack_obj, this_N, this_M, this_l_N, this_l_M, &
-			        this_ScaLAPACK_Info_obj)
+                                this_ScaLAPACK_Info_obj)
   integer, intent(in), optional :: N, M, NB, MB
   type(ScaLAPACK), intent(in), target, optional :: scalapack_obj
   integer, intent(out) :: this_N, this_M, this_l_N, this_l_M
@@ -429,17 +429,17 @@ subroutine MatrixD_Zero(this, d_mask, od_mask)
   if (allocated(this%data)) then
     if (present(d_mask) .or. present(od_mask)) then
       if (present(d_mask)) then
-	do i=1, min(size(d_mask), this%N, this%M)
-	  if (d_mask(i)) this%data(i,i) = 0.0_dp
-	end do
+        do i=1, min(size(d_mask), this%N, this%M)
+          if (d_mask(i)) this%data(i,i) = 0.0_dp
+        end do
       end if
       if (present(od_mask)) then
-	do i=1, size(od_mask)
-	  if (od_mask(i)) then
-	    if (i <= this%M) this%data(:,i) = 0.0_dp
-	    if (i <= this%N) this%data(i,:) = 0.0_dp
-	  end if
-	end do
+        do i=1, size(od_mask)
+          if (od_mask(i)) then
+            if (i <= this%M) this%data(:,i) = 0.0_dp
+            if (i <= this%N) this%data(i,:) = 0.0_dp
+          end if
+        end do
       end if
     else
       this%data = 0.0_dp
@@ -482,17 +482,17 @@ subroutine MatrixZ_Zero(this, d_mask, od_mask)
   if (allocated(this%data)) then
     if (present(d_mask) .or. present(od_mask)) then
       if (present(d_mask)) then
-	do i=1, min(size(d_mask), this%N, this%M)
-	  if (d_mask(i)) this%data(i,i) = 0.0_dp
-	end do
+        do i=1, min(size(d_mask), this%N, this%M)
+          if (d_mask(i)) this%data(i,i) = 0.0_dp
+        end do
       end if
       if (present(od_mask)) then
-	do i=1, size(od_mask)
-	  if (od_mask(i)) then
-	    if (i <= this%M) this%data(:,i) = 0.0_dp
-	    if (i <= this%N) this%data(i,:) = 0.0_dp
-	  end if
-	end do
+        do i=1, size(od_mask)
+          if (od_mask(i)) then
+            if (i <= this%M) this%data(:,i) = 0.0_dp
+            if (i <= this%N) this%data(i,:) = 0.0_dp
+          end if
+        end do
       end if
     else
       this%data = 0.0_dp
@@ -547,7 +547,7 @@ subroutine MatrixD_add_block(this, block, block_nr, block_nc, first_row, first_c
   type(MatrixD), intent(inout) :: this
   real(dp), intent(in) :: block(:,:)
   integer, intent(in) :: block_nr, block_nc   !% Number of rows and columns of the block
-  integer, intent(in) :: first_row, first_col  
+  integer, intent(in) :: first_row, first_col
 
   integer i, j, io, jo, li, lj
 
@@ -558,7 +558,7 @@ subroutine MatrixD_add_block(this, block, block_nr, block_nc, first_row, first_c
       i = first_row + io - 1
       call coords_global_to_local(this%ScaLAPACK_Info_obj, i, j, li, lj)
       if (li > 0 .and. lj > 0) then
-	this%data(li,lj) = this%data(li,lj) + block(io,jo)
+        this%data(li,lj) = this%data(li,lj) + block(io,jo)
       endif
     end do
     end do
@@ -585,7 +585,7 @@ subroutine MatrixZ_add_block(this, block, block_nr, block_nc, first_row, first_c
       i = first_row + io - 1
       call coords_global_to_local(this%ScaLAPACK_Info_obj, i, j, li, lj)
       if (li > 0 .and. lj > 0) then
-	this%data(li,lj) = this%data(li,lj) + block(io,jo)
+        this%data(li,lj) = this%data(li,lj) + block(io,jo)
       endif
     end do
     end do
@@ -789,14 +789,14 @@ function Matrix_partial_TraceMult_DD(a, b, a_T, b_T)
     if (u_a_T .and. .not. u_b_T) then
       Matrix_partial_TraceMult_DD = 0.0_dp
       do j=1, a%l_M
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
-	Matrix_partial_TraceMult_DD(g_j) = sum(a%data(:,j)*b%data(:,j))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
+        Matrix_partial_TraceMult_DD(g_j) = sum(a%data(:,j)*b%data(:,j))
       end do
     else if (.not. u_a_T .and. u_b_T) then
       Matrix_partial_TraceMult_DD = 0.0_dp
       do i=1, a%l_N
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
-	Matrix_partial_TraceMult_DD(g_i) = sum(a%data(i,:)*b%data(i,:))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
+        Matrix_partial_TraceMult_DD(g_i) = sum(a%data(i,:)*b%data(i,:))
       end do
     else
       call system_abort("Can only do partial_TraceMult for ScaLAPACK matrices if one is transposed and the other not")
@@ -804,20 +804,20 @@ function Matrix_partial_TraceMult_DD(a, b, a_T, b_T)
   else
     if (.not. u_a_T .and. .not. u_b_T) then
       do i=1, a%N
-	Matrix_partial_TraceMult_DD(i) = sum(a%data(i,:)*b%data(:,i))
+        Matrix_partial_TraceMult_DD(i) = sum(a%data(i,:)*b%data(:,i))
       end do
     else if (u_a_T .and. u_b_T) then
       do i=1, a%N
-	Matrix_partial_TraceMult_DD(i) = sum(a%data(:,i)*b%data(i,:))
+        Matrix_partial_TraceMult_DD(i) = sum(a%data(:,i)*b%data(i,:))
       end do
     else if (.not. u_a_T .and. u_b_T) then
       Matrix_partial_TraceMult_DD(:) = 0.0_dp
       do i=1, a%N
-	Matrix_partial_TraceMult_DD(:) = Matrix_partial_TraceMult_DD(:) + a%data(:,i)*b%data(:,i)
+        Matrix_partial_TraceMult_DD(:) = Matrix_partial_TraceMult_DD(:) + a%data(:,i)*b%data(:,i)
       end do
     else
       do i=1, a%N
-	Matrix_partial_TraceMult_DD(i) = sum(a%data(:,i)*b%data(:,i))
+        Matrix_partial_TraceMult_DD(i) = sum(a%data(:,i)*b%data(:,i))
       end do
     endif
   endif
@@ -844,14 +844,14 @@ function Matrix_partial_TraceMult_DZ(a, b, a_T, b_H)
     if (u_a_T .and. .not. u_b_H) then
       Matrix_partial_TraceMult_DZ = 0.0_dp
       do j=1, a%l_M
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
-	Matrix_partial_TraceMult_DZ(g_j) = sum(a%data(:,j)*b%data(:,j))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
+        Matrix_partial_TraceMult_DZ(g_j) = sum(a%data(:,j)*b%data(:,j))
       end do
     else if (.not. u_a_T .and. u_b_H) then
       Matrix_partial_TraceMult_DZ = 0.0_dp
       do i=1, a%l_N
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
-	Matrix_partial_TraceMult_DZ(g_i) = sum(a%data(i,:)*conjg(b%data(i,:)))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
+        Matrix_partial_TraceMult_DZ(g_i) = sum(a%data(i,:)*conjg(b%data(i,:)))
       end do
     else
       call system_abort("Can only do partial_TraceMult for ScaLAPACK matrices if one is transposed and the other not")
@@ -859,20 +859,20 @@ function Matrix_partial_TraceMult_DZ(a, b, a_T, b_H)
   else ! no scalapack
     if (.not. u_a_T .and. .not. u_b_H) then
       do i=1, a%N
-	Matrix_partial_TraceMult_DZ(i) = sum(a%data(i,:)*b%data(:,i))
+        Matrix_partial_TraceMult_DZ(i) = sum(a%data(i,:)*b%data(:,i))
       end do
     else if (u_a_T .and. u_b_H) then
       do i=1, a%N
-	Matrix_partial_TraceMult_DZ(i) = sum(a%data(:,i)*conjg(b%data(i,:)))
+        Matrix_partial_TraceMult_DZ(i) = sum(a%data(:,i)*conjg(b%data(i,:)))
       end do
     else if (.not. u_a_T .and. u_b_H) then
       Matrix_partial_TraceMult_DZ(:) = 0.0_dp
       do i=1, a%N
-	Matrix_partial_TraceMult_DZ(:) = Matrix_partial_TraceMult_DZ(:) + a%data(:,i)*conjg(b%data(:,i))
+        Matrix_partial_TraceMult_DZ(:) = Matrix_partial_TraceMult_DZ(:) + a%data(:,i)*conjg(b%data(:,i))
       end do
     else
       do i=1, a%N
-	Matrix_partial_TraceMult_DZ(i) = sum(a%data(:,i)*b%data(:,i))
+        Matrix_partial_TraceMult_DZ(i) = sum(a%data(:,i)*b%data(:,i))
       end do
     endif
   endif
@@ -899,14 +899,14 @@ function Matrix_partial_TraceMult_ZD(a, b, a_H, b_T)
     if (u_a_H .and. .not. u_b_T) then
       Matrix_partial_TraceMult_ZD = 0.0_dp
       do j=1, a%l_M
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
-	Matrix_partial_TraceMult_ZD(g_j) = sum(conjg(a%data(:,j))*b%data(:,j))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
+        Matrix_partial_TraceMult_ZD(g_j) = sum(conjg(a%data(:,j))*b%data(:,j))
       end do
     else if (.not. u_a_H .and. u_b_T) then
       Matrix_partial_TraceMult_ZD = 0.0_dp
       do i=1, a%l_N
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
-	Matrix_partial_TraceMult_ZD(g_i) = sum(a%data(i,:)*b%data(i,:))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
+        Matrix_partial_TraceMult_ZD(g_i) = sum(a%data(i,:)*b%data(i,:))
       end do
     else
       call system_abort("Can only do partial_TraceMult for ScaLAPACK matrices if one is transposed and the other not")
@@ -914,20 +914,20 @@ function Matrix_partial_TraceMult_ZD(a, b, a_H, b_T)
   else
     if (.not. u_a_H .and. .not. u_b_T) then
       do i=1, a%N
-	Matrix_partial_TraceMult_ZD(i) = sum(a%data(i,:)*b%data(:,i))
+        Matrix_partial_TraceMult_ZD(i) = sum(a%data(i,:)*b%data(:,i))
       end do
     else if (u_a_H .and. u_b_T) then
       do i=1, a%N
-	Matrix_partial_TraceMult_ZD(i) = sum(conjg(a%data(:,i))*b%data(i,:))
+        Matrix_partial_TraceMult_ZD(i) = sum(conjg(a%data(:,i))*b%data(i,:))
       end do
     else if (.not. u_a_H .and. u_b_T) then
       Matrix_partial_TraceMult_ZD(:) = 0.0_dp
       do i=1, a%N
-	Matrix_partial_TraceMult_ZD(:) = Matrix_partial_TraceMult_ZD(:) + a%data(:,i)*b%data(:,i)
+        Matrix_partial_TraceMult_ZD(:) = Matrix_partial_TraceMult_ZD(:) + a%data(:,i)*b%data(:,i)
       end do
     else
       do i=1, a%N
-	Matrix_partial_TraceMult_ZD(i) = sum(conjg(a%data(:,i))*b%data(:,i))
+        Matrix_partial_TraceMult_ZD(i) = sum(conjg(a%data(:,i))*b%data(:,i))
       end do
     endif
   endif
@@ -954,14 +954,14 @@ function Matrix_partial_TraceMult_ZZ(a, b, a_H, b_H)
     if (u_a_H .and. .not. u_b_H) then
       Matrix_partial_TraceMult_ZZ = 0.0_dp
       do j=1, a%l_M
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
-	Matrix_partial_TraceMult_ZZ(g_j) = sum(conjg(a%data(:,j))*b%data(:,j))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
+        Matrix_partial_TraceMult_ZZ(g_j) = sum(conjg(a%data(:,j))*b%data(:,j))
       end do
     else if (.not. u_a_H .and. u_b_H) then
       Matrix_partial_TraceMult_ZZ = 0.0_dp
       do i=1, a%l_N
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
-	Matrix_partial_TraceMult_ZZ(g_i) = sum(a%data(i,:)*conjg(b%data(i,:)))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
+        Matrix_partial_TraceMult_ZZ(g_i) = sum(a%data(i,:)*conjg(b%data(i,:)))
       end do
     else
       call system_abort("Can only do partial_TraceMult for ScaLAPACK matrices if one is transposed and the other not")
@@ -969,20 +969,20 @@ function Matrix_partial_TraceMult_ZZ(a, b, a_H, b_H)
   else
     if (.not. u_a_H .and. .not. u_b_H) then
       do i=1, a%N
-	Matrix_partial_TraceMult_ZZ(i) = sum(a%data(i,:)*b%data(:,i))
+        Matrix_partial_TraceMult_ZZ(i) = sum(a%data(i,:)*b%data(:,i))
       end do
     else if (u_a_H .and. u_b_H) then
       do i=1, a%N
-	Matrix_partial_TraceMult_ZZ(i) = sum(conjg(a%data(:,i))*conjg(b%data(i,:)))
+        Matrix_partial_TraceMult_ZZ(i) = sum(conjg(a%data(:,i))*conjg(b%data(i,:)))
       end do
     else if (.not. u_a_H .and. u_b_H) then
       Matrix_partial_TraceMult_ZZ(:) = 0.0_dp
       do i=1, a%N
-	Matrix_partial_TraceMult_ZZ(:) = Matrix_partial_TraceMult_ZZ(:) + a%data(:,i)*conjg(b%data(:,i))
+        Matrix_partial_TraceMult_ZZ(:) = Matrix_partial_TraceMult_ZZ(:) + a%data(:,i)*conjg(b%data(:,i))
       end do
     else
       do i=1, a%N
-	Matrix_partial_TraceMult_ZZ(i) = sum(conjg(a%data(:,i))*b%data(:,i))
+        Matrix_partial_TraceMult_ZZ(i) = sum(conjg(a%data(:,i))*b%data(:,i))
       end do
     endif
   endif
@@ -1009,20 +1009,20 @@ function Matrix_partial_TraceMult_spinor_ZZ(a, b, a_H, b_H)
     if (u_a_H .and. .not. u_b_H) then
       Matrix_partial_TraceMult_spinor_ZZ = 0.0_dp
       do j=1, a%l_M
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,(g_j-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,j))*b%data(1:a%l_N:2,j))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,(g_j-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,j))*b%data(2:a%l_N:2,j))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,(g_j-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,j+1))*b%data(1:a%l_N:2,j+1))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,(g_j-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,j+1))*b%data(2:a%l_N:2,j+1))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, 1, j, g_i, g_j)
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,(g_j-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,j))*b%data(1:a%l_N:2,j))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,(g_j-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,j))*b%data(2:a%l_N:2,j))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,(g_j-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,j+1))*b%data(1:a%l_N:2,j+1))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,(g_j-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,j+1))*b%data(2:a%l_N:2,j+1))
       end do
     else if (.not. u_a_H .and. u_b_H) then
       Matrix_partial_TraceMult_spinor_ZZ = 0.0_dp
       do i=1, a%l_N, 2
-	call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,(g_i-1)/2+1) = sum(a%data(i,1:a%l_M:2)*conjg(b%data(i,1:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,(g_i-1)/2+1) = sum(a%data(i,2:a%l_M:2)*conjg(b%data(i,2:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,(g_i-1)/2+1) = sum(a%data(i+1,1:a%l_M:2)*conjg(b%data(i+1,1:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,(g_i-1)/2+1) = sum(a%data(i+1,2:a%l_M:2)*conjg(b%data(i+1,2:b%l_M:2)))
+        call coords_local_to_global(a%ScaLAPACK_Info_obj, i, 1, g_i, g_j)
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,(g_i-1)/2+1) = sum(a%data(i,1:a%l_M:2)*conjg(b%data(i,1:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,(g_i-1)/2+1) = sum(a%data(i,2:a%l_M:2)*conjg(b%data(i,2:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,(g_i-1)/2+1) = sum(a%data(i+1,1:a%l_M:2)*conjg(b%data(i+1,1:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,(g_i-1)/2+1) = sum(a%data(i+1,2:a%l_M:2)*conjg(b%data(i+1,2:b%l_M:2)))
       end do
     else
       call system_abort("Can only do partial_TraceMult_spinor for ScaLAPACK matrices if one is transposed and the other not")
@@ -1030,32 +1030,32 @@ function Matrix_partial_TraceMult_spinor_ZZ(a, b, a_H, b_H)
   else
     if (.not. u_a_H .and. .not. u_b_H) then
       do i=1, a%N, 2
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(a%data(i,1:a%l_M:2)*b%data(1:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(a%data(i,2:a%l_M:2)*b%data(2:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(a%data(i+1,1:a%l_M:2)*b%data(1:b%l_N:2,i+1))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(a%data(i+1,2:a%l_M:2)*b%data(2:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(a%data(i,1:a%l_M:2)*b%data(1:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(a%data(i,2:a%l_M:2)*b%data(2:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(a%data(i+1,1:a%l_M:2)*b%data(1:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(a%data(i+1,2:a%l_M:2)*b%data(2:b%l_N:2,i+1))
       end do
     else if (u_a_H .and. u_b_H) then
       do i=1, a%N, 2
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i))*conjg(b%data(i,1:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i))*conjg(b%data(i,2:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i+1))*conjg(b%data(i+1,1:b%l_M:2)))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i+1))*conjg(b%data(i+1,2:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i))*conjg(b%data(i,1:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i))*conjg(b%data(i,2:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i+1))*conjg(b%data(i+1,1:b%l_M:2)))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i+1))*conjg(b%data(i+1,2:b%l_M:2)))
       end do
     else if (.not. u_a_H .and. u_b_H) then
       Matrix_partial_TraceMult_spinor_ZZ(:,:,:) = 0.0_dp
       do i=1, a%N, 2
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,:) = Matrix_partial_TraceMult_spinor_ZZ(1,1,:) + a%data(1:a%l_N:2,i)*conjg(b%data(1:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,:) = Matrix_partial_TraceMult_spinor_ZZ(1,2,:) + a%data(1:a%l_N:2,i+1)*conjg(b%data(1:b%l_N:2,i+1))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,:) = Matrix_partial_TraceMult_spinor_ZZ(2,1,:) + a%data(2:a%l_N:2,i)*conjg(b%data(2:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,:) = Matrix_partial_TraceMult_spinor_ZZ(2,2,:) + a%data(2:a%l_N:2,i+1)*conjg(b%data(2:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,:) = Matrix_partial_TraceMult_spinor_ZZ(1,1,:) + a%data(1:a%l_N:2,i)*conjg(b%data(1:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,:) = Matrix_partial_TraceMult_spinor_ZZ(1,2,:) + a%data(1:a%l_N:2,i+1)*conjg(b%data(1:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,:) = Matrix_partial_TraceMult_spinor_ZZ(2,1,:) + a%data(2:a%l_N:2,i)*conjg(b%data(2:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,:) = Matrix_partial_TraceMult_spinor_ZZ(2,2,:) + a%data(2:a%l_N:2,i+1)*conjg(b%data(2:b%l_N:2,i+1))
       end do
     else
       do i=1, a%N, 2
-	Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i))*b%data(1:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i))*b%data(2:b%l_N:2,i))
-	Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i+1))*b%data(1:b%l_N:2,i+1))
-	Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i+1))*b%data(2:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(1,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i))*b%data(1:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(1,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i))*b%data(2:b%l_N:2,i))
+        Matrix_partial_TraceMult_spinor_ZZ(2,1,(i-1)/2+1) = sum(conjg(a%data(1:a%l_N:2,i+1))*b%data(1:b%l_N:2,i+1))
+        Matrix_partial_TraceMult_spinor_ZZ(2,2,(i-1)/2+1) = sum(conjg(a%data(2:a%l_N:2,i+1))*b%data(2:b%l_N:2,i+1))
       end do
     endif
   endif
@@ -1382,8 +1382,8 @@ subroutine MatrixZ_matrix_product_sub_zz(C, A, B, a_transpose, a_conjugate, b_tr
     call matrix_product_sub(C%ScaLAPACK_Info_obj, C%data, A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
       a_transpose, a_conjugate, b_transpose, b_conjugate)
   else if (.not.a%ScaLAPACK_Info_obj%active .and. &
-	   .not.b%ScaLAPACK_Info_obj%active .and. &
-	   .not.c%ScaLAPACK_Info_obj%active) then
+           .not.b%ScaLAPACK_Info_obj%active .and. &
+           .not.c%ScaLAPACK_Info_obj%active) then
     call matrix_product_sub(C%data, A%data, B%data, a_transpose, a_conjugate, b_transpose, b_conjugate)
   else
     call system_abort("Called MatrixZ_matric_product_sub_zz with a mix of ScaLAPACK and non-ScaLAPACK matrices")
@@ -1424,8 +1424,8 @@ subroutine MatrixZ_matrix_product_sub_dz(C, A, B, a_transpose, b_transpose, b_co
       a_transp, b_transp .or. b_conjg)
     c%data = c%data + cmplx(0.0_dp, tC, dp)
   else if (.not.a%ScaLAPACK_Info_obj%active .and. &
-	   .not.b%ScaLAPACK_Info_obj%active .and. &
-	   .not.c%ScaLAPACK_Info_obj%active) then
+           .not.b%ScaLAPACK_Info_obj%active .and. &
+           .not.c%ScaLAPACK_Info_obj%active) then
     tB = dble(B%data)
     call matrix_product_sub(tC, A%data, tB, a_transp, b_transp .or. b_conjg)
     C%data = tC
@@ -1480,8 +1480,8 @@ subroutine MatrixZ_matrix_product_sub_zd(C, A, B, a_transpose, a_conjugate, b_tr
       a_transp .or. a_conjg, b_transp)
     c%data = c%data + cmplx(0.0_dp, tC, dp)
   else if (.not.a%ScaLAPACK_Info_obj%active .and. &
-	   .not.b%ScaLAPACK_Info_obj%active .and. &
-	   .not.c%ScaLAPACK_Info_obj%active) then
+           .not.b%ScaLAPACK_Info_obj%active .and. &
+           .not.c%ScaLAPACK_Info_obj%active) then
     tA = dble(A%data)
     call matrix_product_sub(tC, tA, B%data, a_transp .or. a_conjg, b_transp)
     C%data = tC
@@ -1513,8 +1513,8 @@ subroutine MatrixD_matrix_product_sub_dd(C, A, B, a_transpose, b_transpose)
     call matrix_product_sub(C%ScaLAPACK_Info_obj, C%data, A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
       a_transpose, b_transpose)
   else if (.not.a%ScaLAPACK_Info_obj%active .and. &
-	   .not.b%ScaLAPACK_Info_obj%active .and. &
-	   .not.c%ScaLAPACK_Info_obj%active) then
+           .not.b%ScaLAPACK_Info_obj%active .and. &
+           .not.c%ScaLAPACK_Info_obj%active) then
     call matrix_product_sub(C%data, A%data, B%data, a_transpose, b_transpose)
   else
     call system_abort("Called MatrixD_matric_product_sub_dd with a mix of ScaLAPACK and non-ScaLAPACK matrices")

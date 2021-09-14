@@ -123,22 +123,22 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
     call Potential_Filename_Initialise(pot, args_str=trim(init_args_str), param_filename=quip_param_file,mpi_obj=mpi_glob)
     call Print(pot)
   endif
-  
+
   if( .not. first_run .and. (N /= at%N) ) then
      call finalise(at)
      call initialise(at,N,use_lattice)
   endif
 
   call set_lattice(at,use_lattice, scale_positions=.false.)
-  
+
   if (present(Z)) then
      if (present(symbol)) call system_abort("quip_unified_wrapper got both Z and symbol, don't know which to use")
      at%Z = Z
   else ! no Z, use symbol
      if (.not. present(symbol)) call system_abort("quip_unified_wrapper got neither Z nor symbol")
      do i = 1, at%N
-	at%Z(i) = atomic_number_from_symbol(symbol(i))
-     enddo 
+        at%Z(i) = atomic_number_from_symbol(symbol(i))
+     enddo
   endif
 
   if (present(pos)) then
@@ -163,7 +163,7 @@ subroutine quip_unified_wrapper(N,pos,frac_pos,lattice,symbol,Z, &
   if(use_do_virial) use_calc_args = trim(use_calc_args)//" virial=quip_wrapper_virial "
 
   call calc(pot,at,args_str=trim(use_calc_args))
-  
+
   if(use_do_energy) call get_param_value(at, "quip_wrapper_energy", energy)
   if(use_do_virial) call get_param_value(at, "quip_wrapper_virial", virial)
   if(use_do_force) then
@@ -181,7 +181,7 @@ subroutine quip_wrapper(N,lattice,symbol,pos,args_str,args_str_len,energy,force,
 
   use system_module, only : dp
   use quip_unified_wrapper_module
-  
+
   implicit none
 
   integer, intent(in) :: N
@@ -215,7 +215,7 @@ subroutine quip_wrapper_castep(N,lattice,frac_pos,symbol, &
 
   use system_module, only : dp
   use quip_unified_wrapper_module
-  
+
   implicit none
 
   integer,                            intent(in)  :: N
@@ -312,7 +312,7 @@ subroutine quip_wrapper_simple(N,lattice,Z,pos,energy,force,virial)
 
   use system_module, only : dp
   use quip_unified_wrapper_module
-  
+
   implicit none
 
   integer, intent(in) :: N

@@ -716,7 +716,7 @@ CONTAINS
       call check_size('Integer Matrix',intmat,(/M,L/),'Matrix_product_int_mat')
      prodmat = 0.0_dp
      do i=1,L
-	prodmat(:,i) = matrix_product_int_vect(matrix,intmat(:,i))
+        prodmat(:,i) = matrix_product_int_vect(matrix,intmat(:,i))
      end do
 
    end function matrix_product_int_mat
@@ -1061,7 +1061,7 @@ CONTAINS
         endif
      else
         call DGEMM(m1_transp,m2_transp, N,M,K,my_rhs_factor,matrix1,size(matrix1,1),matrix2,size(matrix2,1),&
-	  my_lhs_factor,lhs,size(lhs,1))
+          my_lhs_factor,lhs,size(lhs,1))
      endif
 
    end subroutine matrix_product_sub_ddd
@@ -1137,31 +1137,31 @@ CONTAINS
      maxd=max(N,M,K)
 
      if (use_intrinsic_blas) then
-	if (m1_transp) then
-	  if (m2_transp) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),transpose(matrix2))
-	  else if (m2_conjg) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),conjg(transpose(matrix2)))
-	  else
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),matrix2)
-	  endif
-	else if (m1_conjg) then
-	  if (m2_transp) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),transpose(matrix2))
-	  else if (m2_conjg) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),conjg(transpose(matrix2)))
-	  else
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),matrix2)
-	  endif
-	else
-	  if (m2_transp) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,transpose(matrix2))
-	  else if (m2_conjg) then
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,conjg(transpose(matrix2)))
-	  else
-	    lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,matrix2)
-	  endif
-	endif
+        if (m1_transp) then
+          if (m2_transp) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),transpose(matrix2))
+          else if (m2_conjg) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),conjg(transpose(matrix2)))
+          else
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(transpose(matrix1),matrix2)
+          endif
+        else if (m1_conjg) then
+          if (m2_transp) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),transpose(matrix2))
+          else if (m2_conjg) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),conjg(transpose(matrix2)))
+          else
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(conjg(transpose(matrix1)),matrix2)
+          endif
+        else
+          if (m2_transp) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,transpose(matrix2))
+          else if (m2_conjg) then
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,conjg(transpose(matrix2)))
+          else
+            lhs = lhs*my_lhs_factor + my_rhs_factor*matmul(matrix1,matrix2)
+          endif
+        endif
      else
         call ZGEMM(m1_op,m2_op, N,M,K,my_rhs_factor,matrix1,size(matrix1,1),matrix2,size(matrix2,1),my_lhs_factor,lhs,size(lhs,1))
      endif
@@ -1208,7 +1208,7 @@ CONTAINS
         endif
      else
         call DGEMV(m_transp,N,M,my_rhs_factor,matrix,size(matrix,1),vector,1,&
-	  my_lhs_factor,lhs,1)
+          my_lhs_factor,lhs,1)
      endif
 
    end subroutine matrix_vector_product_sub_ddd
@@ -1607,17 +1607,17 @@ CONTAINS
        allocate(r8_evals(N))
 
        if (present(evects) .and. dp == 8) then
-	 r8_evects => evects
+         r8_evects => evects
        else
-	 allocate(r8_evects(N,N))
+         allocate(r8_evects(N,N))
        endif
        r8_evects = this
 
        if (present(evects)) then
-	 call DSYEV('V','U',N,r8_evects,N,r8_evals,WORK,LWORK,INFO)
+         call DSYEV('V','U',N,r8_evects,N,r8_evals,WORK,LWORK,INFO)
        else
-	 call DSYEV('N','U',N,r8_evects,N,r8_evals,WORK,LWORK,INFO)
-	endif
+         call DSYEV('N','U',N,r8_evects,N,r8_evals,WORK,LWORK,INFO)
+        endif
 
        if (present(evects) .and. dp /= 8) evects = r8_evects
        evals = r8_evals
@@ -1627,15 +1627,15 @@ CONTAINS
        if (.not. (present(evects) .and. dp == 8)) deallocate(r8_evects)
 
        if (INFO /= 0) then
-	  mainlog%mpi_all_inoutput_flag=.true.
-	  call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
-	  if (INFO < 0) then
-	     call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
-	  else if (INFO <= N) then
-	     call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
-	  endif
-	  mainlog%mpi_all_inoutput_flag=.false.
-	  RAISE_ERROR ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', error)
+          mainlog%mpi_all_inoutput_flag=.true.
+          call print ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', PRINT_ALWAYS)
+          if (INFO < 0) then
+             call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+          else if (INFO <= N) then
+             call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+          endif
+          mainlog%mpi_all_inoutput_flag=.false.
+          RAISE_ERROR ('Matrix_diagonalise: Error in calling DSYEV! (info = '//INFO//')', error)
        endif
     else
        ! Why not print a warning then call more general diagonalise?
@@ -1681,16 +1681,16 @@ CONTAINS
        allocate(r8_evals(N))
 
        if (present(evects) .and. dp == 8) then
-	z8_evects => evects
+        z8_evects => evects
        else
-	 allocate(z8_evects(N,N))
+         allocate(z8_evects(N,N))
        endif
        z8_evects = this
 
        if (present(evects)) then
-	 call ZHEEV('V','U',N,z8_evects,N,r8_evals,WORK,LWORK,RWORK,INFO)
+         call ZHEEV('V','U',N,z8_evects,N,r8_evals,WORK,LWORK,RWORK,INFO)
        else
-	 call ZHEEV('N','U',N,z8_evects,N,r8_evals,WORK,LWORK,RWORK,INFO)
+         call ZHEEV('N','U',N,z8_evects,N,r8_evals,WORK,LWORK,RWORK,INFO)
        endif
 
        if (present(evects) .and. dp /= 8) evects = z8_evects
@@ -1702,15 +1702,15 @@ CONTAINS
        if (.not.(present(evects) .and. dp == 8)) deallocate(z8_evects)
 
        if (INFO /= 0) then
-	  mainlog%mpi_all_inoutput_flag=.true.
-	  call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
-	  if (INFO < 0) then
-	     call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
-	  else if (INFO <= N) then
-	     call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
-	  endif
-	  mainlog%mpi_all_inoutput_flag=.false.
-	  RAISE_ERROR ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', error)
+          mainlog%mpi_all_inoutput_flag=.true.
+          call print ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', PRINT_ALWAYS)
+          if (INFO < 0) then
+             call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+          else if (INFO <= N) then
+             call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+          endif
+          mainlog%mpi_all_inoutput_flag=.false.
+          RAISE_ERROR ('Matrix_z_diagonalise: Error in calling ZHEEV! (info = '//INFO//')', error)
        endif
     else
        ! why not print a warning and call more general diagonalise instead?
@@ -1759,11 +1759,11 @@ CONTAINS
        mainlog%mpi_all_inoutput_flag=.true.
        call print ('Matrix_diagonalise_generalised: Error in calling DSYGV! (info = '//INFO//')', PRINT_ALWAYS)
        if (INFO < 0) then
-	  call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+          call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
        else if (INFO <= N) then
-	  call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+          call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
        else
-	  call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
+          call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
        endif
        mainlog%mpi_all_inoutput_flag=.false.
        RAISE_ERROR ('Matrix_diagonalise_generalised: Error in calling DSYGV! (info = '//INFO//')', error)
@@ -1815,11 +1815,11 @@ CONTAINS
        mainlog%mpi_all_inoutput_flag=.true.
        call print ('Matrix_z_diagonalise_generalised: Error in calling ZHEGV! (info = '//INFO//')', PRINT_ALWAYS)
        if (INFO < 0) then
-	  call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
+          call print ('  '//(-INFO)//' argument had illegal value', PRINT_ALWAYS)
        else if (INFO <= N) then
-	  call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
+          call print ('  '//INFO//' off-diagonal elements of an intermediate tridiagonal form did not converge to zero', PRINT_ALWAYS)
        else
-	  call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
+          call print ('  '//(INFO-N)//' leading minor of B is not positive definite, factorization failed')
        endif
        mainlog%mpi_all_inoutput_flag=.false.
        RAISE_ERROR ('Matrix_z_diagonalise_generalised: Error in calling ZHEGV! (info = '//INFO//')', error)
@@ -1845,22 +1845,22 @@ CONTAINS
      n = size(this,1)
      allocate(a(n,n), wr(n), wi(n))
      if (present(r_evects)) then
-	allocate(vr(n,n))
-	cr = 'V'
-	ldvr = n
+        allocate(vr(n,n))
+        cr = 'V'
+        ldvr = n
      else
-	allocate(vr(1,1))
-	cr ='N'
-	ldvr = 1
+        allocate(vr(1,1))
+        cr ='N'
+        ldvr = 1
      endif
      if (present(l_evects)) then
         allocate(vl(n,n))
-	cl='V'
-	ldvl = n
+        cl='V'
+        ldvl = n
      else
-	allocate(vl(1,1))
-	cl='N'
-	ldvl = 1
+        allocate(vl(1,1))
+        cl='N'
+        ldvl = 1
      endif
      a = this
 
@@ -1880,19 +1880,19 @@ CONTAINS
 
      eval = cmplx(wr,wi)
      if (present(l_evects) .or. present(r_evects)) then
-	i = 1
-	do while (i <= n)
-	 if (wi(i) == 0) then
-	    if (present(l_evects)) l_evects(:,i) = vl(:,i)
-	    if (present(r_evects)) r_evects(:,i) = vr(:,i)
-	 else
-	    if (present(l_evects)) l_evects(:,i) = cmplx(vl(:,i), vl(:,i+1))
-	    if (present(l_evects)) l_evects(:,i+1) = cmplx(vl(:,i), -vl(:,i+1))
-	    if (present(r_evects)) r_evects(:,i) = cmplx(vr(:,i), vr(:,i+1))
-	    if (present(r_evects)) r_evects(:,i+1) = cmplx(vr(:,i), -vr(:,i+1))
-	    i = i + 1
-	 endif
-	 i = i + 1
+        i = 1
+        do while (i <= n)
+         if (wi(i) == 0) then
+            if (present(l_evects)) l_evects(:,i) = vl(:,i)
+            if (present(r_evects)) r_evects(:,i) = vr(:,i)
+         else
+            if (present(l_evects)) l_evects(:,i) = cmplx(vl(:,i), vl(:,i+1))
+            if (present(l_evects)) l_evects(:,i+1) = cmplx(vl(:,i), -vl(:,i+1))
+            if (present(r_evects)) r_evects(:,i) = cmplx(vr(:,i), vr(:,i+1))
+            if (present(r_evects)) r_evects(:,i+1) = cmplx(vr(:,i), -vr(:,i+1))
+            i = i + 1
+         endif
+         i = i + 1
       end do
      endif
 
@@ -1924,9 +1924,9 @@ CONTAINS
     do i=1, N
     do j=1, N
       if (abs(t2(j,i)) > 1e-10_dp) then
-	print '(I0," ",4F30.20)', i, evals(i), t1(j,i), t2(j,i), t1(j,i)/t2(j,i)
+        print '(I0," ",4F30.20)', i, evals(i), t1(j,i), t2(j,i), t1(j,i)/t2(j,i)
       else
-	print '(I0," ",3F30.20, "-")', i, evals(i), t1(j,i), t2(j,i)
+        print '(I0," ",3F30.20, "-")', i, evals(i), t1(j,i), t2(j,i)
       endif
     end do
     end do
@@ -2069,35 +2069,35 @@ CONTAINS
 
       if (positive) then
 
-	! cholesky
+        ! cholesky
 
-	! this only works for hermitian positive definite
-	call ZPOTRF('U', N, u_inverse, N, INFO)
+        ! this only works for hermitian positive definite
+        call ZPOTRF('U', N, u_inverse, N, INFO)
 
-	if(INFO > 0) then
-	  write (line,'(a)') 'Matrix_Inverse: Matrix is not positive definite, switching to general case inversion!'
-	  call print(line)
-	  ! we branch to the general case below
-	else
-	  if (INFO < 0) then
-	    write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling ZPOTRF (',info,')'
-	    call system_abort(line)
-	  end if
-	  ! now do the inverse
-	  ! again, this call is only for positive definite, but now we should be
-	  call ZPOTRI('U', N, u_inverse, N, INFO)
-	  if (INFO /= 0) then
-	    write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling ZPOTRI (',info,')'
-	    call system_abort(line)
-	  end if
-	  ! filling the lower part of hermitian matrix
-	  do i=1,N
-	    do j=i+1,N
-	      u_inverse(j,i) = conjg(u_inverse(i,j))
-	    enddo
-	  enddo
-	  return
-	end if ! zpotrf INFO > 0
+        if(INFO > 0) then
+          write (line,'(a)') 'Matrix_Inverse: Matrix is not positive definite, switching to general case inversion!'
+          call print(line)
+          ! we branch to the general case below
+        else
+          if (INFO < 0) then
+            write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling ZPOTRF (',info,')'
+            call system_abort(line)
+          end if
+          ! now do the inverse
+          ! again, this call is only for positive definite, but now we should be
+          call ZPOTRI('U', N, u_inverse, N, INFO)
+          if (INFO /= 0) then
+            write(line,'(a,i0,a)')'Matrix_Inverse: Error in calling ZPOTRI (',info,')'
+            call system_abort(line)
+          end if
+          ! filling the lower part of hermitian matrix
+          do i=1,N
+            do j=i+1,N
+              u_inverse(j,i) = conjg(u_inverse(i,j))
+            enddo
+          enddo
+          return
+        end if ! zpotrf INFO > 0
 
       endif ! positive
 
@@ -2115,9 +2115,9 @@ CONTAINS
 
       ! filling the lower part of hermitian matrix
       do i=1,N
-	do j=i+1,N
-	  u_inverse(j,i) = conjg(u_inverse(i,j))
-	enddo
+        do j=i+1,N
+          u_inverse(j,i) = conjg(u_inverse(i,j))
+        enddo
       enddo
 
       deallocate(work,ipiv)
@@ -2137,9 +2137,9 @@ CONTAINS
 
       ! filling the lower part of symmetric matrix
       do i=1,N
-	do j=i+1,N
-	  u_inverse(j,i) = u_inverse(i,j)
-	enddo
+        do j=i+1,N
+          u_inverse(j,i) = u_inverse(i,j)
+        enddo
       enddo
 
       deallocate(work, ipiv)
@@ -3585,41 +3585,41 @@ CONTAINS
 
     if (do_always) then
       do i=1, size(this,2)
-	do j=1, size(this,1)
-	  call print(j // " " // i // " " // this(j,i), verbosity, file)
-	end do
+        do j=1, size(this,1)
+          call print(j // " " // i // " " // this(j,i), verbosity, file)
+        end do
       end do
     else
 
       if (size(this,2) > max_size .and. size(this,1) <= max_size) then
-	 w = size(this,1)
-	 n = size(this,2)
-	 t = .true.
+         w = size(this,1)
+         n = size(this,2)
+         t = .true.
       else
-	 w = size(this,2)
-	 n = size(this,1)
-	 t = .false.
+         w = size(this,2)
+         n = size(this,1)
+         t = .false.
       end if
 
       if (w > absolute_max_width) then
-	 call print('Matrix_print: matrix is too large to print', verbosity, file)
-	 return
+         call print('Matrix_print: matrix is too large to print', verbosity, file)
+         return
       end if
 
       if (t) then
-	write (line, '(a)') 'Matrix_Print: printing matrix transpose'
-	call print(line,verbosity,file)
+        write (line, '(a)') 'Matrix_Print: printing matrix transpose'
+        call print(line,verbosity,file)
       endif
 
       write(format,'(a,i0,a)')'(',w,'(1x,f18.10))'
 
       do i=1,n
-	 if (t) then
-	    write(line,format) this(:,i)
-	 else
-	    write(line,format) this(i,:)
-	 end if
-	 call print(line,verbosity,file)
+         if (t) then
+            write(line,format) this(:,i)
+         else
+            write(line,format) this(i,:)
+         end if
+         call print(line,verbosity,file)
       end do
 
     end if
@@ -3681,16 +3681,16 @@ CONTAINS
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
-	if (j == size(this,1)) then
-	  call print(this(i,j), verbosity, file)
-	else
-	  call print(this(i,j)//", ", verbosity, file)
-	endif
+        if (j == size(this,1)) then
+          call print(this(i,j), verbosity, file)
+        else
+          call print(this(i,j)//", ", verbosity, file)
+        endif
       end do
       if (i == size(this,1)) then
-	call print ("}", verbosity, file)
+        call print ("}", verbosity, file)
       else
-	call print ("},", verbosity, file)
+        call print ("},", verbosity, file)
       endif
     end do
     call print ("};", verbosity, file)
@@ -3708,16 +3708,16 @@ CONTAINS
     do i=1, size(this,1)
       call print ("{", verbosity, file)
       do j=1, size(this,1)
-	if (j == size(this,1)) then
-	  call print(real(this(i,j), dp) // " + I*"//aimag(this(i,j)), verbosity, file)
-	else
-	  call print(real(this(i,j), dp) // " + I*"//aimag(this(i,j))//", ", verbosity, file)
-	endif
+        if (j == size(this,1)) then
+          call print(real(this(i,j), dp) // " + I*"//aimag(this(i,j)), verbosity, file)
+        else
+          call print(real(this(i,j), dp) // " + I*"//aimag(this(i,j))//", ", verbosity, file)
+        endif
       end do
       if (i == size(this,1)) then
-	call print ("}", verbosity, file)
+        call print ("}", verbosity, file)
       else
-	call print ("},", verbosity, file)
+        call print ("},", verbosity, file)
       endif
     end do
     call print ("};", verbosity, file)
@@ -4163,15 +4163,15 @@ CONTAINS
 
        bin = ceiling((vector(i)-min_x)/binsize)
        if (do_drop_outside) then
-	 if (bin < 1 .or. bin > Nbin) cycle
+         if (bin < 1 .or. bin > Nbin) cycle
        else
-	 if (bin < 1) bin = 1
-	 if (bin > Nbin) bin = Nbin
+         if (bin < 1) bin = 1
+         if (bin > Nbin) bin = Nbin
        endif
        if (present(weight_vector)) then
-	 vector_histogram(bin) = vector_histogram(bin) + weight_vector(i)
+         vector_histogram(bin) = vector_histogram(bin) + weight_vector(i)
        else
-	 vector_histogram(bin) = vector_histogram(bin) + 1.0_dp
+         vector_histogram(bin) = vector_histogram(bin) + 1.0_dp
        endif
 
     end do
@@ -5437,11 +5437,11 @@ CONTAINS
             i_data(i) = i_data(minpos)
             i_data(minpos) = tmp
          endif
-      	 if (present(r_data)) then
+               if (present(r_data)) then
             r_tmp = r_data(i)
             r_data(i) = r_data(minpos)
             r_data(minpos) = r_tmp
-      	 endif
+               endif
 
       end do
 
@@ -6461,14 +6461,14 @@ CONTAINS
      n_p1 = 0
      if (present(i_p1)) then
        if (associated(i_p1)) then
-	  n_p1 = n_p1 + 1
-	  p1_is_i = .true.
+          n_p1 = n_p1 + 1
+          p1_is_i = .true.
        endif
      end if
      if (present(r_p1)) then
        if (associated(r_p1)) then
-	  n_p1 = n_p1 + 1
-	  p1_is_r = .true.
+          n_p1 = n_p1 + 1
+          p1_is_r = .true.
        endif
      end if
      if (n_p1 /= 1) then
@@ -6478,14 +6478,14 @@ CONTAINS
      n_p2 = 0
      if (present(i_p2)) then
        if (associated(i_p2)) then
-	  n_p2 = n_p2 + 1
-	  p2_is_i = .true.
+          n_p2 = n_p2 + 1
+          p2_is_i = .true.
        endif
      end if
      if (present(r_p2)) then
        if (associated(r_p2)) then
-	  n_p2 = n_p2 + 1
-	  p2_is_r = .true.
+          n_p2 = n_p2 + 1
+          p2_is_r = .true.
        endif
      endif
      if (n_p2 > 1) then
@@ -6496,14 +6496,14 @@ CONTAINS
      n_p3 = 0
      if (present(i_p3)) then
        if (associated(i_p3)) then
-	  n_p3 = n_p3 + 1
-	  p3_is_i = .true.
+          n_p3 = n_p3 + 1
+          p3_is_i = .true.
        endif
      end if
      if (present(r_p3)) then
        if (associated(r_p3)) then
-	  n_p3 = n_p3 + 1
-	  p3_is_r = .true.
+          n_p3 = n_p3 + 1
+          p3_is_r = .true.
        endif
      endif
      if (n_p3 > 1) then
@@ -6513,63 +6513,63 @@ CONTAINS
 
      ! always have some *_p1, test *_p1
      if (p1_is_i) then
-	if (i_p1(i) < i_p1(j)) then
-	   arrays_lt = .true.
-	   return
-	else if (i_p1(i) > i_p1(j)) then
-	   arrays_lt = .false.
-	   return
-	endif
+        if (i_p1(i) < i_p1(j)) then
+           arrays_lt = .true.
+           return
+        else if (i_p1(i) > i_p1(j)) then
+           arrays_lt = .false.
+           return
+        endif
      else ! p1_is_r
-	if (r_p1(i) < r_p1(j)) then
-	   arrays_lt = .true.
-	   return
-	else if (r_p1(i) > r_p1(j)) then
-	   arrays_lt = .false.
-	   return
-	endif
+        if (r_p1(i) < r_p1(j)) then
+           arrays_lt = .true.
+           return
+        else if (r_p1(i) > r_p1(j)) then
+           arrays_lt = .false.
+           return
+        endif
      endif
 
      ! *_p1 must be equal, test *_p2
      if (have_p2) then ! must have some present and associated *_p2 pointer, test it
-	if (p2_is_i) then
-	   if (i_p2(i) < i_p2(j)) then
-	      arrays_lt = .true.
-	      return
-	   else if (i_p2(i) > i_p2(j)) then
-	      arrays_lt = .false.
-	      return
-	   endif
-	else ! p2_is_r
-	   if (r_p2(i) < r_p2(j)) then
-	      arrays_lt = .true.
-	      return
-	   else if (r_p2(i) > r_p2(j)) then
-	      arrays_lt = .false.
-	      return
-	   endif
-	endif
+        if (p2_is_i) then
+           if (i_p2(i) < i_p2(j)) then
+              arrays_lt = .true.
+              return
+           else if (i_p2(i) > i_p2(j)) then
+              arrays_lt = .false.
+              return
+           endif
+        else ! p2_is_r
+           if (r_p2(i) < r_p2(j)) then
+              arrays_lt = .true.
+              return
+           else if (r_p2(i) > r_p2(j)) then
+              arrays_lt = .false.
+              return
+           endif
+        endif
      endif
 
      ! *_p2 must be equal, test *_p3
      if (have_p3) then ! must have some present and associated *_p3 pointer, test it
-	if (p3_is_i) then
-	   if (i_p3(i) < i_p3(j)) then
-	      arrays_lt = .true.
-	      return
-	   else if (i_p3(i) > i_p3(j)) then
-	      arrays_lt = .false.
-	      return
-	   endif
-	else ! p3_is_r
-	   if (r_p3(i) < r_p3(j)) then
-	      arrays_lt = .true.
-	      return
-	   else if (r_p3(i) > r_p3(j)) then
-	      arrays_lt = .false.
-	      return
-	   endif
-	endif
+        if (p3_is_i) then
+           if (i_p3(i) < i_p3(j)) then
+              arrays_lt = .true.
+              return
+           else if (i_p3(i) > i_p3(j)) then
+              arrays_lt = .false.
+              return
+           endif
+        else ! p3_is_r
+           if (r_p3(i) < r_p3(j)) then
+              arrays_lt = .true.
+              return
+           else if (r_p3(i) > r_p3(j)) then
+              arrays_lt = .false.
+              return
+           endif
+        endif
      endif
 
      ! *_p3 must be equal
@@ -7447,11 +7447,11 @@ CONTAINS
       real(dp), intent(in) :: r, cutoff_in,transition_width
 
       if( r > cutoff_in ) then
-	  d2coordination_function_upper = 0.0_dp
+          d2coordination_function_upper = 0.0_dp
       elseif( r > (cutoff_in-transition_width) ) then
-	  d2coordination_function_upper = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width)
+          d2coordination_function_upper = - 0.5_dp * ((PI/ transition_width)**2) * cos(PI*(r-cutoff_in+transition_width)/transition_width)
       else
-	  d2coordination_function_upper = 0.0_dp
+          d2coordination_function_upper = 0.0_dp
       endif
 
    endfunction d2coordination_function_upper
@@ -7463,11 +7463,11 @@ CONTAINS
       real(dp), intent(in) :: r, cutoff_in,transition_width
 
       if( r > cutoff_in ) then
-	  d3coordination_function_upper = 0.0_dp
+          d3coordination_function_upper = 0.0_dp
       elseif( r > (cutoff_in-transition_width) ) then
-	  d3coordination_function_upper = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width)
+          d3coordination_function_upper = 0.5_dp * ((PI/ transition_width)**3) * sin(PI*(r-cutoff_in+transition_width)/transition_width)
       else
-	  d3coordination_function_upper = 0.0_dp
+          d3coordination_function_upper = 0.0_dp
       endif
 
    endfunction d3coordination_function_upper

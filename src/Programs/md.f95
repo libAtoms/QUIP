@@ -251,9 +251,9 @@ subroutine print_params(params)
      call print("md_params%T_initial=" // params%T_initial)
      call print("md_params%T_hold=" //  params%T_hold)
      if (params%T_hold >= 0.0_dp) then
-	call print("md_params%T_slope=" // params%T_slope)
-	call print("md_params%T_increment=" // params%T_increment)
-	call print("md_params%T_increment_time=" // params%T_increment_time)
+        call print("md_params%T_slope=" // params%T_slope)
+        call print("md_params%T_increment=" // params%T_increment)
+        call print("md_params%T_increment_time=" // params%T_increment_time)
      endif
      call print("md_params%langevin_OU=" // params%langevin_OU)
      call print("md_params%langevin_tau=" // params%langevin_tau)
@@ -288,7 +288,7 @@ subroutine print_params(params)
     if (size(params%print_property_list) > 0) then
       call print(trim(params%print_property_list(1)), nocr=.true.)
       do i=2, size(params%print_property_list)
-	call print(":"//trim(params%print_property_list(i)), nocr=.true.)
+        call print(":"//trim(params%print_property_list(i)), nocr=.true.)
       end do
     endif
   endif
@@ -360,13 +360,13 @@ subroutine do_prints(params, ds, e, pot, restraint_stuff, restraint_stuff_timeav
 
   if (params%trajectory_print_interval > 0) then
       if (my_override_intervals .or. mod(i_step,params%trajectory_print_interval) == 0) &
-	call print_at(params, ds, e, pot, traj_out)
+        call print_at(params, ds, e, pot, traj_out)
   endif
 
   if (params%flux_print_interval > 0.0_dp) then
      ! just a short alias
      tprin = params%flux_print_interval
-     ! if the time is close to a 
+     ! if the time is close to a
      if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) then
         call get_param_value(ds%atoms, "flux", flux)
         call get_param_value(ds%atoms, "i_step", at_i_step)
@@ -421,7 +421,7 @@ subroutine print_summary(params, ds, e)
     call get_param_value(ds%atoms, "virial", virial)
     call print("STRESS " // ds%t // " " // (reshape(virial+ds%Wkin,(/9/))/cell_volume(ds%atoms)*EV_A3_IN_GPA) // " GPa "//&
                "VOL " // cell_volume(ds%atoms)// " A^3 "// &
-	       "STRAIN "//reshape(strain, (/9/)))
+               "STRAIN "//reshape(strain, (/9/)))
   endif
 
 end subroutine print_summary
@@ -490,74 +490,74 @@ subroutine initialise_md_thermostat(ds, params)
       call enable_damping(ds, params%damping_tau)
    else if (params%const_T .or. params%const_P) then
       if (params%const_P) then
-	 if (.not.params%calc_virial) then
-	    params%calc_virial = .true.
-	    call print('WARNING: Doing const P, setting calc_virial option to true')
-	 endif
+         if (.not.params%calc_virial) then
+            params%calc_virial = .true.
+            call print('WARNING: Doing const P, setting calc_virial option to true')
+         endif
       endif
 
       if (params%all_purpose_thermostat) then
-	 if (params%const_P) then
-	    if (params%const_T .and. params%barostat_const_T) then
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor, thermalise=.true.)
-	    else
-	       call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
-		  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%barostat_timescale_T, W_epsilon_factor=params%barostat_mass_factor, thermalise=.false.)
-	    endif
-	 endif
-	 if (params%const_T) then
-	    if (params%all_purpose_thermostat_massive) then
-	       call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp, params%T_cur, params%adaptive_langevin_NH_tau), &
-		  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
-		  massive=params%all_purpose_thermostat_massive)
-	    else
-	       call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%adaptive_langevin_NH_tau), &
-		  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
-		  massive=params%all_purpose_thermostat_massive)
-	    endif
-	    ds%atoms%thermostat_region=1
-	 endif
+         if (params%const_P) then
+            if (params%const_T .and. params%barostat_const_T) then
+               call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
+                  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%T_cur, W_epsilon_factor=params%barostat_mass_factor, thermalise=.true.)
+            else
+               call set_barostat(ds, type=BAROSTAT_HOOVER_LANGEVIN, p_ext=params%p_ext/EV_A3_IN_GPA, hydrostatic_strain=params%hydrostatic_strain, &
+                  diagonal_strain=params%diagonal_strain, finite_strain_formulation=params%finite_strain_formulation, tau_epsilon=params%barostat_tau, T=params%barostat_timescale_T, W_epsilon_factor=params%barostat_mass_factor, thermalise=.false.)
+            endif
+         endif
+         if (params%const_T) then
+            if (params%all_purpose_thermostat_massive) then
+               call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp, params%T_cur, params%adaptive_langevin_NH_tau), &
+                  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
+                  massive=params%all_purpose_thermostat_massive)
+            else
+               call add_thermostat(ds, type=THERMOSTAT_ALL_PURPOSE, T=params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%adaptive_langevin_NH_tau), &
+                  NHL_tau = params%all_purpose_thermostat_NHL_tau, NHL_mu = nose_hoover_mass(3.0_dp*ds%atoms%N, params%T_cur, params%all_purpose_thermostat_NHL_NH_tau), &
+                  massive=params%all_purpose_thermostat_massive)
+            endif
+            ds%atoms%thermostat_region=1
+         endif
 
       else ! old thermostat
 
-	 if (params%const_T.and..not.params%const_P) then
-	    call print('Running NVT at T = ' // params%T_cur // " K")
-	    if (params%nose_hoover_thermostat) then
-	       call add_thermostat(ds, THERMOSTAT_NOSE_HOOVER, params%T_cur, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%nose_hoover_tau))
-	    else
-	       if (params%adaptive_langevin_NH_tau > 0) then
-		  call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-		  if (params%langevin_OU) then
-		     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-		  else
-		     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-		  endif
-	       else
-		  if (params%langevin_OU) then
-		     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau)
-		  else
-		     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau)
-		  endif
-	       endif
-	    endif
-	    ds%atoms%thermostat_region = 1
-	 else if (params%const_T.and.params%const_P) then
-	    call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/EV_A3_IN_GPA )
-	    if (params%adaptive_langevin_NH_tau > 0) then
-	       call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-	       call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
-	    else
-	       if (params%NPT_NB) then
-		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
-	       else
-		  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
-	       endif
-	    endif
-	    ds%atoms%thermostat_region = 1
-	 else if (params%const_P.and..not.params%const_T) then
-	    call system_abort('No const_P and not const_T')
-	 endif
+         if (params%const_T.and..not.params%const_P) then
+            call print('Running NVT at T = ' // params%T_cur // " K")
+            if (params%nose_hoover_thermostat) then
+               call add_thermostat(ds, THERMOSTAT_NOSE_HOOVER, params%T_cur, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%nose_hoover_tau))
+            else
+               if (params%adaptive_langevin_NH_tau > 0) then
+                  call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+                  if (params%langevin_OU) then
+                     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+                  else
+                     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+                  endif
+               else
+                  if (params%langevin_OU) then
+                     call add_thermostat(ds, THERMOSTAT_LANGEVIN_OU, params%T_cur, tau=params%langevin_tau)
+                  else
+                     call add_thermostat(ds, THERMOSTAT_LANGEVIN, params%T_cur, tau=params%langevin_tau)
+                  endif
+               endif
+            endif
+            ds%atoms%thermostat_region = 1
+         else if (params%const_T.and.params%const_P) then
+            call print('Running NPT at T = '// params%T_cur // " K and external p = " // params%p_ext/EV_A3_IN_GPA )
+            if (params%adaptive_langevin_NH_tau > 0) then
+               call print("Using open Langevin Q="//nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+               call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA, Q=nose_hoover_mass(3*ds%atoms%N, params%T_cur, tau=params%adaptive_langevin_NH_tau))
+            else
+               if (params%NPT_NB) then
+                  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT_NB, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
+               else
+                  call add_thermostat(ds,  THERMOSTAT_LANGEVIN_NPT, params%T_cur, tau=params%langevin_tau, p=params%p_ext/EV_A3_IN_GPA)
+               endif
+            endif
+            ds%atoms%thermostat_region = 1
+         else if (params%const_P.and..not.params%const_T) then
+            call system_abort('No const_P and not const_T')
+         endif
 
       endif ! all_purpose vs. old thermostat
 
@@ -683,7 +683,7 @@ implicit none
   endif
 
   ds%avg_time = params%avgtime
-  
+
   call finalise(at_in)
 
   call init_restraints_constraints(ds, string(params_es))
@@ -706,7 +706,7 @@ implicit none
 
   call set_cutoff(ds%atoms, cutoff(pot), cutoff_skin=params%cutoff_skin)
 
-  
+
   ! start with p(t), v(t)
   ! calculate f(t)
   call calc_connect(ds%atoms)
@@ -801,12 +801,12 @@ contains
     n_s = 0
     do i_r = 1, ds%Nrestraints
        if (ds%restraint(i_r)%print_summary) then
-	  n_s = n_s + 1
-	  restraint_stuff(1,n_s) =  ds%restraint(i_r)%target_v
-	  restraint_stuff(2,n_s) =  ds%restraint(i_r)%C
-	  restraint_stuff(3,n_s) =  ds%restraint(i_r)%E
-	  restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
-	  restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
+          n_s = n_s + 1
+          restraint_stuff(1,n_s) =  ds%restraint(i_r)%target_v
+          restraint_stuff(2,n_s) =  ds%restraint(i_r)%C
+          restraint_stuff(3,n_s) =  ds%restraint(i_r)%E
+          restraint_stuff(4,n_s) = -ds%restraint(i_r)%dE_dcoll
+          restraint_stuff(5,n_s) = -ds%restraint(i_r)%dE_dk
        end if
     end do
   end subroutine get_restraint_stuff
@@ -840,25 +840,25 @@ contains
       has_new_forces = assign_pointer(ds%atoms, 'new_forces', new_forces)
       has_new_E = get_value(ds%atoms%params, 'New_Energy', new_E)
       if (count ( (/ has_new_pos, has_new_velo, has_new_forces /) ) > 0) then
-	if (count ( (/ has_new_pos, has_new_velo, has_new_forces /) ) /= 3) then
-	    call system_abort("advance_md tried to do md within driver, got only some of " // &
-	     "has_new_pos=" // has_new_pos // " has_new_velo="//has_new_velo//" has_new_forces="//has_new_forces)
-	  endif
-	ds%atoms%pos = new_pos
-	ds%atoms%velo = new_velo
-	if (.not. assign_pointer(ds%atoms, "force", force_p)) then
-	  call system_abort("advance_md failed to assign pointer for force")
-	endif
-	force_p = new_forces
-	if (has_new_E) call set_param_value(ds%atoms, "energy", new_E)
-	ds%t = ds%t + params%dt*params%advance_md_substeps
-	ds%nSteps = ds%nSteps + params%advance_md_substeps
-	call calc_connect(ds%atoms)
-	max_moved = 0.0_dp
+        if (count ( (/ has_new_pos, has_new_velo, has_new_forces /) ) /= 3) then
+            call system_abort("advance_md tried to do md within driver, got only some of " // &
+             "has_new_pos=" // has_new_pos // " has_new_velo="//has_new_velo//" has_new_forces="//has_new_forces)
+          endif
+        ds%atoms%pos = new_pos
+        ds%atoms%velo = new_velo
+        if (.not. assign_pointer(ds%atoms, "force", force_p)) then
+          call system_abort("advance_md failed to assign pointer for force")
+        endif
+        force_p = new_forces
+        if (has_new_E) call set_param_value(ds%atoms, "energy", new_E)
+        ds%t = ds%t + params%dt*params%advance_md_substeps
+        ds%nSteps = ds%nSteps + params%advance_md_substeps
+        call calc_connect(ds%atoms)
+        max_moved = 0.0_dp
       else ! failed to find new_pos
-	do i_substep=1, params%advance_md_substeps
-	  call advance_md_one(ds, params, pot, store_constraint_force)
-	end do
+        do i_substep=1, params%advance_md_substeps
+          call advance_md_one(ds, params, pot, store_constraint_force)
+        end do
       endif
     else
       call advance_md_one(ds, params, pot, store_constraint_force)
@@ -966,7 +966,7 @@ contains
          do_extra_calc = .false.
          ! just a short alias
          tprin = params%extra_calc_interval
-         ! if the time is close to a 
+         ! if the time is close to a
          if (abs(modulo(ds%t + 0.5_dp*tprin, tprin) - 0.5_dp*tprin).le.1e-7) do_extra_calc = .true.
        end if
 
@@ -991,10 +991,10 @@ contains
 
      do i=1, size(force,2)
         if (extra_heat_mask(i) /= 0) then
-	   force(1,i) = force(1,i) + extra_heat_mag*ran_normal()
-	   force(2,i) = force(2,i) + extra_heat_mag*ran_normal()
-	   force(3,i) = force(3,i) + extra_heat_mag*ran_normal()
-	endif
+           force(1,i) = force(1,i) + extra_heat_mag*ran_normal()
+           force(2,i) = force(2,i) + extra_heat_mag*ran_normal()
+           force(3,i) = force(3,i) + extra_heat_mag*ran_normal()
+        endif
      end do
   end subroutine add_extra_heat
 

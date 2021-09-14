@@ -55,15 +55,15 @@ implicit none
 
   call initialise(infile, trim(infilename))
   call initialise(outfile, trim(outfilename), action=OUTPUT)
-     
+
   do
      call read(at, infile, error=error)
      if (error /= 0) then
         if (error == ERROR_IO_EOF) then
-	   exit
-	else
-	   HANDLE_ERROR(error)
-	endif
+           exit
+        else
+           HANDLE_ERROR(error)
+        endif
      endif
      call print(at)
      call write(at, outfile)

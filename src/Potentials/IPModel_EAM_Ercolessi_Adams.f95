@@ -263,7 +263,7 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
   do i=1, at%N
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -348,18 +348,18 @@ subroutine IPModel_EAM_ErcolAd_Calc(this, at, e, local_e, f, virial, local_viria
       if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i,(/9/))
 
       if (present(f)) then
-	! cross terms for forces
-	do ji=1, n_neighbours(at, i)
-	  j = neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
-	  if (r_ij_mag .feq. 0.0_dp) cycle
+        ! cross terms for forces
+        do ji=1, n_neighbours(at, i)
+          j = neighbour(at, i, ji, r_ij_mag, cosines = r_ij_hat)
+          if (r_ij_mag .feq. 0.0_dp) cycle
 
-	  if (do_rescale_r) r_ij_mag = r_ij_mag*r_scale
+          if (do_rescale_r) r_ij_mag = r_ij_mag*r_scale
 
-	  tj = get_type(this%type_of_atomic_num, at%Z(j))
+          tj = get_type(this%type_of_atomic_num, at%Z(j))
 
-	  drho_i_drj = -eam_spline_rho_d(this, tj, r_ij_mag)*r_ij_hat
-	  f_in(:,j) = f_in(:,j) + w_f*dF_n*drho_i_drj
-	end do
+          drho_i_drj = -eam_spline_rho_d(this, tj, r_ij_mag)*r_ij_hat
+          f_in(:,j) = f_in(:,j) + w_f*dF_n*drho_i_drj
+        end do
       end if
 
     endif
@@ -522,7 +522,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, "n_types", value, status)
@@ -586,7 +586,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
@@ -628,7 +628,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     if (parse_in_spline_V) then
 
       if (parse_cur_point > size(parse_ip%spline_V,2)) call system_abort ("IPModel_EAM_ErcolAd got too " // &
-	"many points " // parse_cur_point // " type " // parse_cur_type_i // " " // parse_cur_type_j // " in_spline_V")
+        "many points " // parse_cur_point // " type " // parse_cur_type_i // " " // parse_cur_type_j // " in_spline_V")
 
       call QUIP_FoX_get_value(attributes, "r", value, status)
       if (status /= 0) call system_abort ("IPModel_EAM_ErcolAd_read_params_xml cannot find r")
@@ -656,14 +656,14 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%spline_V(5,parse_cur_point,parse_cur_type_i,parse_cur_type_j) = v
 
       if (parse_cur_type_i /= parse_cur_type_j) then
-	parse_ip%spline_V(1:5,parse_cur_point,parse_cur_type_j,parse_cur_type_i) = &
-	  parse_ip%spline_V(1:5,parse_cur_point,parse_cur_type_i,parse_cur_type_j)
+        parse_ip%spline_V(1:5,parse_cur_point,parse_cur_type_j,parse_cur_type_i) = &
+          parse_ip%spline_V(1:5,parse_cur_point,parse_cur_type_i,parse_cur_type_j)
       endif
 
     else if (parse_in_spline_rho) then
 
       if (parse_cur_point > size(parse_ip%spline_rho,2)) call system_abort ("IPModel_EAM_ErcolAd got " // &
-	"too many points " // parse_cur_point // " type " // parse_cur_type_i // " in_spline_rho")
+        "too many points " // parse_cur_point // " type " // parse_cur_type_i // " in_spline_rho")
 
       call QUIP_FoX_get_value(attributes, "r", value, status)
       if (status /= 0) call system_abort ("IPModel_EAM_ErcolAd_read_params_xml cannot find r")
@@ -693,7 +693,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     else if (parse_in_spline_F) then
 
       if (parse_cur_point > size(parse_ip%spline_F,2)) call system_abort ("IPModel_EAM_ErcolAd got " // &
-	"too many points " // parse_cur_point // " type " // parse_cur_type_i // " in_spline_F")
+        "too many points " // parse_cur_point // " type " // parse_cur_type_i // " in_spline_F")
 
       call QUIP_FoX_get_value(attributes, "r", value, status)
       if (status /= 0) call system_abort ("IPModel_EAM_ErcolAd_read_params_xml cannot find r")

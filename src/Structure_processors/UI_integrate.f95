@@ -27,28 +27,28 @@ implicit none
    i_zero = 1
    do i=2, N
       if (f(i-1)*f(i) < 0) then ! force changed sign, must have crossed 0 here
-	 v(i+1:n+1) = v(i:n)
-	 v_err(i+1:n+1) = v_err(i:n)
-	 f(i+1:n+1) = f(i:n)
-	 f_err(i+1:N+1) = f_err(i:N)
+         v(i+1:n+1) = v(i:n)
+         v_err(i+1:n+1) = v_err(i:n)
+         f(i+1:n+1) = f(i:n)
+         f_err(i+1:N+1) = f_err(i:N)
 
-	 v(i) = v(i-1)*f(i+1)/(f(i+1)-f(i-1)) - v(i+1)*f(i-1)/(f(i+1)-f(i-1))
-	 v_err(i) =  Sqrt((f(i+1)**2*v_err(i-1)**2)/(-f(i-1) + f(i+1))**2 + \
-	    f_err(i+1)**2*(-((f(i+1)*v(i-1))/(-f(i-1) + f(i+1))**2) + v(i-1)/(-f(i-1) + f(i+1)) + \
-	    (f(i-1)*v(i+1))/(-f(i-1) + f(i+1))**2)**2 + f_err(i-1)**2*((f(i+1)*v(i-1))/(-f(i-1) + f(i+1))**2 \
-	    - (f(i-1)*v(i+1))/(-f(i-1) + f(i+1))**2 - v(i+1)/(-f(i-1) + f(i+1)))**2 + \
-	    (f(i-1)**2*v_err(i+1)**2)/(-f(i-1) + f(i+1))**2)
+         v(i) = v(i-1)*f(i+1)/(f(i+1)-f(i-1)) - v(i+1)*f(i-1)/(f(i+1)-f(i-1))
+         v_err(i) =  Sqrt((f(i+1)**2*v_err(i-1)**2)/(-f(i-1) + f(i+1))**2 + \
+            f_err(i+1)**2*(-((f(i+1)*v(i-1))/(-f(i-1) + f(i+1))**2) + v(i-1)/(-f(i-1) + f(i+1)) + \
+            (f(i-1)*v(i+1))/(-f(i-1) + f(i+1))**2)**2 + f_err(i-1)**2*((f(i+1)*v(i-1))/(-f(i-1) + f(i+1))**2 \
+            - (f(i-1)*v(i+1))/(-f(i-1) + f(i+1))**2 - v(i+1)/(-f(i-1) + f(i+1)))**2 + \
+            (f(i-1)**2*v_err(i+1)**2)/(-f(i-1) + f(i+1))**2)
 
-	 f(i) = 0.0_dp
-	 f_err(i) =  Sqrt((f(i+1)**2*f_err(i-1)**2)/(-f(i-1) + f(i+1))**2 + \
-	    f_err(i+1)**2*(-((f(i+1)*f(i-1))/(-f(i-1) + f(i+1))**2) + f(i-1)/(-f(i-1) + f(i+1)) + \
-	    (f(i-1)*f(i+1))/(-f(i-1) + f(i+1))**2)**2 + f_err(i-1)**2*((f(i+1)*f(i-1))/(-f(i-1) + f(i+1))**2 \
-	    - (f(i-1)*f(i+1))/(-f(i-1) + f(i+1))**2 - f(i+1)/(-f(i-1) + f(i+1)))**2 + \
-	    (f(i-1)**2*f_err(i+1)**2)/(-f(i-1) + f(i+1))**2)
+         f(i) = 0.0_dp
+         f_err(i) =  Sqrt((f(i+1)**2*f_err(i-1)**2)/(-f(i-1) + f(i+1))**2 + \
+            f_err(i+1)**2*(-((f(i+1)*f(i-1))/(-f(i-1) + f(i+1))**2) + f(i-1)/(-f(i-1) + f(i+1)) + \
+            (f(i-1)*f(i+1))/(-f(i-1) + f(i+1))**2)**2 + f_err(i-1)**2*((f(i+1)*f(i-1))/(-f(i-1) + f(i+1))**2 \
+            - (f(i-1)*f(i+1))/(-f(i-1) + f(i+1))**2 - f(i+1)/(-f(i-1) + f(i+1)))**2 + \
+            (f(i-1)**2*f_err(i+1)**2)/(-f(i-1) + f(i+1))**2)
 
-	 i_zero = i
-	 N = N+1
-	 exit
+         i_zero = i
+         N = N+1
+         exit
       endif
    end do
 
@@ -57,13 +57,13 @@ implicit none
    do i=i_zero-1, 1, -1
       f_int(i) = f_int(i+1) - (v(i+1)-v(i))*(f(i+1)+f(i))/2.0_dp
       t_err_sq = ((f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + ((f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
-	 ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
+         ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
       f_int_err_sq(i) = f_int_err_sq(i+1) + t_err_sq
    end do
    do i=i_zero, N-1
       f_int(i+1) = f_int(i) + (v(i+1)-v(i))*(f(i+1)+f(i))/2.0_dp
       t_err_sq = ((f(i+1)+f(i))/2.0_dp)**2*v_err(i+1)**2 + ((f(i+1)+f(i))/2.0_dp)**2*v_err(i)**2 + &
-	 ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
+         ((v(i+1)-v(i))/2.0_dp)**2*f_err(i+1)**2 + ((v(i+1)-v(i))/2.0_dp)**2*f_err(i)**2
       f_int_err_sq(i+1) = f_int_err_sq(i) + t_err_sq
    end do
 

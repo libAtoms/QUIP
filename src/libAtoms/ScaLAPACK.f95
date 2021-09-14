@@ -187,7 +187,7 @@ subroutine Matrix_ScaLAPACK_Info_Initialise(this, N_R, N_C, NB_R, NB_C, scalapac
     if (scalapack_obj%active) then
       this%ScaLAPACK_obj = scalapack_obj
       call init_matrix_desc(this%ScaLAPACK_obj, this%N_R, this%N_C, this%NB_R, this%NB_C, &
-	this%desc, this%l_N_R, this%l_N_C)
+        this%desc, this%l_N_R, this%l_N_C)
     endif
   else
     this%l_N_R = this%N_R
@@ -370,9 +370,9 @@ subroutine calc_n_proc_rows_cols(n_procs, n_proc_rows, n_proc_cols)
     n_proc_cols_t = n_procs/n_proc_rows_t
 
     if (n_proc_rows_t*n_proc_cols_t .eq. n_procs) then
-	n_proc_rows = n_proc_rows_t
-	n_proc_cols = n_proc_cols_t
-	exit
+        n_proc_rows = n_proc_rows_t
+        n_proc_cols = n_proc_cols_t
+        exit
     endif
   end do
 #else
@@ -609,26 +609,26 @@ subroutine ScaLAPACK_diagonalise_r(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonalise_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -714,26 +714,26 @@ subroutine ScaLAPACK_diagonalise_c(this, data, evals, evecs_ScaLAPACK_obj, evecs
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -828,26 +828,26 @@ subroutine ScaLAPACK_diagonalise_gen_r(this, data, overlap_ScaLAPACK_obj, overla
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_gen_r got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
-	  call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
-	  do i=1, this%N_R
-	      call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
-	  end do
+          call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
+          do i=1, this%N_R
+              call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
+          end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 
@@ -943,26 +943,26 @@ subroutine ScaLAPACK_diagonalise_gen_c(this, data, overlap_ScaLAPACK_obj, overla
   if (info .ne. 0) then
       call print("ScaLAPACK_diagonlise_gen_c got info " // info, PRINT_ALWAYS)
       if (mod(info,2) .ne. 0) then
-	  call print("   eigenvectors failed to converge", PRINT_ALWAYS)
+          call print("   eigenvectors failed to converge", PRINT_ALWAYS)
       else if (mod(info/2,2) .ne. 0) then
           call print("   eigenvectors failed to orthogonalize", PRINT_ALWAYS)
-	  do i=1, size(icluster), 2
-	      if (icluster(i) /= 0) then
-	          call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
-		    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
-	      else
-	          exit
-	      endif
-	  end do
+          do i=1, size(icluster), 2
+              if (icluster(i) /= 0) then
+                  call print (" eval cluster " // icluster(i) // " " // icluster(i+1) // &
+                    "("// (icluster(i+1)-icluster(i)+1) // ")", PRINT_ALWAYS)
+              else
+                  exit
+              endif
+          end do
           do i=1, this%N_R
             call print(" eigenvalue " // i // " " // evals(i), PRINT_ANALYSIS)
           end do
       else if (mod(info/4,2) .ne. 0) then
-	  call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
+          call print("   not enough space for all eigenvectors in range", PRINT_ALWAYS)
       else if (mod(info/8,2) .ne. 0) then
-	  call print("   failed to compute eigenvalues", PRINT_ALWAYS)
+          call print("   failed to compute eigenvalues", PRINT_ALWAYS)
       else if (mod(info/16,2) .ne. 0) then
-	  call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
+          call print("   S was not positive definite "//ifail(1), PRINT_ALWAYS)
       endif
   endif
 

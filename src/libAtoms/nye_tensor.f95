@@ -86,7 +86,7 @@ contains
     allocate(n_matches(at%N))
     allocate(Delta_G(3,3,max_n_neighbours))
     allocate(Delta_G_vec(max_n_neighbours))
-    
+
     call get_nn_list(ref_lat, 1, ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised)
     call print('get_nn_list found ref_n_neighbours='//ref_n_neighbours, PRINT_VERBOSE)
 
@@ -95,8 +95,8 @@ contains
       call print('get_nn_list found l_n_neighbours='//ref_n_neighbours//' i_at='//i_at, PRINT_VERBOSE)
 
       call find_lattice_correspondence(l_n_neighbours, nn_list, nn_vec, nn_vec_normalised, &
-				       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
-				       n_matches(i_at), match_list(:,i_at), Qplus(:,:,i_at), G_p(:,:,i_at))
+                                       ref_n_neighbours, ref_nn_list, ref_nn_vec, ref_nn_vec_normalised, &
+                                       n_matches(i_at), match_list(:,i_at), Qplus(:,:,i_at), G_p(:,:,i_at))
       call print("atom i_at " // i_at, PRINT_NERD)
       call print("n_matches " // n_matches(i_at) // " match_list " // match_list(1:n_matches(i_at),i_at), PRINT_NERD)
       call print("Qplus", PRINT_NERD)
@@ -109,17 +109,17 @@ contains
 
     do i_at = 1, at%N
       do i_gamma = 1, n_matches(i_at)
-	Delta_G(:,:,i_gamma) = G_p(:,:,match_list(i_gamma,i_at)) - G_p(:,:,i_at)
-	call print("Delta_G(:,:,"//i_gamma//")", PRINT_NERD)
-	call print(Delta_G(:,:,i_gamma), PRINT_NERD)
+        Delta_G(:,:,i_gamma) = G_p(:,:,match_list(i_gamma,i_at)) - G_p(:,:,i_at)
+        call print("Delta_G(:,:,"//i_gamma//")", PRINT_NERD)
+        call print(Delta_G(:,:,i_gamma), PRINT_NERD)
       end do
       do II = 1, 3
       do MM = 1, 3
-	Delta_G_vec(1:n_matches(i_at)) = Delta_G(II,MM,1:n_matches(i_at))
-	call print("II " // II // " MM " // MM, PRINT_NERD)
-	call print("Delta_G_vec " // Delta_G_vec, PRINT_NERD)
-	A(II,MM,1:3) = matmul(Qplus(1:3,1:n_matches(i_at),i_at), Delta_G_vec(1:n_matches(i_at)))
-	call print("A " // A(II, MM, 1:3), PRINT_NERD)
+        Delta_G_vec(1:n_matches(i_at)) = Delta_G(II,MM,1:n_matches(i_at))
+        call print("II " // II // " MM " // MM, PRINT_NERD)
+        call print("Delta_G_vec " // Delta_G_vec, PRINT_NERD)
+        A(II,MM,1:3) = matmul(Qplus(1:3,1:n_matches(i_at),i_at), Delta_G_vec(1:n_matches(i_at)))
+        call print("A " // A(II, MM, 1:3), PRINT_NERD)
       end do
       end do
 
@@ -128,7 +128,7 @@ contains
       do k=1, 3
       do m=1, 3
       do i=1, 3
-	alpha(j,k,i_at) = alpha(j,k,i_at) - eps(j,i,m)*A(m,k,i)
+        alpha(j,k,i_at) = alpha(j,k,i_at) - eps(j,i,m)*A(m,k,i)
       end do
       end do
       end do
@@ -183,7 +183,7 @@ contains
     ! calculate all angles between lat and ref neighbor vectors
     do i_gamma = 1, l_n_neighbours
       do i_beta = 1, ref_n_neighbours
-	angles(i_gamma, i_beta) = acos(sum(nn_vec_normalised(1:3,i_gamma)*ref_nn_vec_normalised(1:3,i_beta)))
+        angles(i_gamma, i_beta) = acos(sum(nn_vec_normalised(1:3,i_gamma)*ref_nn_vec_normalised(1:3,i_beta)))
       end do
     end do
 
@@ -193,18 +193,18 @@ contains
       smallest_angle = 1.0e38_dp
       n_matches = 0 ! ref. vector matches to this real neighbor vector
       do i_beta=1, ref_n_neighbours
-	if (angles(i_gamma, i_beta) .feq. smallest_angle) then
-	  n_matches = n_matches + 1
-	else if (angles(i_gamma, i_beta) < smallest_angle) then
-	  n_matches = 1
-	  match_i = i_beta
-	  smallest_angle = angles(i_gamma, i_beta)
-	endif
+        if (angles(i_gamma, i_beta) .feq. smallest_angle) then
+          n_matches = n_matches + 1
+        else if (angles(i_gamma, i_beta) < smallest_angle) then
+          n_matches = 1
+          match_i = i_beta
+          smallest_angle = angles(i_gamma, i_beta)
+        endif
       end do
       if (n_matches /= 1 .or. smallest_angle > 27.0_dp*PI/180.0_dp) then
-	match_list(i_gamma) = 0
+        match_list(i_gamma) = 0
       else
-	match_list(i_gamma) = match_i
+        match_list(i_gamma) = match_i
       endif
     end do
 
@@ -213,17 +213,17 @@ contains
       if (match_list(i_gamma) == 0) cycle
       t_n_matches = 0
       do i_gammap = 1, l_n_neighbours
-	if (match_list(i_gammap) == match_list(i_gamma)) then
-	  t_n_matches = t_n_matches + 1
-	  t_match_list(t_n_matches) = i_gammap
-	  t_match_length(t_n_matches) = norm(nn_vec(:,i_gammap))
-	endif
+        if (match_list(i_gammap) == match_list(i_gamma)) then
+          t_n_matches = t_n_matches + 1
+          t_match_list(t_n_matches) = i_gammap
+          t_match_length(t_n_matches) = norm(nn_vec(:,i_gammap))
+        endif
       end do
       if (t_n_matches > 1) then
-	i_gamma_best_match = minloc(abs(t_match_length-norm(ref_nn_vec(:,match_list(i_gamma)))))
-	save_match = match_list(i_gamma)
-	match_list(t_match_list(1:t_n_matches)) = 0
-	match_list(i_gamma_best_match(1)) = save_match
+        i_gamma_best_match = minloc(abs(t_match_length-norm(ref_nn_vec(:,match_list(i_gamma)))))
+        save_match = match_list(i_gamma)
+        match_list(t_match_list(1:t_n_matches)) = 0
+        match_list(i_gamma_best_match(1)) = save_match
       endif
     end do
 
@@ -235,9 +235,9 @@ contains
     i_match = 0
     do i_gamma=1, l_n_neighbours
       if (match_list(i_gamma) /= 0) then
-	i_match = i_match + 1
-	Q(i_match,1:3) = nn_vec(1:3,i_gamma)
-	P(i_match,1:3) = ref_nn_vec(1:3,match_list(i_gamma))
+        i_match = i_match + 1
+        Q(i_match,1:3) = nn_vec(1:3,i_gamma)
+        P(i_match,1:3) = ref_nn_vec(1:3,match_list(i_gamma))
       endif
     end do
 
@@ -269,8 +269,8 @@ contains
     i_gammap = 0
     do i_gamma = 1, l_n_neighbours
        if (match_list(i_gamma) /= 0) then
-	  i_gammap = i_gammap + 1
-	  t_match_list(i_gammap) = nn_list(i_gamma)
+          i_gammap = i_gammap + 1
+          t_match_list(i_gammap) = nn_list(i_gamma)
        end if
     end do
     match_list = 0
@@ -306,5 +306,5 @@ contains
     end do
 
   end subroutine get_nn_list
-      
+
 end module nye_tensor_module

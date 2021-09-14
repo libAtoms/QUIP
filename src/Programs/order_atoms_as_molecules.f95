@@ -41,17 +41,17 @@ implicit none
   logical, dimension(:), allocatable :: atomdone
   integer error, i, j, k, jj, nn
 
-  
+
   call system_initialise(verbosity=PRINT_SILENT)
 
   do
      call read(at, 'stdin', error=error)
      if (error /= 0) then
         if (error == ERROR_IO_EOF) then
-	   exit
-	else
-	   HANDLE_ERROR(error)
-	endif
+           exit
+        else
+           HANDLE_ERROR(error)
+        endif
      endif
 
      call set_cutoff(at, 1.2_dp)

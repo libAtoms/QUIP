@@ -29,7 +29,7 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X  ApproxFermi module 
+!X  ApproxFermi module
 !X
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -205,7 +205,7 @@ elemental function approx_f_Fermi(this, E)
   do i=1, this%n_poles
     approx_f_Fermi = approx_f_Fermi + this%a(i)/(E-this%z(i))
   end do
-  
+
 end function approx_f_Fermi
 
 elemental function approx_f_Fermi_deriv(this, E)
@@ -247,7 +247,7 @@ subroutine calc_pole_values(this)
     a = (1.0_dp + gamma) / (2.0_dp*n_poles_d)
     b = (1.0_dp - gamma) / (n_poles_d)
     c = cmplx( cos(PI/(n_poles_d/2.0_dp) + i_d*PI/(n_poles_d/4.0_dp)), &
-	       sin(PI/(n_poles_d/2.0_dp) + i_d*PI/(n_poles_d/4.0_dp)), dp )
+               sin(PI/(n_poles_d/2.0_dp) + i_d*PI/(n_poles_d/4.0_dp)), dp )
 
     aa = a*a
     bb = (2.0_dp*a + b*c)
@@ -277,11 +277,11 @@ subroutine calc_pole_values(this)
 
     do j=1, this%n_poles
       if (j == i) then
-	  this%a(i) = scale*(((n_poles_d*2.0_dp)/(1.0_dp+gamma))**2)*this%a(i) /  &
-			      (x-conjg(this%z(j)))
+          this%a(i) = scale*(((n_poles_d*2.0_dp)/(1.0_dp+gamma))**2)*this%a(i) /  &
+                              (x-conjg(this%z(j)))
       else
-	  this%a(i) = scale*(((n_poles_d*2.0_dp)/(1.0_dp+gamma))**2)*this%a(i) / &
-			       ( (x-this%z(j))*(x-conjg(this%z(j))) )
+          this%a(i) = scale*(((n_poles_d*2.0_dp)/(1.0_dp+gamma))**2)*this%a(i) / &
+                               ( (x-this%z(j))*(x-conjg(this%z(j))) )
       endif
     end do
 

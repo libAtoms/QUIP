@@ -71,14 +71,14 @@ implicit none
     args_str = ""
     if (cmd_arg_count() > 2) then
       do i=3, cmd_arg_count()
-	call get_cmd_arg(i, arg)
+        call get_cmd_arg(i, arg)
         !add {} if there is space in the arg
         if (index(trim(arg)," ").ne.0) then
             index_insert = index(trim(arg),"=")
             arg(index_insert+1:len_trim(arg)+2) = "{"//arg(index_insert+1:len_trim(arg))//"}"
             call print('arg: '//trim(arg),PRINT_SILENT)
         endif
-	args_str = trim(args_str) // " " // trim(arg)
+        args_str = trim(args_str) // " " // trim(arg)
       end do
     endif
 

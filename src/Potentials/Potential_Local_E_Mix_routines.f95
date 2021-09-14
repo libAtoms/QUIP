@@ -103,11 +103,11 @@
 
     if (do_rescale_r .or. do_rescale_E .or. do_tb_defaults) then
       if (.not. present(reference_bulk)) then
-	RAISE_ERROR("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E//" do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
+        RAISE_ERROR("potential_local_e_mix_initialise got do_rescale_r="//do_rescale_r//" do_rescale_E="//do_rescale_E//" do_tb_defaults="//do_tb_defaults//" but reference_bulk is not present", error)
       endif
 
       call do_reference_bulk(reference_bulk, region1_pot, region2_pot, minimise_bulk, do_rescale_r, do_rescale_E, &
-	this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
+        this%r_scale_pot1, this%E_scale_pot1, do_tb_defaults)
 
     endif
 
@@ -143,7 +143,7 @@
   recursive subroutine potential_local_e_mix_print(this, file)
     type(Potential_Local_E_Mix),          intent(inout) :: this
     type(Inoutput),intent(inout),optional:: file
-    
+
     call print('Local_E_Mix potential:', file=file)
     call print('Potential in region 1 (embedded):', file=file)
     call print('=======================', file=file)
@@ -299,10 +299,10 @@
       call carve_cluster(at, cc_args_str, cluster_info, cluster)
 
       if (this%minimise_mm) then
-	dummy = assign_pointer(cluster, 'index', index)
-	call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
-	  this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
-	  this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_inoutput_movie, &
+        dummy = assign_pointer(cluster, 'index', index)
+        call do_minimise_mm(this%relax_pot, at, this%minim_mm_method, this%minim_mm_tol, this%minim_mm_max_steps, &
+          this%minim_mm_linminroutine, this%minim_mm_do_pos, this%minim_mm_do_lat, this%minim_mm_do_print, &
+          this%minim_mm_args_str, this%minim_mm_eps_guess, this%minim_inoutput_movie, &
           this%minim_cinoutput_movie, index)
       endif
     endif

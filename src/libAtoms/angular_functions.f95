@@ -9,7 +9,7 @@ private
 
 
    real(dp), dimension(:,:,:,:,:,:), allocatable, save :: cg_array
-   integer, save :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0 
+   integer, save :: cg_j1_max=0, cg_m1_max=0, cg_j2_max=0, cg_m2_max=0, cg_j_max=0, cg_m_max=0
    logical, save :: cg_initialised = .false.
 
    public :: SphericalYCartesian, GradSphericalYCartesian
@@ -127,7 +127,7 @@ contains
      integer :: l, m
 
      normsq_x = normsq(x)
-     SphericalYCartesian_all = SolidRCartesian_all(l_max, x) 
+     SphericalYCartesian_all = SolidRCartesian_all(l_max, x)
      do l=0, l_max
          SphericalYCartesian_all(l,-l:l) = SphericalYCartesian_all(l,-l:l) * &
             sqrt(((2.0_dp * l) + 1) / (4.0_dp * PI)) * (normsq_x**(-0.5_dp * l))
@@ -216,10 +216,10 @@ contains
       complex(dp) :: tt
 
       GradSphericalYCartesian_all = CPLX_ZERO
- 
+
       cm = cmplx(-0.5_dp * x(1), -0.5_dp * x(2), dp)
       cp = cmplx(0.5_dp * x(1), -0.5_dp * x(2), dp)
- 
+
       ! p = 0 .. l
       do p=0, l_max
           cm_term(p) = cm**p
@@ -232,7 +232,7 @@ contains
       end do
 
       normsq_x = normsq(x)
- 
+
       do l=0, l_max
       do m=-l, l
           do p = 0, l
@@ -286,8 +286,8 @@ contains
       integer :: my_denom
 
       if (cg_initialised .and. j > cg_j_max) then ! need to reinitialise
-	 call cg_finalise()
-	 cg_initialised = .false.
+         call cg_finalise()
+         cg_initialised = .false.
       endif
       if (cg_initialised) return
 
@@ -302,7 +302,7 @@ contains
 
       allocate( cg_array(0:cg_j1_max,-cg_m1_max:cg_m1_max,0:cg_j2_max,-cg_m2_max:cg_m2_max,&
       & 0:cg_j_max,-cg_j_max:cg_j_max) )
- 
+
       cg_array = 0.0_dp
 
       do i_j1 = 0, cg_j1_max
@@ -323,7 +323,7 @@ contains
       enddo
 
       cg_initialised = .true.
-    
+
    endsubroutine cg_initialise
 
    !#################################################################################
@@ -377,7 +377,7 @@ contains
    !#
    !% Check if input variables for CG make sense.
    !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
-   !%                                                                    
+   !%
    !% $ j_1 + j_2 \ge j $ \\
    !% $ j_1 - j_2 \ge -j $ \\
    !% $ j_1 - j_2 \le j $ \\
@@ -401,14 +401,14 @@ contains
                (abs(m1)<=j1) .and. (abs(m2)<=j2) .and. (abs(m)<=j) &
                .and. (m1+m2==m) .and. (j1+j2 >= j) .and. (abs(j1-j2) <= j) &
                .and. (mod(j1+j2+j,my_denom)==0)
-      
+
    endfunction cg_check
 
    !#################################################################################
    !#
    !% Calculate a Clebsch-Gordan coefficient $\left< j_1 m_1 j_2 m_2 | j m \right>$
    !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
-   !% $ \left< j_1 m_1 j_2 m_2 | j m \right> = (-1)^{m+j_1-j_2) 
+   !% $ \left< j_1 m_1 j_2 m_2 | j m \right> = (-1)^{m+j_1-j_2)
    !% \sqrt{2j+1} \left( \begin{array}{ccc}
    !% j_1 & j_2 & j \\
    !% m_1 & m_2 & -m \\
@@ -439,7 +439,7 @@ contains
    !#
    !% Triangle coefficient
    !% Source: http://mathworld.wolfram.com/TriangleCoefficient.html
-   !% 
+   !%
    !% $ \Delta(a,b,c) = \frac{ (a+b-c)! (a-b+c)! (-a+b+c)! }{ (a+b+c+1)! } $
    !#
    !#################################################################################
@@ -462,7 +462,7 @@ contains
    !#
    !% Wigner 3J symbol
    !% Source: http://mathworld.wolfram.com/Wigner3j-Symbol.html
-   !% 
+   !%
    !% \[
    !% \left( \begin{array}{ccc}
    !% j_1 & j_2 & j \\
@@ -497,7 +497,7 @@ contains
                   factorial((j1+m1)/my_denom) * factorial((j1-m1)/my_denom) * &
                   factorial((j2+m2)/my_denom) * factorial((j2-m2)/my_denom) * &
                   factorial((j+m)/my_denom) * factorial((j-m)/my_denom) )
-                  
+
        sum_coeff = 0.0_dp
 
        kmin = max( j2-j-m1, j1+m2-j, 0 ) / my_denom
@@ -510,7 +510,7 @@ contains
                    factorial((j1-m1)/my_denom-k) * factorial((j2+m2)/my_denom-k) )
 
           sum_term = oscillate(k) * sum_term
-          
+
           sum_coeff = sum_coeff + sum_term
 
        enddo

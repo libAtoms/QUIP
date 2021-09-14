@@ -49,7 +49,7 @@ allocate(len_scale(n_dim), periodicity(n_dim), sparse_len_scale(n_dim))
 ! n_cycles = 500
 ! n_candidates = 1000
 ! sampling_T = 0.01_dp
-! 
+!
 ! simplex_step_length=0.25_dp
 ! shooting_step_length=0.10_dp
 ! gaussian_width=0.5_dp
@@ -67,7 +67,7 @@ print *, "sparse_len_scale ", sparse_len_scale
 allocate(sample_pos(n_dim,n_dim+1+n_cycles), sample_grad(n_dim,n_dim+1+n_cycles), sample_noise(n_dim, n_dim+1+n_cycles))
 
 call create_simplex(sample_pos(:,1:n_dim+1))
-sample_pos(:,1:n_dim+1) = simplex_step_length*sample_pos(:,1:n_dim+1) 
+sample_pos(:,1:n_dim+1) = simplex_step_length*sample_pos(:,1:n_dim+1)
 n_samples = n_dim+1
 do i_sample=1, n_samples
    call eval_grad(sample_pos(:,i_sample), sample_grad(:,i_sample), sample_noise(:,i_sample))
@@ -134,16 +134,16 @@ call system_timer("print")
   if (gp_guess_sparsify > 1) then
 call system_timer("evaluate_teach_sparse")
      if (n_samples > gp_guess_sparsify*10) then
-	n_sparse_samples = n_samples/gp_guess_sparsify
-	allocate(g_sparse_set(n_sparse_samples))
-	call k_means_clustering_pick(sample_pos(:,1:n_samples), periodicity, g_sparse_set)
-	call initialise(gp_sparse, sparse_len_scale,  periodicity, 0.25_dp, SE_kernel_r_rr, &
-	  g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples), &
-	  g_sparse_set=g_sparse_set, jitter=1.0e-10_dp)
-	deallocate(g_sparse_set)
+        n_sparse_samples = n_samples/gp_guess_sparsify
+        allocate(g_sparse_set(n_sparse_samples))
+        call k_means_clustering_pick(sample_pos(:,1:n_samples), periodicity, g_sparse_set)
+        call initialise(gp_sparse, sparse_len_scale,  periodicity, 0.25_dp, SE_kernel_r_rr, &
+          g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples), &
+          g_sparse_set=g_sparse_set, jitter=1.0e-10_dp)
+        deallocate(g_sparse_set)
      else
-	call initialise(gp_sparse, sparse_len_scale, periodicity, 0.25_dp, SE_kernel_r_rr, &
-	  g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples), jitter=1.0e-10_dp)
+        call initialise(gp_sparse, sparse_len_scale, periodicity, 0.25_dp, SE_kernel_r_rr, &
+          g_r=sample_pos(:,1:n_samples), g_v=sample_grad(:,1:n_samples), g_n=sample_noise(:,1:n_samples), jitter=1.0e-10_dp)
      endif
 call system_timer("evaluate_teach_sparse")
   endif
@@ -183,8 +183,8 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, gp_for_var, step_length, s
      n_samples = size(sample_pos, 2)
      cur_mindist_sq = minval(sum((sample_pos-spread(new_pos, 2, n_samples))**2, dim=1))
      do while (cur_mindist_sq < min_mindist_sq)
-	new_pos = new_pos + step_size*rv
-	cur_mindist_sq = minval(sum((sample_pos-spread(new_pos, 2, n_samples))**2, dim=1))
+        new_pos = new_pos + step_size*rv
+        cur_mindist_sq = minval(sum((sample_pos-spread(new_pos, 2, n_samples))**2, dim=1))
      end do
      print *, "final mindist ", sqrt(cur_mindist_sq)
      !!
@@ -204,22 +204,22 @@ subroutine generate_sample_pos(new_pos, init_pos, gp, gp_for_var, step_length, s
      end do
 
      if (doubling_interp) then
-	print *, "final vars ", prev_var, new_var
-	! prev_var + step_frac*(new_var-prev_var) = step_var_target
-	step_frac = (step_var_target-prev_var)/(new_var-prev_var)
-	new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
-	if (doubling_interp_repeat) then
-	   prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
-	   print *, "predict_var initial interpolation ", prev_var
-	   do while (prev_var < step_var_target)
-	      step_size = (1.0_dp-step_frac)*step_size
-	      step_frac = 0.5_dp
-	      new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
-	      prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
-	      print *, "predict_var interpolation ", prev_var
-	   end do
-	endif ! doubling_interp_repeat
-	new_pos = new_interpolated_pos
+        print *, "final vars ", prev_var, new_var
+        ! prev_var + step_frac*(new_var-prev_var) = step_var_target
+        step_frac = (step_var_target-prev_var)/(new_var-prev_var)
+        new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+        if (doubling_interp_repeat) then
+           prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
+           print *, "predict_var initial interpolation ", prev_var
+           do while (prev_var < step_var_target)
+              step_size = (1.0_dp-step_frac)*step_size
+              step_frac = 0.5_dp
+              new_interpolated_pos = new_pos - (1.0_dp-step_frac)*step_size*rv
+              prev_var = f_predict_var(gp_for_var, new_interpolated_pos, SE_kernel_r_rr)
+              print *, "predict_var interpolation ", prev_var
+           end do
+        endif ! doubling_interp_repeat
+        new_pos = new_interpolated_pos
      endif ! doubling_interp
      !!
      !! new_var = f_predict_var(gp_for_var, new_pos, SE_kernel_r_rr)
@@ -342,9 +342,9 @@ subroutine create_simplex(pos)
    ! all others
    do i_dim=2, n_dim+1
       if (i_dim == 2) then
-	 cur_dot = 0.0_dp
+         cur_dot = 0.0_dp
       else
-	 cur_dot = pos(1:i_dim-2, i_dim) .dot. pos(1:i_dim-2, i_dim-1)
+         cur_dot = pos(1:i_dim-2, i_dim) .dot. pos(1:i_dim-2, i_dim-1)
       endif
       pos(i_dim-1, i_dim:n_dim+1) = (target_dot - cur_dot)/pos(i_dim-1,i_dim-1)
       pos(i_dim, i_dim) = sqrt(1.0_dp-normsq(pos(1:i_dim-1,i_dim)))

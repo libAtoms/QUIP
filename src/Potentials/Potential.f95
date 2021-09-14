@@ -296,7 +296,7 @@ module Potential_module
   !%   ================  ============= ================ =========================
   !%   Array argument    Quantity      Shape            Default storage location
   !%   ================  ============= ================ =========================
-  !%   ``energy``        Energy        ``()``  	        ``energy`` param
+  !%   ``energy``        Energy        ``()``                  ``energy`` param
   !%   ``local_energy``  Local energy  ``(at.n,)``      ``local_energy`` property
   !%   ``force``         Force         ``(3,at.n)``     ``force`` property
   !%   ``virial``        Virial tensor ``(3,3)``        ``virial`` param
@@ -861,7 +861,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     if (present(energy) .and. len_trim(calc_energy) == 0) then ! have optional and no args_str - make new name for param
        use_calc_energy = "energy"
        do while (lookup_entry_i(at%params, trim(use_calc_energy)) > 0)
-	 use_calc_energy = "T"//trim(use_calc_energy)
+         use_calc_energy = "T"//trim(use_calc_energy)
        end do
        extra_args_str = trim(extra_args_str) // " energy="//trim(use_calc_energy)
     endif
@@ -870,14 +870,14 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     if (present(force)) then
        if (len_trim(calc_force) == 0) then ! have force optional but not args_str - add property from pointer in new property name
-	  use_calc_force = "force"
-	  do while (has_property(at, trim(use_calc_force)))
-	    use_calc_force = "T"//trim(use_calc_force)
-	  end do
-	  extra_args_str = trim(extra_args_str) // " force="//trim(use_calc_force)
-	  call add_property_from_pointer(at, trim(use_calc_force), force)
+          use_calc_force = "force"
+          do while (has_property(at, trim(use_calc_force)))
+            use_calc_force = "T"//trim(use_calc_force)
+          end do
+          extra_args_str = trim(extra_args_str) // " force="//trim(use_calc_force)
+          call add_property_from_pointer(at, trim(use_calc_force), force)
        else ! has force optional _and_ args_str - add property with its own storage
-	  call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
+          call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
        endif
     else if (len_trim(calc_force) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_force), 0.0_dp, n_cols=3, ptr2=at_force_ptr)
@@ -887,7 +887,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     if (present(virial) .and. len_trim(calc_virial) == 0) then
        use_calc_virial = "virial"
        do while (lookup_entry_i(at%params, trim(use_calc_virial)) > 0)
-	 use_calc_virial = "T"//trim(use_calc_virial)
+         use_calc_virial = "T"//trim(use_calc_virial)
        end do
        extra_args_str = trim(extra_args_str) // " virial="//trim(use_calc_virial)
     endif
@@ -895,14 +895,14 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     use_calc_local_energy = trim(calc_local_energy)
     if (present(local_energy)) then
        if (len_trim(calc_local_energy) == 0) then ! have local_energy optional but not args_str - add property from pointer in new property name
-	  use_calc_local_energy = "local_energy"
-	  do while (has_property(at, trim(use_calc_local_energy)))
-	    use_calc_local_energy = "T"//trim(use_calc_local_energy)
-	  end do
-	  extra_args_str = trim(extra_args_str) // " local_energy="//trim(use_calc_local_energy)
-	  call add_property_from_pointer(at, trim(use_calc_local_energy), local_energy)
+          use_calc_local_energy = "local_energy"
+          do while (has_property(at, trim(use_calc_local_energy)))
+            use_calc_local_energy = "T"//trim(use_calc_local_energy)
+          end do
+          extra_args_str = trim(extra_args_str) // " local_energy="//trim(use_calc_local_energy)
+          call add_property_from_pointer(at, trim(use_calc_local_energy), local_energy)
        else ! has local_energy optional _and_ args_str - add property with its own storage
-	  call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
+          call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
        endif
     else if (len_trim(calc_local_energy) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_local_energy), 0.0_dp, n_cols=1, ptr=at_local_energy_ptr)
@@ -911,14 +911,14 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     use_calc_local_virial = trim(calc_local_virial)
     if (present(local_virial)) then
        if (len_trim(calc_local_virial) == 0) then ! have local_virial optional but not args_str - add property from pointer in new property name
-	  use_calc_local_virial = "local_virial"
-	  do while (has_property(at, trim(use_calc_local_virial)))
-	    use_calc_local_virial = "T"//trim(use_calc_local_virial)
-	  end do
-	  extra_args_str = trim(extra_args_str) // " local_virial="//trim(use_calc_local_virial)
-	  call add_property_from_pointer(at, trim(use_calc_local_virial), local_virial)
+          use_calc_local_virial = "local_virial"
+          do while (has_property(at, trim(use_calc_local_virial)))
+            use_calc_local_virial = "T"//trim(use_calc_local_virial)
+          end do
+          extra_args_str = trim(extra_args_str) // " local_virial="//trim(use_calc_local_virial)
+          call add_property_from_pointer(at, trim(use_calc_local_virial), local_virial)
        else ! has local_virial optional _and_ args_str - add property with its own storage
-	  call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
+          call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
        endif
     else if (len_trim(calc_local_virial) > 0) then ! no optional, have args_str - add property with its own storage
        call add_property(at, trim(calc_local_virial), 0.0_dp, n_cols=9, ptr2=at_local_virial_ptr)
@@ -965,7 +965,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
     if (present(force)) then
       if (len_trim(calc_force) == 0) then ! property should be a pointer to force optional
-	call remove_property(at, trim(use_calc_force))
+        call remove_property(at, trim(use_calc_force))
       else
         force = at_force_ptr
       endif
@@ -976,16 +976,16 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     endif
     if (present(local_energy)) then
       if (len_trim(calc_local_energy) == 0) then ! property should be pointer to local_energy optional
-	call remove_property(at, trim(use_calc_local_energy))
+        call remove_property(at, trim(use_calc_local_energy))
       else
-	local_energy = at_local_energy_ptr
+        local_energy = at_local_energy_ptr
       endif
     endif
     if (present(local_virial)) then
       if (len_trim(calc_local_virial) == 0) then ! property should be pointer to local_virial optional
-	call remove_property(at, trim(use_calc_local_virial))
+        call remove_property(at, trim(use_calc_local_virial))
       else
-	local_virial = at_local_virial_ptr
+        local_virial = at_local_virial_ptr
       endif
     endif
 
@@ -1405,7 +1405,7 @@ end subroutine undo_travel
 
     if (present(dir_field)) then
       if (.not. assign_pointer(at, trim(dir_field), dir_p)) &
-	call system_abort("pot_test_gradient got dir_field '"//trim(dir_field)//"' but can't assign pointer to it")
+        call system_abort("pot_test_gradient got dir_field '"//trim(dir_field)//"' but can't assign pointer to it")
       call print("pot_test_gradient using '"//trim(dir_field)//"' field for gradient test direction")
     else
       nullify(dir_p)
@@ -1475,7 +1475,7 @@ end subroutine undo_travel
 
     if (present(dir_field)) then
       if (.not. assign_pointer(at, trim(dir_field), dir_p)) &
-	call system_abort("pot_test_gradient got dir_field '"//trim(dir_field)//"' but can't assign pointer to it")
+        call system_abort("pot_test_gradient got dir_field '"//trim(dir_field)//"' but can't assign pointer to it")
       call print("pot_test_gradient using '"//trim(dir_field)//"' field for gradient test direction")
     else
       nullify(dir_p)
@@ -1551,8 +1551,8 @@ end subroutine undo_travel
 
 
          if (am%minim_pot%is_forcemixing) then
-	    !NB This should really be an arbitrary field name, but no obvious way to pass print_hook info on what
-	    !NB the name is (no run_suffix args_str argument, for example)
+            !NB This should really be an arbitrary field name, but no obvious way to pass print_hook info on what
+            !NB the name is (no run_suffix args_str argument, for example)
             if (assign_pointer(am%minim_at, 'hybrid_mark', hybrid_mark)) then
                if (.not. am%minim_pot%forcemixing%minimise_mm) then
                   call set_value(am%minim_at%params, 'QM_MaxForce', &
@@ -1569,20 +1569,20 @@ end subroutine undo_travel
       end if
 
       if (am%minim_do_lat) &
-	call set_value(am%minim_at%params, 'MaxVirial', maxval(abs(virial)))
+        call set_value(am%minim_at%params, 'MaxVirial', maxval(abs(virial)))
 
       if (assign_pointer(am%minim_at, "forces", f_p)) f_p = -f
       if (assign_pointer(am%minim_at, "force", f_p)) f_p = -f ! compatibility with crack program
 
       if (my_do_print) then
          if (associated(am%minim_cinoutput_movie)) then
-	    if (trim(am%minim_cinoutput_movie%filename) == "stdout") then
-	       if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
-		  call write(am%minim_cinoutput_movie, am%minim_at, prefix="MINIM_TRAJ")
-	    else
-	       if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
-		  call write(am%minim_cinoutput_movie, am%minim_at)
-	    end if
+            if (trim(am%minim_cinoutput_movie%filename) == "stdout") then
+               if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
+                  call write(am%minim_cinoutput_movie, am%minim_at, prefix="MINIM_TRAJ")
+            else
+               if (.not. am%minim_pot%mpi%active .or. (am%minim_pot%mpi%active .and. am%minim_pot%mpi%my_proc == 0)) &
+                  call write(am%minim_cinoutput_movie, am%minim_at)
+            end if
          end if
       end if
 
@@ -1747,7 +1747,7 @@ end subroutine undo_travel
     ! zero forces if fixed by potential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_pot", fixed_pot)) then
       do i=1, am%minim_at%N
-	if (fixed_pot(i) /= 0) f(:,i) = 0.0_dp
+        if (fixed_pot(i) /= 0) f(:,i) = 0.0_dp
       end do
     endif
 
@@ -1759,9 +1759,9 @@ end subroutine undo_travel
     endif
     if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
        do i=1,am%minim_at%N
-	  do j=1, 3
-	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
-	  end do
+          do j=1, 3
+             if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+          end do
        end do
     end if
 
@@ -1867,13 +1867,13 @@ end subroutine undo_travel
     do i=1, am%minim_at%N
       n_nearest = 0
       do jj=1, n_neighbours(am%minim_at, i)
-	if (is_nearest_neighbour(am%minim_at, i, jj)) then
-	  n_nearest = n_nearest + 1
-	  j = neighbour(am%minim_at, i, jj)
-	  P(3*(i-1)+1,3*(j-1)+1) = -c1
-	  P(3*(i-1)+2,3*(j-1)+2) = -c1
-	  P(3*(i-1)+3,3*(j-1)+3) = -c1
-	endif
+        if (is_nearest_neighbour(am%minim_at, i, jj)) then
+          n_nearest = n_nearest + 1
+          j = neighbour(am%minim_at, i, jj)
+          P(3*(i-1)+1,3*(j-1)+1) = -c1
+          P(3*(i-1)+2,3*(j-1)+2) = -c1
+          P(3*(i-1)+3,3*(j-1)+3) = -c1
+        endif
       end do
       P(3*(i-1)+1,3*(i-1)+1) = c0+c1*n_nearest
       P(3*(i-1)+2,3*(i-1)+2) = c0+c1*n_nearest
@@ -1883,23 +1883,23 @@ end subroutine undo_travel
     if (assign_pointer(am%minim_at, 'move_mask', move_mask)) then
        do i=1,am%minim_at%N
           if (move_mask(i) == 0) then
-	    P(3*(i-1)+1:3*(i-1)+3,:) = 0.0_dp
-	    P(:,3*(i-1)+1:3*(i-1)+3) = 0.0_dp
-	    P(3*(i-1)+1,3*(i-1)+1) = 1.0_dp
-	    P(3*(i-1)+2,3*(i-1)+2) = 1.0_dp
-	    P(3*(i-1)+3,3*(i-1)+3) = 1.0_dp
-	  endif
+            P(3*(i-1)+1:3*(i-1)+3,:) = 0.0_dp
+            P(:,3*(i-1)+1:3*(i-1)+3) = 0.0_dp
+            P(3*(i-1)+1,3*(i-1)+1) = 1.0_dp
+            P(3*(i-1)+2,3*(i-1)+2) = 1.0_dp
+            P(3*(i-1)+3,3*(i-1)+3) = 1.0_dp
+          endif
        end do
     endif
     if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
        do i=1,am%minim_at%N
-	  do j=1, 3
-	     if (move_mask_3(j,i) == 0) then
-	       P(3*(i-1)+j:3*(i-1)+j,:) = 0.0_dp
-	       P(:,3*(i-1)+j:3*(i-1)+j) = 0.0_dp
-	       P(3*(i-1)+j,3*(i-1)+j) = 1.0_dp
-	     endif
-	  end do
+          do j=1, 3
+             if (move_mask_3(j,i) == 0) then
+               P(3*(i-1)+j:3*(i-1)+j,:) = 0.0_dp
+               P(:,3*(i-1)+j:3*(i-1)+j) = 0.0_dp
+               P(3*(i-1)+j,3*(i-1)+j) = 1.0_dp
+             endif
+          end do
        end do
     endif
 
@@ -2014,7 +2014,7 @@ endif
     ! zero forces if fixed by potential
     if (am%minim_do_pos .and. assign_pointer(am%minim_at, "fixed_pot", fixed_pot)) then
       do i=1, am%minim_at%N
-	if (fixed_pot(i) /= 0) f(:,i) = 0.0_dp
+        if (fixed_pot(i) /= 0) f(:,i) = 0.0_dp
       end do
     endif
 
@@ -2026,9 +2026,9 @@ endif
     end if
     if (assign_pointer(am%minim_at, 'move_mask_3', move_mask_3)) then
        do i=1,am%minim_at%N
-	  do j=1, 3
-	     if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
-	  end do
+          do j=1, 3
+             if (move_mask_3(j,i) == 0) f(j,i) = 0.0_dp
+          end do
        end do
     end if
 
@@ -2170,11 +2170,11 @@ end subroutine pack_pos_dg
      call close_xml_t(fxml)
 
      if(.not. parse_in_pot_done) then
-	if (len_trim(param_str) > 10000) then
-	   call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str(1:10000)='//trim(param_str(1:10000)))
-	else
-	   call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str='//trim(param_str))
-	endif
+        if (len_trim(param_str) > 10000) then
+           call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str(1:10000)='//trim(param_str(1:10000)))
+        else
+           call system_abort('Potential_read_params_xml: could not initialise potential from xml_label. param_str='//trim(param_str))
+        endif
      endif
 
   endsubroutine Potential_read_params_xml

@@ -29,14 +29,14 @@
 ! H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 !X
-!X IPModel_FC module  
+!X IPModel_FC module
 !X
 !% Module for Force-Constant (Guggenheim-McGlashan) pair potential.
-!% \begin{equation} 
+!% \begin{equation}
 !%   \nonumber
 !%     V(r) = 1/2 phi2 (r-r0)^2 + 1/6 phi3 (r-r0)^3 + 1.24 phi4 (r-r0)^4
-!% \end{equation} 
-!% 
+!% \end{equation}
+!%
 !% Proc. Royal Soc. London A, v. 255, p. 456 (1960)
 !% Used, e.g. by Bernstein, Feldman, and Singh, Phys. Rev. B (2010)
 !%
@@ -66,14 +66,14 @@ use QUIP_Common_module
 
 implicit none
 
-private 
+private
 
 include 'IPModel_interface.h'
 
 public :: IPModel_FC
 type IPModel_FC
-  integer :: n_types = 0         !% Number of atomic types. 
-  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}. 
+  integer :: n_types = 0         !% Number of atomic types.
+  integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
@@ -164,19 +164,19 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
     do while (ji <= n_neighbours(this%ideal_struct, i))
       ji = 1
       do while (ji <= n_neighbours(this%ideal_struct, i))
-	j = neighbour(this%ideal_struct, i, ji, distance=ideal_dr_mag, shift=s)
+        j = neighbour(this%ideal_struct, i, ji, distance=ideal_dr_mag, shift=s)
 
-	! if (dr_mag .feq. 0.0_dp) cycle
-	! if ((i < j) .and. i_is_min_image) cycle
+        ! if (dr_mag .feq. 0.0_dp) cycle
+        ! if ((i < j) .and. i_is_min_image) cycle
 
-	tj = get_type(this%type_of_atomic_num, this%ideal_struct%Z(j))
+        tj = get_type(this%type_of_atomic_num, this%ideal_struct%Z(j))
 
-	fc_i = find_fc_i(this, ti, tj, ideal_dr_mag)
-	if (fc_i <= 0) then
-	  call remove_bond(this%ideal_struct%connect, i, j, s)
-	  exit
-	end if
-	ji = ji + 1
+        fc_i = find_fc_i(this, ti, tj, ideal_dr_mag)
+        if (fc_i <= 0) then
+          call remove_bond(this%ideal_struct%connect, i, j, s)
+          exit
+        end if
+        ji = ji + 1
       end do ! while ji inner
     end do ! while ji outer
   end do ! j
@@ -199,7 +199,7 @@ subroutine IPModel_FC_Finalise(this)
 end subroutine IPModel_FC_Finalise
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% The potential calculator: this routine computes energy, forces and the virial.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -207,8 +207,8 @@ end subroutine IPModel_FC_Finalise
 subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_str, mpi, error)
   type(IPModel_FC), intent(inout) :: this
   type(Atoms), intent(inout) :: at
-  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.  
-  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)} 
+  real(dp), intent(out), optional :: e, local_e(:) !% \texttt{e} = System total energy, \texttt{local_e} = energy of each atom, vector dimensioned as \texttt{at%N}.
+  real(dp), intent(out), optional :: f(:,:), local_virial(:,:)   !% Forces, dimensioned as \texttt{f(3,at%N)}, local virials, dimensioned as \texttt{local_virial(9,at%N)}
   real(dp), intent(out), optional :: virial(3,3)   !% Virial
   character(len=*), intent(in), optional      :: args_str
   type(MPI_Context), intent(in), optional :: mpi
@@ -250,7 +250,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
      local_e = 0.0_dp
   endif
 
-  if (present(f)) then 
+  if (present(f)) then
      call check_size('Force',f,(/3,at%N/),'IPModel_FC_Calc', error)
      f = 0.0_dp
   end if
@@ -268,17 +268,17 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     if (len_trim(args_str) > 0) then
       n_extra_calcs = parse_extra_calcs(args_str, extra_calcs_list)
       if (n_extra_calcs > 0) then
-	do i_calc=1, n_extra_calcs
-	  select case(trim(extra_calcs_list(i_calc)))
-	    case("flux")
-	      if (.not. assign_pointer(at, "velo", velo)) &
-		call system_abort("IPModel_FC_Calc Flux calculation requires velo field")
-	      do_flux = .true.
-	      flux = 0.0_dp
-	    case default
-	      call system_abort("Unsupported extra_calc '"//trim(extra_calcs_list(i_calc))//"'")
-	  end select
-	end do
+        do i_calc=1, n_extra_calcs
+          select case(trim(extra_calcs_list(i_calc)))
+            case("flux")
+              if (.not. assign_pointer(at, "velo", velo)) &
+                call system_abort("IPModel_FC_Calc Flux calculation requires velo field")
+              do_flux = .true.
+              flux = 0.0_dp
+            case default
+              call system_abort("Unsupported extra_calc '"//trim(extra_calcs_list(i_calc))//"'")
+          end select
+        end do
       endif ! n_extra_calcs
     endif ! len_trim(args_str)
     call initialise(params)
@@ -307,7 +307,7 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 
     if (present(mpi)) then
        if (mpi%active) then
-	 if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
        endif
     endif
 
@@ -321,25 +321,25 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
 #else
       i_n1n = ji-this%ideal_struct%connect%neighbour2(i)%t%N
       if (ji <= this%ideal_struct%connect%neighbour2(i)%t%N) then
-	j = this%ideal_struct%connect%neighbour2(i)%t%int(1,ji)
-	j_n1n = this%ideal_struct%connect%neighbour2(i)%t%int(2,ji)
-	tind = j_n1n
-	t => this%ideal_struct%connect%neighbour1(j)%t
-	is_j = .true.
+        j = this%ideal_struct%connect%neighbour2(i)%t%int(1,ji)
+        j_n1n = this%ideal_struct%connect%neighbour2(i)%t%int(2,ji)
+        tind = j_n1n
+        t => this%ideal_struct%connect%neighbour1(j)%t
+        is_j = .true.
       else if (i_n1n <= this%ideal_struct%connect%neighbour1(i)%t%N) then
-	j = this%ideal_struct%connect%neighbour1(i)%t%int(1,i_n1n)
-	tind = i_n1n
-	t => this%ideal_struct%connect%neighbour1(i)%t
-	is_j = .false.
+        j = this%ideal_struct%connect%neighbour1(i)%t%int(1,i_n1n)
+        tind = i_n1n
+        t => this%ideal_struct%connect%neighbour1(i)%t
+        is_j = .false.
       endif
 #endif
       if((i < j) .and. i_is_min_image) cycle
       ideal_dr_mag = t%real(1,tind)
       if (ideal_dr_mag .feq. 0.0_dp) cycle
       if (is_j) then
-	s = -t%int(2:4,tind)
+        s = -t%int(2:4,tind)
       else
-	s = t%int(2:4,tind)
+        s = t%int(2:4,tind)
       endif
 #endif
 
@@ -352,49 +352,49 @@ subroutine IPModel_FC_Calc(this, at, e, local_e, f, virial, local_virial, args_s
       !   = p(j) - p(i) + lat . (travel(i) - travel(j) + s)
       dr_shift = - at%travel(:,i) + at%travel(:,j) + this%ideal_struct%travel(:,i) - this%ideal_struct%travel(:,j) + s(:)
       dr_v = at%pos(:,j) - at%pos(:,i) + ( at%lattice(:,1) * dr_shift(1) + &
-					   at%lattice(:,2) * dr_shift(2) + &
-					   at%lattice(:,3) * dr_shift(3) )
+                                           at%lattice(:,2) * dr_shift(2) + &
+                                           at%lattice(:,3) * dr_shift(3) )
       dr_mag = sqrt(dr_v(1)*dr_v(1) + dr_v(2)*dr_v(2) + dr_v(3)*dr_v(3))
 #endif
 
       if (present(e) .or. present(local_e)) then
-	de = IPModel_FC_pairenergy(this, ti, tj, fc_i, dr_mag)
-	if (present(local_e)) then
-	  local_e(i) = local_e(i) + 0.5_dp*de
+        de = IPModel_FC_pairenergy(this, ti, tj, fc_i, dr_mag)
+        if (present(local_e)) then
+          local_e(i) = local_e(i) + 0.5_dp*de
           if (i_is_min_image) local_e(j) = local_e(j) + 0.5_dp*de
-	endif
-	if (present(e)) then
-	  if (associated(w_e)) then
-	    de = de*0.5_dp*(w_e(i)+w_e(j))
-	  endif
+        endif
+        if (present(e)) then
+          if (associated(w_e)) then
+            de = de*0.5_dp*(w_e(i)+w_e(j))
+          endif
           if(i_is_min_image) then
              e = e + de
           else
              e = e + 0.5_dp*de
           endif
-	endif
+        endif
       endif
       if (present(f) .or. present(virial) .or. do_flux) then
-	de_dr = IPModel_FC_pairenergy_deriv(this, ti, tj, fc_i, dr_mag)
-	if (associated(w_e)) then
-	  de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
-	endif
-	dr = dr_v/dr_mag
-	if (present(f)) then
-	  f(:,i) = f(:,i) + de_dr*dr
-	  if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
-	endif
-	if (do_flux) then
-	  ! -0.5 (v_i + v_j) . F_ij * dr_ij
-	  flux = flux - 0.5_dp*sum((velo(:,i)+velo(:,j))*(de_dr*dr))*(dr*dr_mag)
-	endif
-	if (present(virial)) then
-	  if(i_is_min_image) then
+        de_dr = IPModel_FC_pairenergy_deriv(this, ti, tj, fc_i, dr_mag)
+        if (associated(w_e)) then
+          de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
+        endif
+        dr = dr_v/dr_mag
+        if (present(f)) then
+          f(:,i) = f(:,i) + de_dr*dr
+          if(i_is_min_image) f(:,j) = f(:,j) - de_dr*dr
+        endif
+        if (do_flux) then
+          ! -0.5 (v_i + v_j) . F_ij * dr_ij
+          flux = flux - 0.5_dp*sum((velo(:,i)+velo(:,j))*(de_dr*dr))*(dr*dr_mag)
+        endif
+        if (present(virial)) then
+          if(i_is_min_image) then
              virial = virial - de_dr*(dr .outer. dr)*dr_mag
           else
              virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*dr_mag
           endif
-	endif
+        endif
       endif
     end do
   end do ! i
@@ -434,8 +434,8 @@ function IPModel_FC_pairenergy(this, ti, tj, fc_i, r)
   dr3 = dr2*dr
   dr4 = dr2*dr2
   IPModel_FC_pairenergy = c2*this%phi2(ti,tj,fc_i)*dr2 + &
-			  c3*this%phi3(ti,tj,fc_i)*dr3 + &
-			  c4*this%phi4(ti,tj,fc_i)*dr4
+                          c3*this%phi3(ti,tj,fc_i)*dr3 + &
+                          c4*this%phi4(ti,tj,fc_i)*dr4
 end function IPModel_FC_pairenergy
 
 !% Derivative of the two-body term.
@@ -458,12 +458,12 @@ function IPModel_FC_pairenergy_deriv(this, ti, tj, fc_i, r)
   dr2 = dr*dr
   dr3 = dr2*dr
   IPModel_FC_pairenergy_deriv = c2*this%phi2(ti,tj,fc_i)*dr + &
-				c3*this%phi3(ti,tj,fc_i)*dr2 + &
-				c4*this%phi4(ti,tj,fc_i)*dr3
+                                c3*this%phi3(ti,tj,fc_i)*dr2 + &
+                                c4*this%phi4(ti,tj,fc_i)*dr3
 end function IPModel_FC_pairenergy_deriv
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% XML param reader functions.
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
@@ -475,9 +475,9 @@ end function IPModel_FC_pairenergy_deriv
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
   type(dictionary_t), intent(in) :: attributes
 
   integer :: status
@@ -496,10 +496,10 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (len(trim(parse_ip%label)) > 0) then ! we were passed in a label
       if (value == parse_ip%label) then ! exact match
-	parse_matched_label = .true.
-	parse_in_ip = .true.
+        parse_matched_label = .true.
+        parse_in_ip = .true.
       else ! no match
-	parse_in_ip = .false.
+        parse_in_ip = .false.
       endif
     else ! no label passed in
       parse_in_ip = .true.
@@ -507,28 +507,28 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
     if (parse_in_ip) then
       if (parse_ip%n_types /= 0) then
-	call finalise(parse_ip)
+        call finalise(parse_ip)
       endif
 
       call QUIP_FoX_get_value(attributes, 'n_types', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%n_types
+        read (value, *) parse_ip%n_types
       else
-	call system_abort("Can't find n_types in FC_params")
+        call system_abort("Can't find n_types in FC_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'max_n_fcs', value, status)
       if (status == 0) then
-	read (value, *) max_n_fcs
+        read (value, *) max_n_fcs
       else
-	call system_abort("Can't find max_n_fcs in FC_params")
+        call system_abort("Can't find max_n_fcs in FC_params")
       endif
 
       call QUIP_FoX_get_value(attributes, 'cutoff', value, status)
       if (status == 0) then
-	read (value, *) parse_ip%cutoff
+        read (value, *) parse_ip%cutoff
       else
-	call system_abort("Can't find this%cutoff in FC_params")
+        call system_abort("Can't find this%cutoff in FC_params")
       endif
 
       allocate(parse_ip%atomic_num(parse_ip%n_types))
@@ -570,7 +570,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     parse_ip%type_of_atomic_num = 0
     do ti=1, parse_ip%n_types
       if (parse_ip%atomic_num(ti) > 0) &
-	parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
     ti = parse_ip%type_of_atomic_num(atnum_i)
@@ -601,9 +601,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 end subroutine IPModel_startElement_handler
 
 subroutine IPModel_endElement_handler(URI, localname, name)
-  character(len=*), intent(in)   :: URI  
+  character(len=*), intent(in)   :: URI
   character(len=*), intent(in)   :: localname
-  character(len=*), intent(in)   :: name 
+  character(len=*), intent(in)   :: name
 
   if (parse_in_ip) then
     if (name == 'FC_params') then
@@ -639,7 +639,7 @@ end subroutine IPModel_FC_read_params_xml
 
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-!X 
+!X
 !% Printing of FC parameters: number of different types, cutoff radius, atomic numbers, etc.
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -658,8 +658,8 @@ subroutine IPModel_FC_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       do fc_i=1, this%n_fcs(ti,tj)
-	call Print ("IPModel_FC : interaction " // ti // " " // tj // " r0 " // this%r0(ti,tj,fc_i) // " phi2,3,4 " // &
-	  this%phi2(ti,tj,fc_i) // " " // this%phi3(ti,tj,fc_i) // " " // this%phi4(ti,tj,fc_i), file=file)
+        call Print ("IPModel_FC : interaction " // ti // " " // tj // " r0 " // this%r0(ti,tj,fc_i) // " phi2,3,4 " // &
+          this%phi2(ti,tj,fc_i) // " " // this%phi3(ti,tj,fc_i) // " " // this%phi4(ti,tj,fc_i), file=file)
       end do
     end do
     call verbosity_pop()

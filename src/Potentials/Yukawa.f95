@@ -131,9 +131,9 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
    !$omp do schedule(runtime)
    do i=1, at%n
       if (present(mpi)) then
-	 if (mpi%active) then
-	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	 endif
+         if (mpi%active) then
+            if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
       endif
 
       if (associated(atom_mask)) then
@@ -151,16 +151,16 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
       if (do_pseudise .and. at%Z(i) /= 0) ti = get_type(type_of_atomic_num, at%Z(i))
 
       do m = 1, n_neighbours(at, i)
-         
+
          j = neighbour(at, i, m, distance=r_ij, cosines=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
-         
+
          if (associated(source_mask)) then
             if (.not. source_mask(j)) cycle
          end if
 
          if (r_ij .feq. 0.0_dp) then
-            if (present(grid_size)) then 
+            if (present(grid_size)) then
                r_ij = grid_size/BOHR
             else
                cycle
@@ -246,11 +246,11 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
 
    if (present(mpi)) then
       if (mpi%active) then
-	 if (present(e)) private_e = sum(mpi, private_e) 
-	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
-	 if (present(f)) call sum_in_place(mpi, private_f)
-	 if (present(virial)) call sum_in_place(mpi, private_virial)
-	 if (present(efield)) call sum_in_place(mpi, private_efield)
+         if (present(e)) private_e = sum(mpi, private_e)
+         if (present(local_e)) call sum_in_place(mpi, private_local_e)
+         if (present(f)) call sum_in_place(mpi, private_f)
+         if (present(virial)) call sum_in_place(mpi, private_virial)
+         if (present(efield)) call sum_in_place(mpi, private_efield)
       end if
    end if
 
@@ -261,7 +261,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
    if (present(f)) f = f + private_f*(HARTREE/BOHR)
    if (present(virial)) virial = virial + private_virial*HARTREE
    if (present(efield)) efield = efield + private_efield*(HARTREE/BOHR)
-   !$omp end critical 
+   !$omp end critical
 
    if (allocated(private_f)) deallocate(private_f)
    if (allocated(private_local_e)) deallocate(private_local_e)
@@ -366,9 +366,9 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
    !$omp do schedule(runtime)
    do i=1, at%n
       if (present(mpi)) then
-	 if (mpi%active) then
-	    if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
-	 endif
+         if (mpi%active) then
+            if (mod(i-1, mpi%n_procs) /= mpi%my_proc) cycle
+         endif
       endif
 
       if (associated(atom_mask)) then
@@ -397,7 +397,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
       end if
 
       do m = 1, n_neighbours(at, i)
-         
+
          j = neighbour(at, i, m, distance=r_ij, diff=u_ij, max_dist=cutoff)
          if (j <= 0) cycle
 
@@ -406,7 +406,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
          end if
 
          if (r_ij .feq. 0.0_dp) then
-            if (present(grid_size)) then 
+            if (present(grid_size)) then
                r_ij = grid_size/BOHR
             else
                cycle
@@ -436,7 +436,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
          pipj = tpoli .and. tpolj
 
          if (.not. (pipj .or. qipj .or. qjpi)) cycle
-        
+
          gamjir2 = 1.0_dp/r_ij**2.0_dp
          gamjir3 = gamjir2/r_ij
          factor1 = 3.0_dp*gamjir2*gamjir3
@@ -452,7 +452,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
          prj = 0.0_dp
          if (tpolj) prj = dipj .dot. u_ij
-         
+
          if (do_pseudise) then
             sigma = pseudise_sigma(tj)/BOHR
             erf_val = 1.0_dp
@@ -486,14 +486,14 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
                bij = b_pol(ti, tj)
                cij = c_pol(ti, tj)
-         
+
                dist3 = 1.0_dp/(r_ij**3.0_dp)
                dist5 = 1.0_dp/(r_ij**5.0_dp)
 
                gij = 0.0_dp
                factork = cij*exp(-bij*r_ij)
                do k=1,4
-                  gij = gij + factork 
+                  gij = gij + factork
                   factork = factork*bij*r_ij/float(k)
                enddo
                gij = gij + factork
@@ -543,7 +543,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
                dforce = dfqdip + dfdipdip + df_sr
                if (do_pseudise) dforce = dforce*erf_val + (de_dd + de_qd + de_sr)*expfactor*fc*erf_deriv*u_ij/r_ij
-               
+
                if (present(f)) then
                   private_f(:,i) = private_f(:,i) + dforce
                   if (i_is_min_image .and. j_is_min_image) private_f(:,j) = private_f(:,j) - dforce
@@ -565,11 +565,11 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
 
    if (present(mpi)) then
       if (mpi%active) then
-	 if (present(e)) private_e = sum(mpi, private_e) 
-	 if (present(local_e)) call sum_in_place(mpi, private_local_e)
-	 if (present(f)) call sum_in_place(mpi, private_f)
-	 if (present(virial)) call sum_in_place(mpi, private_virial)
-	 if (present(efield)) call sum_in_place(mpi, private_efield)
+         if (present(e)) private_e = sum(mpi, private_e)
+         if (present(local_e)) call sum_in_place(mpi, private_local_e)
+         if (present(f)) call sum_in_place(mpi, private_f)
+         if (present(virial)) call sum_in_place(mpi, private_virial)
+         if (present(efield)) call sum_in_place(mpi, private_efield)
       end if
    end if
 
@@ -579,13 +579,13 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
    if (present(f)) f = f + private_f*(HARTREE/BOHR)
    if (present(virial)) virial = virial + private_virial*HARTREE
    if (present(efield)) efield = efield + private_efield*(HARTREE/BOHR)
-   !$omp end critical 
-   
+   !$omp end critical
+
    if (allocated(private_f)) deallocate(private_f)
    if (allocated(private_local_e)) deallocate(private_local_e)
    if (allocated(private_efield)) deallocate(private_efield)
 
-   !$omp end parallel   
+   !$omp end parallel
 
    call system_timer('yukawa_dipoles')
 
