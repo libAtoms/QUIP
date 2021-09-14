@@ -87,6 +87,7 @@ private
   integer, parameter, public :: INTEGER_SIZE = 4
   integer, parameter, public :: REAL_SIZE = dp
   integer, parameter, public :: COMPLEX_SIZE = 2*dp
+  integer, parameter, public :: int8 = 8
   logical, public :: trace_memory = .false.
   integer, public :: traced_memory = 0
 
@@ -241,10 +242,10 @@ private
      module procedure inoutput_parse_line
   end interface parse_line
 
-  private :: reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
+  private :: reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d, reallocate_int1d_int8
   public :: reallocate
   interface reallocate
-     module procedure reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d
+     module procedure reallocate_int1d, reallocate_int2d, reallocate_int3d, reallocate_real1d, reallocate_real2d, reallocate_char1d, reallocate_log1d, reallocate_int1d_int8
   end interface reallocate
  
   public :: operator(//)
@@ -1777,6 +1778,39 @@ contains
     end if
 
   end subroutine reallocate_log1d
+
+  subroutine reallocate_int1d_int8(array, d1, zero, copy)
+    integer(int8), allocatable, dimension(:), intent(inout) :: array
+    integer(int8),                            intent(in)    :: d1
+    logical, optional,                  intent(in)    :: zero, copy
+
+    logical :: do_copy
+    integer, allocatable :: tmp(:)
+
+    if (allocated(array)) then
+       if (size(array) /= d1) then
+	  do_copy = optional_default(.false., copy)
+	  if (do_copy) then
+	    allocate(tmp(size(array)))
+	    tmp = array
+	  endif
+          deallocate(array)
+          allocate(array(d1))
+	  if (do_copy) then
+	    array = 0
+	    array(1:min(size(tmp),size(array))) = tmp(1:min(size(tmp),size(array)))
+	    deallocate(tmp)
+	  endif
+       end if
+    else
+       allocate(array(d1))
+    end if
+
+    if (present(zero)) then
+       if (zero) array = 0
+    end if
+
+  end subroutine reallocate_int1d_int8
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X

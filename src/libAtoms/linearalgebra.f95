@@ -522,6 +522,7 @@ module linearalgebra_module
   !% constructed from the 'arrayname' and 'caller' arguments.
   private :: check_size_int_dim1, check_size_int_dim1_s, check_size_int_dim2
   private :: check_size_real_dim1,check_size_real_dim1_s, check_size_real_dim2
+  private :: check_size_int_dim2_int8, check_size_real_dim1_int8, check_size_real_dim2_int8, check_size_real_dim3_int8
 #ifdef HAVE_QP
   private :: check_size_quad_dim1,check_size_quad_dim1_s, check_size_quad_dim2
 #endif
@@ -535,6 +536,7 @@ module linearalgebra_module
 #endif
      module procedure check_size_complex_dim1, check_size_complex_dim1_s, check_size_complex_dim2
      module procedure check_size_log_dim1, check_size_log_dim1_s, check_size_log_dim2
+     module procedure check_size_int_dim2_int8, check_size_real_dim1_int8, check_size_real_dim2_int8, check_size_real_dim3_int8
   end interface check_size
 
   !% Update a measure of a recent average by decaying its current value and adding on a new sample
@@ -5192,6 +5194,177 @@ CONTAINS
 
   end subroutine check_size_log_dim2
 
+  subroutine check_size_int_dim2_int8(arrayname,intarray,n,caller,error)
+
+    character(*),             intent(in) :: arrayname
+    integer, dimension(:,:),  intent(in) :: intarray
+    integer(int8), dimension(:),    intent(in) :: n
+    character(*),             intent(in) :: caller
+    integer, intent(out), optional :: error
+
+    integer(int8), dimension(:), allocatable :: actual_size 
+    logical                            :: failed
+    integer                            :: i           
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(intarray)) ) )
+    actual_size = shape(intarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
+    end if
+
+  end subroutine check_size_int_dim2_int8
+
+  subroutine check_size_real_dim1_int8(arrayname,realarray,n,caller,error)
+
+    character(*),            intent(in) :: arrayname
+    real(dp), dimension(:),  intent(in) :: realarray
+    integer(int8),  dimension(:),  intent(in) :: n
+    character(*),            intent(in) :: caller
+    integer, intent(out), optional :: error
+
+    integer(int8), dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(realarray)) ) )
+    actual_size = shape(realarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       RAISE_ERROR(trim(caller)//': Size checking failed', error)
+    end if
+
+  end subroutine check_size_real_dim1_int8
+
+  subroutine check_size_real_dim2_int8(arrayname,realarray,n,caller, error)
+
+    character(*),              intent(in) :: arrayname
+    real(dp), dimension(:,:),  intent(in) :: realarray
+    integer(int8),  dimension(:),    intent(in) :: n
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error
+
+    integer(int8), dimension(:), allocatable :: actual_size
+    logical                            :: failed
+    integer                            :: i
+
+    character*1024 :: n_char = "", actual_size_char = ""
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(realarray)) ) )
+    actual_size = shape(realarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       do i = 1, size(n)
+         write(n_char, *) n(i), ","
+       end do
+       do i = 1, size(actual_size)
+         write(actual_size_char, *) actual_size(i), ","
+       end do
+       RAISE_ERROR(trim(caller) //': Size checking failed. Expected: (' // trim(n_char) // '), got: (' // trim(actual_size_char) // ')', error)
+    end if
+
+  end subroutine check_size_real_dim2_int8
+
+  subroutine check_size_real_dim3_int8(arrayname,realarray,n,caller, error)
+
+    character(*),              intent(in) :: arrayname
+    real(dp), dimension(:,:,:),intent(in) :: realarray
+    integer(int8),  dimension(:),    intent(in) :: n
+    character(*),              intent(in) :: caller
+    integer, intent(out), optional :: error
+
+    integer(int8), dimension(:), allocatable :: actual_size 
+    logical                            :: failed      
+    integer                            :: i           
+
+    character*1024 :: n_char = "", actual_size_char = ""
+
+    INIT_ERROR(error)
+    failed = .false.
+    allocate( actual_size( size(shape(realarray)) ) )
+    actual_size = shape(realarray)
+
+    if (size(actual_size) /= size(n)) then
+       write(line,'(a,i0,a,i0,a)') caller//': '//arrayname//' is ',size(actual_size), &
+            ' dimensional and not ',size(n),' dimensional as expected'
+       call print(line)
+       failed = .true.
+    else
+       do i = 1, size(actual_size)
+          if (actual_size(i) /= n(i)) then
+             write(line,'(3(a,i0),a)') caller//': The size of dimension ',i,' of '//arrayname//' is ', &
+                  actual_size(i),' and not ',n(i),' as expected'
+             call print(line)
+             failed = .true.
+          end if
+       end do
+    end if
+
+    if (failed) then
+       do i = 1, size(n)
+         write(n_char, *) n(i), ","
+       end do
+       do i = 1, size(actual_size)
+         write(actual_size_char, *) actual_size(i), ","
+       end do
+       RAISE_ERROR(trim(caller) //': Size checking failed. Expected: (' // trim(n_char) // '), got: (' // trim(actual_size_char) // ')', error)
+    end if
+
+  end subroutine check_size_real_dim3_int8
 
   !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   !X

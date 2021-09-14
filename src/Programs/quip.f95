@@ -126,7 +126,8 @@ implicit none
   character(STRING_LENGTH) :: eval_port_str, output_file, real_format
   logical :: output_flush
 
-  integer i, n_iter, j, n_descriptors, n_cross
+  integer i, n_iter, j, n_descriptors
+  integer(int8) :: n_cross, i_cross
   logical netcdf4
 
   call system_initialise()
@@ -803,9 +804,9 @@ implicit none
         end do
         if(do_grad_descriptor) then
            mainlog%prefix = "GRAD_DSC"
-           do i = 1, n_cross
+           do i_cross = 1, n_cross
               do j = 1, 3
-                 call print(""//grad_descriptor_index(:,i)//"  "//grad_descriptor_pos(j,i)//"  "//grad_descriptor_array(:,j,i), PRINT_ALWAYS, mainlog)
+                 call print(""//grad_descriptor_index(:,i_cross)//"  "//grad_descriptor_pos(j,i_cross)//"  "//grad_descriptor_array(:,j,i_cross), PRINT_ALWAYS, mainlog)
               enddo
            enddo
         endif
