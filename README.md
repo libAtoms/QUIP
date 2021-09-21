@@ -82,8 +82,8 @@ The following external packages can be called:
 QUIP was born because of the need to efficiently tie together a wide
 variety of different models, both empirical and quantum mechanical. It
 will not be competitive in terms of performance with codes such as LAMMPS
-and Gromacs. The Atomic Simulation Environment also does does this, and
-is much more widely used, but QUIP has a number of unique features:
+and Gromacs. The Atomic Simulation Environment also does this, and is
+much more widely used, but QUIP has a number of unique features:
 
 - Access to Fortran types and routines from Python via the
   `quippy` package
