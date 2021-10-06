@@ -153,11 +153,12 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   real(dp), pointer :: w_e(:)
   integer i, ji, j, ti, tj
   real(dp) :: dr(3), dr_mag
-  real(dp) :: de, de_dr
+  real(dp) :: de, de_dr, virial_i(3,3)
 
   type(Dictionary)                :: params
   logical :: has_atom_mask_name
   character(STRING_LENGTH) :: atom_mask_name
+  logical, dimension(:), pointer :: atom_mask_pointer
   real(dp) :: r_scale, E_scale
   logical :: do_rescale_r, do_rescale_E
 
@@ -176,12 +177,12 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
   if (present(local_virial)) then
      call check_size('Local_virial',local_virial,(/9,at%Nbuffer/),'IPModel_RS_Calc', error)
      local_virial = 0.0_dp
-     RAISE_ERROR("IPModel_RS_Calc: local_virial calculation requested but not supported yet.", error)
   endif
 
+  atom_mask_pointer => null()
   if (present(args_str)) then
     call initialise(params)
-    call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="No help yet.  This source file was $LastChangedBy$")
+    call param_register(params, 'atom_mask_name', 'NONE', atom_mask_name, has_value_target=has_atom_mask_name, help_string="Name of logical property used to mask atoms")
     call param_register(params, 'r_scale', '1.0',r_scale, has_value_target=do_rescale_r, help_string="Recaling factor for distances. Default 1.0.")
     call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Recaling factor for energy. Default 1.0.")
 
@@ -190,7 +191,10 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
     endif
     call finalise(params)
     if(has_atom_mask_name) then
-       RAISE_ERROR('IPModel_RS_Calc: atom_mask_name found, but not supported', error)
+        if (.not. assign_pointer(at, trim(atom_mask_name) , atom_mask_pointer)) &
+        call system_abort("IPModel_RS_Calc did not find "//trim(atom_mask_name)//" property in the atoms object.")
+    else
+        atom_mask_pointer => null()
     endif
     if (do_rescale_r .or. do_rescale_E) then
        RAISE_ERROR("IPModel_RS_Calc: rescaling of potential with r_scale and E_scale not yet implemented!", error)
@@ -208,58 +212,54 @@ subroutine IPModel_RS_Calc(this, at, e, local_e, f, virial, local_virial, args_s
        endif
     endif
 
+    if(associated(atom_mask_pointer)) then
+       if(.not. atom_mask_pointer(i)) cycle
+    endif
+
     ti = get_type(this%type_of_atomic_num, at%Z(i))
 
     do ji = 1, n_neighbours(at, i)
       j = neighbour(at, i, ji, dr_mag, cosines = dr)
 
       if (dr_mag .feq. 0.0_dp) cycle
-      if ((i < j)) cycle
+      !if (j <= 0) cycle
 
       tj = get_type(this%type_of_atomic_num, at%Z(j))
 
       if (present(e) .or. present(local_e)) then
-        de = IPModel_RS_pairenergy(this, ti, tj, dr_mag)
+        de = 0.5_dp * IPModel_RS_pairenergy(this, ti, tj, dr_mag)
 
         if (present(local_e)) then
-          local_e(i) = local_e(i) + 0.5_dp*de
-          if(i/=j) local_e(j) = local_e(j) + 0.5_dp*de
+          local_e(i) = local_e(i) + de
         endif
         if (present(e)) then
           if (associated(w_e)) then
             de = de*0.5_dp*(w_e(i)+w_e(j))
           endif
-          if(i==j) then
-             e = e + 0.5_dp*de
-          else
-             e = e + de
-          endif
+          e = e + de
         endif
       endif
       if (present(f) .or. present(virial)) then
-        de_dr = IPModel_RS_pairenergy_deriv(this, ti, tj, dr_mag)
+        de_dr = 0.5_dp*IPModel_RS_pairenergy_deriv(this, ti, tj, dr_mag)
         if (associated(w_e)) then
           de_dr = de_dr*0.5_dp*(w_e(i)+w_e(j))
         endif
         if (present(f)) then
           f(:,i) = f(:,i) + de_dr*dr
-          if(i/=j) f(:,j) = f(:,j) - de_dr*dr
+          f(:,j) = f(:,j) - de_dr*dr
         endif
-        if (present(virial)) then
-          if(i==j) then
-             virial = virial - 0.5_dp*de_dr*(dr .outer. dr)*dr_mag
-          else
-             virial = virial - de_dr*(dr .outer. dr)*dr_mag
-          endif
-        endif
+
+        if (present(virial) .or. present(local_virial) ) virial_i = de_dr*(dr .outer. dr)*dr_mag
+        if (present(virial)) virial = virial - virial_i
+        if (present(local_virial)) local_virial(:,i) = local_virial(:,i) - reshape(virial_i, (/9/))
       endif
     end do
   end do
-
   if (present(mpi)) then
      if (present(e)) e = sum(mpi, e)
      if (present(local_e)) call sum_in_place(mpi, local_e)
      if (present(virial)) call sum_in_place(mpi, virial)
+     if (present(local_virial)) call sum_in_place(mpi, local_virial)
      if (present(f)) call sum_in_place(mpi, f)
   endif
 
