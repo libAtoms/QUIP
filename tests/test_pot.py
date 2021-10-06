@@ -190,14 +190,13 @@ class TestPotential(quippytest.QuippyTestCase):
         </RS_params>"""
 
         calc = Potential(param_str=RS_str, args_str='IP RS')
-        E_RS_ref = np.array([2.6570710989046, 1.0933824843445803])
+        E_RS_ref = [2.6570710989045994, 1.0933824843445803]
         
         E_RS = []
         for at in ats:
             at.calc = calc
             E_RS.append(at.get_potential_energy())
             
-        E_RS = np.array(E_RS)
         self.assertAlmostEqual(E_RS, E_RS_ref)  
             
 if __name__ == '__main__':
