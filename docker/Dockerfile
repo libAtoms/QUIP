@@ -242,7 +242,7 @@ RUN git clone --branch stable --depth 1 https://github.com/lammps/lammps.git .
 RUN cd src \
  && make yes-all \
  && make no-lib \
- && QUIP_ARCH=linux_x86_64_gfortran; make yes-user-quip \
+ && QUIP_ARCH=linux_x86_64_gfortran; make yes-ml-quip \
  && make no-user-intel \
  && make yes-python \
  && make -j4 mpi mode=shlib \
