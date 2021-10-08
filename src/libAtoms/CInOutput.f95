@@ -230,7 +230,6 @@ module CInOutput_module
      !%
      !% * **species**, str, 1 col -- atomic species, e.g. Si or H
      !% * **pos**, real, 3 cols -- cartesian positions, in A
-     !% * **local_q**, real, 1 col -- local (per-atom) charge, in e
      !% * **Z**, int, 1 col -- atomic numbers
      !% * **mass**, real, 1 col -- atomic masses, in A,eV,fs units system
      !% * **velo**, real, 3 cols -- velocities, in A/fs

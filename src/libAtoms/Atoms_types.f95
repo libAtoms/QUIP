@@ -294,7 +294,7 @@ module Atoms_types_module
                                     !%  * ``travel`` Travel across periodic conditions. $(3,N)$ integer array. See meth:`map_into_cell` below.
                                     !%  * ``pos`` $(3,N)$ array of atomic positions, in $\mathrm{\AA}$. Position of atom $i$ is 'pos(:,i)'
                                     !%  * ``mass`` Atomic masses, dimension is $(N)$
-                                    !%  * ``local_q`` Local charges, dimension is $(N)$
+                                    !%  * ``at_gaussian_weight`` Local charges, dimension is $(N)$
                                     !%  * ``velo`` $(3,N)$ array  of atomic velocities, in $\mathrm{AA}$/fs.
                                     !%  * ``acc`` $(3,N)$ array  of accelerations in $\mathrm{AA}$/fs$^2$
                                     !%  * ``avgpos`` $(3,N)$ array  of time-averaged atomic positions.
@@ -333,7 +333,7 @@ module Atoms_types_module
      real(dp), pointer, dimension(:,:) :: pos    => null()  !% $(3,N)$ array of atomic positions, in $\mathrm{AA}$.
                                                             !% Position of atom $i$ is 'pos(:,i)'
      real(dp), pointer, dimension(:)   :: mass   => null()  !% Atomic masses, dimension is actually $(N)$
-     real(dp), pointer, dimension(:)   :: local_q => null() !% Local charges, dimension is $(N)$
+     real(dp), pointer, dimension(:)   :: at_gaussian_weight => null() !% Local charges, dimension is $(N)$
 
      real(dp), pointer, dimension(:,:) :: velo   => null()  !% $(3,N)$ array  of atomic velocities, in $\mathrm{AA}$/fs.
      real(dp), pointer, dimension(:,:) :: acc    => null()  !% $(3,N)$ array  of accelerations in $\mathrm{AA}$/fs$^2$
@@ -494,10 +494,10 @@ contains
              if (this%properties%entries(i)%type /= T_REAL_A) &
                   call system_abort('Confused by Atoms property "mass" not of type T_REAL_A')
              this%mass            => this%properties%entries(i)%r_a(:)
-         case('local_q')
+         case('at_gaussian_weight')
             if (this%properties%entries(i)%type /= T_REAL_A) &
-               call system_abort('Confused by Atoms property "local_q" not of type T_REAL_A')
-            this%local_q            => this%properties%entries(i)%r_a(:)
+               call system_abort('Confused by Atoms property "at_gaussian_weight" not of type T_REAL_A')
+            this%at_gaussian_weight            => this%properties%entries(i)%r_a(:)
  
           case('pos')
              if (this%properties%entries(i)%type /= T_REAL_A2) &
@@ -564,10 +564,10 @@ contains
              if (this%properties%entries(i)%type /= T_REAL_A) &
                   call system_abort('Confused by Atoms property "mass" not of type T_REAL_A')
              this%mass            => this%properties%entries(i)%r_a(1:this%n)
-         case('local_q')
+         case('at_gaussian_weight')
              if (this%properties%entries(i)%type /= T_REAL_A) &
-                  call system_abort('Confused by Atoms property "local_q" not of type T_REAL_A')
-             this%local_q            => this%properties%entries(i)%r_a(1:this%n)
+                  call system_abort('Confused by Atoms property "at_gaussian_weight" not of type T_REAL_A')
+             this%at_gaussian_weight            => this%properties%entries(i)%r_a(1:this%n)
           case('pos')
              if (this%properties%entries(i)%type /= T_REAL_A2) &
                   call system_abort('Confused by Atoms property "mass" not of type T_REAL_A2')
