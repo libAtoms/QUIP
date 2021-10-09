@@ -243,7 +243,7 @@ RUN cd src \
  && make yes-all \
  && make no-lib \
  && QUIP_ARCH=linux_x86_64_gfortran; make yes-ml-quip \
- && make no-user-intel \
+ && make no-intel \
  && make yes-python \
  && make -j4 mpi mode=shlib \
  && make install-python \
