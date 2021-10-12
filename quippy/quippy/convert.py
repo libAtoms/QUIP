@@ -49,7 +49,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
         - keys can only be strings, as the fortran dictionary will not accept anything else,\
         integer keys are converted to strings
         - possible types:
-            None - only defaults: pos, Z, cell, pbc, momenta (if exists)
+            None - only defaults: pos, Z, cell, pbc, at_gaussian_weight, momenta (if exists)
             str  - single key
             list - all the list elements are added
             True - all of the arrays
@@ -103,6 +103,9 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
     quip_atoms.is_periodic[:] = ase_atoms.get_pbc()
     quip_atoms.z[:] = ase_atoms.numbers
     quip_atoms.set_atoms(quip_atoms.z)  # set species and mass
+
+    # make it mandatory. 
+    quip_atoms.at_gaussian_weight = ase_atoms.arrays["at_gaussian_weight"]
 
     if ase_atoms.has('momenta'):
         # if ase atoms has momenta then add velocities to the quip object

@@ -196,7 +196,7 @@ class Descriptor:
         # make numpy arrays out of them
         for key, val in descriptor_out.items():
             # merge the arrays according to shape
-            if key in ['data', 'ci']:
+            if key in ['data', 'ci', 'at_gaussian_weight']:
                 descriptor_out[key] = np.concatenate(val, axis=0)
             elif key in ['covariance_cutoff', 'has_data']:
                 descriptor_out[key] = np.array(val)
