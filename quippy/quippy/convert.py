@@ -334,7 +334,7 @@ def descriptor_data_mono_to_dict(desc_data_mono):
 
     # fixme: only take the ones actually needed, this is good for debugging now though
     for key in ['has_grad_data', 'ii', 'pos', 'grad_covariance_cutoff', 'covariance_cutoff', 'data', 'has_data',
-                'grad_data', 'ci']:
+                'grad_data', 'ci', 'at_gaussian_weight']:
         take_value(key)
 
     return out_data_dict
