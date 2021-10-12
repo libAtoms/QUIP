@@ -59,6 +59,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'nbsphinx',
+    'sphinx_rtd_theme',
 #    'modcontents',
     'numpydoc',
     'video']
@@ -83,7 +84,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'quippy'
-copyright = u'2008-2020, James Kermode'
+copyright = u'2008-2021, James Kermode'
 author= u'James Kermode'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -231,6 +232,7 @@ def process_signature(app, what, name, obj, options, signature, return_annotatio
 #        return True
 #    return skip
 
+import sphinx_rtd_theme
 from docutils import nodes, utils
 from docutils.parsers.rst.roles import set_classes
 
