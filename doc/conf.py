@@ -140,11 +140,11 @@ html_favicon = 'favicon.ico'
 html_static_path = ['_static']
 
 # Fix for RTD tables
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',
-    ],
-}
+#html_context = {
+#    'css_files': [
+#        '_static/theme_overrides.css',
+#    ],
+#}
 
 # -- Options for HTMLHelp output ------------------------------------------
 
