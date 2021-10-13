@@ -190,7 +190,7 @@ class TestPotential(quippytest.QuippyTestCase):
         </RS_params>"""
 
         calc = Potential(param_str=RS_str, args_str='IP RS')
-        E_RS_ref = [2.6570710989046, 1.0933824843445803]
+        E_RS_ref = [2.6570710989045994, 1.0933824843445803]
         
         E_RS = []
         for at in ats:
