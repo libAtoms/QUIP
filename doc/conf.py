@@ -279,7 +279,7 @@ def setup(app):
 
     app.add_role('git', github_role)
     app.add_role('mol', mol_role)
-    app.add_css_file('_static/theme_overrides.css')
+    app.add_css_file('theme_overrides.css')
 
 autodoc_member_order = 'groupwise'
 #autoclass_content = 'both'
