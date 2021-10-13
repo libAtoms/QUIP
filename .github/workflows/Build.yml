@@ -90,18 +90,24 @@ jobs:
           ulimit -n 256
           make test
 
+  docs:
+    run-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'ref/head/public'
+
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Build documentation
-        if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1
         run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
           pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2
           pip install nbconvert[execute] ipython
           cd doc
-          make html
+          python -m sphinx . _build/html
 
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@v3
-        if: matrix.arch == 'linux_x86_64_gfortran' && matrix.have_gap == 1 && github.ref == 'refs/heads/public'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: doc/_build/html
