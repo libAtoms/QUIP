@@ -40,7 +40,7 @@ def convert_atoms_types_iterable_method(method):
         if isinstance(at, quippy.atoms_types_module.Atoms):
             return method(self, at, *args, **kw)
         elif isinstance(at, Atoms):
-            _quip_at = quippy.convert.ase_to_quip(at)
+            _quip_at = quippy.convert.ase_to_quip(at, **self.ase_to_quip_kwargs)
             return method(self, _quip_at, *args, **kw)
         else:
             return [wrapper(self, atelement, *args, **kw) for atelement in at]
@@ -50,7 +50,7 @@ def convert_atoms_types_iterable_method(method):
 
 class Descriptor:
 
-    def __init__(self, args_str=None, **init_kwargs):
+    def __init__(self, args_str=None, ase_to_quip_kwargs=None, **init_kwargs):
         """
         Initialises Descriptor object and calculate number of dimensions and
         permutations.
@@ -76,6 +76,10 @@ class Descriptor:
         # super convoluted though :D should just rethink it at some point
         self.n_dim = self.dimensions()
         self.n_perm = self.get_n_perm()
+        if ase_to_quip_kwargs is not None:
+            self.ase_to_quip_kwargs = ase_to_quip_kwargs
+        else:
+            self.ase_to_quip_kwargs = {}
 
     def __len__(self):
         return self.dimensions()
