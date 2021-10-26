@@ -180,7 +180,7 @@ class TestPotential(quippytest.QuippyTestCase):
             at.calc = calc
             E2.append(at.get_potential_energy())
             
-        self.assertAlmostEqual(E1, E2)  
+        self.assertArrayAlmostEqual(E1, E2)  
             
         RS_str = """
         <RS_params n_types="1" cutoff="10.0" label="default">
@@ -197,7 +197,7 @@ class TestPotential(quippytest.QuippyTestCase):
             at.calc = calc
             E_RS.append(at.get_potential_energy())
             
-        self.assertAlmostEqual(E_RS, E_RS_ref)  
+        self.assertArrayAlmostEqual(E_RS, E_RS_ref)  
             
 if __name__ == '__main__':
     unittest.main()
