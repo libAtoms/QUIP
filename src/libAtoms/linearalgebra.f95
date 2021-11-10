@@ -3723,37 +3723,42 @@ CONTAINS
     call print ("};", verbosity, file)
   end subroutine matrix_z_print_mathematica
 
-  subroutine matrix_condition_number(A, rcond, norm)
-    real(dp), intent(inout) :: A(:,:)
-    real(dp), intent(out) :: rcond
+  !% Returns reciprocal condtion number of matrix A using norm
+  function matrix_condition_number(A, norm) result(rcond)
+    real(dp), intent(in) :: A(:,:)
     character, intent(in) :: norm !% 1 or O: 1-norm, I: inf-norm
+    real(dp) :: rcond
 
     integer :: m, n, minmn, lda, info
     real(dp) :: anorm
     integer, allocatable :: ipiv(:), iwork(:)
     real(dp), allocatable :: work(:)
-
+    real(dp), allocatable :: Acopy(:,:)
+    
     real(dp), external :: dlange
-
+        
     rcond = -1.0_dp
-
+    
     m = size(A, 1)
     n = size(A, 2)
     lda = m
 
+    allocate(Acopy(m,n))
+    Acopy = A
+
     allocate(work(m))
-    anorm = dlange(norm, m, n, a, lda, work)
+    anorm = dlange(norm, m, n, Acopy, lda, work)
     deallocate(work)
 
     minmn = min(m, n)
     allocate(ipiv(minmn))
-    call dgetrf(m, n, A, lda, ipiv, info)
+    call dgetrf(m, n, Acopy, lda, ipiv, info)
     deallocate(ipiv)
 
     allocate(work(4 * n))
     allocate(iwork(n))
-    call dgecon(norm, n, a, lda, anorm, rcond, work, iwork, info)
-  end subroutine matrix_condition_number
+    call dgecon(norm, n, Acopy, lda, anorm, rcond, work, iwork, info)
+  end function matrix_condition_number
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
