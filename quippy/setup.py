@@ -32,6 +32,10 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 package_data_files = ['quip', 'libquip.a']
 if os.path.exists('gap_fit'):
     package_data_files.append('gap_fit')
+if os.path.exists('md'):
+    package_data_files.append('md')
+if os.path.exists('vasp_driver'):
+    package_data_files.append('vasp_driver')
 class my_build_ext(build_ext):
     def build_extension(self, ext):
         if not os.path.exists(os.path.dirname(self.get_ext_fullpath(ext.name))):
@@ -74,6 +78,8 @@ setup(
     entry_points={
         'console_scripts': ['gap_fit=quippy.cli:gap_fit',
                             'quip=quippy.cli:quip',
+                            'md=quippy.cli:md',
+                            'vasp_driver=quippy.cli:vasp_driver',
                             'quip-config=quippy.cli:quip_config']
     }
 )

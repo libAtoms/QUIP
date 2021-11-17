@@ -57,6 +57,8 @@ cp ${BUILD_DIR}/../../quippy/setup.py ${BUILD_DIR}
 
 # include `quip` and `gap_fit` command line tools
 cp ${BUILD_DIR}/quip ${BUILD_DIR}/quippy
+cp ${BUILD_DIR}/md ${BUILD_DIR}/quippy
+cp ${BUILD_DIR}/vasp_driver ${BUILD_DIR}/quippy
 cp ${BUILD_DIR}/gap_fit ${BUILD_DIR}/quippy/
 
 # Python build dependencies
