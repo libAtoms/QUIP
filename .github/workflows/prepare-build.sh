@@ -44,7 +44,7 @@ BUILD_DIR=build/${QUIP_ARCH}
 cp Makefile.${QUIP_ARCH}.inc ${BUILD_DIR}/Makefile.inc
 
 export NPY_DISTUTILS_APPEND_FLAGS=1
-(cd ${BUILD_DIR}/../.. && make && make quippy)
+(cd ${BUILD_DIR}/../.. && make quippy)
 
 # if we're building a release then use tag name as version
 if [[ -f GITHUB_TAG ]]; then
@@ -57,8 +57,6 @@ cp ${BUILD_DIR}/../../quippy/setup.py ${BUILD_DIR}
 
 # include `quip` and `gap_fit` command line tools
 cp ${BUILD_DIR}/quip ${BUILD_DIR}/quippy
-cp ${BUILD_DIR}/md ${BUILD_DIR}/quippy
-cp ${BUILD_DIR}/vasp_driver ${BUILD_DIR}/quippy
 cp ${BUILD_DIR}/gap_fit ${BUILD_DIR}/quippy/
 
 # Python build dependencies
