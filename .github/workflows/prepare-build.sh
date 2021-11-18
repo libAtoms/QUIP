@@ -44,7 +44,7 @@ BUILD_DIR=build/${QUIP_ARCH}
 cp Makefile.${QUIP_ARCH}.inc ${BUILD_DIR}/Makefile.inc
 
 export NPY_DISTUTILS_APPEND_FLAGS=1
-(cd ${BUILD_DIR}/../.. && make quippy)
+(cd ${BUILD_DIR}/../.. && make && make quippy)
 
 # if we're building a release then use tag name as version
 if [[ -f GITHUB_TAG ]]; then
