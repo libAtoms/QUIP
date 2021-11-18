@@ -30,6 +30,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 # binary exectuables to bundle with distribution
 package_data_files = ['quip', 'libquip.a']
+# only add these if the executable actually exists
 if os.path.exists('gap_fit'):
     package_data_files.append('gap_fit')
 if os.path.exists('md'):
@@ -76,10 +77,14 @@ setup(
     cmdclass={'build_ext': my_build_ext },
     ext_modules=[Extension('quippy._quippy', [])],
     entry_points={
-        'console_scripts': ['gap_fit=quippy.cli:gap_fit',
-                            'quip=quippy.cli:quip',
-                            'md=quippy.cli:md',
-                            'vasp_driver=quippy.cli:vasp_driver',
+        'console_scripts': ['quip=quippy.cli:quip',
                             'quip-config=quippy.cli:quip_config']
     }
+    # only add these if the executable actually exists
+    if os.path.exists('gap_fit'):
+        entry_points['console_scripts'].append('gap_fit=quippy.cli:gap_fit')
+    if os.path.exists('md'):
+        entry_points['console_scripts'].append('md=quippy.cli:md')
+    if os.path.exists('vasp_driver'):
+        entry_points['console_scripts'].append('vasp_driver=quippy.cli:vasp_driver')
 )
