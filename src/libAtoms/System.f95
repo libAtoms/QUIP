@@ -405,6 +405,7 @@ private
   public :: make_run_directory
   public :: link_run_directory
   public :: wait_for_file_to_exist
+  public :: is_open
 contains
 
 #ifdef NO_FORTRAN_ISNAN
@@ -506,7 +507,7 @@ contains
 
        else
           this%filename=trim(filename)
-          this%unit=pick_up_unit()! pick up a unit from available(7-99)
+          this%unit=pick_up_unit() ! pick up available unit
 
           ! actually open the unit
           if ((.not. my_master_only) .or. mpi_myid == 0) then
@@ -561,14 +562,18 @@ contains
 
   end subroutine inoutput_initialise
 
+  !% OMIT
+  function is_open(unit)
+    integer, intent(in) :: unit
+    logical :: is_open
+    inquire(unit, opened=is_open)
+  end function is_open
 
   !% OMIT
   function pick_up_unit() result(unit)
     integer::unit,i
-    logical::iopened
     do i=7,99
-       INQUIRE(i,opened=iopened)
-       if(.NOT.iopened) then
+      if (.not. is_open(i)) then
           unit=i
           exit
        end if
