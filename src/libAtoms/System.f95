@@ -215,6 +215,7 @@ private
      module procedure inoutput_print_string
      module procedure inoutput_print_integer, inoutput_print_real, inoutput_print_logical
      module procedure inoutput_print_char_array
+     module procedure print_inoutput
   end interface print
 
   private :: reada_real_dim1, reada_int_dim1
@@ -775,6 +776,28 @@ contains
     call print(local_line, verbosity, file, nocr=nocr)
   end subroutine inoutput_print_real
 
+  subroutine print_inoutput(this)
+    type(inoutput), intent(in) :: this
+
+    call print_title("type(inoutput)")
+    call print("unit "//this% unit)
+    call print("filename "//this%filename)
+    call print("prefix "//this%prefix)
+    call print("postfix "//this%postfix)
+    call print("default_real_precision "//this%default_real_precision)
+    call print("formatted "//this%formatted)
+    call print("append "//this%append)
+    call print("active "//this%active)
+    call print("action "//this%action)
+    call print("mpi_all_inoutput_flag "//this%mpi_all_inoutput_flag)
+    call print("mpi_print_id "//this%mpi_print_id)
+    call print("verbosity_stack: ")
+    call print(this%verbosity_stack)
+    call print("verbosity_cascade_stack: ")
+    call print(this%verbosity_cascade_stack)
+    call print("initialised "//this%initialised)
+    call print_title("")
+  end subroutine print_inoutput
 
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 !X
