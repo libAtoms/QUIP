@@ -47,6 +47,7 @@
 
 module system_module
   use error_module
+  use kind_module
 !$ use omp_lib
 #ifdef _MPI
 #ifndef _OLDMPI
@@ -66,24 +67,7 @@ private
 
   logical, public :: system_use_fortran_random = .false.
 
-  integer, parameter, public :: isp = selected_int_kind(9)
-  integer, parameter, public :: idp = selected_int_kind(18)
-
-#ifdef HAVE_QP
-  integer, parameter, public :: qp = 16
-#elsif TEN_DIGIT_PRECISION
-  integer, parameter, public :: qp = selected_real_kind(10) !kind(1.0d0)
-#else
-  integer, parameter, public :: qp = 8
-#endif
-
-#ifdef QUAD_PRECISION
-  integer, parameter, public :: dp = 16 ! kind(1.0d0)
-#elsif TEN_DIGIT_PRECISION
-  integer, parameter, public :: dp = selected_real_kind(10) !kind(1.0d0)
-#else
-  integer, parameter, public :: dp = 8 ! kind(1.0d0)
-#endif
+  public :: isp, idp, dp, qp
 
   character, public :: quip_new_line
 
