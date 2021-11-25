@@ -2120,7 +2120,7 @@ contains
        endif
        write(string_cat_real,format) string, r
     else
-       write(string_cat_real,'(i0,a)') string, int(r)
+       write(string_cat_real,'(a,i0)') string, int(r)
     endif
 
   end function string_cat_real
