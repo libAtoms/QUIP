@@ -66,6 +66,9 @@ private
 
   logical, public :: system_use_fortran_random = .false.
 
+  integer, parameter, public :: isp = selected_int_kind(9)
+  integer, parameter, public :: idp = selected_int_kind(18)
+
 #ifdef HAVE_QP
   integer, parameter, public :: qp = 16
 #elsif TEN_DIGIT_PRECISION

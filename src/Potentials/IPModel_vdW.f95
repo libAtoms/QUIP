@@ -43,7 +43,7 @@
 module IPModel_vdW_module
 
 use error_module
-use system_module, only : dp, inoutput, string_to_int, reallocate, system_timer , print, PRINT_NERD
+use system_module, only : idp, dp, inoutput, string_to_int, reallocate, system_timer , print, PRINT_NERD
 use units_module
 use dictionary_module
 use periodictable_module, only: total_elements
@@ -95,7 +95,7 @@ type IPModel_vdW
   type(descriptor), dimension(:), allocatable :: my_descriptor
 #endif
   real(dp), dimension(total_elements) :: e0 = 0.0_dp
-  integer(dp), dimension(total_elements) :: map = -1
+  integer(idp), dimension(total_elements) :: map = -1
   integer :: n_types = 0
   integer, dimension(:), allocatable :: Z
   real(dp), dimension(:), allocatable :: r0

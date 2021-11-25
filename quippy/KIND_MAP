@@ -11,9 +11,7 @@
               'dp':  'complex_double'},
  'integer' : {'':       'int',
              '8':      'long_long',
-             'dp':     'long_long',
+             'idp':     'long_long',
              'c_intptr_t': 'long_long',
              'c_int': 'long_long'}
 }
-
-
