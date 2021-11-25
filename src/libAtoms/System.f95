@@ -254,7 +254,7 @@ private
   public :: operator(//)
 
   interface operator(//)
-     module procedure string_cat_logical, string_cat_int, string_cat_real, string_cat_real_array
+     module procedure string_cat_logical, string_cat_isp, string_cat_idp, string_cat_real, string_cat_real_array
      module procedure string_cat_complex, string_cat_int_array, string_cat_logical_array
      module procedure string_cat_complex_array, string_cat_string_array
 !     module procedure logical_cat_string, logical_cat_logical, logical_cat_int, logical_cat_real
@@ -347,6 +347,11 @@ private
      module procedure string_to_real_sub, string_to_integer_sub, string_to_logical_sub
      module procedure string_to_real1d, string_to_integer1d, string_to_logical1d
   end interface string_to_numerical
+
+  public :: int_format_length
+  interface int_format_length
+     module procedure int_format_length_isp, int_format_length_idp
+  end interface int_format_length
 
   integer, external :: pointer_to
   public :: increase_stack
@@ -1919,20 +1924,35 @@ contains
     write(string_cat_logical_array,format) string, log
   end function string_cat_logical_array
 
-  elemental function int_format_length(i) result(len)
+  elemental function int_format_length_isp(i) result(len)
     integer, intent(in)::i
     integer::len
     len = max(1,(-sign(1, i)+1)/2 + ceiling(log10(abs(real(i,dp))+0.01_dp)))
-  end function int_format_length
+  end function int_format_length_isp
 
-  function string_cat_int(string, int)
+  elemental function int_format_length_idp(i) result(len)
+    integer(idp), intent(in) :: i
+    integer :: len
+    len = max(1_idp,(-sign(1_idp, i)+1_idp)/2_idp + ceiling(log10(abs(real(i,dp))+0.01_dp), idp))
+  end function int_format_length_idp
+
+  function string_cat_isp(string, int) result(res)
     character(*),      intent(in)  :: string
     integer,           intent(in)  :: int
     ! below we work out the exact length of the resultant string
-    character(len(string)+int_format_length(int)) :: string_cat_int
+    character(len(string)+int_format_length(int)) :: res
 
-    write(string_cat_int,'(a,i0)') string, int
-  end function string_cat_int
+    write(res,'(a,i0)') string, int
+  end function string_cat_isp
+
+  function string_cat_idp(string, int) result(res)
+    character(*),      intent(in)  :: string
+    integer(idp),      intent(in)  :: int
+    ! below we work out the exact length of the resultant string
+    character(len(string)+int_format_length(int)) :: res
+
+    write(res,'(a,i0)') string, int
+  end function string_cat_idp
 
   function int_cat_string(int,string)
     character(*),      intent(in)  :: string
