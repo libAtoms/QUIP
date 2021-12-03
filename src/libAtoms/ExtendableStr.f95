@@ -485,6 +485,8 @@ subroutine extendable_str_read_unit(this, unit, convert_to_string, mpi_comm, mpi
   end if
 
   if (do_read) then
+    if (.not. is_open(unit)) call system_abort("Trying to read into extendable_str from unopened unit "//unit//".")
+
     done = .false.
     last_was_incomplete = .true.
     do while (.not. done)
