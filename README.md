@@ -28,7 +28,7 @@ Alan Nichol, David Packwood, Lars Pastewka, Giovanni Peralta, Ivan
 Solt, Oliver Strickson, Wojciech Szlachta, Csilla Varnai, Steven
 Winfield, Tamas K Stenczel, Adam Fekete.
 
-Copyright 2006-2019.
+Copyright 2006-2021.
 
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
