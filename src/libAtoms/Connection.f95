@@ -823,9 +823,11 @@ contains
     call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_NERD)
 
     ! If the lattice has changed, then the cells need de/reallocating
-    if ((cellsNa /= this%cellsNa) .or. &
-         (cellsNb /= this%cellsNb) .or. &
-         (cellsNc /= this%cellsNc)) call connection_cells_finalise(this)
+    if (this%cells_initialised) then
+      if ((cellsNa /= this%cellsNa) .or. &
+            (cellsNb /= this%cellsNb) .or. &
+            (cellsNc /= this%cellsNc)) call connection_cells_finalise(this)
+    end if
 
     ! figure out how many unit cell images we will need to loop over in each direction
     call fit_box_in_cell(cutoff, cutoff, cutoff, at%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
@@ -1133,9 +1135,11 @@ contains
     call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_VERBOSE)
 
     ! If the lattice has changed, then the cells need de/reallocating
-    if ((cellsNa /= this%cellsNa) .or. &
-         (cellsNb /= this%cellsNb) .or. &
-         (cellsNc /= this%cellsNc)) call connection_finalise(this)
+    if (this%cells_initialised) then
+      if ((cellsNa /= this%cellsNa) .or. &
+            (cellsNb /= this%cellsNb) .or. &
+            (cellsNc /= this%cellsNc)) call connection_finalise(this)
+    end if
 
     ! figure out how many unit cell images we will need to loop over in each direction
     call fit_box_in_cell(cutoff, cutoff, cutoff, at%lattice, cell_image_Na, cell_image_Nb, cell_image_Nc)
