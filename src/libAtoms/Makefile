@@ -51,6 +51,7 @@ endif
 
 LIBATOMS_F95_FILES = \
   error \
+  kind_module \
   System \
   LinkedList \
   ExtendableStr \
