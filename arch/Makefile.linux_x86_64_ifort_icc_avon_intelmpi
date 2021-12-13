@@ -1,0 +1,60 @@
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# H0 X
+# H0 X   libAtoms+QUIP: atomistic simulation library
+# H0 X
+# H0 X   Portions of this code were written by
+# H0 X     Albert Bartok-Partay, Silvia Cereda, Gabor Csanyi, James Kermode,
+# H0 X     Ivan Solt, Wojciech Szlachta, Csilla Varnai, Steven Winfield.
+# H0 X
+# H0 X   Copyright 2006-2010.
+# H0 X
+# H0 X   These portions of the source code are released under the GNU General
+# H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+# H0 X
+# H0 X   If you would like to license the source code under different terms,
+# H0 X   please contact Gabor Csanyi, gabor@csanyi.net
+# H0 X
+# H0 X   Portions of this code were written by Noam Bernstein as part of
+# H0 X   his employment for the U.S. Government, and are not subject
+# H0 X   to copyright in the USA.
+# H0 X
+# H0 X
+# H0 X   When using this software, please cite the following reference:
+# H0 X
+# H0 X   http://www.libatoms.org
+# H0 X
+# H0 X  Additional contributions by
+# H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
+# H0 X
+# H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# Based on the Avon SCRTP cluster at Warwick, but suitable for any system using a
+# full Intel stack, i.e. icc/ifort + Intel MPI and MKL, noting that mpif90, mpicc
+# etc will wrap gfortran and gcc (not ifort and icc) and link with Intel MPI on
+# such systems.
+#
+# Tested with environment modules...
+#
+# $ module load intel/2020b SciPy-bundle/2020.11
+
+# declarations
+include arch/Makefile.linux_x86_64_ifort_icc
+
+# Use MKL by default. ScaLAPACK is also available so might as well use it.
+# Make config suggests preconditioning doesn't work with Intel.
+export HAVE_SCALAPACK=1
+export HAVE_PRECON=0
+export DEFAULT_MATH_LINKOPTS =  -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 \
+       			     	-lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
+				-lmkl_blacs_intelmpi_lp64 -lpthread -lm -ldl
+
+# Invoke wrappers which use Intel MPI with Intel compilers
+F77 = mpiifort
+F90 = mpiifort
+F95 = mpiifort 
+CC = mpiicc 
+CPLUSPLUS = mpiicpc
+LINKER = mpiifort
+
+DEFINES += -D_MPI
+#DEFINES += -DMPI_1
