@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use the QUIP software, please cite it as below."
+authors:
+- family-names: "Csányi"
+  given-names: "Gábor"
+  orcid: "https://orcid.org/0000-0002-8180-2034"
+- family-names: "Bernstein"
+  given-names: "Noam"
+  orcid: "https://orcid.org/0000-0002-6532-1337"
+- family-names: "Kermode"
+  given-names: "James Richard"
+  orcid: "https://orcid.org/0000-0001-6755-6271"
+title: "libAtoms/QUIP"
+version: 0.9.9
+date-released: 2021.11.18
+url: "https://github.com/libAtoms/QUIP"
