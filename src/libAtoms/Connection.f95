@@ -1084,15 +1084,15 @@ contains
     cutoff = at%cutoff
     if (present(cutoff_skin)) then
        if (cutoff_skin .fne. 0.0_dp) then
-          call print('calc_connect: increasing cutoff from '//cutoff//' by cutoff_skin='//cutoff_skin ,PRINT_VERBOSE)
+          call print('calc_connect: increasing cutoff from '//cutoff//' by cutoff_skin='//cutoff_skin ,PRINT_NERD)
           cutoff = cutoff + cutoff_skin
 
           if (.not. allocated(this%last_connect_pos) .or. &
                (cutoff > this%last_connect_cutoff) .or. &
                (size(this%last_connect_pos, 2) /= at%n) .or. &
                (at%lattice .fne. this%last_connect_lattice)) then
-             call print('calc_connect: forcing a rebuild: either first time, atom number mismatch or lattice mismatch', PRINT_VERBOSE)
-             call print('calc_connect: maxval(abs(at%lattice - this%last_connect_lattice)) = '//(maxval(abs(at%lattice - this%last_connect_lattice))), PRINT_VERBOSE)
+             call print('calc_connect: forcing a rebuild: either first time, atom number mismatch or lattice mismatch', PRINT_NERD)
+             call print('calc_connect: maxval(abs(at%lattice - this%last_connect_lattice)) = '//(maxval(abs(at%lattice - this%last_connect_lattice))), PRINT_NERD)
              if (allocated(this%last_connect_pos)) deallocate(this%last_connect_pos)
              allocate(this%last_connect_pos(3, at%n))
              my_max_pos_change = huge(1.0_dp)
@@ -1111,7 +1111,7 @@ contains
           if (present(max_pos_change)) max_pos_change = my_max_pos_change
 
           if (my_max_pos_change < 0.5_dp*cutoff_skin) then
-             call print('calc_connect: max pos change '//my_max_pos_change//' < 0.5*cutoff_skin, doing a calc_dists() only', PRINT_VERBOSE)
+             call print('calc_connect: max pos change '//my_max_pos_change//' < 0.5*cutoff_skin, doing a calc_dists() only', PRINT_NERD)
              call calc_dists(this, at)
              call system_timer('calc_connect')
              if (present(did_rebuild)) did_rebuild = .false.
@@ -1119,7 +1119,7 @@ contains
           end if
 
           ! We need to do a full recalculation of connectivity. Store the current pos and lattice.
-          call print('calc_connect: max pos change '//my_max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_VERBOSE)
+          call print('calc_connect: max pos change '//my_max_pos_change//' >= 0.5*cutoff_skin, doing a full rebuild', PRINT_NERD)
           if (present(did_rebuild)) did_rebuild = .true.
           this%last_connect_pos(:,:) = at%pos
           this%last_connect_lattice(:,:) = at%lattice
@@ -1127,12 +1127,12 @@ contains
        end if
     end if
 
-    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_VERBOSE)
+    call print("calc_connect: cutoff calc_connect " // cutoff, PRINT_NERD)
 
     call calc_lat_eff(at, lat_eff, lat_eff_inv, lat_offset)
     call divide_cell(lat_eff, cutoff, cellsNa, cellsNb, cellsNc)
 
-    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_VERBOSE)
+    call print("calc_connect: cells_N[abc] " // cellsNa // " " // cellsNb // " " // cellsNc, PRINT_NERD)
 
     ! If the lattice has changed, then the cells need de/reallocating
     if (this%cells_initialised) then
@@ -1150,7 +1150,7 @@ contains
     cell_image_Nb = max(1,(cell_image_Nb+1)/2)
     cell_image_Nc = max(1,(cell_image_Nc+1)/2)
 
-    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, PRINT_VERBOSE)
+    call print('calc_connect: image cells '//cell_image_Na//'x'//cell_image_Nb//'x'//cell_image_Nc, PRINT_NERD)
 
     ! Allocate space for the connection object if needed
     if (.not.this%initialised) then
@@ -1190,8 +1190,8 @@ contains
        ! Sphere of radius "cutoff", assume roughly half neighbours in neighbour1 and half in neighbour2
        nn_guess = int(4.0_dp/3.0_dp*PI*cutoff**3*density)/2
 
-       call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), PRINT_VERBOSE)
-       call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, PRINT_VERBOSE)
+       call print('calc_connect: occupied cells '//n_occ//'/'//(cellsNa*cellsNb*cellsNc)//' = '//(n_occ/real(cellsNa*cellsNb*cellsNc,dp)), PRINT_NERD)
+       call print('calc_connect: estimated number of neighbours per atom = '//nn_guess, PRINT_NERD)
 
        call connection_fill(this, at%N, at%Nbuffer, at%pos, at%lattice, at%g, nn_guess=nn_guess)
     end if
