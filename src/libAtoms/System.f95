@@ -2345,9 +2345,18 @@ contains
 #ifdef _MPI
     integer :: PRINT_ALWAYS
 #endif
+    logical :: ltemp
+    integer, allocatable :: seeds(:), idums(:)
+
+    call print("")
+    call system_get_random_seeds(seeds, idums)
+    ltemp = mainlog%mpi_all_inoutput_flag
+    mainlog%mpi_all_inoutput_flag = .true.
+    call print('libAtoms::Finalise: random seeds(:) = '//seeds, PRINT_VERBOSE)
+    call print('libAtoms::Finalise: random idums(:) = '//idums, PRINT_VERBOSE)
+    mainlog%mpi_all_inoutput_flag = ltemp
 
     call date_and_time(values=values)
-    call print("")
     call print('libAtoms::Finalise: '//date_and_time_string(values))
     call print("libAtoms::Finalise: Bye-Bye!")
     call finalise(mainlog)
@@ -2414,6 +2423,29 @@ contains
     enddo
 !$OMP end parallel
   end subroutine system_set_random_seeds
+
+  subroutine system_get_random_seeds(seeds, idums)
+    integer, intent(out), allocatable :: seeds(:), idums(:)
+
+    integer :: n
+
+    call random_seed(size=n)
+    call reallocate(seeds, n)
+    call random_seed(get=seeds)
+
+#ifdef _OPENMP
+    !$omp parallel shared(idums)
+    !$omp single
+    call reallocate(idums, omp_get_num_threads())
+    idums = 0
+    !$omp end single
+    idums(omp_get_thread_num()+1) = idum
+    !$omp end parallel
+#else
+    call reallocate(idums, 1)
+    idums(1) = idum
+#endif
+  end subroutine system_get_random_seeds
 
   !% Called by 'system_initialise' to print welcome messages and
   !% seed the random number generator.
