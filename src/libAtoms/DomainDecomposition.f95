@@ -154,7 +154,7 @@ contains
 
     INIT_ERROR(error)
 
-    call print("DomainDecomposition : initialise", PRINT_VERBOSE)
+    call print("DomainDecomposition : initialise", PRINT_NERD)
 
     this%decomposition = (/ 1, 1, 1 /)
     if (present(decomposition)) then
