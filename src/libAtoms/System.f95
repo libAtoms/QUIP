@@ -278,6 +278,11 @@ private
      endsubroutine c_mem_info
   endinterface c_mem_info
 
+  public :: mem_info
+  interface mem_info
+    module procedure mem_info_i, mem_info_r
+  end interface mem_info
+
   private :: Stack_Initialise
   interface Initialise
     module procedure Stack_Initialise
@@ -3461,10 +3466,18 @@ end function pad
 
    end function linebreak_string
 
-   subroutine mem_info(total_mem, free_mem)
+   subroutine mem_info_i(total_mem_i, free_mem_i)
+    integer(idp), intent(out) :: total_mem_i, free_mem_i
+    real(8) :: total_mem_r, free_mem_r
+    call mem_info(total_mem_r, free_mem_r)
+    total_mem_i = int(total_mem_r, idp)
+    free_mem_i = int(free_mem_r, idp)
+   end subroutine mem_info_i
+
+   subroutine mem_info_r(total_mem, free_mem)
      real(8), intent(out) :: total_mem, free_mem
      call c_mem_info(total_mem, free_mem)
-   end subroutine mem_info
+   end subroutine mem_info_r
 
    subroutine print_mem_info(file)
       type(inoutput), intent(in), optional :: file
