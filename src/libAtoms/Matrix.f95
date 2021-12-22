@@ -289,9 +289,9 @@ subroutine SP_Matrix_QR_Solve(A, B, X, procs, ScaLAPACK_obj)
   m = mb * procs
   n = nb
 
-  ! @fixme Hotfix: nb=max(mb, nb) ; nb=nb throws an error in pdtrtrs().
-  call initialise(A_SP, m, n, mb, max(mb, nb), scalapack_obj=ScaLAPACK_obj)
-  call initialise(B_SP, m, 1, mb, 1, scalapack_obj=ScaLAPACK_obj)
+  ! Scalapack needs mb == nb for p?trtrs; choose nb for smaller work arrays
+  call initialise(A_SP, m, n, nb, nb, scalapack_obj=ScaLAPACK_obj)
+  call initialise(B_SP, m, 1, nb, 1, scalapack_obj=ScaLAPACK_obj)
 
   A_SP%data(:,:) = 0.0_qp
   A_SP%data(:,:) = A
