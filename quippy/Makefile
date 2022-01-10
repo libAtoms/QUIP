@@ -54,11 +54,14 @@ GAP_FILES = $(addprefix ../../src/GAP/,${GAP_SOURCES})
 WRAP_SOURCES = ${LIBATOMS_SOURCES} ${POT_SOURCES}
 WRAP_FILES = ${LIBATOMS_FILES} ${POT_FILES}
 
-PROGRAMS = quip
+PROGRAMS = quip md
 ifeq (${HAVE_GAP},1)
 	WRAP_SOURCES +=  ${GAP_SOURCES}
 	WRAP_FILES +=  ${GAP_FILES}
 	PROGRAMS += gap_fit
+endif
+ifeq (${HAVE_VASP},1)
+	PROGRAMS += vasp_driver
 endif
 
 WRAP_FPP_FILES = $(addsuffix .fpp,$(basename ${WRAP_SOURCES}))
