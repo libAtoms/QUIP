@@ -80,6 +80,11 @@ jobs:
           make libquip
           make quippy
           make install-quippy
+          
+      # Uncomment to get SSH access for testing
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3            
 
       - name: Test QUIP
         env:
