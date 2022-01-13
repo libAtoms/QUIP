@@ -55,12 +55,15 @@ private
 
 public :: MatrixD
 type MatrixD
+  logical :: use_allocate = .true. !>
   integer :: N = 0 !> global rows
   integer :: M = 0 !> global columns
   integer :: l_N = 0 !> local rows
   integer :: l_M = 0 !> local columns
-  real(dp), allocatable :: data(:,:) !> matrix values
+  real(dp), pointer :: data(:,:) => null() !> matrix values
   type(Matrix_ScaLAPACK_Info) :: ScaLAPACK_Info_obj !> meta info for scalapack
+  contains
+  final :: MatrixD_Finalise
 end type MatrixD
 
 public :: MatrixZ
@@ -207,15 +210,21 @@ public :: SP_Matrix_QR_Solve
 
 contains
 
-subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj)
+subroutine MatrixD_Initialise(this, N, M, NB, MB, scalapack_obj, use_allocate)
   type(MatrixD), intent(out) :: this
   integer, intent(in), optional :: N, M, NB, MB
   type(ScaLAPACK), intent(in), optional :: scalapack_obj
+  logical, intent(in), optional :: use_allocate
 
   call Finalise(this)
 
+  this%use_allocate = optional_default(.true., use_allocate)
+
   call matrixany_initialise(N, M, NB, MB, scalapack_obj, this%N, this%M, this%l_N, this%l_M, &
                             this%ScaLAPACK_Info_obj)
+
+  if (.not. this%use_allocate) return
+
   if (this%l_N > 0 .and. this%l_M > 0) then
     allocate(this%data(this%l_N, this%l_M))
     call ALLOC_TRACE("MatrixD_Initialise "//this%l_N//" "//this%l_M, size(this%data)*REAL_SIZE)
@@ -275,8 +284,8 @@ subroutine MatrixD_QR_Solve(A_SP, B_SP)
 end subroutine MatrixD_QR_Solve
 
 subroutine SP_Matrix_QR_Solve(A, B, X, procs, ScaLAPACK_obj)
-  real(dp), intent(in), dimension(:,:) :: A
-  real(dp), intent(in), dimension(:) :: B
+  real(dp), intent(in), dimension(:,:), target :: A
+  real(dp), intent(in), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
   integer, intent(in) :: procs
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
@@ -290,13 +299,11 @@ subroutine SP_Matrix_QR_Solve(A, B, X, procs, ScaLAPACK_obj)
   n = nb
 
   ! Scalapack needs mb == nb for p?trtrs; choose nb for smaller work arrays
-  call initialise(A_SP, m, n, nb, nb, scalapack_obj=ScaLAPACK_obj)
-  call initialise(B_SP, m, 1, nb, 1, scalapack_obj=ScaLAPACK_obj)
+  call initialise(A_SP, m, n, nb, nb, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
+  call initialise(B_SP, m, 1, nb, 1, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
 
-  A_SP%data(:,:) = 0.0_qp
-  A_SP%data(:,:) = A
-  B_SP%data(:,:) = 0.0_qp
-  B_SP%data(:,1) = B
+  A_SP%data => A
+  B_SP%data(lbound(B,1):ubound(B,1),1:1) => B(:)
 
   call MatrixD_QR_Solve(A_SP, B_SP)
   call MatrixD_to_array1d(B_SP, X)
@@ -408,10 +415,11 @@ subroutine MatrixD_Wipe(this)
 
   call Wipe(this%ScaLAPACK_Info_obj)
 
-  if (allocated(this%data)) then
+  if (this%use_allocate .and. associated(this%data)) then
     call DEALLOC_TRACE("MatrixD_Wipe ", size(this%data)*REAL_SIZE)
     deallocate(this%data)
   endif
+  this%data => null()
 
   this%N = 0
   this%M = 0
@@ -426,25 +434,27 @@ subroutine MatrixD_Zero(this, d_mask, od_mask)
 
   integer i
 
-  if (allocated(this%data)) then
-    if (present(d_mask) .or. present(od_mask)) then
-      if (present(d_mask)) then
-        do i=1, min(size(d_mask), this%N, this%M)
-          if (d_mask(i)) this%data(i,i) = 0.0_dp
-        end do
+  if (.not. associated(this%data)) return
+
+  if (.not. present(d_mask) .and. .not. present(od_mask)) then
+    this%data = 0.0_dp
+    return
+  end if
+
+  if (present(d_mask)) then
+    do i=1, min(size(d_mask), this%N, this%M)
+      if (d_mask(i)) this%data(i,i) = 0.0_dp
+    end do
+  end if
+
+  if (present(od_mask)) then
+    do i=1, size(od_mask)
+      if (od_mask(i)) then
+        if (i <= this%M) this%data(:,i) = 0.0_dp
+        if (i <= this%N) this%data(i,:) = 0.0_dp
       end if
-      if (present(od_mask)) then
-        do i=1, size(od_mask)
-          if (od_mask(i)) then
-            if (i <= this%M) this%data(:,i) = 0.0_dp
-            if (i <= this%N) this%data(i,:) = 0.0_dp
-          end if
-        end do
-      end if
-    else
-      this%data = 0.0_dp
-    endif
-  endif
+    end do
+  end if
 
 end subroutine
 
@@ -515,7 +525,7 @@ subroutine MatrixD_Print(this,file)
   if (this%ScaLAPACK_Info_obj%active)  then
     call Print(this%ScaLAPACK_Info_obj, this%data, file=file)
   else
-    if (allocated(this%data)) then
+    if (associated(this%data)) then
       call Print(this%data, file=file)
     endif
   endif

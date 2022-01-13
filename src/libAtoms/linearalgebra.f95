@@ -125,12 +125,16 @@ module linearalgebra_module
   integer, parameter :: QR             = 2
 
   type LA_Matrix
-     real(qp), dimension(:,:), allocatable :: matrix, factor
+     real(qp), dimension(:,:), pointer :: matrix
+     real(qp), dimension(:,:), allocatable :: factor
      real(qp), dimension(:), allocatable :: s, tau
      integer :: n, m
+     logical :: use_allocate = .true.
      logical :: initialised = .false.
      logical :: equilibrated = .false.
      integer :: factorised = NOT_FACTORISED
+     contains
+     final :: LA_Matrix_Finalise
   endtype LA_Matrix
 
   interface Initialise
@@ -138,7 +142,7 @@ module linearalgebra_module
   endinterface Initialise
 
   interface assignment(=)
-     module procedure LA_Matrix_Initialise
+     module procedure LA_Matrix_Initialise_Matrix
      module procedure LA_Matrix_Initialise_Copy
   end interface assignment(=)
 
@@ -2182,23 +2186,36 @@ CONTAINS
 
   ! Cholesky factorisation of a symmetric matrix.
   ! Various checks (size, symmetricity etc.) might be useful later.
-  subroutine LA_Matrix_Initialise(this,matrix)
+  subroutine LA_Matrix_Initialise(this,matrix,use_allocate)
 
      type(LA_Matrix), intent(inout) :: this
-     real(qp), dimension(:,:), intent(in) :: matrix
+     real(qp), dimension(:,:), intent(in), target :: matrix
+     logical, intent(in), optional :: use_allocate
 
      if(this%initialised) call finalise(this)
+
+     this%use_allocate = optional_default(.true., use_allocate)
 
      this%n = size(matrix,1)
      this%m = size(matrix,2)
 
-     allocate(this%matrix(this%n,this%m), this%factor(this%n,this%m), this%s(this%n), &
-     this%tau(this%m) )
+     if (this%use_allocate) then
+       allocate(this%matrix(this%n,this%m))
+       this%matrix = matrix
+     else
+       this%matrix => matrix
+     end if
 
-     this%matrix = matrix
+     allocate(this%factor(this%n,this%m), this%s(this%n), this%tau(this%m))
      this%initialised = .true.
 
   endsubroutine LA_Matrix_Initialise
+
+  subroutine LA_Matrix_Initialise_Matrix(this,matrix)
+   type(LA_Matrix), intent(inout) :: this
+   real(qp), dimension(:,:), intent(in) :: matrix
+   call Initialise(this,matrix)
+  endsubroutine LA_Matrix_Initialise_Matrix
 
   subroutine LA_Matrix_Initialise_Copy(this, from)
 
@@ -2207,7 +2224,8 @@ CONTAINS
 
      if(this%initialised) call finalise(this)
 
-     if (allocated(from%matrix)) then
+     this%use_allocate = .true.
+     if (associated(from%matrix)) then
        allocate(this%matrix(size(from%matrix,1), size(from%matrix,2)))
        this%matrix = from%matrix
      end if
@@ -2267,7 +2285,8 @@ CONTAINS
 
      this%n = 0
      this%m = 0
-     if(allocated(this%matrix) ) deallocate(this%matrix)
+     if(this%use_allocate .and. associated(this%matrix)) deallocate(this%matrix)
+     this%matrix => null()
      if(allocated(this%factor) ) deallocate(this%factor)
      if(allocated(this%s) ) deallocate(this%s)
      if(allocated(this%tau) ) deallocate(this%tau)
