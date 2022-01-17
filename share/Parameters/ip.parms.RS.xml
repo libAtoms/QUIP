@@ -1,10 +1,18 @@
-<RS_params n_types="2" cutoff="10.0" label="default">
+<quip>
+<RS_params n_types="1" cutoff="10.0" label="default">
 <per_type_data type="1" atomic_num="29" />
-<per_type_data type="2" atomic_num="79" />
-<per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" 
-      sigma1="1.35" k="10" />
-<per_pair_data type1="1" type2="2" sigma="1.0" eps="1.0" 
-      sigma1="1.35" k="10" />
-<per_pair_data type1="2" type2="2" sigma="1.0" eps="1.0" 
-      sigma1="1.35" k="10" />
+<per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" n="1">
+   <lambda>-0.5</lambda>
+   <sigma1>1.35</sigma1>
+   <k>10</k>
+</per_pair_data>
 </RS_params>
+<RS_params n_types="1" cutoff="8.0" label="attractive">
+<per_type_data type="1" atomic_num="29" />
+<per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" n="2">
+   <lambda>-0.8 0.3</lambda>
+   <sigma1>1.35 1.80</sigma1>
+   <k>10 10</k>
+</per_pair_data>
+</RS_params>
+</quip>

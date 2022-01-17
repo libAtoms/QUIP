@@ -48,7 +48,8 @@
 module IPModel_RS_module
 
 use error_module
-use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, split_string_simple, operator(//)
+use system_module, only : dp, inoutput, print, verbosity_push_decrement, verbosity_pop, split_string_simple, string_to_numerical, operator(//)
+use extendable_str_module  
 use dictionary_module
 use paramreader_module
 use linearalgebra_module
@@ -66,19 +67,28 @@ private
 include 'IPModel_interface.h'
 
 public :: IPModel_RS
+type shoulder_params_t
+   integer :: n = 0
+   real(dp), dimension(:), allocatable :: sigma1, lambda, k
+   real(dp) :: lambda0 = 0.0_dp
+endtype shoulder_params_t
+
 type IPModel_RS
   integer :: n_types = 0         !% Number of atomic types.
   integer, allocatable :: atomic_num(:), type_of_atomic_num(:)  !% Atomic number dimensioned as \texttt{n_types}.
 
   real(dp) :: cutoff = 0.0_dp    !% Cutoff for computing connection.
 
-  real(dp), allocatable :: eps(:,:), sigma(:,:), sigma1(:,:), k(:,:)
+  real(dp), allocatable :: eps(:,:), sigma(:,:)
+  type(shoulder_params_t), dimension(:,:), allocatable :: shoulder_params
 
   character(len=STRING_LENGTH) label
 
 end type IPModel_RS
 
 logical, private :: parse_in_ip, parse_matched_label
+integer, private :: parse_ti, parse_tj
+type(extendable_str), private, save :: parse_element_data
 type(IPModel_RS), private, pointer :: parse_ip
 
 interface Initialise
@@ -121,14 +131,25 @@ end subroutine IPModel_RS_Initialise_str
 
 subroutine IPModel_RS_Finalise(this)
   type(IPModel_RS), intent(inout) :: this
+  integer :: i, j
 
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
 
   if (allocated(this%sigma)) deallocate(this%sigma)
-  if (allocated(this%sigma1)) deallocate(this%sigma1)
   if (allocated(this%eps)) deallocate(this%eps)
-  if (allocated(this%k)) deallocate(this%k)
+  if (allocated(this%shoulder_params)) then
+     do i = 1, this%n_types
+        do j = 1, this%n_types
+           if(allocated(this%shoulder_params(j,i)%sigma1)) deallocate(this%shoulder_params(j,i)%sigma1)
+           if(allocated(this%shoulder_params(j,i)%lambda)) deallocate(this%shoulder_params(j,i)%lambda)
+           if(allocated(this%shoulder_params(j,i)%k)) deallocate(this%shoulder_params(j,i)%k)
+           this%shoulder_params(j,i)%n = 0
+           this%shoulder_params(j,i)%lambda0 = 0.0_dp
+        enddo
+     enddo
+     deallocate(this%shoulder_params)
+  endif
 
   this%n_types = 0
   this%label = ''
@@ -279,8 +300,8 @@ function IPModel_RS_pairenergy(this, ti, tj, r)
 
   IPModel_RS_pairenergy = this%eps(ti,tj) * ( &
      ( this%sigma(ti,tj) / r )**14 + &
-     0.5_dp * ( 1.0_dp - tanh( this%k(ti,tj) * ( r - this%sigma1(ti,tj) ) ) ) &
-     )
+     sum( this%shoulder_params(ti,tj)%lambda * tanh( this%shoulder_params(ti,tj)%k * ( r - this%shoulder_params(ti,tj)%sigma1 ) ) ) + &
+     this%shoulder_params(ti,tj)%lambda0 )
 
 end function IPModel_RS_pairenergy
 
@@ -296,10 +317,10 @@ function IPModel_RS_pairenergy_deriv(this, ti, tj, r)
     return
   endif
 
-  IPModel_RS_pairenergy_deriv = - this%eps(ti,tj) * ( &
-     14.0_dp * ( this%sigma(ti,tj) / r )**14 / r + &
-     0.5_dp * this%k(ti,tj) / cosh( this%k(ti,tj) * ( r - this%sigma1(ti,tj) ) )**2 &
-     )
+  IPModel_RS_pairenergy_deriv = this%eps(ti,tj) * ( &
+     - 14.0_dp * ( this%sigma(ti,tj) / r )**14 / r + &
+     sum( this%shoulder_params(ti,tj)%lambda * &
+        this%shoulder_params(ti,tj)%k / cosh( this%shoulder_params(ti,tj)%k * ( r - this%shoulder_params(ti,tj)%sigma1 ) )**2 ) )
 
 end function IPModel_RS_pairenergy_deriv
 
@@ -309,16 +330,24 @@ end function IPModel_RS_pairenergy_deriv
 !% An example for XML stanza is given below, please notice that
 !% they are simply dummy parameters for testing purposes, with no physical meaning.
 !%
-!%> <RS_params n_types="2" cutoff="10.0" label="default">
-!%> <per_type_data type="1" atomic_num="29" />
-!%> <per_type_data type="2" atomic_num="79" />
-!%> <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0"
-!%>       sigma1="1.35" k="10" />
-!%> <per_pair_data type1="1" type2="2" sigma="1.0" eps="1.0"
-!%>       sigma1="1.35" k="10" />
-!%> <per_pair_data type1="2" type2="2" sigma="1.0" eps="1.0"
-!%>       sigma1="1.35" k="10" />
-!%> </RS_params>
+!% <quip>
+!% <RS_params n_types="1" cutoff="10.0" label="default">
+!% <per_type_data type="1" atomic_num="29" />
+!% <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" n="1">
+!%    <lambda>-0.5</lambda>
+!%    <sigma1>1.35</sigma1>
+!%    <k>10</k>
+!% </per_pair_data>
+!% </RS_params>
+!% <RS_params n_types="1" cutoff="10.0" label="attractive">
+!% <per_type_data type="1" atomic_num="29" />
+!% <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" n="2">
+!%    <lambda>-0.8 0.3</lambda>
+!%    <sigma1>1.35 1.80</sigma1>
+!%    <k>10 10</k>
+!% </per_pair_data>
+!% </RS_params>
+!% </quip>
 !X
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 subroutine IPModel_startElement_handler(URI, localname, name, attributes)
@@ -329,8 +358,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
 
   integer :: status
   character(len=1024) :: value
-
-  integer :: ti, tj
 
   if (name == 'RS_params') then ! new RS stanza
 
@@ -378,67 +405,76 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       parse_ip%sigma = 1.0_dp
       allocate(parse_ip%eps(parse_ip%n_types,parse_ip%n_types))
       parse_ip%eps = 0.0_dp
-      allocate(parse_ip%sigma1(parse_ip%n_types,parse_ip%n_types))
-      parse_ip%sigma1 = 0.0_dp
-      allocate(parse_ip%k(parse_ip%n_types,parse_ip%n_types))
-      parse_ip%k = 0.0_dp
+      allocate(parse_ip%shoulder_params(parse_ip%n_types,parse_ip%n_types))
     endif
 
   elseif (parse_in_ip .and. name == 'per_type_data') then
 
     call QUIP_FoX_get_value(attributes, "type", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find type")
-    read (value, *) ti
+    read (value, *) parse_ti
 
-    if (ti < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type="//ti//" < 1")
-    if (ti > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_type_data type="//ti//" > n_types="//parse_ip%n_types)
+    if (parse_ti < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type="//parse_ti//" < 1")
+    if (parse_ti > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_type_data type="//parse_ti//" > n_types="//parse_ip%n_types)
 
     call QUIP_FoX_get_value(attributes, "atomic_num", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find atomic_num")
-    read (value, *) parse_ip%atomic_num(ti)
+    read (value, *) parse_ip%atomic_num(parse_ti)
 
     if (allocated(parse_ip%type_of_atomic_num)) deallocate(parse_ip%type_of_atomic_num)
     allocate(parse_ip%type_of_atomic_num(maxval(parse_ip%atomic_num)))
     parse_ip%type_of_atomic_num = 0
-    do ti=1, parse_ip%n_types
-      if (parse_ip%atomic_num(ti) > 0) &
-        parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
+    do parse_ti=1, parse_ip%n_types
+      if (parse_ip%atomic_num(parse_ti) > 0) &
+        parse_ip%type_of_atomic_num(parse_ip%atomic_num(parse_ti)) = parse_ti
     end do
 
   elseif (parse_in_ip .and. name == 'per_pair_data') then
 
     call QUIP_FoX_get_value(attributes, "type1", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find type1")
-    read (value, *) ti
+    read (value, *) parse_ti
     call QUIP_FoX_get_value(attributes, "type2", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find type2")
-    read (value, *) tj
+    read (value, *) parse_tj
 
-    if (ti < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type1="//ti//" < 1")
-    if (ti > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_pair_data type1="//ti//" > n_types="//parse_ip%n_types)
-    if (tj < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type2="//tj//" < 1")
-    if (tj > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_pair_data type2="//tj//" > n_types="//parse_ip%n_types)
+    if (parse_ti < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type1="//parse_ti//" < 1")
+    if (parse_ti > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_pair_data type1="//parse_ti//" > n_types="//parse_ip%n_types)
+    if (parse_tj < 1) call system_abort("IPModel_RS_read_params_xml got per_type_data type2="//parse_tj//" < 1")
+    if (parse_tj > parse_ip%n_types) call system_abort("IPModel_RS_read_params_xml got per_pair_data type2="//parse_tj//" > n_types="//parse_ip%n_types)
 
     call QUIP_FoX_get_value(attributes, "sigma", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find sigma")
-    read (value, *) parse_ip%sigma(ti,tj)
+    read (value, *) parse_ip%sigma(parse_ti,parse_tj)
     call QUIP_FoX_get_value(attributes, "eps", value, status)
     if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find eps6")
-    read (value, *) parse_ip%eps(ti,tj)
-    call QUIP_FoX_get_value(attributes, "sigma1", value, status)
-    if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find sigma1")
-    read (value, *) parse_ip%sigma1(ti,tj)
-    call QUIP_FoX_get_value(attributes, "k", value, status)
-    if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find k")
-    read (value, *) parse_ip%k(ti,tj)
+    read (value, *) parse_ip%eps(parse_ti,parse_tj)
 
-    if (ti /= tj) then
-      parse_ip%eps(tj,ti) = parse_ip%eps(ti,tj)
-      parse_ip%sigma(tj,ti) = parse_ip%sigma(ti,tj)
-      parse_ip%sigma1(tj,ti) = parse_ip%sigma1(ti,tj)
-      parse_ip%k(tj,ti) = parse_ip%k(ti,tj)
+
+
+    call QUIP_FoX_get_value(attributes, "n", value, status)
+    if (status /= 0) call system_abort ("IPModel_RS_read_params_xml cannot find n")
+    read (value, *) parse_ip%shoulder_params(parse_ti,parse_tj)%n
+    allocate( parse_ip%shoulder_params(parse_ti,parse_tj)%sigma1( parse_ip%shoulder_params(parse_ti,parse_tj)%n ), &
+       parse_ip%shoulder_params(parse_ti,parse_tj)%lambda( parse_ip%shoulder_params(parse_ti,parse_tj)%n ), &
+       parse_ip%shoulder_params(parse_ti,parse_tj)%k( parse_ip%shoulder_params(parse_ti,parse_tj)%n ) )
+
+    if (parse_ti /= parse_tj) then
+      parse_ip%eps(parse_tj,parse_ti) = parse_ip%eps(parse_ti,parse_tj)
+      parse_ip%sigma(parse_tj,parse_ti) = parse_ip%sigma(parse_ti,parse_tj)
+      parse_ip%shoulder_params(parse_tj,parse_ti)%n = parse_ip%shoulder_params(parse_ti,parse_tj)%n
+
+      allocate( parse_ip%shoulder_params(parse_tj,parse_ti)%sigma1( parse_ip%shoulder_params(parse_tj,parse_ti)%n ), &
+         parse_ip%shoulder_params(parse_tj,parse_ti)%lambda( parse_ip%shoulder_params(parse_tj,parse_ti)%n ), &
+         parse_ip%shoulder_params(parse_tj,parse_ti)%k( parse_ip%shoulder_params(parse_tj,parse_ti)%n ) )
     end if
 
+  elseif (parse_in_ip .and. name == 'lambda') then
+     call zero(parse_element_data)
+  elseif (parse_in_ip .and. name == 'sigma1') then
+     call zero(parse_element_data)
+  elseif (parse_in_ip .and. name == 'k') then
+     call zero(parse_element_data)
   endif
 
 end subroutine IPModel_startElement_handler
@@ -450,11 +486,33 @@ subroutine IPModel_endElement_handler(URI, localname, name)
 
   if (parse_in_ip) then
     if (name == 'RS_params') then
-      parse_in_ip = .false.
+       parse_in_ip = .false.
+    elseif( name == "lambda" ) then
+       call string_to_numerical( string(parse_element_data), parse_ip%shoulder_params(parse_ti,parse_tj)%lambda )
+       parse_ip%shoulder_params(parse_ti,parse_tj)%lambda0 = -sum(parse_ip%shoulder_params(parse_ti,parse_tj)%lambda)
+       if( parse_ti /= parse_tj ) then
+          parse_ip%shoulder_params(parse_tj,parse_ti)%lambda = parse_ip%shoulder_params(parse_ti,parse_tj)%lambda
+          parse_ip%shoulder_params(parse_tj,parse_ti)%lambda0  = parse_ip%shoulder_params(parse_ti,parse_tj)%lambda0
+       endif
+    elseif( name == "sigma1" ) then
+       call string_to_numerical( string(parse_element_data), parse_ip%shoulder_params(parse_ti,parse_tj)%sigma1 )
+       if( parse_ti /= parse_tj ) parse_ip%shoulder_params(parse_tj,parse_ti)%sigma1 = parse_ip%shoulder_params(parse_ti,parse_tj)%sigma1
+    elseif( name == "k" ) then
+       call string_to_numerical( string(parse_element_data), parse_ip%shoulder_params(parse_ti,parse_tj)%k )
+       if( parse_ti /= parse_tj ) parse_ip%shoulder_params(parse_tj,parse_ti)%k = parse_ip%shoulder_params(parse_ti,parse_tj)%k
     end if
+
   endif
 
 end subroutine IPModel_endElement_handler
+
+subroutine IPModel_characters_handler(in)
+   character(len=*), intent(in) :: in
+
+   if( parse_in_ip ) then
+      call concat(parse_element_data, in, keep_lf=.false.,lf_to_whitespace=.true.)
+   endif
+endsubroutine IPModel_characters_handler
 
 subroutine IPModel_RS_read_params_xml(this, param_str)
   type(IPModel_RS), intent(inout), target :: this
@@ -467,12 +525,16 @@ subroutine IPModel_RS_read_params_xml(this, param_str)
   parse_in_ip = .false.
   parse_matched_label = .false.
   parse_ip => this
+  call initialise(parse_element_data)
 
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
+    characters_handler = IPModel_characters_handler, &
     startElement_handler = IPModel_startElement_handler, &
     endElement_handler = IPModel_endElement_handler)
   call close_xml_t(fxml)
+
+  call finalise(parse_element_data)
 
   if (this%n_types == 0) then
     call system_abort("IPModel_RS_read_params_xml parsed file, but n_types = 0")
@@ -494,6 +556,7 @@ subroutine IPModel_RS_Print (this, file)
   integer :: ti, tj
 
   call Print("IPModel_RS : Repulsive Step", file=file)
+  call Print("IPModel_RS : label = "//this%label, file=file)
   call Print("IPModel_RS : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
 
   do ti=1, this%n_types
@@ -501,7 +564,8 @@ subroutine IPModel_RS_Print (this, file)
     call verbosity_push_decrement()
     do tj=1, this%n_types
       call Print ("IPModel_RS : interaction " // ti // " " // tj // " sigma " // this%sigma(ti,tj) // " eps " // &
-        this%eps(ti,tj) // " sigma1 " // this%sigma1(ti,tj) // " k " // this%k(ti,tj), file=file)
+        this%eps(ti,tj) // " sigma1 " // this%shoulder_params(ti,tj)%sigma1 // " k " // this%shoulder_params(ti,tj)%k // &
+        " lambda " // this%shoulder_params(ti,tj)%lambda, file=file)
     end do
     call verbosity_pop()
   end do

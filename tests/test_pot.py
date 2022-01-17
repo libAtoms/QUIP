@@ -185,8 +185,11 @@ class TestPotential(quippytest.QuippyTestCase):
         RS_str = """
         <RS_params n_types="1" cutoff="10.0" label="default">
         <per_type_data type="1" atomic_num="13" />
-        <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0"
-              sigma1="1.45" k="10" />
+        <per_pair_data type1="1" type2="1" sigma="1.0" eps="1.0" n="1">
+           <lambda>-0.5</lambda>
+           <sigma1>1.45</sigma1>
+           <k>10</k>
+        </per_pair_data>
         </RS_params>"""
 
         calc = Potential(param_str=RS_str, args_str='IP RS')
