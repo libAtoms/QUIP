@@ -1,9 +1,11 @@
 module task_manager_module
   !> A task manager determines the distribution of tasks to workers with
   !> respect to the tasks' demands.
-
+  !>
+  !> Each task stores integer data in %idata.
+  !> %idata(1) is used for distribution.
   use libatoms_module, only : initialise, finalise, print_title, print, &
-      operator(//), system_abort, inoutput, optional_default, OUTPUT
+      operator(//), system_abort, inoutput, optional_default, OUTPUT, PRINT_VERBOSE
   use linearalgebra_module, only : heap_sort
   use MPI_context_module, only : MPI_Context, print
   use ScaLAPACK_module, only : Scalapack, print
@@ -21,7 +23,7 @@ module task_manager_module
 
   type task_type
     integer :: index = UNDEFINED !> initial task index
-    integer :: memory = 0 !> memory needed for this task
+    integer, dimension(:), allocatable :: idata !> integer data for this task
     integer :: worker_id = UNDEFINED !> ID of worker assigned to this task
   end type task_type
 
@@ -51,18 +53,23 @@ module task_manager_module
   contains
 
   !> Add task to list
-  subroutine task_manager_add_task(this, memory, worker_id)
+  subroutine task_manager_add_task(this, idata1, n_idata, worker_id)
     type(task_manager_type), intent(inout) :: this
-    integer, intent(in) :: memory !> memory needed for new task
+    integer, intent(in), optional :: idata1 !> first idata entry for new task
+    integer, intent(in), optional :: n_idata !> number of idata entries for new task
     integer, intent(in), optional :: worker_id !> preset worker for this task
 
+    integer :: my_n_idata
+
     if (.not. this%active) return
+    my_n_idata = optional_default(1, n_idata)
 
     this%n_tasks = this%n_tasks + 1
     if (this%n_tasks > size(this%tasks)) call system_abort("More tasks added than allocated.")
     associate(task => this%tasks(this%n_tasks))
+        allocate(task%idata(my_n_idata))
         task%index = this%n_tasks
-        task%memory = memory
+        if (present(idata1)) task%idata(1) = idata1
         if (present(worker_id)) task%worker_id = worker_id
     end associate
   end subroutine task_manager_add_task
@@ -81,27 +88,31 @@ module task_manager_module
     end associate
   end subroutine task_manager_add_worker
 
-  !> @brief Distribute tasks among workers for minimal memory usage
-  !> Assertions: %tasks(:)%memory is set, %n_workers > 0
+  !> @brief Distribute tasks among workers for minimal idata(1) usage
   subroutine task_manager_distribute_tasks(this)
     type(task_manager_type), intent(inout) :: this
 
     integer :: i, t, w ! indices
     integer :: n
     integer, dimension(:), allocatable :: workloads
-    integer, dimension(:), allocatable :: memory_list
+    integer, dimension(:), allocatable :: idata1_list
     integer, dimension(:), allocatable :: index_list
 
     if (.not. this%active) return
+    if (this%n_tasks < 1) return
+    if (this%n_workers < 1) call system_abort("task_manager_distribute_tasks: No workers initialised.")
 
     allocate(workloads(this%n_workers))
-    allocate(memory_list(this%n_tasks))
+    allocate(idata1_list(this%n_tasks))
     allocate(index_list(this%n_tasks))
 
-    ! copy to temp arrays, sort both by memory
-    memory_list = this%tasks(1:this%n_tasks)%memory
-    index_list = this%tasks(1:this%n_tasks)%index
-    call heap_sort(memory_list, i_data=index_list) ! index_list sorted via memory_list
+    ! copy to temp arrays, sort both by idata1
+    do i = 1, this%n_tasks
+      if (.not. allocated(this%tasks(i)%idata)) call system_abort("task_manager_distribute_tasks: idata of task "//i//" is unallocated.")
+      idata1_list(i) = this%tasks(i)%idata(1)
+      index_list(i) = this%tasks(i)%index
+    end do
+    call heap_sort(idata1_list, i_data=index_list) ! index_list sorted via idata1_list
 
     ! count workload of preset tasks
     workloads = 0
@@ -110,18 +121,18 @@ module task_manager_module
         w = this%tasks(i)%worker_id
         if (w /= UNDEFINED) then
           this%workers(w)%n_tasks = this%workers(w)%n_tasks + 1
-          workloads(w) = workloads(w) + memory_list(t)
+          workloads(w) = workloads(w) + idata1_list(t)
         end if
     end do
 
-    ! distribute tasks to workers to minimize maximum memory usage
+    ! distribute tasks to workers to minimize maximum idata1 sum
     do t = this%n_tasks, 1, -1
         i = index_list(t)
-        if (this%tasks(i)%worker_id /= UNDEFINED) cycle ! this preset tasks
+        if (this%tasks(i)%worker_id /= UNDEFINED) cycle ! skip preset tasks
         w = minloc(workloads, 1)
         this%tasks(i)%worker_id = w
         this%workers(w)%n_tasks = this%workers(w)%n_tasks + 1
-        workloads(w) = workloads(w) + memory_list(t)
+        workloads(w) = workloads(w) + idata1_list(t)
     end do
 
     this%unified_workload = maxval(workloads)
@@ -149,20 +160,20 @@ module task_manager_module
   subroutine task_manager_show_distribution(this)
     type(task_manager_type), intent(in) :: this
 
-    integer :: i, t, w, load, n_tasks
+    integer :: i, t, w, idata1_sum, n_tasks
 
     if (.not. this%active) return
 
     do w = 1, this%n_workers
         call print("Tasks of worker "//w)
-        load = 0
+        idata1_sum = 0
         n_tasks = 0
         do i = 1, this%workers(w)%n_tasks
           t = this%workers(w)%task_ids(i)
-          call print(i // ": " // t // ": " // this%tasks(t)%memory)
-          load = load + this%tasks(t)%memory
+          call print(i // ": " // t // ": " // this%tasks(t)%idata)
+          idata1_sum = idata1_sum + this%tasks(t)%idata(1)
         end do
-        call print("Summary: "//this%workers(w)%n_tasks//" tasks, "//load//" memory, "//this%workers(w)%n_padding//" padding")
+        call print("Summary: "//this%workers(w)%n_tasks//" tasks, "//idata1_sum//" idata1_sum, "//this%workers(w)%n_padding//" padding")
     end do
   end subroutine task_manager_show_distribution
 
@@ -180,11 +191,11 @@ module task_manager_module
     if (only_id_opt >= 0 .and. only_id_opt /= this%my_worker_id) return
 
     call initialise(file, "tm.dist", OUTPUT)
-    call print("worker_id task_id_local task_id_global memory", file=file)
+    call print("worker_id task_id_local task_id_global idata", file=file)
     do w = 1, this%n_workers
         do i = 1, this%workers(w)%n_tasks
           t = this%workers(w)%task_ids(i)
-          call print(w // " " // i // " " // t // " " // this%tasks(t)%memory, file=file)
+          call print(w // " " // i // " " // t // " " // this%tasks(t)%idata, file=file)
         end do
     end do
     call finalise(file)
