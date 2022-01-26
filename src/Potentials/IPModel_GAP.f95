@@ -176,6 +176,7 @@ subroutine IPModel_GAP_Initialise_str(this, args_str, param_str)
 
   call IPModel_GAP_read_params_xml(this, param_str)
   call gp_readXML(this%my_gp, param_str,label=trim(this%label))
+  if (.not. this%my_gp%fitted) call system_abort('IPModel_GAP_Initialise_str: GAP model has not been fitted.')
   allocate(this%my_descriptor(this%my_gp%n_coordinate))
 
   this%cutoff = 0.0_dp
