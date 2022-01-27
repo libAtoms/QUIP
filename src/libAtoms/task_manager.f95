@@ -31,7 +31,7 @@ module task_manager_module
     integer :: index = UNDEFINED !> initial worker index
     integer :: n_tasks = 0 !> number of tasks assigned to this worker
     integer :: n_padding = 0 !> number of padding rows to reach unified workload
-    integer, dimension(:), allocatable :: task_ids !> IDs of tasks assigned to this worker
+    type(task_type), dimension(:), allocatable :: tasks !> tasks assigned to this worker
   end type worker_type
 
   type task_manager_type
@@ -140,13 +140,13 @@ module task_manager_module
     ! fill workers with task id lists (replication for simpler retrieval)
     do w = 1, this%n_workers
         n = this%workers(w)%n_tasks
-        allocate(this%workers(w)%task_ids(n))
+        allocate(this%workers(w)%tasks(n))
         this%workers(w)%n_tasks = 0
     end do
     do t = 1, this%n_tasks
         w = this%tasks(t)%worker_id
         n = this%workers(w)%n_tasks + 1
-        this%workers(w)%task_ids(n) = t
+        this%workers(w)%tasks(n) = this%tasks(t)
         this%workers(w)%n_tasks = n
     end do
 
@@ -169,7 +169,7 @@ module task_manager_module
         idata1_sum = 0
         n_tasks = 0
         do i = 1, this%workers(w)%n_tasks
-          t = this%workers(w)%task_ids(i)
+          t = this%workers(w)%tasks(i)%index
           call print(i // ": " // t // ": " // this%tasks(t)%idata)
           idata1_sum = idata1_sum + this%tasks(t)%idata(1)
         end do
@@ -194,7 +194,7 @@ module task_manager_module
     call print("worker_id task_id_local task_id_global idata", file=file)
     do w = 1, this%n_workers
         do i = 1, this%workers(w)%n_tasks
-          t = this%workers(w)%task_ids(i)
+          t = this%workers(w)%tasks(i)%index
           call print(w // " " // i // " " // t // " " // this%tasks(t)%idata, file=file)
         end do
     end do
