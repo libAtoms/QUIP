@@ -43,7 +43,7 @@ PROGRAMS = quip md \
   quip_wrapper_example descriptors_wrapper_example \
   slice_sample order_atoms_as_molecules md_gid \
   quip_wrapper_simple_example quip_wrapper_simple_example_C \
-  get_qw
+  get_qw test_task_manager
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
