@@ -56,6 +56,8 @@ module task_manager_module
     integer, intent(in) :: memory !> memory needed for new task
     integer, intent(in), optional :: worker_id !> preset worker for this task
 
+    if (.not. this%active) return
+
     this%n_tasks = this%n_tasks + 1
     if (this%n_tasks > size(this%tasks)) call system_abort("More tasks added than allocated.")
     associate(task => this%tasks(this%n_tasks))
@@ -68,6 +70,8 @@ module task_manager_module
   !> Add worker to list
   subroutine task_manager_add_worker(this)
     type(task_manager_type), intent(inout) :: this
+
+    if (.not. this%active) return
 
     this%n_workers = this%n_workers + 1
     if (this%n_workers > size(this%workers)) call system_abort("More workers added than allocated.")
@@ -87,6 +91,8 @@ module task_manager_module
     integer, dimension(:), allocatable :: workloads
     integer, dimension(:), allocatable :: memory_list
     integer, dimension(:), allocatable :: index_list
+
+    if (.not. this%active) return
 
     allocate(workloads(this%n_workers))
     allocate(memory_list(this%n_tasks))
@@ -145,6 +151,8 @@ module task_manager_module
 
     integer :: i, t, w, load, n_tasks
 
+    if (.not. this%active) return
+
     do w = 1, this%n_workers
         call print("Tasks of worker "//w)
         load = 0
@@ -166,6 +174,8 @@ module task_manager_module
     integer :: only_id_opt
     type(Inoutput) :: file
 
+    if (.not. this%active) return
+
     only_id_opt = optional_default(UNDEFINED, only_id)
     if (only_id_opt >= 0 .and. only_id_opt /= this%my_worker_id) return
 
@@ -184,13 +194,17 @@ module task_manager_module
     type(task_manager_type), intent(inout) :: this
     integer, intent(in) :: n_tasks !> number of tasks to allocate
 
-    call print("Allocate %tasks for "//n_tasks//" tasks.")
+    if (.not. this%active) return
+
+    call print("Allocate task_manager%tasks for "//n_tasks//" tasks.", PRINT_VERBOSE)
     allocate(this%tasks(n_tasks))
   end subroutine task_manager_init_tasks
 
   subroutine task_manager_init_workers(this, n_workers)
     type(task_manager_type), intent(inout) :: this
     integer, intent(in) :: n_workers !> number of workers to allocate and set
+
+    if (.not. this%active) return
 
     this%n_workers = n_workers
     allocate(this%workers(this%n_workers))
