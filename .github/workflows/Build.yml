@@ -23,11 +23,16 @@ jobs:
         arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
         gcc_version: [ 9 ]
         have_gap: [ 0, 1 ]
+        have_scalapack: [ 0 ]
         include:
           - arch: linux_x86_64_gfortran_openmp
-            have_gap: 1
             gcc_version: 10
-
+            have_gap: 1
+            have_scalapack: 0
+          - arch: linux_x86_64_gfortran_openmpi+openmp
+            gcc_version: 9
+            have_gap: 1
+            have_scalapack: 1
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -40,12 +45,17 @@ jobs:
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
           gcc_version: ${{ matrix.gcc_version }}
         run: |
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
             python-numpy
+
+          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+            sudo apt-get install -y libscalapack-openmpi-dev
+          fi
 
           if [[ "$gcc_version" == 10 ]]; then
               # compilers explicitly pointing to gcc-10
@@ -61,10 +71,13 @@ jobs:
       - name: Include Config
         env:
           QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
           mkdir -p build/${QUIP_ARCH}
 
-          if [[ "$gcc_version" == 10 ]]; then
+          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+              cp -v .github/workflows/Makefile.openmpi+openmp.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$gcc_version" == 10 ]]; then
               cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
           else
               # gcc-9 is the default one in github actions containers (last checked: 2021 Aug)
@@ -75,6 +88,7 @@ jobs:
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
           make
           make libquip
@@ -90,6 +104,7 @@ jobs:
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
           export QUIP_ROOT=$PWD
           ulimit -n 256
