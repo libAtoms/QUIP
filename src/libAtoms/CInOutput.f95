@@ -39,7 +39,7 @@ module CInOutput_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
   use Extendable_str_module, only: Extendable_str, operator(//), string, concat, assignment(=)
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
-       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, INPUT, OUTPUT, INOUT, lower_case, print_warning
+       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, INPUT, OUTPUT, INOUT, lower_case, print_warning
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, &
@@ -469,7 +469,7 @@ contains
 
     if (.not. this%mpi%active .or. (this%mpi%active .and. this%mpi%my_proc == 0)) then
 
-       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, PRINT_VERBOSE)
+       call print('cinoutput_read: doing read on proc '//this%mpi%my_proc, PRINT_NERD)
 
        do_frame = optional_default(this%current_frame, frame)
 
