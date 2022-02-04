@@ -20,6 +20,7 @@ module task_manager_module
 
   public :: task_manager_type, task_type, worker_type, SHARED
   public :: task_manager_init_tasks, task_manager_init_workers, task_manager_deallocate
+  public :: task_manager_init_idata
   public :: task_manager_add_task, task_manager_add_worker
   public :: task_manager_distribute_tasks, task_manager_check_distribution
   public :: task_manager_print, task_manager_export_distribution
@@ -49,6 +50,8 @@ module task_manager_module
     integer :: n_tasks = 0 !> number of tasks
     integer :: n_workers = 0 !> number of workers
     integer :: n_shared = 0 !> number of shared tasks
+
+    integer, dimension(:), allocatable :: idata !< custom shared integer data
 
     type(MPI_Context) :: MPI_obj
     type(ScaLAPACK) :: ScaLAPACK_obj
@@ -289,12 +292,22 @@ module task_manager_module
     end do
   end subroutine task_manager_init_workers
 
+  subroutine task_manager_init_idata(this, n_idata)
+    type(task_manager_type), intent(inout) :: this
+    integer, intent(in) :: n_idata
+
+    if (.not. this%active) return
+
+    allocate(this%idata(n_idata))
+  end subroutine task_manager_init_idata
+
   subroutine task_manager_deallocate(this)
     type(task_manager_type), intent(inout) :: this
 
     this%distributed = .false.
     this%n_tasks = 0
     this%n_workers = 0
+    if (allocated(this%idata)) deallocate(this%idata)
     if (allocated(this%tasks)) deallocate(this%tasks)
     if (allocated(this%workers)) deallocate(this%workers)
   end subroutine task_manager_deallocate
