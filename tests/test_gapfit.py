@@ -33,6 +33,7 @@ from ase.io import read, write
 @unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestGAP_fit(quippytest.QuippyTestCase):
     alpha_tol = 1e-5
+    log_name = 'gap_fit.log'
 
     def setUp(self):
         self.cl_template = string.Template(
@@ -48,7 +49,9 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         with open('si_gap_fit_test.json') as f:
             self.ref_data = json.load(f)
 
-    def check_gap_fit(self, command_line, ref_data, new_test=False, prefix=''):
+    def check_gap_fit(self, command_line, ref_data, log_name=None, new_test=False, prefix=''):
+        log_name = log_name or self.log_name
+
         if new_test:
             command_line = command_line.replace('$SPARSE_METHOD',
                                                 'sparse_method=cur_points print_sparse_index=sparse_file')
@@ -65,7 +68,8 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         program = os.path.join(build_dir, 'gap_fit')
         full_command = f'{prefix} {program} {command_line}'
         print(full_command)
-        proc = subprocess.run(full_command, shell=True, env=os.environ)
+        with open(log_name, 'w') as f:
+            proc = subprocess.run(full_command, shell=True, env=os.environ, stdout=f, stderr=f)
         assert proc.returncode == 0, proc
 
         tree = ET.parse('gp.xml')
@@ -95,6 +99,8 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     def test_gap_fit_silicon_scalapack(self):
         command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
         self.check_gap_fit(command_line, self.ref_data, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
 
 if __name__ == '__main__':
     unittest.main()
