@@ -70,7 +70,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
                 json.dump(gap_dict, f, indent=4)
         else:
             print('max abs error in alpha =', np.abs((alpha - ref_data['alpha'])).max())
-            assert np.abs((alpha - ref_data['alpha'])).max() < 1e-2
+            assert np.abs((alpha - ref_data['alpha'])).max() < 1e-5
 
     def test_gap_fit_silicon(self):
         train_filename = 'train_sub4.xyz'
@@ -78,10 +78,10 @@ class TestGAP_fit(quippytest.QuippyTestCase):
                         "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
                         "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
                         "SPARSE_METHOD} "
-                        "default_sigma={0.001 0.1 0.05 0.0} "
+                        "default_sigma={0.01 1.0 0.5 0.0} "
                         "energy_parameter_name=dft_energy force_parameter_name=dft_force "
                         "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-                        "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1 condition_number_norm=I")
+                        "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1 condition_number_norm=I")
         with open('si_gap_fit_test.json') as f:
             ref_data = json.load(f)
         self.check_gap_fit(command_line, ref_data, new_test=False)
@@ -92,10 +92,10 @@ class TestGAP_fit(quippytest.QuippyTestCase):
                         "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
                         "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
                         "$SPARSE_METHOD} "
-                        "default_sigma={0.001 0.1 0.05 0.0} "
+                        "default_sigma={0.01 1.0 0.5 0.0} "
                         "energy_parameter_name=dft_energy force_parameter_name=dft_force "
                         "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-                        "sparse_jitter=1.0e-8 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
+                        "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
         with open('si_gap_fit_test.json') as f:
             ref_data = json.load(f)
 
