@@ -32,10 +32,25 @@ from ase.io import read, write
 
 @unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestGAP_fit(quippytest.QuippyTestCase):
+    alpha_tol = 1e-5
+
+    def setUp(self):
+        self.cl_template = string.Template(
+            "at_file=train_sub4.xyz gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
+            "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
+            "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
+            "$SPARSE_METHOD} "
+            "default_sigma={0.01 1.0 0.5 0.0} "
+            "energy_parameter_name=dft_energy force_parameter_name=dft_force "
+            "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
+            "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1 $COND_NUM_NORM"
+        )
+        with open('si_gap_fit_test.json') as f:
+            self.ref_data = json.load(f)
 
     def check_gap_fit(self, command_line, ref_data, new_test=False, prefix=''):
         if new_test:
-            command_line = command_line.replace('SPARSE_METHOD',
+            command_line = command_line.replace('$SPARSE_METHOD',
                                                 'sparse_method=cur_points print_sparse_index=sparse_file')
             if os.path.exists('sparse_file'):
                 os.unlink('sparse_file') # ensure we don't append to an old file
@@ -43,7 +58,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
             with open('sparse_file', 'w') as fh:
                 for sp in ref_data['sparse_points']:
                     fh.write(f'{sp}\n')
-            command_line = command_line.replace('SPARSE_METHOD',
+            command_line = command_line.replace('$SPARSE_METHOD',
                                                 'sparse_method=index_file sparse_file=sparse_file')
 
         build_dir = os.environ.get('BUILDDIR')
@@ -70,36 +85,16 @@ class TestGAP_fit(quippytest.QuippyTestCase):
                 json.dump(gap_dict, f, indent=4)
         else:
             print('max abs error in alpha =', np.abs((alpha - ref_data['alpha'])).max())
-            assert np.abs((alpha - ref_data['alpha'])).max() < 1e-5
+            assert np.abs((alpha - ref_data['alpha'])).max() < self.alpha_tol
 
     def test_gap_fit_silicon(self):
-        train_filename = 'train_sub4.xyz'
-        command_line = (f"at_file={train_filename} gap={{soap l_max=8 n_max=8 atom_sigma=0.5 "
-                        "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
-                        "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
-                        "SPARSE_METHOD} "
-                        "default_sigma={0.01 1.0 0.5 0.0} "
-                        "energy_parameter_name=dft_energy force_parameter_name=dft_force "
-                        "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-                        "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1 condition_number_norm=I")
-        with open('si_gap_fit_test.json') as f:
-            ref_data = json.load(f)
-        self.check_gap_fit(command_line, ref_data, new_test=False)
+        command_line = self.cl_template.safe_substitute(COND_NUM_NORM="condition_number_norm=I")
+        self.check_gap_fit(command_line, self.ref_data)
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_gap_fit_silicon_scalapack(self):
-        command_line = string.Template("at_file=train_sub4.xyz gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
-                        "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
-                        "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
-                        "$SPARSE_METHOD} "
-                        "default_sigma={0.01 1.0 0.5 0.0} "
-                        "energy_parameter_name=dft_energy force_parameter_name=dft_force "
-                        "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-                        "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1")
-        with open('si_gap_fit_test.json') as f:
-            ref_data = json.load(f)
-
-        self.check_gap_fit(command_line.substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp'), ref_data, new_test=False, prefix='mpirun -np 2')
+        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
+        self.check_gap_fit(command_line, self.ref_data, prefix='mpirun -np 2')
 
 if __name__ == '__main__':
     unittest.main()
