@@ -403,6 +403,7 @@ private
   public :: link_run_directory
   public :: wait_for_file_to_exist
   public :: is_open
+  public :: increase_to_multiple
 contains
 
 #ifdef NO_FORTRAN_ISNAN
@@ -3639,5 +3640,11 @@ end function pad
 
    end subroutine progress_timer
 
+   function increase_to_multiple(a, m) result(res)
+     integer, intent(in) :: a, m
+     integer :: res
+     res = (a / m) * m
+     if (res < a) res = res + m
+   end function increase_to_multiple
 
 end module system_module
