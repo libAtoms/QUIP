@@ -2392,7 +2392,7 @@ contains
        if (i==4) cycle ! We don't use the local adjustment to UTC
        write(time(i),'(i0.2)') values(i)
     end do
-    write(date_and_time_string,'(11a)') time(3),'/',time(2),'/',year,'   ',time(5),':',time(6),':',time(7)
+    write(date_and_time_string,'(11a)') year,'-',time(2),'-',time(3),' ',time(5),':',time(6),':',time(7)
 
   end function date_and_time_string
 
