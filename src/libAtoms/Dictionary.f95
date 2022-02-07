@@ -1705,7 +1705,6 @@ contains
        allocate(this%entries(entry_i)%i_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a
@@ -1734,7 +1733,6 @@ contains
        allocate(this%entries(entry_i)%r_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%r_a
@@ -1763,7 +1761,6 @@ contains
        allocate(this%entries(entry_i)%c_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%c_a
@@ -1792,7 +1789,6 @@ contains
        allocate(this%entries(entry_i)%l_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%l_a
@@ -1822,7 +1818,6 @@ contains
        allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%s_a
@@ -1852,7 +1847,6 @@ contains
        allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a2
@@ -1882,7 +1876,6 @@ contains
        allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key)//'" with value '//value, PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value
     call finalise(entry)
 
@@ -1913,7 +1906,6 @@ contains
        allocate(this%entries(entry_i)%i_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a(:) = value
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a
@@ -1942,7 +1934,6 @@ contains
        allocate(this%entries(entry_i)%r_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a(:) = value(:)
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%r_a
@@ -1971,7 +1962,6 @@ contains
        allocate(this%entries(entry_i)%c_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%c_a(:) = value(:)
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%c_a
@@ -2000,7 +1990,6 @@ contains
        allocate(this%entries(entry_i)%l_a(len))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%l_a(:) = value(:)
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%l_a
@@ -2030,7 +2019,6 @@ contains
        allocate(this%entries(entry_i)%s_a(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%s_a(:,:) = value(:,:)
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%s_a
@@ -2060,7 +2048,6 @@ contains
        allocate(this%entries(entry_i)%i_a2(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%i_a2(:,:) = value(:,:)
     call finalise(entry)
     if (present(ptr)) ptr => this%entries(entry_i)%i_a2
@@ -2090,7 +2077,6 @@ contains
        allocate(this%entries(entry_i)%r_a2(len2(1),len2(2)))
        this%cache_invalid = 1
     end if
-    if (do_overwrite .and. .not. do_alloc) call print('WARNING: overwriting array "'//trim(key), PRINT_VERBOSE)
     if (do_alloc .or. do_overwrite) this%entries(entry_i)%r_a2(:,:) = value(:,:)
     call finalise(entry)
 
