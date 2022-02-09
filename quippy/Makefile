@@ -113,7 +113,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 
 quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
-		-L. -lquip_nostub ${F2PY_LINK_ARGS} --fcompiler=gnu95 --f90flags="${QUIPPY_F90FLAGS}"
+		-L. -lquip_nostub ${F2PY_LINK_ARGS} --fcompiler=${QUIPPY_FCOMPILER} --f90flags="${QUIPPY_F90FLAGS}"
 	mv _quippy${EXT_SUFFIX} quippy/
 
 build: f90wrap quippy/_quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
