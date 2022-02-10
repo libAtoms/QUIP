@@ -15,11 +15,11 @@ jobs:
 
     strategy:
       matrix:
-        arch: [ linux_x86_64_ifort_icc ]
-        gcc_version: [ 9 ]
+        arch: [ linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_iomp_impi ]
+        gcc_version: [ 0 ]
         have_gap: [ 1 ]
-        have_scalapack: [ 0 ]
-            
+        have_scalapack: [ 0, 1 ]
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -67,7 +67,7 @@ jobs:
                   intel-oneapi-compiler-fortran \
                   intel-oneapi-mkl intel-oneapi-mkl-devel \
                   python-numpy
-          
+
           source /opt/intel/oneapi/setvars.sh
           printenv >> $GITHUB_ENV
 
