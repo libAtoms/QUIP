@@ -68,6 +68,10 @@ jobs:
                   intel-oneapi-mkl intel-oneapi-mkl-devel \
                   python-numpy
 
+          if [[ "${{ matrix.have_scalapack }}" == 1 ]] ; then
+              sudo apt-get install -y --no-install-recommends intel-oneapi-mpi intel-oneapi-mpi-devel
+          fi
+
           source /opt/intel/oneapi/setvars.sh
           printenv >> $GITHUB_ENV
 
