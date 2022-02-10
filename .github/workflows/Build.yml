@@ -15,10 +15,10 @@ jobs:
 
     strategy:
       matrix:
-        arch: [ linux_x86_64_ifort_icc, linux_x86_64_ifort_icc_iomp_impi ]
+        arch: [ linux_x86_64_ifort_icc_iomp_impi ]
         gcc_version: [ 0 ]
         have_gap: [ 1 ]
-        have_scalapack: [ 0, 1 ]
+        have_scalapack: [ 1 ]
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
