@@ -122,6 +122,11 @@ jobs:
           ulimit -n 256
           make test
 
+      # Uncomment to get SSH access for testing
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3     
+
   # Builds the QUIP docs webpage image. This only happens ON the public 
   # branch, after tests pass and pull requests are completed
   docs:
