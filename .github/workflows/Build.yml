@@ -1,8 +1,6 @@
 name: Build
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the public branch
   push:
     branches: [ public ]
   pull_request:
@@ -11,11 +9,8 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,63 +19,57 @@ jobs:
         gcc_version: [ 9 ]
         have_gap: [ 1 ]
         have_scalapack: [ 0 ]
-        include:
-          - arch: linux_x86_64_gfortran_openmp
-            gcc_version: 10
-            have_gap: 1
-            have_scalapack: 0
-          - arch: linux_x86_64_gfortran_openmpi+openmp
-            gcc_version: 9
-            have_gap: 1
-            have_scalapack: 1
-          - arch: linux_x86_64_ifort_icc
             
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
+      - name: Install dependencies - GNU
+        if: contains( matrix.arch, 'gfortran' )
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
           HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
           gcc_version: ${{ matrix.gcc_version }}
+
         run: |
           sudo apt-get update -y
-          if [[ "$QUIP_ARCH" == *"gfortran"* ]] ; then
-              sudo apt-get install -y  gfortran libblas-dev liblapack-dev openmpi-bin libopenmpi-dev
-              if [[ "$HAVE_SCALAPACK" == 1 ]]; then
-                  sudo apt-get install -y libscalapack-openmpi-dev
-              fi
+          sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
+            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
+            python-numpy
+
+          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+              sudo apt-get install -y libscalapack-openmpi-dev
           fi
-
-          if [[ "$QUIP_ARCH" == *"ifort_icc"* ]] ; then
-              # download the key to system keyring
-              wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
-                  | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-
-              echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
-                  | sudo tee /etc/apt/sources.list.d/oneAPI.list
-
-              sudo apt update
-              sudo apt-get install -y intel-basekit intel-hpckit
-          fi
-
-          sudo apt-get install -y netcdf-bin libnetcdf-dev libhdf5-serial-dev python-numpy
 
           if [[ "$gcc_version" == 10 ]]; then
               # compilers explicitly pointing to gcc-10
-
               export F77=gfortran-10
               export F90=gfortran-10
               export F95=gfortran-10
               export CC=gcc-10
               export CPLUSPLUS=g++-10
           fi
+
+      - name: Install INTEL compilers
+        if: contains( matrix.arch, 'ifort' )
+        run: |
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+
+          sudo apt-get install --no-install-recommends -o=Dpkg::Use-Pty=0 \
+                  intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic \
+                  intel-oneapi-compiler-fortran \
+                  intel-oneapi-mkl intel-oneapi-mkl-devel \
+                  python-numpy
+          
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> $GITHUB_ENV
 
       # substitute for make config
       - name: Include Config
