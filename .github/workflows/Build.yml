@@ -20,9 +20,9 @@ jobs:
 
     strategy:
       matrix:
-        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
+        arch: [ linux_x86_64_ifort_icc ]
         gcc_version: [ 9 ]
-        have_gap: [ 0, 1 ]
+        have_gap: [ 1 ]
         have_scalapack: [ 0 ]
         include:
           - arch: linux_x86_64_gfortran_openmp
@@ -33,6 +33,8 @@ jobs:
             gcc_version: 9
             have_gap: 1
             have_scalapack: 1
+          - arch: linux_x86_64_ifort_icc
+            
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -49,13 +51,25 @@ jobs:
           gcc_version: ${{ matrix.gcc_version }}
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
-            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
-            python-numpy
-
-          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
-            sudo apt-get install -y libscalapack-openmpi-dev
+          if [[ "$QUIP_ARCH" == *"gfortran"* ]] ; then
+              sudo apt-get install -y  gfortran libblas-dev liblapack-dev openmpi-bin libopenmpi-dev
+              if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+                  sudo apt-get install -y libscalapack-openmpi-dev
+              fi
           fi
+
+          if [[ "$QUIP_ARCH" == *"ifort_icc"* ]] ; then
+              # download the key to system keyring
+              wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+                  | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+              echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+                  | sudo tee /etc/apt/sources.list.d/oneAPI.list
+
+              sudo apt-get install -y intel-basekit intel-hpckit
+          fi
+
+          sudo apt-get install -y netcdf-bin libnetcdf-dev libhdf5-serial-dev python-numpy
 
           if [[ "$gcc_version" == 10 ]]; then
               # compilers explicitly pointing to gcc-10
