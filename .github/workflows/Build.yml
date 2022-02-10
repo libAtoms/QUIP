@@ -83,7 +83,9 @@ jobs:
         run: |
           mkdir -p build/${QUIP_ARCH}
 
-          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+          if [[ ${{ matrix.arch }} == linux_x86_64_ifort_icc_iomp_impi ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$HAVE_SCALAPACK" == 1 ]]; then
               cp -v .github/workflows/Makefile.openmpi+openmp.inc build/${QUIP_ARCH}/Makefile.inc
           elif [[ "$gcc_version" == 10 ]]; then
               cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
