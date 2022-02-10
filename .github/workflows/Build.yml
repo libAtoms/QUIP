@@ -12,13 +12,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        arch: [ linux_x86_64_ifort_icc_iomp_impi ]
-        gcc_version: [ 0 ]
+        include: linux_x86_64_ifort_icc_iomp_impi
         have_gap: [ 1 ]
-        have_scalapack: [ 1 ]
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -31,7 +28,7 @@ jobs:
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
-          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
+          HAVE_SCALAPACK: ${{ contains(matrix.have_scalapack, ) }}
           gcc_version: ${{ matrix.gcc_version }}
 
         run: |
@@ -102,9 +99,9 @@ jobs:
           make install-quippy
 
       # Uncomment to get SSH access for testing
-#       - name: Setup tmate session
-#         if: failure()
-#         uses: mxschmitt/action-tmate@v3            
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3            
 
       - name: Test QUIP
         env:
