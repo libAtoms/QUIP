@@ -44,7 +44,7 @@ OPTIM = -O3
 #CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-MKLOPTS = -mkl=sequential
+MKLOPTS = -qmkl=sequential
 MKLLINK = -L${MKLROOT}/lib/intel64 -lpthread -lm -ldl
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
