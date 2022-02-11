@@ -32,15 +32,7 @@
 
 include arch/Makefile.linux_x86_64_ifort_icc
 
-DEFINES += -D_OPENMP
-F95FLAGS += -fPIC
-F77FLAGS += -fPIC
-CFLAGS += -fPIC
-CPLUSPLUSFLAGS += -fPIC
-LINKOPTS = -nofor-main  -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl
+MKLOPTS = -mkl=parallel
+MKLLINK = -L${MKLROOT}/lib/intel64 -liomp5 -lpthread -lm -ldl
 
-QUIPPY_FCOMPILER = intelem
-QUIPPY_DEFINES = -DGETARG_F2003
-QUIPPY_F90FLAGS = -fpp -free
-QUIPPY_F77FLAGS = -fpp -fixed
-QUIPPY_CPP = ifort -EP
+DEFINES += -D_OPENMP

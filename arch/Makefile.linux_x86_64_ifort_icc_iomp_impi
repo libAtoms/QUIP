@@ -37,17 +37,8 @@ CC = mpicc
 CPLUSPLUS = mpicpc 
 LINKER = mpiifort
 
-F95FLAGS += -qopenmp -fPIC
-F77FLAGS += -fPIC
-CFLAGS += -fPIC
-CPLUSPLUSFLAGS += -fPIC
-LINKOPTS = -nofor-main -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
+MKLOPTS = -mkl=parallel
+MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
 
-DEFINES += -D_OPENMP -D_MPI
+DEFINES += -D_MPI
 DEFAULT_HAVE_SCALAPACK = 1
-
-QUIPPY_FCOMPILER = intelem
-QUIPPY_DEFINES = -DGETARG_F2003
-QUIPPY_F90FLAGS = -fpp -free
-QUIPPY_F77FLAGS = -fpp -fixed
-QUIPPY_CPP = ifort -EP

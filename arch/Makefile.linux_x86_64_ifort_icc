@@ -44,21 +44,22 @@ OPTIM = -O3
 #CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
+MKLOPTS = -mkl=sequential
+MKLLINK = -L${MKLROOT}/lib/intel64 -lpthread -lm -ldl
+
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
-F95FLAGS +=  -I"${MKLROOT}/include" -fpp -free -warn unused -fPIC
-F77FLAGS +=  -I"${MKLROOT}/include" -fpp -fixed -fPIC
-CFLAGS +=  -I"${MKLROOT}/include" -fPIC
-CPLUSPLUSFLAGS +=  -I"${MKLROOT}/include" -fPIC
-LINKOPTS = -nofor-main -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
+F95FLAGS +=  -fpp -free -warn unused -fPIC $(MKLOPTS)
+F77FLAGS +=  -fpp -fixed -fPIC $(MKLOPTS)
+CFLAGS +=  -fPIC $(MKLOPTS)
+CPLUSPLUSFLAGS += -fPIC $(MKLOPTS)
+LINKOPTS = -nofor-main $(MKLLINK)
 
 AR_ADD = src
 
-# rules
-
 QUIPPY_FCOMPILER = intelem
 QUIPPY_DEFINES = -DGETARG_F2003
-QUIPPY_F90FLAGS = -fpp -free
-QUIPPY_F77FLAGS = -fpp -fixed
+QUIPPY_F90FLAGS = -fpp -free $(MKLOPTS)
+QUIPPY_F77FLAGS = -fpp -fixed $(MKLOPTS)
 QUIPPY_CPP = ifort -EP
 
 F95_PRE_FILENAME_FLAG = -Tf

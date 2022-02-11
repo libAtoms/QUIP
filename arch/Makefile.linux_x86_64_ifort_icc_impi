@@ -39,10 +39,7 @@ CC = mpiicc
 CPLUSPLUS = mpiicpc
 LINKER = mpiifort
 
-F95FLAGS +=  -I"${MKLROOT}/include" -fpp -free -warn unused -fPIC -qmkl=sequential
-F77FLAGS +=  -I"${MKLROOT}/include" -fpp -fixed -fPIC -qmkl=sequential
-CFLAGS +=  -I"${MKLROOT}/include" -fPIC -qmkl=sequential
-CPLUSPLUSFLAGS +=  -I"${MKLROOT}/include" -fPIC -qmkl=sequential
-LINKOPTS = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lpthread -lm -ldl
+MKLOPTS = -mkl=sequential
+MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lpthread -lm -ldl
 
 DEFINES += -D_MPI
