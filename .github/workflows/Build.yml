@@ -14,11 +14,22 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        arch: [ linux_x86_64_ifort_icc_iomp_impi ]
-        gcc_version: [ 0 ]
-        have_gap: [ 1 ]
-        have_scalapack: [ 1 ]
+        arch: [ ]
+        have_gap: [ ]
+        have_scalapack: [ ]
+        gcc_version: [ ]
+        include:
+          - arch: linux_x86_64_ifort_icc
+            have_gap: 1
+            have_scalapack: 0
+          - arch: linux_x86_64_ifort_icc_iomp
+            have_gap: 1
+            have_scalapack: 0
+          - arch: linux_x86_64_ifort_icc_impi
+            have_gap: 1
+            have_scalapack: 1
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -33,7 +44,6 @@ jobs:
           HAVE_GAP: ${{ matrix.have_gap }}
           HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
           gcc_version: ${{ matrix.gcc_version }}
-
         run: |
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
@@ -55,6 +65,11 @@ jobs:
 
       - name: Install INTEL compilers
         if: contains( matrix.arch, 'ifort' )
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
+          gcc_version: ${{ matrix.gcc_version }}
         run: |
           wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
@@ -62,11 +77,12 @@ jobs:
           sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
 
-          sudo apt-get install --no-install-recommends -o=Dpkg::Use-Pty=0 \
+          sudo apt-get install -y python python-numpy pip
+
+          sudo apt-get install -y --no-install-recommends -o=Dpkg::Use-Pty=0 \
                   intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic \
                   intel-oneapi-compiler-fortran \
-                  intel-oneapi-mkl intel-oneapi-mkl-devel \
-                  python-numpy
+                  intel-oneapi-mkl intel-oneapi-mkl-devel
 
           if [[ "${{ matrix.have_scalapack }}" == 1 ]] ; then
               sudo apt-get install -y --no-install-recommends intel-oneapi-mpi intel-oneapi-mpi-devel
@@ -83,7 +99,11 @@ jobs:
         run: |
           mkdir -p build/${QUIP_ARCH}
 
-          if [[ ${{ matrix.arch }} == linux_x86_64_ifort_icc_iomp_impi ]] ; then
+          if [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_iomp_impi ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_iomp ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_impi ]] ; then
               cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
           elif [[ "$HAVE_SCALAPACK" == 1 ]]; then
               cp -v .github/workflows/Makefile.openmpi+openmp.inc build/${QUIP_ARCH}/Makefile.inc
