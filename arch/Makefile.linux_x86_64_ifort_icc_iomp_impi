@@ -37,7 +37,7 @@ CC = mpicc
 CPLUSPLUS = mpicpc 
 LINKER = mpiifort
 
-MKLOPTS = -mkl=parallel
+MKLOPTS = -qmkl=parallel -qopenmp
 MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
 
 DEFINES += -D_MPI

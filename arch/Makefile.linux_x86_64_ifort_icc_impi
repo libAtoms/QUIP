@@ -39,7 +39,7 @@ CC = mpiicc
 CPLUSPLUS = mpiicpc
 LINKER = mpiifort
 
-MKLOPTS = -mkl=sequential
+MKLOPTS = -qmkl=sequential
 MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lpthread -lm -ldl
 
 DEFINES += -D_MPI
