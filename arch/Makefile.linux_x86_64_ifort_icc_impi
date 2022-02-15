@@ -41,5 +41,6 @@ LINKER = mpiifort
 
 MKLOPTS = -qmkl=sequential
 MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -lpthread -lm -ldl
+MKLLINK += $(MKLOPTS)  # is compile+link done without LINKOPTS somewhere?
 
 DEFINES += -D_MPI
