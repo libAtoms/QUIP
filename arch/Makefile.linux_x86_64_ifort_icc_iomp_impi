@@ -33,12 +33,13 @@ include arch/Makefile.linux_x86_64_ifort_icc
 F77 = mpiifort
 F90 = mpiifort
 F95 = mpiifort
-CC = mpicc 
-CPLUSPLUS = mpicpc 
+CC = mpiicc
+CPLUSPLUS = mpiicpc
 LINKER = mpiifort
 
 MKLOPTS = -qmkl=parallel -qopenmp
 MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
+MKLLINK += $(MKLOPTS)  # is compile+link done without LINKOPTS somewhere?
 
 DEFINES += -D_MPI
 DEFAULT_HAVE_SCALAPACK = 1
