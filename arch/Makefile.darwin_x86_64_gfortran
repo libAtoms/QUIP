@@ -59,6 +59,7 @@ ATOMEYE_LIBS= -lm -L/opt/local/lib -lXpm -lXext -lX11 -lmpi \
               -lpng -lz -ljpeg -lhistory -lncurses -lnetcdf -lhdf5 -lhdf5_hl -lreadline -lcurl -framework Accelerate
 
 QUIPPY_INSTALL_OPTS =
+QUIPPY_FCOMPILER = gnu95
 QUIPPY_F90FLAGS = -ffree-line-length-none -fPIC
 QUIPPY_LDFLAGS=${DEFAULT_MATH_LINKOPTS}
 
