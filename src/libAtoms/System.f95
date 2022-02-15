@@ -404,6 +404,7 @@ private
   public :: wait_for_file_to_exist
   public :: is_open
   public :: increase_to_multiple
+  public :: i2si
 contains
 
 #ifdef NO_FORTRAN_ISNAN
@@ -2146,6 +2147,27 @@ contains
 
   end function string_cat_complex
 
+  !% Returns a string with number shortened to 2 to 4 digits and si prefix appended
+  function i2si(number) result(res)
+    integer(idp), intent(in) :: number
+    character(:), allocatable :: res
+    character, parameter :: prefixes(0:*) = [' ', 'K', 'M', 'G', 'T', 'P', 'E']
+
+    integer :: i
+    integer(idp) :: num
+    character(7) :: str
+
+    num = number
+    do i = lbound(prefixes, 1), ubound(prefixes, 1)-1
+      if (num < 10000) exit
+      num = num / 1000
+    end do
+    str = ""//num//" "//prefixes(i)
+
+    i = len_trim(str)
+    allocate(character(len=i) :: res)
+    res = str(1:i)
+  end function i2si
 
   !% Return the mpi size and rank for the communicator 'comm'.
   !% this routine aborts of _MPI is not defined
