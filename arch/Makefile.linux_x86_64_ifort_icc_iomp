@@ -34,6 +34,5 @@ include arch/Makefile.linux_x86_64_ifort_icc
 
 MKLOPTS = -qmkl=parallel -qopenmp
 MKLLINK = -L${MKLROOT}/lib/intel64 -liomp5 -lpthread -lm -ldl
-MKLLINK += $(MKLOPTS)  # is compile+link done without LINKOPTS somewhere?
 
 DEFINES += -D_OPENMP

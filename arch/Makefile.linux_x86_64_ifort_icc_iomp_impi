@@ -39,7 +39,6 @@ LINKER = mpiifort
 
 MKLOPTS = -qmkl=parallel -qopenmp
 MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
-MKLLINK += $(MKLOPTS)  # is compile+link done without LINKOPTS somewhere?
 
 DEFINES += -D_MPI
 DEFAULT_HAVE_SCALAPACK = 1
