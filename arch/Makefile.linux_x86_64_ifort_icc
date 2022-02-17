@@ -38,8 +38,8 @@ CPLUSPLUS = icpc -Kc++
 FPP = ifort -E
 LINKER = ifort
 
-SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT 
-#DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT 
+SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
+#DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 OPTIM = -O3
 #CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
@@ -61,5 +61,6 @@ QUIPPY_DEFINES = -DGETARG_F2003
 QUIPPY_F90FLAGS = -fpp -free $(MKLOPTS)
 QUIPPY_F77FLAGS = -fpp -fixed $(MKLOPTS)
 QUIPPY_CPP = ifort -EP
+QUIPPY_LDFLAGS = $(MKLLINK)
 
 F95_PRE_FILENAME_FLAG = -Tf
