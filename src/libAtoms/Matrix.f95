@@ -283,24 +283,32 @@ subroutine MatrixD_QR_Solve(A_SP, B_SP)
   endif
 end subroutine MatrixD_QR_Solve
 
-subroutine SP_Matrix_QR_Solve(A, B, X, procs, ScaLAPACK_obj)
+subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, blocksize)
   real(dp), intent(in), dimension(:,:), target :: A
   real(dp), intent(in), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
-  integer, intent(in) :: procs
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
+  integer, intent(in) :: blocksize
 
-  integer :: m, n, mb, nb
+  integer :: mb, nb, ml, nl, mg, ng
   type(MatrixD) :: A_SP, B_SP
 
-  mb = size(A, 1)
-  nb = size(A, 2)
-  m = mb * procs
-  n = nb
+  ml = size(A, 1)
+  nl = size(A, 2)
+  mg = ml * ScaLAPACK_obj%n_proc_rows
+  ng = nl * ScaLAPACK_obj%n_proc_cols
 
-  ! Scalapack needs mb == nb for p?trtrs; choose nb for smaller work arrays
-  call initialise(A_SP, m, n, nb, nb, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
-  call initialise(B_SP, m, 1, nb, 1, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
+  mb = blocksize
+  nb = blocksize
+
+  if (ScaLAPACK_obj%my_proc_row < ScaLAPACK_obj%n_proc_rows .and. mod(ml, mb) /= 0) &
+    call system_abort("SP_Matrix_QR_Solve: nrows is not a multiple of blocksize: "//ml//" "//mb)
+  if (ScaLAPACK_obj%my_proc_col < ScaLAPACK_obj%n_proc_cols .and. mod(nl, nb) /= 0) &
+    call system_abort("SP_Matrix_QR_Solve: ncols is not a multiple of blocksize: "//nl//" "//nb)
+
+  ! Scalapack needs mb == nb for p?trtrs
+  call initialise(A_SP, mg, ng, mb, nb, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
+  call initialise(B_SP, mg, 1, nb, 1, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
 
   A_SP%data => A
   B_SP%data(lbound(B,1):ubound(B,1),1:1) => B(:)
