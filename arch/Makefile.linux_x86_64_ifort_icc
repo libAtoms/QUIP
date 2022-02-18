@@ -45,7 +45,7 @@ OPTIM = -O3
 COPTIM = -O3
 
 MKLOPTS = -qmkl=sequential
-MKLLINK = -L${MKLROOT}/lib/intel64 -lpthread -lm -ldl
+MKLLINK = $(MKLOPTS) -L${MKLROOT}/lib/intel64 -lpthread -lm -ldl
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
 F95FLAGS +=  -fpp -free -warn unused -fPIC $(MKLOPTS)
