@@ -33,4 +33,4 @@
 include arch/Makefile.linux_x86_64_ifort_icc
 
 MKLOPTS = -qmkl=parallel -qopenmp
-MKLLINK = $(MKLOPTS) -L${MKLROOT}/lib/intel64 -liomp5 -lpthread -lm -ldl
+MKLLINK = -L${MKLROOT}/lib/intel64 -liomp5 -lpthread -lm -ldl
