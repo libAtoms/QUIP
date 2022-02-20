@@ -116,8 +116,6 @@ jobs:
           HAVE_GAP: ${{ matrix.have_gap }}
           HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
-          # patch //a+b -> //(a+b) for ifort
-          sed -i 's/\/\/s1+s2/\/\/(s1+s2)/' src/GAP/gap_fit_module.f95
           make
           make libquip
           make quippy
