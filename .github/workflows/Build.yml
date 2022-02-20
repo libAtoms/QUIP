@@ -12,20 +12,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    arch: linux_x86_64_ifort_icc
+    have_gap: 1
+    have_scalapack: 0
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: linux_x86_64_ifort_icc
-            have_gap: 1
-            have_scalapack: 0
-          - arch: linux_x86_64_ifort_icc_iomp
-            have_gap: 1
-            have_scalapack: 0
-          - arch: linux_x86_64_ifort_icc_impi
-            have_gap: 1
-            have_scalapack: 1
+    # strategy:
+    #   fail-fast: true
+    #   matrix:
+    #     include:
+    #       - arch: linux_x86_64_ifort_icc
+    #         have_gap: 1
+    #         have_scalapack: 0
+    #       - arch: linux_x86_64_ifort_icc_iomp
+    #         have_gap: 1
+    #         have_scalapack: 0
+    #       - arch: linux_x86_64_ifort_icc_impi
+    #         have_gap: 1
+    #         have_scalapack: 1
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -132,16 +135,16 @@ jobs:
           HAVE_GAP: ${{ matrix.have_gap }}
           HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
-          if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc' ]] then
+          if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc' ]] ; then
               LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
-          else if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_iomp' ]] then
+          else if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_iomp' ]] ; then
               LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
               LD_PRELOAD="$LD_PRELOAD:$ONEAPI_ROOT/compiler/2022.0.2/linux/compiler/lib/intel64_lin/libiomp5.so"
-          else if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_impi' ]] then
+          else if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_impi' ]] ; then
               LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
               LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
