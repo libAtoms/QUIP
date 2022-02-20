@@ -44,8 +44,8 @@ OPTIM = -O3
 #CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-MKLOPTS = -qmkl=sequential
-MKLLINK = -L${MKLROOT}/lib/intel64 -lpthread -lm -ldl
+MKLOPTS = -I${MKLROOT}/include
+MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
 F95FLAGS +=  -fpp -free -warn unused -fPIC $(MKLOPTS)
