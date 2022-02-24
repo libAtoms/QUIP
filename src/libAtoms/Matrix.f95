@@ -301,9 +301,9 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, blocksize)
   mb = blocksize
   nb = blocksize
 
-  if (ScaLAPACK_obj%my_proc_row < ScaLAPACK_obj%n_proc_rows .and. mod(ml, mb) /= 0) &
+  if (ScaLAPACK_obj%my_proc_row+1 < ScaLAPACK_obj%n_proc_rows .and. mod(ml, mb) /= 0) &
     call system_abort("SP_Matrix_QR_Solve: nrows is not a multiple of blocksize: "//ml//" "//mb)
-  if (ScaLAPACK_obj%my_proc_col < ScaLAPACK_obj%n_proc_cols .and. mod(nl, nb) /= 0) &
+  if (ScaLAPACK_obj%my_proc_col+1 < ScaLAPACK_obj%n_proc_cols .and. mod(nl, nb) /= 0) &
     call system_abort("SP_Matrix_QR_Solve: ncols is not a multiple of blocksize: "//nl//" "//nb)
 
   ! Scalapack needs mb == nb for p?trtrs
