@@ -100,7 +100,7 @@ class Potential(ase.calculators.calculator.Calculator):
         # from old
         if atoms is not None:
             atoms.calc = self
-        self.name = args_str
+        self.name_ = args_str
         if isinstance(calc_args, dict):
             calc_args = key_val_dict_to_str(calc_args)
         elif calc_args is None:
@@ -110,6 +110,9 @@ class Potential(ase.calculators.calculator.Calculator):
         # storage of non-standard results
         self.extra_results = {'config': {},
                               'atoms': {}}
+
+    def _get_name(self):
+        return self.name_
 
     @set_doc(quippy.potential_module.Potential.calc.__doc__,
     """
