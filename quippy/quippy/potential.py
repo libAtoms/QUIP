@@ -114,6 +114,10 @@ class Potential(ase.calculators.calculator.Calculator):
     def _get_name(self):
         return self.name_
 
+    @property
+    def name(self):
+        return self._get_name()
+
     @set_doc(quippy.potential_module.Potential.calc.__doc__,
     """
     Pythonic wrapper to `quippy.potential_module.Potential.calc()`
