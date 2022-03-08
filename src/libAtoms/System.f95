@@ -2153,20 +2153,20 @@ contains
     character(:), allocatable :: res
     character, parameter :: prefixes(0:*) = [' ', 'K', 'M', 'G', 'T', 'P', 'E']
 
-    integer :: i
+    integer :: i, l
     integer(idp) :: num
-    character(7) :: str
+    character(5) :: str
 
     num = number
     do i = lbound(prefixes, 1), ubound(prefixes, 1)-1
       if (num < 10000) exit
       num = num / 1000
     end do
-    str = ""//num//" "//prefixes(i)
+    str = "" // num
 
-    i = len_trim(str)
-    allocate(character(len=i) :: res)
-    res = str(1:i)
+    l = len_trim(str)
+    allocate(character(len=l+2) :: res)
+    res = str(1:l) // " " // prefixes(i)
   end function i2si
 
   !% Return the mpi size and rank for the communicator 'comm'.
