@@ -52,13 +52,10 @@ public :: MPI_context
 type MPI_context
   logical :: active = .false.
   integer :: communicator = 0
-  integer :: n_procs = 1, my_proc = 0
+  integer :: n_procs = 1
+  integer :: my_proc = 0
   logical :: is_cart = .false.
   integer :: my_coords(3) = 0
-  ! support later?
-  ! logical is_grid
-  ! integer n_proc_rows, n_proc_cols
-  ! integer my_proc_row, my_proc_col
 end type MPI_context
 
 public :: ROOT
