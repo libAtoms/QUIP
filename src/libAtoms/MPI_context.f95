@@ -72,6 +72,11 @@ interface Finalise
   module procedure MPI_context_Finalise
 end interface
 
+public :: is_root
+interface is_root
+  module procedure MPI_context_is_root
+end interface
+
 public :: Print
 interface Print
   module procedure MPI_context_Print
@@ -263,6 +268,13 @@ subroutine MPI_context_Finalise(this, end_of_program, error)
   endif
 #endif
 end subroutine MPI_context_Finalise
+
+function MPI_context_is_root(this, root) result(res)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in), optional :: root
+  logical :: res
+  res = (this%my_proc == optional_default(ROOT_, root))
+end function MPI_context_is_root
 
 subroutine MPI_context_free_context(this, error)
   type(MPI_context), intent(inout) :: this
