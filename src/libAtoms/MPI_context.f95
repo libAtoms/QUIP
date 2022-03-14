@@ -781,24 +781,21 @@ subroutine MPI_context_bcast_int(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int
 
-subroutine MPI_context_bcast_int1(this, v, error)
+subroutine MPI_context_bcast_int1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -806,18 +803,21 @@ subroutine MPI_context_bcast_int1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_INTEGER, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int1
 
-subroutine MPI_context_bcast_int2(this, v, error)
+subroutine MPI_context_bcast_int2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -825,19 +825,22 @@ subroutine MPI_context_bcast_int2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_INTEGER, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int2
 
 
-subroutine MPI_context_bcast_logical(this, v, error)
+subroutine MPI_context_bcast_logical(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -845,18 +848,21 @@ subroutine MPI_context_bcast_logical(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_LOGICAL, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, 1, MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical
 
-subroutine MPI_context_bcast_logical1(this, v, error)
+subroutine MPI_context_bcast_logical1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -864,18 +870,21 @@ subroutine MPI_context_bcast_logical1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_LOGICAL, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical1
 
-subroutine MPI_context_bcast_logical2(this, v, error)
+subroutine MPI_context_bcast_logical2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -883,19 +892,22 @@ subroutine MPI_context_bcast_logical2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_LOGICAL, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical2
 
 
-subroutine MPI_context_bcast_c(this, v, error)
+subroutine MPI_context_bcast_c(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -903,18 +915,21 @@ subroutine MPI_context_bcast_c(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c
 
-subroutine MPI_context_bcast_c1(this, v, error)
+subroutine MPI_context_bcast_c1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -922,18 +937,21 @@ subroutine MPI_context_bcast_c1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c1
 
-subroutine MPI_context_bcast_c2(this, v, error)
+subroutine MPI_context_bcast_c2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -941,7 +959,8 @@ subroutine MPI_context_bcast_c2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, ROOT_, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c2
@@ -962,12 +981,7 @@ subroutine MPI_context_bcast_real(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -989,12 +1003,7 @@ subroutine MPI_context_bcast_real1(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1016,12 +1025,7 @@ subroutine MPI_context_bcast_real2(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1043,12 +1047,7 @@ subroutine MPI_context_bcast_char(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, len(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1070,15 +1069,8 @@ subroutine MPI_context_bcast_char1(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
-  call MPI_Bcast(&
-       v, len(v(1))*size(v), MPI_CHARACTER, &
-       my_root, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, len(v(1))*size(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char1
@@ -1099,15 +1091,8 @@ subroutine MPI_context_bcast_char2(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = ROOT_
-  endif
-
-  call MPI_Bcast( &
-       v, len(v(1,1))*size(v), MPI_CHARACTER, &
-       my_root, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, len(v(1,1))*size(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char2
