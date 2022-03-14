@@ -128,10 +128,10 @@ interface sum_in_place
   module procedure MPI_context_sum_in_place_complex2
 end interface
 
-public :: collect
-interface collect
-  module procedure MPI_context_collect_real2
-end interface collect
+public :: allgatherv
+interface allgatherv
+  module procedure MPI_context_allgatherv_real2
+end interface allgatherv
 
 public :: mpi_print
 
@@ -1141,7 +1141,7 @@ subroutine MPI_Print(this, lines, file)
 
 end subroutine MPI_Print
 
-subroutine MPI_context_collect_real2(this, v_in, v_out, error)
+subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v_in(:,:)
   real(dp), intent(out) :: v_out(:,:)
@@ -1156,7 +1156,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   if (.not. this%active) then
     if (size(v_in,1) /= size(v_out,1) .or. &
         size(v_in,2) /= size(v_out,2)) then
-      RAISE_ERROR("MPI_context_collect_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_allgatherv_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1171,7 +1171,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   PASS_MPI_ERROR(err, error)
 
   if (sum(counts) /= size(v_out)) then
-    RAISE_ERROR("MPI_context_collect_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
+    RAISE_ERROR("MPI_context_allgatherv_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
   endif
 
   displs(1) = 0
@@ -1189,7 +1189,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
 
 #endif
 
-end subroutine MPI_context_collect_real2
+end subroutine MPI_context_allgatherv_real2
 
 subroutine MPI_context_barrier(this, error)
   type(MPI_context), intent(in) :: this
