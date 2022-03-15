@@ -134,6 +134,11 @@ interface sum_in_place
   module procedure MPI_context_sum_in_place_complex2
 end interface
 
+public :: gather
+interface gather
+  module procedure MPI_context_gather_char0
+end interface gather
+
 public :: gatherv
 interface gatherv
   module procedure MPI_context_gatherv_int1
@@ -1149,6 +1154,47 @@ subroutine MPI_Print(this, lines, file)
   endif
 
 end subroutine MPI_Print
+
+subroutine MPI_context_gather_char0(this, v_in, v_out, root, error)
+  type(MPI_context), intent(in) :: this
+  character(*), intent(in) :: v_in
+  character(*), intent(out) :: v_out(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, my_len
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (size(v_out) < 1) then
+      RAISE_ERROR("MPI_context_gather_char0 size(v_out) < 1: " // size(v_out), error)
+    end if
+
+    if (len(v_in) /= len(v_out(1))) then
+      RAISE_ERROR("MPI_context_gather_char0 lengths differ: len(v_in) " // len(v_in) // " len(v_out(1)) " // len(v_out), error)
+    end if
+
+    v_out(1) = v_in
+    return
+  end if
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  if (is_root(this)) then
+    if (size(v_out) /= this%n_procs) then
+      RAISE_ERROR("MPI_context_gather_char0 size(v_out) < %n_procs: " // size(v_out) // " " // this%n_procs, error)
+    end if
+    if (len(v_in) /= len(v_out(1))) then
+      RAISE_ERROR("MPI_context_gather_char0 lengths differ: len(v_in) " // len(v_in) // " len(v_out(1)) " // len(v_out), error)
+    end if
+  end if
+
+  call mpi_gather(v_in, len(v_in), MPI_CHARACTER, v_out, len(v_in), MPI_CHARACTER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_gather_char0
 
 subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   type(MPI_context), intent(in) :: this
