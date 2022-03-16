@@ -383,7 +383,11 @@ function MPI_context_is_root(this, root) result(res)
   type(MPI_context), intent(in) :: this
   integer, intent(in), optional :: root
   logical :: res
-  res = (this%my_proc == optional_default(ROOT_, root))
+  if (this%active) then
+    res = (this%my_proc == optional_default(ROOT_, root))
+  else
+    res = .true.
+  end if
 end function MPI_context_is_root
 
 subroutine MPI_context_free_context(this, error)
