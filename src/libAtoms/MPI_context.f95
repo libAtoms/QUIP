@@ -307,11 +307,16 @@ subroutine MPI_context_init_hostname(this, error)
   type(MPI_context), intent(inout) :: this
   integer, intent(out), optional :: error
 
+#ifdef _MPI
   integer :: err, my_len, max_len
   character(MPI_MAX_PROCESSOR_NAME) :: hostname
+#endif
 
   INIT_ERROR(error)
 
+  if (.not. this%active) return
+
+#ifdef _MPI
   call mpi_get_processor_name(hostname, my_len, err)
   PASS_MPI_ERROR(err, error)
 
@@ -321,6 +326,7 @@ subroutine MPI_context_init_hostname(this, error)
   if (allocated(this%hostname)) deallocate(this%hostname)
   allocate(character(my_len) :: this%hostname)
   this%hostname = hostname(1:max_len)
+#endif
 end subroutine MPI_context_init_hostname
 
 !% Set host index and total for each MPI process
