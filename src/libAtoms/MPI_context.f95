@@ -150,6 +150,11 @@ interface allgatherv
   module procedure MPI_context_allgatherv_real2
 end interface allgatherv
 
+public :: scatter
+interface scatter
+  module procedure MPI_context_scatter_int0
+end interface scatter
+
 public :: scatterv
 interface scatterv
   module procedure MPI_context_scatterv_int1
@@ -1349,6 +1354,40 @@ subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
 #endif
 
 end subroutine MPI_context_allgatherv_real2
+
+subroutine MPI_context_scatter_int0(this, v_in, v_out, root, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: v_in(:)
+  integer, intent(out) :: v_out
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (size(v_in) < 1) then
+      RAISE_ERROR("MPI_context_scatter_int0 size(v_in) < 1: " // size(v_in), error)
+    end if
+
+    v_out = v_in(1)
+    return
+  end if
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  if (is_root(this)) then
+    if (size(v_in) /= this%n_procs) then
+      RAISE_ERROR("MPI_context_scatter_int0 size(v_in) /= %n_procs: " // size(v_in) // " " // this%n_procs, error)
+    end if
+  end if
+
+  call mpi_scatter(v_in, 1, MPI_INTEGER, v_out, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_scatter_int0
 
 subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
   type(MPI_context), intent(in) :: this
