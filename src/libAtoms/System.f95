@@ -347,6 +347,11 @@ private
      module procedure get_uniqs_refs_char1
   end interface
 
+  public :: join
+  interface join
+     module procedure join_char1
+  end interface
+
   integer, external :: pointer_to
   public :: increase_stack
   public :: ran_normal
@@ -3711,5 +3716,23 @@ end function pad
     allocate(uniqs(lb:nb))
     uniqs = vals(lb:nb)
   end subroutine get_uniqs_refs_char1
+
+  function join_char1(array, sep) result(res)
+    character(*), intent(in) :: array(:)
+    character(*), intent(in) :: sep
+    character(:), allocatable :: res
+
+    integer :: i, o, l_res, l_as
+
+    l_as = len(array) + len(sep)
+    l_res = l_as * size(array) - len(sep)
+    allocate(character(l_res) :: res)
+    o = 0
+    do i = lbound(array, 1), ubound(array, 1) - 1
+      res(o+1:o+l_as) = array(i) // sep
+      o = o + l_as
+    end do
+    res(o+1:) = array(ubound(array, 1))
+  end function join_char1
 
 end module system_module
