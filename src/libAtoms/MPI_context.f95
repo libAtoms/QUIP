@@ -48,19 +48,22 @@ include 'mpif.h'
 
 private
 
+public :: ROOT, ROOT_
+integer, parameter :: ROOT = 0
+integer, parameter :: ROOT_ = ROOT  ! use if ROOT is shadowed locally
+
 public :: MPI_context
 type MPI_context
   logical :: active = .false.
   integer :: communicator = 0
   integer :: n_procs = 1
   integer :: my_proc = 0
+  integer :: n_hosts = 1
+  integer :: my_host = 0
+  character(len=:), allocatable :: hostname
   logical :: is_cart = .false.
   integer :: my_coords(3) = 0
 end type MPI_context
-
-public :: ROOT, ROOT_
-integer, parameter :: ROOT = 0
-integer, parameter :: ROOT_ = ROOT  ! use if ROOT is shadowed locally
 
 public :: Initialise
 interface Initialise
@@ -208,6 +211,11 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
   this%active = .false.
   this%is_cart = .false.
 
+#ifndef _MPI
+  allocate(character(1) :: this%hostname)
+  this%hostname = ' '
+#endif
+
 #ifdef _MPI
   if (present(communicator) .or. present(context)) then
 
@@ -228,7 +236,6 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
      endif
 
   endif
-
   this%communicator = comm
 
   if (present(dims)) then
@@ -259,6 +266,11 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
 
      call print("MPI_context_Initialise : Cart created, coords = " // this%my_coords, PRINT_VERBOSE)
   endif
+
+  call MPI_context_init_hostname(this, err)
+  PASS_MPI_ERROR(err, error)
+  call MPI_context_scatter_hosts(this, err)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_Initialise
 
@@ -289,6 +301,75 @@ subroutine MPI_context_Finalise(this, end_of_program, error)
   endif
 #endif
 end subroutine MPI_context_Finalise
+
+!% Set hostname with max length among all MPI processes
+subroutine MPI_context_init_hostname(this, error)
+  type(MPI_context), intent(inout) :: this
+  integer, intent(out), optional :: error
+
+  integer :: err, my_len, max_len
+  character(MPI_MAX_PROCESSOR_NAME) :: hostname
+
+  INIT_ERROR(error)
+
+  call mpi_get_processor_name(hostname, my_len, err)
+  PASS_MPI_ERROR(err, error)
+
+  max_len = max(this, my_len, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (allocated(this%hostname)) deallocate(this%hostname)
+  allocate(character(my_len) :: this%hostname)
+  this%hostname = hostname(1:max_len)
+end subroutine MPI_context_init_hostname
+
+!% Set host index and total for each MPI process
+subroutine MPI_context_scatter_hosts(this, error)
+  type(MPI_context), intent(inout) :: this
+  integer, intent(out), optional :: error
+
+  integer :: err, i
+  character(:), allocatable :: hostnames(:)
+  integer, allocatable :: refs(:), hosts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  if (.not. allocated(this%hostname)) then
+    call mpi_context_init_hostname(this)
+  end if
+
+  if (is_root(this)) then
+    allocate(character(len(this%hostname)) :: hostnames(0:this%n_procs-1))
+  else
+    allocate(character(1) :: hostnames(0:0))
+  end if
+
+  call gather(this, this%hostname, hostnames, error=err)
+  PASS_MPI_ERROR(err, error)
+
+  if (is_root(this)) then
+    call get_uniqs_refs(hostnames, hosts, refs, lbound(hostnames, 1))
+    this%n_hosts = size(hosts)
+  else
+    allocate(refs(1))
+  end if
+
+  call scatter(this, refs, this%my_host, error=err)
+  PASS_MPI_ERROR(err, error)
+  call bcast(this, this%n_hosts, error=err)
+  PASS_MPI_ERROR(err, error)
+
+  if (is_root(this)) then
+    call print("MPI hostnames :: "//join(hostnames(hosts), " "))
+    call print("MPI host refs :: "//refs)
+  end if
+  call print("MPI my_host  : "//this%my_host)
+  call print("MPI hostname : "//this%hostname)
+#endif
+end subroutine MPI_context_scatter_hosts
 
 function MPI_context_is_root(this, root) result(res)
   type(MPI_context), intent(in) :: this
