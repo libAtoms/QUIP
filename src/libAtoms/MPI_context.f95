@@ -1497,7 +1497,7 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
 
   if (.not. this%active) then
     if (any(shape(v_in) /= shape(v_out))) then
-      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1509,8 +1509,8 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
   call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (count /= size(v_out)) then
-    RAISE_ERROR("MPI_context_scatterv_int1 not enough space count " // count // " size(v_out) " // size(v_out), error)
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_int1 not enough space: count " // count // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this, my_root)) then
@@ -1542,7 +1542,7 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
 
   if (.not. this%active) then
     if (any(shape(v_in) /= shape(v_out))) then
-      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_scatterv_real1 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1554,8 +1554,8 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
   call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (count /= size(v_out)) then
-    RAISE_ERROR("MPI_context_scatterv_int1 not enough space count " // count // " size(v_out) " // size(v_out), error)
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_real1 not enough space: count " // count // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this, my_root)) then
@@ -1587,7 +1587,7 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
 
   if (.not. this%active) then
     if (any(shape(v_in) /= shape(v_out))) then
-      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_scatterv_real2 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1599,8 +1599,8 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
   call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (count /= size(v_out)) then
-    RAISE_ERROR("MPI_context_scatterv_int1 not enough space count " // count // " size(v_out) " // size(v_out), error)
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_real2 not enough space: count " // count // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this, my_root)) then
