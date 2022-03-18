@@ -66,7 +66,7 @@ module QUIP_LAMMPS_wrapper_module
       real(dp), parameter :: small_number = 1.0e-10_dp
 
 #ifdef _MPI
-      call system_abort("quip_lammps_wrapper: code compiled with MPI. This plugin must be compiler with a serial compiler.")
+      call system_abort("quip_lammps_wrapper: code compiled with MPI. This plugin must be compiled with a serial compiler.")
 #endif
 
       if( n_quip_potential == 0 ) then
@@ -173,7 +173,7 @@ module QUIP_LAMMPS_wrapper_module
       integer, dimension(1) :: ammold
 
 #ifdef _MPI
-      call system_abort("quip_lammps_wrapper: code compiled with MPI. This plugin must be compiler with a serial compiler.")
+      call system_abort("quip_lammps_wrapper: code compiled with MPI. This plugin must be compiled with a serial compiler.")
 #endif
       ! In this routine we initialise the QUIP potential and set a pointer to
       ! it. The pointer will then be transferred as an integer array to the
