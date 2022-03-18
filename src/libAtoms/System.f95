@@ -342,6 +342,16 @@ private
      module procedure int_format_length_isp, int_format_length_idp
   end interface int_format_length
 
+  public :: get_uniqs_refs
+  interface get_uniqs_refs
+     module procedure get_uniqs_refs_char1
+  end interface
+
+  public :: join
+  interface join
+     module procedure join_char1
+  end interface
+
   integer, external :: pointer_to
   public :: increase_stack
   public :: ran_normal
@@ -3670,5 +3680,59 @@ end function pad
      res = (a / m) * m
      if (res < a) res = res + m
    end function increase_to_multiple
+
+   !% get indices of unique array elements and references
+   !% to these indices for each element of the array
+   subroutine get_uniqs_refs_char1(array, uniqs, refs, lower_bound)
+    character(*), intent(in) :: array(lower_bound:)
+    integer, intent(out), allocatable :: uniqs(:)
+    integer, intent(out), allocatable :: refs(:)
+    integer, intent(in) :: lower_bound
+
+    integer :: r, u, n_vals
+    integer :: lb, ub, nb
+    integer, allocatable :: vals(:)
+
+    lb = lbound(array, 1)
+    ub = ubound(array, 1)
+    allocate(vals(lb:ub))
+    allocate(refs(lb:ub))
+
+    n_vals = 0
+    do_refs: do r = lb, ub
+      nb = n_vals + lb - 1
+      do u = nb, lb, -1  ! assuming similar neighbours
+        if (array(r) == array(vals(u))) then
+          refs(r) = u
+          cycle do_refs
+        end if
+      end do
+      refs(r) = nb + 1
+      vals(refs(r)) = r
+      n_vals = n_vals + 1
+    end do do_refs
+
+    nb = n_vals + lb - 1
+    allocate(uniqs(lb:nb))
+    uniqs = vals(lb:nb)
+  end subroutine get_uniqs_refs_char1
+
+  function join_char1(array, sep) result(res)
+    character(*), intent(in) :: array(:)
+    character(*), intent(in) :: sep
+    character(:), allocatable :: res
+
+    integer :: i, o, l_res, l_as
+
+    l_as = len(array) + len(sep)
+    l_res = l_as * size(array) - len(sep)
+    allocate(character(l_res) :: res)
+    o = 0
+    do i = lbound(array, 1), ubound(array, 1) - 1
+      res(o+1:o+l_as) = array(i) // sep
+      o = o + l_as
+    end do
+    res(o+1:) = array(ubound(array, 1))
+  end function join_char1
 
 end module system_module

@@ -812,8 +812,7 @@ subroutine KPoints_collect_real2(this, v_in, v_out)
       size(v_in,2) // " this%N " // this%N)
   end if
 
-  call collect(this%mpi_across_kpts, v_in, v_out)
+  call allgatherv(this%mpi_across_kpts, v_in, v_out)
 end subroutine KPoints_collect_real2
 
 end module TB_KPoints_module
-

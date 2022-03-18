@@ -48,21 +48,22 @@ include 'mpif.h'
 
 private
 
+public :: ROOT, ROOT_
+integer, parameter :: ROOT = 0
+integer, parameter :: ROOT_ = ROOT  ! use if ROOT is shadowed locally
+
 public :: MPI_context
 type MPI_context
   logical :: active = .false.
   integer :: communicator = 0
-  integer :: n_procs = 1, my_proc = 0
+  integer :: n_procs = 1
+  integer :: my_proc = 0
+  integer :: n_hosts = 1
+  integer :: my_host = 0
+  character(len=:), allocatable :: hostname
   logical :: is_cart = .false.
   integer :: my_coords(3) = 0
-  ! support later?
-  ! logical is_grid
-  ! integer n_proc_rows, n_proc_cols
-  ! integer my_proc_row, my_proc_col
 end type MPI_context
-
-public :: ROOT
-integer, parameter :: ROOT = 0
 
 public :: Initialise
 interface Initialise
@@ -72,6 +73,11 @@ end interface
 public :: Finalise
 interface Finalise
   module procedure MPI_context_Finalise
+end interface
+
+public :: is_root
+interface is_root
+  module procedure MPI_context_is_root
 end interface
 
 public :: Print
@@ -131,10 +137,31 @@ interface sum_in_place
   module procedure MPI_context_sum_in_place_complex2
 end interface
 
-public :: collect
-interface collect
-  module procedure MPI_context_collect_real2
-end interface collect
+public :: gather
+interface gather
+  module procedure MPI_context_gather_char0
+end interface gather
+
+public :: gatherv
+interface gatherv
+  module procedure MPI_context_gatherv_int1
+  module procedure MPI_context_gatherv_real2
+end interface gatherv
+
+public :: allgatherv
+interface allgatherv
+  module procedure MPI_context_allgatherv_real2
+end interface allgatherv
+
+public :: scatter
+interface scatter
+  module procedure MPI_context_scatter_int0
+end interface scatter
+
+public :: scatterv
+interface scatterv
+  module procedure MPI_context_scatterv_int1
+end interface scatterv
 
 public :: mpi_print
 
@@ -184,6 +211,11 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
   this%active = .false.
   this%is_cart = .false.
 
+#ifndef _MPI
+  allocate(character(1) :: this%hostname)
+  this%hostname = ' '
+#endif
+
 #ifdef _MPI
   if (present(communicator) .or. present(context)) then
 
@@ -204,7 +236,6 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
      endif
 
   endif
-
   this%communicator = comm
 
   if (present(dims)) then
@@ -235,6 +266,11 @@ subroutine MPI_context_Initialise(this, communicator, context, dims, periods, er
 
      call print("MPI_context_Initialise : Cart created, coords = " // this%my_coords, PRINT_VERBOSE)
   endif
+
+  call MPI_context_init_hostname(this, err)
+  PASS_MPI_ERROR(err, error)
+  call MPI_context_scatter_hosts(this, err)
+  PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_Initialise
 
@@ -265,6 +301,88 @@ subroutine MPI_context_Finalise(this, end_of_program, error)
   endif
 #endif
 end subroutine MPI_context_Finalise
+
+!% Set hostname with max length among all MPI processes
+subroutine MPI_context_init_hostname(this, error)
+  type(MPI_context), intent(inout) :: this
+  integer, intent(out), optional :: error
+
+#ifdef _MPI
+  integer :: err, my_len, max_len
+  character(MPI_MAX_PROCESSOR_NAME) :: hostname
+#endif
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  call mpi_get_processor_name(hostname, my_len, err)
+  PASS_MPI_ERROR(err, error)
+
+  max_len = max(this, my_len, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (allocated(this%hostname)) deallocate(this%hostname)
+  allocate(character(my_len) :: this%hostname)
+  this%hostname = hostname(1:max_len)
+#endif
+end subroutine MPI_context_init_hostname
+
+!% Set host index and total for each MPI process
+subroutine MPI_context_scatter_hosts(this, error)
+  type(MPI_context), intent(inout) :: this
+  integer, intent(out), optional :: error
+
+  integer :: err, i
+  character(:), allocatable :: hostnames(:)
+  integer, allocatable :: refs(:), hosts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) return
+
+#ifdef _MPI
+  if (.not. allocated(this%hostname)) then
+    call mpi_context_init_hostname(this)
+  end if
+
+  if (is_root(this)) then
+    allocate(character(len(this%hostname)) :: hostnames(0:this%n_procs-1))
+  else
+    allocate(character(1) :: hostnames(0:0))
+  end if
+
+  call gather(this, this%hostname, hostnames, error=err)
+  PASS_MPI_ERROR(err, error)
+
+  if (is_root(this)) then
+    call get_uniqs_refs(hostnames, hosts, refs, lbound(hostnames, 1))
+    this%n_hosts = size(hosts)
+  else
+    allocate(refs(1))
+  end if
+
+  call scatter(this, refs, this%my_host, error=err)
+  PASS_MPI_ERROR(err, error)
+  call bcast(this, this%n_hosts, error=err)
+  PASS_MPI_ERROR(err, error)
+
+  if (is_root(this)) then
+    call print("MPI hostnames :: "//join(hostnames(hosts), " "))
+    call print("MPI host refs :: "//refs)
+  end if
+  call print("MPI my_host  : "//this%my_host)
+  call print("MPI hostname : "//this%hostname)
+#endif
+end subroutine MPI_context_scatter_hosts
+
+function MPI_context_is_root(this, root) result(res)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in), optional :: root
+  logical :: res
+  res = (this%my_proc == optional_default(ROOT_, root))
+end function MPI_context_is_root
 
 subroutine MPI_context_free_context(this, error)
   type(MPI_context), intent(inout) :: this
@@ -783,24 +901,21 @@ subroutine MPI_context_bcast_int(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int
 
-subroutine MPI_context_bcast_int1(this, v, error)
+subroutine MPI_context_bcast_int1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -808,18 +923,21 @@ subroutine MPI_context_bcast_int1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int1
 
-subroutine MPI_context_bcast_int2(this, v, error)
+subroutine MPI_context_bcast_int2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   integer, intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -827,19 +945,22 @@ subroutine MPI_context_bcast_int2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_INTEGER, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_int2
 
 
-subroutine MPI_context_bcast_logical(this, v, error)
+subroutine MPI_context_bcast_logical(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -847,18 +968,21 @@ subroutine MPI_context_bcast_logical(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_LOGICAL, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, 1, MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical
 
-subroutine MPI_context_bcast_logical1(this, v, error)
+subroutine MPI_context_bcast_logical1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -866,18 +990,21 @@ subroutine MPI_context_bcast_logical1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical1
 
-subroutine MPI_context_bcast_logical2(this, v, error)
+subroutine MPI_context_bcast_logical2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   logical, intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -885,19 +1012,22 @@ subroutine MPI_context_bcast_logical2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_LOGICAL, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_LOGICAL, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_logical2
 
 
-subroutine MPI_context_bcast_c(this, v, error)
+subroutine MPI_context_bcast_c(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -905,18 +1035,21 @@ subroutine MPI_context_bcast_c(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, 1, MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c
 
-subroutine MPI_context_bcast_c1(this, v, error)
+subroutine MPI_context_bcast_c1(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -924,18 +1057,21 @@ subroutine MPI_context_bcast_c1(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c1
 
-subroutine MPI_context_bcast_c2(this, v, error)
+subroutine MPI_context_bcast_c2(this, v, root, error)
   type(MPI_context), intent(in) :: this
   complex(dp), intent(inout) :: v(:,:)
+  integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
 #ifdef _MPI
   integer err
+  integer my_root
 #endif
 
   INIT_ERROR(error)
@@ -943,7 +1079,8 @@ subroutine MPI_context_bcast_c2(this, v, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, 0, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, size(v), MPI_DOUBLE_COMPLEX, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_c2
@@ -964,12 +1101,7 @@ subroutine MPI_context_bcast_real(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, 1, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -991,12 +1123,7 @@ subroutine MPI_context_bcast_real1(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1018,12 +1145,7 @@ subroutine MPI_context_bcast_real2(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, size(v), MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1045,12 +1167,7 @@ subroutine MPI_context_bcast_char(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
+  my_root = optional_default(ROOT_, root)
   call MPI_Bcast(v, len(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
@@ -1072,15 +1189,8 @@ subroutine MPI_context_bcast_char1(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
-  call MPI_Bcast(&
-       v, len(v(1))*size(v), MPI_CHARACTER, &
-       my_root, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, len(v(1))*size(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char1
@@ -1101,15 +1211,8 @@ subroutine MPI_context_bcast_char2(this, v, root, error)
   if (.not. this%active) return
 
 #ifdef _MPI
-  if (present(root)) then
-     my_root = root
-  else
-     my_root = 0
-  endif
-
-  call MPI_Bcast( &
-       v, len(v(1,1))*size(v), MPI_CHARACTER, &
-       my_root, this%communicator, err)
+  my_root = optional_default(ROOT_, root)
+  call MPI_Bcast(v, len(v(1,1))*size(v), MPI_CHARACTER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 #endif
 end subroutine MPI_context_bcast_char2
@@ -1144,7 +1247,152 @@ subroutine MPI_Print(this, lines, file)
 
 end subroutine MPI_Print
 
-subroutine MPI_context_collect_real2(this, v_in, v_out, error)
+subroutine MPI_context_gather_char0(this, v_in, v_out, root, error)
+  type(MPI_context), intent(in) :: this
+  character(*), intent(in) :: v_in
+  character(*), intent(out) :: v_out(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, my_len
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (size(v_out) < 1) then
+      RAISE_ERROR("MPI_context_gather_char0 size(v_out) < 1: " // size(v_out), error)
+    end if
+
+    if (len(v_in) /= len(v_out(1))) then
+      RAISE_ERROR("MPI_context_gather_char0 lengths differ: len(v_in) " // len(v_in) // " len(v_out(1)) " // len(v_out), error)
+    end if
+
+    v_out(1) = v_in
+    return
+  end if
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  if (is_root(this)) then
+    if (size(v_out) /= this%n_procs) then
+      RAISE_ERROR("MPI_context_gather_char0 size(v_out) < %n_procs: " // size(v_out) // " " // this%n_procs, error)
+    end if
+    if (len(v_in) /= len(v_out(1))) then
+      RAISE_ERROR("MPI_context_gather_char0 lengths differ: len(v_in) " // len(v_in) // " len(v_out(1)) " // len(v_out), error)
+    end if
+  end if
+
+  call mpi_gather(v_in, len(v_in), MPI_CHARACTER, v_out, len(v_in), MPI_CHARACTER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_gather_char0
+
+subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: v_in(:)
+  integer, intent(out) :: v_out(:)
+  integer, intent(out), allocatable, optional :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, i, my_count
+  integer, allocatable :: displs(:), my_counts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_gatherv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+  if (is_root(this)) allocate(my_counts(this%n_procs))
+
+  my_count = size(v_in)
+  call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (sum(my_counts) /= size(v_out)) then
+    RAISE_ERROR("MPI_context_gatherv_int1 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this)) then
+    allocate(displs(this%n_procs))
+    displs(1) = 0
+    do i = 2, this%n_procs
+      displs(i) = displs(i-1) + my_counts(i-1)
+    end do
+  end if
+
+  call MPI_gatherv(v_in, my_count, MPI_INTEGER, v_out, my_counts, displs, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (present(counts)) then
+    if (allocated(counts)) deallocate(counts)
+    allocate(counts, source=my_counts)
+  end if
+#endif
+
+end subroutine MPI_context_gatherv_int1
+
+subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:,:)
+  real(dp), intent(out) :: v_out(:,:)
+  integer, intent(out), allocatable, optional :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, i, my_count
+  integer, allocatable :: displs(:), my_counts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_gatherv_real2 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+  if (is_root(this)) allocate(my_counts(this%n_procs))
+
+  my_count = size(v_in)
+  call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (sum(my_counts) /= size(v_out)) then
+    RAISE_ERROR("MPI_context_gatherv_real2 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this)) then
+    allocate(displs(this%n_procs))
+    displs(1) = 0
+    do i = 2, this%n_procs
+      displs(i) = displs(i-1) + my_counts(i-1)
+    end do
+  end if
+
+  call MPI_gatherv(v_in, my_count, MPI_DOUBLE_PRECISION, v_out, my_counts, displs, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (present(counts)) then
+    if (allocated(counts)) deallocate(counts)
+    allocate(counts, source=my_counts)
+  end if
+#endif
+
+end subroutine MPI_context_gatherv_real2
+
+subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
   type(MPI_context), intent(in) :: this
   real(dp), intent(in) :: v_in(:,:)
   real(dp), intent(out) :: v_out(:,:)
@@ -1159,7 +1407,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   if (.not. this%active) then
     if (size(v_in,1) /= size(v_out,1) .or. &
         size(v_in,2) /= size(v_out,2)) then
-      RAISE_ERROR("MPI_context_collect_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_allgatherv_real (no MPI) size mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1174,7 +1422,7 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
   PASS_MPI_ERROR(err, error)
 
   if (sum(counts) /= size(v_out)) then
-    RAISE_ERROR("MPI_context_collect_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
+    RAISE_ERROR("MPI_context_allgatherv_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
   endif
 
   displs(1) = 0
@@ -1192,7 +1440,86 @@ subroutine MPI_context_collect_real2(this, v_in, v_out, error)
 
 #endif
 
-end subroutine MPI_context_collect_real2
+end subroutine MPI_context_allgatherv_real2
+
+subroutine MPI_context_scatter_int0(this, v_in, v_out, root, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: v_in(:)
+  integer, intent(out) :: v_out
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (size(v_in) < 1) then
+      RAISE_ERROR("MPI_context_scatter_int0 size(v_in) < 1: " // size(v_in), error)
+    end if
+
+    v_out = v_in(1)
+    return
+  end if
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  if (is_root(this)) then
+    if (size(v_in) /= this%n_procs) then
+      RAISE_ERROR("MPI_context_scatter_int0 size(v_in) /= %n_procs: " // size(v_in) // " " // this%n_procs, error)
+    end if
+  end if
+
+  call mpi_scatter(v_in, 1, MPI_INTEGER, v_out, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#endif
+end subroutine MPI_context_scatter_int0
+
+subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  integer, intent(in) :: v_in(:)
+  integer, intent(out) :: v_out(:)
+  integer, intent(in) :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, i, count
+  integer, allocatable :: displs(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (count /= size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_int1 not enough space count " // count // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this, my_root)) then
+    allocate(displs(this%n_procs))
+    displs(1) = 0
+    do i = 2, this%n_procs
+      displs(i) = displs(i-1) + counts(i-1)
+    end do
+  end if
+
+  call MPI_scatterv(v_in, counts, displs, MPI_INTEGER, v_out, count, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+#endif
+
+end subroutine MPI_context_scatterv_int1
 
 subroutine MPI_context_barrier(this, error)
   type(MPI_context), intent(in) :: this
