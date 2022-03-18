@@ -2221,6 +2221,7 @@ contains
     !% MPI process.
     character(30) :: arg
     integer       :: status, i, n
+    logical       :: master_only
 
 #ifdef _MPI
     integer::PRINT_ALWAYS
@@ -2249,12 +2250,13 @@ contains
 #endif
 
     call cpu_time(start_time)
-    mainlog%mpi_all_inoutput_flag = optional_default(.false., mpi_all_inoutput)
+    master_only = .not. optional_default(.false., mpi_all_inoutput)
 
     ! Initialise the verbosity stack and default logger
-    call initialise(mainlog, filename=mainlog_file, unit=mainlog_unit, verbosity=verbosity, action=OUTPUT)
+    call initialise(mainlog, filename=mainlog_file, unit=mainlog_unit, verbosity=verbosity, &
+        action=OUTPUT, master_only=master_only)
     call print_mpi_id(mainlog)
-    call initialise(errorlog,filename='stderr')
+    call initialise(errorlog, filename='stderr', master_only=master_only)
     call print_mpi_id(errorlog)
     error_unit = errorlog%unit
 

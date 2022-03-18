@@ -2921,7 +2921,7 @@ contains
     if (.not. mpi%active) return
 
     if (mpi%my_proc == 0) then
-       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_VERBOSE)
+       call print('atoms_bcast: bcasting from  proc '//mpi%my_proc, PRINT_NERD)
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
        call bcast(mpi, at%Nbuffer)
@@ -2935,7 +2935,7 @@ contains
        call bcast(mpi, at%properties)
        call bcast(mpi, at%params)
     else
-       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, PRINT_VERBOSE)
+       call print('atoms_bcast: bcasting to  proc '//mpi%my_proc, PRINT_NERD)
        call finalise(at)
        call bcast(mpi, at%n)
        call bcast(mpi, at%Ndomain)
