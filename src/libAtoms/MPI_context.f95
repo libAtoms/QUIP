@@ -362,7 +362,8 @@ subroutine MPI_context_scatter_hosts(this, error)
     call get_uniqs_refs(hostnames, hosts, refs, lbound(hostnames, 1))
     this%n_hosts = size(hosts)
   else
-    allocate(refs(1))
+    allocate(hosts(1), source=0)
+    allocate(refs(1), source=0)
   end if
 
   call scatter(this, refs, this%my_host, error=err)
@@ -1321,7 +1322,11 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
 
 #ifdef _MPI
   my_root = optional_default(ROOT_, root)
-  if (is_root(this)) allocate(my_counts(this%n_procs))
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
 
   my_count = size(v_in)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
@@ -1337,6 +1342,8 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + my_counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_gatherv(v_in, my_count, MPI_INTEGER, v_out, my_counts, displs, MPI_INTEGER, my_root, this%communicator, err)
@@ -1376,7 +1383,11 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
 
 #ifdef _MPI
   my_root = optional_default(ROOT_, root)
-  if (is_root(this)) allocate(my_counts(this%n_procs))
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
 
   my_count = size(v_in)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
@@ -1392,6 +1403,8 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + my_counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_gatherv(v_in, my_count, MPI_DOUBLE_PRECISION, v_out, my_counts, displs, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
@@ -1529,6 +1542,8 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_INTEGER, v_out, count, MPI_INTEGER, my_root, this%communicator, err)
@@ -1576,6 +1591,8 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
@@ -1624,8 +1641,7 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
       displs(i) = displs(i-1) + counts(i-1)
     end do
   else
-    allocate(displs(1))
-    displs(1) = 0
+    allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
