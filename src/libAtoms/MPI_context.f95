@@ -161,6 +161,8 @@ end interface scatter
 public :: scatterv
 interface scatterv
   module procedure MPI_context_scatterv_int1
+  module procedure MPI_context_scatterv_real1
+  module procedure MPI_context_scatterv_real2
 end interface scatterv
 
 public :: mpi_print
@@ -360,7 +362,8 @@ subroutine MPI_context_scatter_hosts(this, error)
     call get_uniqs_refs(hostnames, hosts, refs, lbound(hostnames, 1))
     this%n_hosts = size(hosts)
   else
-    allocate(refs(1))
+    allocate(hosts(1), source=0)
+    allocate(refs(1), source=0)
   end if
 
   call scatter(this, refs, this%my_host, error=err)
@@ -374,6 +377,10 @@ subroutine MPI_context_scatter_hosts(this, error)
   end if
   call print("MPI my_host  : "//this%my_host)
   call print("MPI hostname : "//this%hostname)
+
+  if (allocated(hostnames)) deallocate(hostnames)
+  if (allocated(refs)) deallocate(refs)
+  if (allocated(hosts)) deallocate(hosts)
 #endif
 end subroutine MPI_context_scatter_hosts
 
@@ -381,7 +388,11 @@ function MPI_context_is_root(this, root) result(res)
   type(MPI_context), intent(in) :: this
   integer, intent(in), optional :: root
   logical :: res
-  res = (this%my_proc == optional_default(ROOT_, root))
+  if (this%active) then
+    res = (this%my_proc == optional_default(ROOT_, root))
+  else
+    res = .true.
+  end if
 end function MPI_context_is_root
 
 subroutine MPI_context_free_context(this, error)
@@ -1311,7 +1322,11 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
 
 #ifdef _MPI
   my_root = optional_default(ROOT_, root)
-  if (is_root(this)) allocate(my_counts(this%n_procs))
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
 
   my_count = size(v_in)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
@@ -1327,6 +1342,8 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + my_counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_gatherv(v_in, my_count, MPI_INTEGER, v_out, my_counts, displs, MPI_INTEGER, my_root, this%communicator, err)
@@ -1336,6 +1353,9 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
     if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
+
+  if (allocated(displs)) deallocate(displs)
+  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_int1
@@ -1363,7 +1383,11 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
 
 #ifdef _MPI
   my_root = optional_default(ROOT_, root)
-  if (is_root(this)) allocate(my_counts(this%n_procs))
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
 
   my_count = size(v_in)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
@@ -1379,6 +1403,8 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + my_counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_gatherv(v_in, my_count, MPI_DOUBLE_PRECISION, v_out, my_counts, displs, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
@@ -1388,6 +1414,9 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
     if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
+
+  if (allocated(displs)) deallocate(displs)
+  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_real2
@@ -1491,7 +1520,7 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
 
   if (.not. this%active) then
     if (any(shape(v_in) /= shape(v_out))) then
-      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+      RAISE_ERROR("MPI_context_scatterv_int1 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
     endif
     v_out = v_in
     return
@@ -1503,8 +1532,8 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
   call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (count /= size(v_out)) then
-    RAISE_ERROR("MPI_context_scatterv_int1 not enough space count " // count // " size(v_out) " // size(v_out), error)
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_int1 not enough space: count " // count // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this, my_root)) then
@@ -1513,13 +1542,115 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
     do i = 2, this%n_procs
       displs(i) = displs(i-1) + counts(i-1)
     end do
+  else
+    allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_INTEGER, v_out, count, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
+
+  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_int1
+
+subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:)
+  real(dp), intent(out) :: v_out(:)
+  integer, intent(in) :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, i, count
+  integer, allocatable :: displs(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_scatterv_real1 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_real1 not enough space: count " // count // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this, my_root)) then
+    allocate(displs(this%n_procs))
+    displs(1) = 0
+    do i = 2, this%n_procs
+      displs(i) = displs(i-1) + counts(i-1)
+    end do
+  else
+    allocate(displs(1), source=0)
+  end if
+
+  call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (allocated(displs)) deallocate(displs)
+#endif
+
+end subroutine MPI_context_scatterv_real1
+
+subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:,:)
+  real(dp), intent(out) :: v_out(:,:)
+  integer, intent(in) :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, i, count
+  integer, allocatable :: displs(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_scatterv_real2 (no MPI) shape mismatch: v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+
+  call mpi_scatter(counts, 1, MPI_INTEGER, count, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (count > size(v_out)) then
+    RAISE_ERROR("MPI_context_scatterv_real2 not enough space: count " // count // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this, my_root)) then
+    allocate(displs(this%n_procs))
+    displs(1) = 0
+    do i = 2, this%n_procs
+      displs(i) = displs(i-1) + counts(i-1)
+    end do
+  else
+    allocate(displs(1), source=0)
+  end if
+
+  call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (allocated(displs)) deallocate(displs)
+#endif
+
+end subroutine MPI_context_scatterv_real2
 
 subroutine MPI_context_barrier(this, error)
   type(MPI_context), intent(in) :: this
