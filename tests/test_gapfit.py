@@ -44,6 +44,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     alpha_tol = 1e-5
     log_name = 'gap_fit.log'
     xml_name = 'gp.xml'
+    config_name = 'gap_fit.config'
     here = Path('.')
     prog_path = Path(os.environ.get('BUILDDIR')) / 'gap_fit'
     with open('si_gap_fit_test.json') as f:
@@ -65,22 +66,22 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.env['OMP_NUM_THREADS'] = '1'
 
     def tearDown(self):
-        os.remove(self.here / self.log_name)
+        for fname in [self.log_name, self.config_name]:
+            try:
+                os.remove(self.here / fname)
+            except FileNotFoundError:
+                pass
         for path in self.here.glob(self.xml_name + '*'):
             os.remove(path)
 
     def run_gap_fit(self, command_line, new_test=False, prefix=''):        
         if new_test:
-            command_line = command_line.replace('$SPARSE_METHOD',
-                                                'sparse_method=cur_points print_sparse_index=sparse_file')
             if os.path.exists('sparse_file'):
                 os.unlink('sparse_file') # ensure we don't append to an old file
         else:
             with open('sparse_file', 'w') as fh:
                 for sp in self.ref_data['sparse_points']:
                     fh.write(f'{sp}\n')
-            command_line = command_line.replace('$SPARSE_METHOD',
-                                                'sparse_method=index_file sparse_file=sparse_file')
 
         full_command = f'{prefix} {self.prog_path} {command_line}'
         with open(self.log_name, 'w') as f:
@@ -114,14 +115,20 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.assertEqual(hash, self.si_sparsex_hash)
 
     def test_gap_fit_silicon_sparsify_only(self):
-        command_line = self.cl_template.safe_substitute() + ' sparsify_only_no_fit=T'
+        with open(self.config_name, 'w') as f:
+            config = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=index_file sparse_file=sparse_file')
+            config += ' sparsify_only_no_fit=T'
+            print(config, file=f)
+        command_line = f'config_file={self.config_name}'
         self.run_gap_fit(command_line)
         with open(self.log_name) as f:
             self.assertEqual(f.read().count('Number of partial derivatives of descriptors: 0'), 1)
 
+    # new test: 'sparse_method=cur_points print_sparse_index=sparse_file'
     def test_gap_fit_silicon(self):
         self.env['OMP_NUM_THREADS'] = '2'
-        command_line = self.cl_template.safe_substitute() + ' condition_number_norm=I'
+        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=index_file sparse_file=sparse_file')
+        command_line += ' condition_number_norm=I'
         self.run_gap_fit(command_line)
         self.check_gap_fit()
 
