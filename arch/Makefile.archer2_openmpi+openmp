@@ -50,3 +50,6 @@ QUIPPY_LDFLAGS += -fopenmp
 
 # MPI
 DEFINES += -D_MPI
+
+# NOTE: Make sure to erase the defaults ("-llapack -lblas") when being prompted for "linking options for LAPACK and BLAS libraries". 
+#       On Archer2 the compiler wrappers (cc CC ftn) will link to the libsci library, which includes LAPACK and BLAS.
