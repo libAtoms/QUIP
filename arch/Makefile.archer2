@@ -7,6 +7,9 @@
 # HQ X
 # HQ X   Copyright 2021
 # HQ X
+# HQ X
+# HQ X   Edited by Vlad Carare and Lars Schaaf - working as of 07.04.2022
+# HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # ACRHER2 computer cluster, United Kingdom
@@ -15,10 +18,10 @@
 # - GNU compilers version 9, python and FFTW
 # - obtain these with the following on Archer2
 #
-# module restore PrgEnv-gnu
+# module switch PrgEnv-cray PrgEnv-gnu
+# module load PrgEnv-gnu
 # module load gcc/9.3.0
 # module load cray-fftw
-# module load cray-python
 
 
 
