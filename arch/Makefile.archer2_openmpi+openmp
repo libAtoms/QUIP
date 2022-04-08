@@ -24,28 +24,13 @@
 # module load cray-fftw
 
 
-
 # declarations
 
-include arch/Makefile.linux_x86_64_gfortran
+include arch/Makefile.archer2
+# OpenMP and compiler wrappers already defined in the archer2 makefile
 
-# compiler settings, make sure this is GNU!
-F77 = ftn
-F90 = ftn
-F95 = ftn
-CC = cc
-CPLUSPLUS = cc
-LINKER = ftn
-
-# OpenMP
-F95FLAGS += -fopenmp
-F77FLAGS += -fopenmp
-CFLAGS += -fopenmp
-LINKOPTS += -fopenmp
-
-QUIPPY_F90FLAGS += -fopenmp
-QUIPPY_CFLAGS += -fopenmp
-QUIPPY_LDFLAGS += -fopenmp
+# MPI
+DEFINES += -D_MPI
 
 # NOTE: Make sure to erase the defaults ("-llapack -lblas") when being prompted for "linking options for LAPACK and BLAS libraries". 
 #       On Archer2 the compiler wrappers (cc CC ftn) will link to the libsci library, which includes LAPACK and BLAS.
