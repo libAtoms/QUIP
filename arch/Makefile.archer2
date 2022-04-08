@@ -38,7 +38,6 @@ CPLUSPLUS = cc
 LINKER = ftn
 
 # OpenMP
-DEFINES += -D_OPENMP
 F95FLAGS += -fopenmp
 F77FLAGS += -fopenmp
 CFLAGS += -fopenmp
