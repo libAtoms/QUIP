@@ -30,21 +30,21 @@ do_force=False
 do_virial=False
 energy_field="energy"
 for i in range(2,len(args)):
-   m=re.match("force=?(\S+)?", args[i])
+   m=re.match(r"force=?(\S+)?", args[i])
    if m is not None:
       do_force=True
       if m.group(1) is not None:
          force_field=m.group(1)
       else:
          force_field="force"
-   m=re.match("virial=?(\S+)?", args[i])
+   m=re.match(r"virial=?(\S+)?", args[i])
    if m is not None:
       do_virial=True
       if m.group(1) is not None:
          virial_field=m.group(1)
       else:
          virial_field="virial"
-   m=re.match("energy=?(\S+)?", args[i])
+   m=re.match(r"energy=?(\S+)?", args[i])
    if m is not None:
       if m.group(1) is not None:
          energy_field=m.group(1)
@@ -67,11 +67,11 @@ f_inpt_out = open("profess_driver.inpt","w")
 l_print=[]
 for l in f_inpt_template:
    print_this_line=True
-   if re.match("\s*geometryfile", l) or \
-      re.match("\s*calc\s+for", l) or \
-      re.match("\s*calc\s+str", l) or \
-      re.match("\s*tran", l) or \
-      re.match("\s*rhof", l):
+   if re.match(r"\s*geometryfile", l) or \
+      re.match(r"\s*calc\s+for", l) or \
+      re.match(r"\s*calc\s+str", l) or \
+      re.match(r"\s*tran", l) or \
+      re.match(r"\s*rhof", l):
       print_this_line=False
    if print_this_line:
       f_inpt_out.write(l)
@@ -154,7 +154,7 @@ N_at=int(pos_lines[0])
 if not re.search("Properties=species:S:1:pos:R:3", pos_lines[1]):
    sys.stderr.write("Need Properties=species:S:1:pos:R:3\n")
    sys.exit(3)
-m=re.search('Lattice=["\'{]\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*["\'}]',pos_lines[1])
+m=re.search(r"""Lattice=["'{]\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s*["'}]""", pos_lines[1])
 if m is None:
    sys.stderr.write("Failed to parse Lattice from %s\n" % infile)
    sys.exit(2)
@@ -200,13 +200,13 @@ just_got_species_pot=False
 in_species_pot=False
 in_no_print=False
 for l in f_ion_template:
-   if re.match("\s*%BLOCK\s+(LATTICE|POSITIONS)",l):
+   if re.match(r"\s*%BLOCK\s+(LATTICE|POSITIONS)",l):
          in_no_print=True
-   if re.match("\s*%END\s+BLOCK\s+(LATTICE|POSITIONS)",l):
+   if re.match(r"\s*%END\s+BLOCK\s+(LATTICE|POSITIONS)",l):
          in_no_print=False
-   if re.match("\s*%BLOCK\s+SPECIES_POT",l):
+   if re.match(r"\s*%BLOCK\s+SPECIES_POT",l):
       just_got_species_pot=True
-   if re.match("\s*%END\s+BLOCK\s+SPECIES_POT",l):
+   if re.match(r"\s*%END\s+BLOCK\s+SPECIES_POT",l):
       in_species_pot=False
    if (not in_no_print):
       f_ion_out.write(l)
