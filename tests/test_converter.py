@@ -16,6 +16,7 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+import unittest
 import quippy
 import quippytest
 import ase
