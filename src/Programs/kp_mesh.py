@@ -76,7 +76,7 @@ castep_lines = open('tmp.castep').readlines()
 
 try:
    kp_start = castep_lines.index('             +  Number       Fractional coordinates        Weight  +\n')
-except:
+except ValueError:
    raise ValueError('No k-points found in CASTEP output file')
    sys.exit(1)
 
