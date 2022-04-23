@@ -33,7 +33,8 @@
 # to find the irreducible k-point set.
 
 from pyatoms import *
-import sys, os
+import sys
+import os
 
 if len(sys.argv) not in  (5,8):
    print('Usage: %s atoms.xyz nx ny nz [shiftx shifty shiftz]')

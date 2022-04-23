@@ -2,7 +2,9 @@
 
 # parse output of gcov and make a nicely formatted coverage report
 
-import sys, os, operator
+import sys
+import os
+import operator
 
 if len(sys.argv[1:]) == 0:
     print('Usage: coverage_report.py GCDA_FILES')

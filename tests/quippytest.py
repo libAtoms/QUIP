@@ -95,7 +95,9 @@ def skip(f):
 
 
 def profile(f):
-    import cProfile, pstats, functools
+    import cProfile
+    import pstats
+    import functools
 
     @functools.wraps(f)
     def g(self):

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import sys, os, optparse, re
+import sys
+import os
+import optparse
+import re
 
 from math import floor
 
