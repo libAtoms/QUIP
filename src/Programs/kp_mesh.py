@@ -33,7 +33,8 @@
 # to find the irreducible k-point set.
 
 from pyatoms import *
-import sys, os
+import sys
+import os
 
 if len(sys.argv) not in  (5,8):
    print('Usage: %s atoms.xyz nx ny nz [shiftx shifty shiftz]')
@@ -75,7 +76,7 @@ castep_lines = open('tmp.castep').readlines()
 
 try:
    kp_start = castep_lines.index('             +  Number       Fractional coordinates        Weight  +\n')
-except:
+except ValueError:
    raise ValueError('No k-points found in CASTEP output file')
    sys.exit(1)
 
@@ -83,7 +84,8 @@ i = kp_start + 2
 kp_lines = []
 while True:
    line = castep_lines[i]
-   if line.strip().startswith('+++++++'): break
+   if line.strip().startswith('+++++++'):
+       break
    kp_lines.append(line)
    i += 1
 

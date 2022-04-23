@@ -113,7 +113,7 @@ class Descriptor:
             if "atom_mask_name" in args_str_dict:
                 try:
                     mask = get_dict_arrays(at.properties)[args_str_dict["atom_mask_name"]].astype(bool)
-                except:
+                except Exception:
                     raise KeyError
         n_descriptors, n_cross = self._quip_descriptor.sizes(at,mask=mask)
 

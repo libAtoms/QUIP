@@ -2,7 +2,9 @@
 
 # parse output of gcov and make a nicely formatted coverage report
 
-import sys, os, operator
+import sys
+import os
+import operator
 
 if len(sys.argv[1:]) == 0:
     print('Usage: coverage_report.py GCDA_FILES')
@@ -19,7 +21,8 @@ quip_root = 'QUIP_ROOT' in os.environ and os.environ['QUIP_ROOT']
 
 for file_line, coverage_line in zip(lines[::4], lines[1::4]):
     filename = file_line.split()[1].replace("'","")
-    if filename.startswith('/usr'): continue
+    if filename.startswith('/usr'):
+        continue
     if quip_root and filename.startswith(quip_root):
         filename = filename[len(quip_root)+1:]
     coverage[filename] = float(coverage_line[coverage_line.index(':')+1:coverage_line.index('%')])

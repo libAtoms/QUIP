@@ -20,7 +20,12 @@ from quippy import *
 import quippy._elasticity
 from quippy.elasticity import *
 from numpy import *
-import unittest, itertools, sys, quippy, os, numpy
+import unittest
+import itertools
+import sys
+import quippy
+import os
+import numpy
 from quippytest import *
 
 
