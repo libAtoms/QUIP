@@ -84,7 +84,8 @@ i = kp_start + 2
 kp_lines = []
 while True:
    line = castep_lines[i]
-   if line.strip().startswith('+++++++'): break
+   if line.strip().startswith('+++++++'):
+       break
    kp_lines.append(line)
    i += 1
 
