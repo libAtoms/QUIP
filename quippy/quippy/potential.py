@@ -100,7 +100,7 @@ class Potential(ase.calculators.calculator.Calculator):
         # from old
         if atoms is not None:
             atoms.calc = self
-        self.name = args_str
+        self.args_str = args_str
         if isinstance(calc_args, dict):
             calc_args = key_val_dict_to_str(calc_args)
         elif calc_args is None:
