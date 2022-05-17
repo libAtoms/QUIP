@@ -13,13 +13,13 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Build libraries
-        id: build-libs
+        id: buildlibs
         run : |
           QUIP_ARCH=linux_x86_64_gfortran_openmp
           echo ::set-output name=quip_arch::${QUIP_ARCH}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.build-libs.quip_arch }}
+        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.buildlibs.quip_arch }}
         env:
            CIBW_SKIP: cp27-* cp35-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
