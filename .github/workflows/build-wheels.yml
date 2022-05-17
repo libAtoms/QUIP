@@ -28,7 +28,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse build/${{ steps.buildlibs.quip_arch }}
         env:
-           CIBW_SKIP: cp27-* cp35-* cp36- pp*
+           CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_ARCHS_LINUX: "auto64"
            CIBW_ARCHS_MACOS: "x86_64 arm64"           
