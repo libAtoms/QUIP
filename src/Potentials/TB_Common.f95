@@ -81,7 +81,7 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
   real(dp) :: u_V_dfs, u_V_dfp, u_V_dfd
   real(dp) :: u_V_ffs, u_V_ffp, u_V_ffd, u_V_fff
 
-  real(dp) :: L, M, N, Lsq, Msq, Nsq
+  real(dp) :: L, M, N, Lsq, Msq, Nsq, Nsq_denom
 
   real(dp) :: root_3
 
@@ -143,46 +143,20 @@ function angular_function(dcos, dcos_sq, orb_type_i, orb_type_j, orb_dir_i, orb_
   Lsq = dcos_sq(1)
   Msq = dcos_sq(2)
   Nsq = dcos_sq(3)
+  ! work around division by (-1 + Nsq) in SK_vogl.h by defining special variant of
+  ! Nsq that is regularized, so that numerator which is 0 can correctly drive
+  ! expression to 0 instead of getting NaN
+  Nsq_denom = Nsq
+  if (Nsq == 1.0) then
+      Nsq_denom = Nsq - 1.0e-5
+  endif
 
   ! seems to prevent intel 9.1.051 -O3 optimizer from breaking S1-D5 matrix element (and maybe others?)
   if (orb_type_i < 0) call print("")
 
-  ! workaround for (-1+Nsq) division by zero
-  call regularize(L, M, N, Lsq, Msq, Nsq)
-
 include 'SK_vogl.h'
 
 end function angular_function
-
-subroutine regularize(L, M, N, Lsq, Msq, Nsq)
-    real(dp), intent(inout) :: L, M, N, Lsq, Msq, Nsq
-
-    real(dp), parameter :: regularization_eps = 1.0e-5
-
-    if (Nsq == 1.0_dp) then
-        L = sign(regularization_eps, N)
-        Lsq = L**2
-        M = sign(regularization_eps, N)
-        Msq = M**2
-        Nsq = (1.0_dp - Lsq - Msq)
-        N = sign(sqrt(Nsq), N)
-    else if (Msq == 1.0_dp) then
-        L = sign(regularization_eps, M)
-        Lsq = L**2
-        N = sign(regularization_eps, M)
-        Nsq = N**2
-        Msq = (1.0_dp - Lsq - Nsq)
-        M = sign(sqrt(Msq), M)
-    else if (Lsq == 1.0_dp) then
-        M = sign(regularization_eps, L)
-        Msq = M**2
-        N = sign(regularization_eps, L)
-        Nsq = N**2
-        Lsq = (1.0_dp - Nsq - Msq)
-        L = sign(sqrt(Lsq),L)
-    endif
-end subroutine regularize
-
 
 function spin_orbit_function(orb_type_i, orb_dir_i, orb_dir_j) result(V)
   integer, intent(in) :: orb_type_i, orb_dir_i, orb_dir_j
@@ -223,7 +197,7 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
   real(dp) :: u_Vd_dfs, u_Vd_dfp, u_Vd_dfd
   real(dp) :: u_Vd_ffs, u_Vd_ffp, u_Vd_ffd, u_Vd_fff
 
-  real(dp) :: L, M, N, Lsq, Msq, Nsq
+  real(dp) :: L, M, N, Lsq, Msq, Nsq, Nsq_denom
   real(dp) :: dL_dr(3), dM_dr(3), dN_dr(3)
 
   real(dp) :: root_3
@@ -329,12 +303,16 @@ function dangular_function(dist, dcos, dcos_sq, orb_type_i, orb_type_j, &
   Lsq = dcos_sq(1)
   Msq = dcos_sq(2)
   Nsq = dcos_sq(3)
+  ! work around division by (-1 + Nsq) in SKd_vogl.h by defining special variant of
+  ! Nsq that is regularized, so that numerator which is 0 can correctly drive
+  ! expression to 0 instead of getting NaN
+  Nsq_denom = Nsq
+  if (Nsq == 1.0) then
+      Nsq_denom = Nsq - 1.0e-5
+  endif
 
   ! seems to prevent intel 9.1.051 -O3 optimizer from breaking S1-D5 matrix element (and maybe others?)
   if (orb_type_i < 0) call print("")
-
-  ! workaround for (-1+Nsq) division by zero
-  call regularize(L, M, N, Lsq, Msq, Nsq)
 
 include 'SKd_vogl.h'
 

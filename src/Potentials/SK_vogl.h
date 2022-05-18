@@ -214,7 +214,7 @@ select case (orb_type_i)
               case (2)
               V = -(sqrt(5.)*M*N*(sqrt(2.)*Msq*u_V_PFP +  &
          Lsq*(-2*root_3*(-1 + Nsq)*u_V_PFS +  &
-            sqrt(2.)*(-2 + 3*Nsq)*u_V_PFP)))/(2.*(-1 + Nsq))
+            sqrt(2.)*(-2 + 3*Nsq)*u_V_PFP)))/(2.*(-1 + Nsq_denom))
               case (3)
               V = (L*M*(sqrt(6.)*(-1 + 5*Nsq)*u_V_PFS + (1 - 15*Nsq)*u_V_PFP))/ &
     4.
@@ -224,7 +224,7 @@ select case (orb_type_i)
               case (5)
               V = (sqrt(6.)*Lsq*(1 - 6*Nsq + 5*N**4)*u_V_PFS +  &
       (Lsq*Nsq*(11 - 15*Nsq) + Msq*(1 - 5*Nsq))*u_V_PFP)/ &
-    (4.*(-1 + Nsq))
+    (4.*(-1 + Nsq_denom))
               case (6)
               V = (L*N*(-2*sqrt(15.)*(-1 + 2*Msq + Nsq)*u_V_PFS +  &
         sqrt(10.)*(-1 + 6*Msq + 3*Nsq)*u_V_PFP))/4.
@@ -233,7 +233,7 @@ select case (orb_type_i)
         3*Lsq*Msq*(-1 + Nsq)* &
          (-(sqrt(2.)*u_V_PFS) + root_3*u_V_PFP) +  &
         L**4*(sqrt(2.)*(-1 + Nsq)*u_V_PFS - root_3*Nsq*u_V_PFP)))/ &
-    (4.*(-1 + Nsq))
+    (4.*(-1 + Nsq_denom))
             end select
         end select
     end select
@@ -305,7 +305,7 @@ select case (orb_type_i)
               case (3)
               V = (N*(Msq*u_V_PDP -  &
         Lsq*(root_3*(-1 + Nsq)*u_V_PDS + (1 - 2*Nsq)*u_V_PDP)))/ &
-    (-1 + Nsq)
+    (-1 + Nsq_denom)
             end select
           case (5)
             select case (orb_dir_j)
@@ -444,7 +444,7 @@ select case (orb_type_i)
               V = (M*(Msq*((1 - 5*Nsq)*u_V_DFP + 2*sqrt(10.)*Nsq*u_V_DFD) +  &
         Lsq*(3*sqrt(2.)*(1 - 6*Nsq + 5*N**4)*u_V_DFS +  &
            (-1 + 27*Nsq - 30*N**4)*u_V_DFP +  &
-           sqrt(10.)*(-1 + 3*N**4)*u_V_DFD)))/(4.*(-1 + Nsq))
+           sqrt(10.)*(-1 + 3*N**4)*u_V_DFD)))/(4.*(-1 + Nsq_denom))
               case (6)
               V = (3*L*(L - M)*M*(L + M)*N* &
       (sqrt(5.)*u_V_DFS - sqrt(10.)*u_V_DFP + u_V_DFD))/2.
@@ -524,7 +524,7 @@ select case (orb_type_i)
               V = (Lsq*M*(sqrt(10.)*(-1 + 6*Nsq - 6*N**4)*u_V_DFP +  &
          2*u_V_DFD + 6*Nsq*(-1 + Nsq)*(sqrt(5.)*u_V_DFS + u_V_DFD))  &
  + M**3*(-2*u_V_DFD + Nsq*(-(sqrt(10.)*u_V_DFP) + 4*u_V_DFD)))/ &
-    (2.*(-1 + Nsq))
+    (2.*(-1 + Nsq_denom))
               case (3)
               V = (3*L*M*N*(sqrt(2.)*(-1 + 5*Nsq)*u_V_DFS +  &
         (4 - 10*Nsq)*u_V_DFP + sqrt(10.)*(-1 + Nsq)*u_V_DFD))/4.
@@ -649,7 +649,7 @@ select case (orb_type_i)
               case (3)
               V = -(sqrt(5.)*M*N*(sqrt(2.)*Msq*u_V_PFP +  &
          Lsq*(-2*root_3*(-1 + Nsq)*u_V_PFS +  &
-            sqrt(2.)*(-2 + 3*Nsq)*u_V_PFP)))/(2.*(-1 + Nsq))
+            sqrt(2.)*(-2 + 3*Nsq)*u_V_PFP)))/(2.*(-1 + Nsq_denom))
             end select
           case (3)
             select case (orb_dir_j)
@@ -686,7 +686,7 @@ select case (orb_type_i)
               case (3)
               V = (sqrt(6.)*Lsq*(1 - 6*Nsq + 5*N**4)*u_V_PFS +  &
       (Lsq*Nsq*(11 - 15*Nsq) + Msq*(1 - 5*Nsq))*u_V_PFP)/ &
-    (4.*(-1 + Nsq))
+    (4.*(-1 + Nsq_denom))
             end select
           case (6)
             select case (orb_dir_j)
@@ -713,7 +713,7 @@ select case (orb_type_i)
         3*Lsq*Msq*(-1 + Nsq)* &
          (-(sqrt(2.)*u_V_PFS) + root_3*u_V_PFP) +  &
         L**4*(sqrt(2.)*(-1 + Nsq)*u_V_PFS - root_3*Nsq*u_V_PFP)))/ &
-    (4.*(-1 + Nsq))
+    (4.*(-1 + Nsq_denom))
             end select
         end select
       case (ORB_D)
@@ -818,7 +818,7 @@ select case (orb_type_i)
               V = -(M*(Msq*((1 - 5*Nsq)*u_V_DFP + 2*sqrt(10.)*Nsq*u_V_DFD) +  &
          Lsq*(3*sqrt(2.)*(1 - 6*Nsq + 5*N**4)*u_V_DFS +  &
             (-1 + 27*Nsq - 30*N**4)*u_V_DFP +  &
-            sqrt(10.)*(-1 + 3*N**4)*u_V_DFD)))/(4.*(-1 + Nsq))
+            sqrt(10.)*(-1 + 3*N**4)*u_V_DFD)))/(4.*(-1 + Nsq_denom))
               case (2)
               V = (-3*L*M*N*(sqrt(2.)*(-1 + 5*Nsq)*u_V_DFS +  &
         (4 - 10*Nsq)*u_V_DFP + sqrt(10.)*(-1 + Nsq)*u_V_DFD))/4.
@@ -911,7 +911,7 @@ select case (orb_type_i)
            2*(1 + 3*Nsq)*u_V_FFD - (1 + Nsq)*u_V_FFF) +  &
         M**4*(-2*(1 - 6*Nsq + 5*N**4)*u_V_FFS + 2*u_V_FFD +  &
            Nsq*((-11 + 15*Nsq)*u_V_FFP - 2*(2 + 3*Nsq)*u_V_FFD +  &
-              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq))
+              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq_denom))
               case (4)
               V = -(Sqrt(2.5)*M*(-3*Lsq + Msq)*N* &
        (2*(-3 + 5*Nsq)*u_V_FFS + (3 - 15*Nsq)*u_V_FFP +  &
@@ -952,7 +952,7 @@ select case (orb_type_i)
          Nsq*(30*(-1 + Nsq)**2*u_V_FFS -  &
             5*(9 - 17*Nsq + 9*N**4)*u_V_FFP +  &
             2*(9 - 14*Nsq + 9*N**4)*u_V_FFD -  &
-            3*(1 - Nsq + N**4)*u_V_FFF)))/(2.*(-1 + Nsq)**2)
+            3*(1 - Nsq + N**4)*u_V_FFF)))/(2.*(-1 + Nsq_denom)**2)
               case (3)
               V = (Sqrt(2.5)*L*N*((-1 + 5*Nsq)*u_V_FFP + 4*u_V_FFD -  &
         3*u_V_FFF + Nsq*(-8*u_V_FFD + 3*u_V_FFF) +  &
@@ -971,7 +971,7 @@ select case (orb_type_i)
         Lsq*(6*(1 - 6*Nsq + 5*N**4)*u_V_FFS +  &
            (-12 + 53*Nsq - 45*N**4)*u_V_FFP +  &
            2*(3 - 10*Nsq + 9*N**4)*u_V_FFD - 3*Nsq*(-1 + Nsq)*u_V_FFF &
- )))/(4.*(-1 + Nsq))
+ )))/(4.*(-1 + Nsq_denom))
               case (6)
               V = (L*(L - M)*M*(L + M)* &
       (5*u_V_FFP - 8*u_V_FFD + 3*u_V_FFF +  &
@@ -996,7 +996,7 @@ select case (orb_type_i)
            2*(1 + 3*Nsq)*u_V_FFD - (1 + Nsq)*u_V_FFF) +  &
         M**4*(-2*(1 - 6*Nsq + 5*N**4)*u_V_FFS + 2*u_V_FFD +  &
            Nsq*((-11 + 15*Nsq)*u_V_FFP - 2*(2 + 3*Nsq)*u_V_FFD +  &
-              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq))
+              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq_denom))
               case (2)
               V = (Sqrt(2.5)*L*N*((-1 + 5*Nsq)*u_V_FFP + 4*u_V_FFD -  &
         3*u_V_FFF + Nsq*(-8*u_V_FFD + 3*u_V_FFF) +  &
@@ -1099,7 +1099,7 @@ select case (orb_type_i)
       Lsq*(6*(1 - 5*Nsq)**2*(-1 + Nsq)*u_V_FFS - 10*u_V_FFD +  &
          Nsq*(-((11 - 15*Nsq)**2*u_V_FFP) +  &
             10*(7 - 15*Nsq + 9*N**4)*u_V_FFD -  &
-            15*(-1 + Nsq)**2*u_V_FFF)))/(16.*(-1 + Nsq))
+            15*(-1 + Nsq)**2*u_V_FFF)))/(16.*(-1 + Nsq_denom))
               case (6)
               V = (Sqrt(2.5)*L*N*(-6*(-1 + 2*Msq + Nsq)*(-1 + 5*Nsq)*u_V_FFS +  &
         (11 - 48*Nsq + 45*N**4 + Msq*(-26 + 90*Nsq))*u_V_FFP -  &
@@ -1115,7 +1115,7 @@ select case (orb_type_i)
            Nsq*(-8*u_V_FFD + 3*u_V_FFF)) +  &
         L**4*(2*(1 - 6*Nsq + 5*N**4)*u_V_FFS - 2*u_V_FFD +  &
            Nsq*((11 - 15*Nsq)*u_V_FFP + (4 + 6*Nsq)*u_V_FFD -  &
-              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq))
+              (3 + Nsq)*u_V_FFF))))/(16.*(-1 + Nsq_denom))
             end select
           case (6)
             select case (orb_dir_j)
