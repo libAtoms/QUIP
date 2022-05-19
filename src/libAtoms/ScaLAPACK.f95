@@ -48,7 +48,7 @@ implicit none
 private
 
 #ifdef SCALAPACK
-integer, external :: indxl2g, numroc
+integer, external :: indxg2p, indxl2g, numroc
 #endif
 
 integer, parameter :: dlen_ = 50
@@ -153,6 +153,13 @@ public :: diag_spinor
 interface diag_spinor
   module procedure ScaLAPACK_diag_spinorZ, ScaLAPACK_diag_spinorD
 end interface diag_spinor
+
+public :: get_lwork_pdgeqrf
+interface get_lwork_pdgeqrf
+  module procedure get_lwork_pdgeqrf_i32o64
+  module procedure ScaLAPACK_get_lwork_pdgeqrf
+  module procedure ScaLAPACK_matrix_get_lwork_pdgeqrf
+end interface
 
 public :: ScaLAPACK_pdgeqrf_wrapper, ScaLAPACK_pdtrtrs_wrapper, ScaLAPACK_pdormqr_wrapper
 public :: ScaLAPACK_matrix_QR_solve, ScaLAPACK_to_array1d, ScaLAPACK_to_array2d
@@ -1460,5 +1467,50 @@ subroutine ScaLAPACK_to_array2d(A_info, A_data, array)
                0.0_dp, array, 1, 1, desc)
 #endif
 end subroutine ScaLAPACK_to_array2d
+
+function get_lwork_pdgeqrf_i32o64(m, n, ia, ja, mb_a, nb_a, &
+    myrow, mycol, rsrc_a, csrc_a, nprow, npcol) result(lwork)
+  integer, intent(in) :: m, n, ia, ja, mb_a, nb_a
+  integer, intent(in) :: myrow, mycol, rsrc_a, csrc_a, nprow, npcol
+  integer(idp) :: lwork
+
+  integer :: iarow, iacol, iroff, icoff
+  integer(idp) :: mp0, nq0, nb64
+
+#ifdef SCALAPACK
+  iroff = mod(ia-1, mb_a)
+  icoff = mod(ja-1, nb_a)
+  iarow = indxg2p(ia, mb_a, myrow, rsrc_a, nprow)
+  iacol = indxg2p(ja, nb_a, mycol, csrc_a, npcol)
+  mp0 = numroc(m+iroff, mb_a, myrow, iarow, nprow)
+  nq0 = numroc(n+icoff, nb_a, mycol, iacol, npcol)
+
+  nb64 = int(nb_a, idp)
+  lwork = nb64 * (mp0 + nq0 + nb64)
+#endif
+end function get_lwork_pdgeqrf_i32o64
+
+function ScaLAPACK_get_lwork_pdgeqrf(this, m, n, mb_a, nb_a) result(lwork)
+  type(ScaLAPACK), intent(in) :: this
+  integer, intent(in) :: m, n, mb_a, nb_a
+  integer(idp) :: lwork
+
+  integer, parameter :: ia = 1, ja = 1, rsrc_a = 0, csrc_a = 0
+
+#ifdef SCALAPACK
+  lwork = get_lwork_pdgeqrf(m, n, ia, ja, mb_a, nb_a, &
+    this%my_proc_row, this%my_proc_col, rsrc_a, csrc_a, &
+    this%n_proc_rows, this%n_proc_cols)
+#endif
+end function ScaLAPACK_get_lwork_pdgeqrf
+
+function ScaLAPACK_matrix_get_lwork_pdgeqrf(this) result(lwork)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: this
+  integer(idp) :: lwork
+
+#ifdef SCALAPACK
+  lwork = get_lwork_pdgeqrf(this%ScaLAPACK_obj, this%N_R, this%N_C, this%NB_R, this%NB_C)
+#endif
+end function ScaLAPACK_matrix_get_lwork_pdgeqrf
 
 end module ScaLAPACK_module
