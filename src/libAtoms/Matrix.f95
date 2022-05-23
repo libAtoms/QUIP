@@ -272,24 +272,27 @@ subroutine MatrixD_to_array1d(this, array)
   end if
 end subroutine MatrixD_to_array1d
 
-subroutine MatrixD_QR_Solve(A_SP, B_SP)
+subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   type(MatrixD), intent(inout) :: A_SP, B_SP
+  logical, intent(in) :: cheat_nb_A
 
   if (A_SP%ScaLAPACK_Info_obj%active .and. &
       B_SP%ScaLAPACK_Info_obj%active) then
-    call ScaLAPACK_Matrix_QR_Solve(A_SP%ScaLAPACK_Info_obj, A_SP%data, B_SP%ScaLAPACK_Info_obj, B_SP%data)
+    call ScaLAPACK_Matrix_QR_Solve(A_SP%ScaLAPACK_Info_obj, A_SP%data, &
+      B_SP%ScaLAPACK_Info_obj, B_SP%data, cheat_nb_A)
   else
     call system_abort("MatrixD_QR_Solve() without ScaLAPACK is not implemented.")
   endif
 end subroutine MatrixD_QR_Solve
 
-subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, blocksize)
-  real(dp), intent(in), dimension(:,:), target :: A
-  real(dp), intent(in), dimension(:), target :: B
+subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
+  real(dp), intent(inout), dimension(:,:), target :: A
+  real(dp), intent(inout), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
-  integer, intent(in) :: blocksize
+  integer, intent(in) :: mb_A, nb_A
 
+  logical :: cheat_nb_A
   integer :: mb, nb, ml, nl, mg, ng
   type(MatrixD) :: A_SP, B_SP
 
@@ -298,22 +301,30 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, blocksize)
   mg = ml * ScaLAPACK_obj%n_proc_rows
   ng = nl * ScaLAPACK_obj%n_proc_cols
 
-  mb = blocksize
-  nb = blocksize
+  mb = mb_A
+  nb = nb_A
+
+  cheat_nb_A = .false.
+  if (mb /= nb) then
+    if (ScaLAPACK_obj%n_proc_cols > 1) &
+      call system_abort("SP_Matrix_QR_Solve: blocksizes differ: "//mb//" "//nb//char(16) &
+        // "Cannot cheat for more than one process column: "//ScaLAPACK_obj%n_proc_cols)
+    cheat_nb_A = .true.
+  end if
 
   if (ScaLAPACK_obj%my_proc_row+1 < ScaLAPACK_obj%n_proc_rows .and. mod(ml, mb) /= 0) &
     call system_abort("SP_Matrix_QR_Solve: nrows is not a multiple of blocksize: "//ml//" "//mb)
   if (ScaLAPACK_obj%my_proc_col+1 < ScaLAPACK_obj%n_proc_cols .and. mod(nl, nb) /= 0) &
     call system_abort("SP_Matrix_QR_Solve: ncols is not a multiple of blocksize: "//nl//" "//nb)
 
-  ! Scalapack needs mb == nb for p?trtrs
   call initialise(A_SP, mg, ng, mb, nb, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
-  call initialise(B_SP, mg, 1, nb, 1, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
+  call initialise(B_SP, mg,  1, mb,  1, scalapack_obj=ScaLAPACK_obj, use_allocate=.false.)
 
   A_SP%data => A
   B_SP%data(lbound(B,1):ubound(B,1),1:1) => B(:)
 
-  call MatrixD_QR_Solve(A_SP, B_SP)
+  ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
+  call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   call MatrixD_to_array1d(B_SP, X)
 
   call finalise(A_SP)
