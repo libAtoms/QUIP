@@ -51,6 +51,7 @@
 #include <mach/task.h>
 #endif
 
+#include "md5.h"
 #include "libatoms.h"
 
 //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -149,6 +150,7 @@ void system_command_(char* command, int* status, int *error, int len)
   if (status) *status = ret;
 }
 
+/*
 int fmd5sum_(char* filename, char md5sum[static 33]) {
    FILE *fp;
 
@@ -173,6 +175,29 @@ int fmd5sum_(char* filename, char md5sum[static 33]) {
    if(pclose(fp)) return -3;
 
    return 0;
+}*/
+
+int fmd5sum_(char* filename, char md5sum[static 33]) {
+   FILE *file;
+   MD5_CTX context;
+   int len;
+   unsigned char buffer[1024], digest[16];
+
+   if ((file = fopen (filename, "rb")) == NULL) {
+      printf ("%s can't be opened\n", filename);
+      return 1;
+   }
+   else {
+      MD5Init (&context);
+      while (len = fread (buffer, 1, 1024, file))
+         MD5Update (&context, buffer, len);
+      MD5Final (digest, &context);
+      fclose (file);
+
+      for(int i = 0; i < 16; i++)
+         sprintf(md5sum+2*i, "%02x", digest[i]);
+      return 0;
+   }
 }
 
 // increase stack from fortran

@@ -105,6 +105,7 @@ LIBATOMS_F77_FILES= \
    lbfgs
 
 LIBATOMS_C_FILES = \
+  md5\
   cutil\
   netcdf\
   xyz\
