@@ -150,33 +150,6 @@ void system_command_(char* command, int* status, int *error, int len)
   if (status) *status = ret;
 }
 
-/*
-int fmd5sum_(char* filename, char md5sum[static 33]) {
-   FILE *fp;
-
-   char *md5_command = malloc( sizeof(char) * ( strlen(filename) + 11 ) );
-#ifdef DARWIN
-   strcpy(md5_command,"md5 < ");
-#else
-   strcpy(md5_command,"md5sum < ");
-#endif
-   strcat(md5_command,filename);
-
-   if ((fp = popen(md5_command, "r")) == NULL) {
-      int errsv = errno;
-      free(md5_command);
-      return errsv;
-   }
-
-   free(md5_command);
-
-   if(fgets(md5sum, 33, fp) == NULL) return -2;
-
-   if(pclose(fp)) return -3;
-
-   return 0;
-}*/
-
 int fmd5sum_(char* filename, char md5sum[static 33]) {
    FILE *file;
    MD5_CTX context;
