@@ -48,7 +48,7 @@ implicit none
 private
 
 #ifdef SCALAPACK
-integer, external :: indxg2p, indxl2g, numroc
+integer, external :: ilcm, indxg2p, indxl2g, numroc
 #endif
 
 integer, parameter :: dlen_ = 50
@@ -159,6 +159,13 @@ interface get_lwork_pdgeqrf
   module procedure get_lwork_pdgeqrf_i32o64
   module procedure ScaLAPACK_get_lwork_pdgeqrf
   module procedure ScaLAPACK_matrix_get_lwork_pdgeqrf
+end interface
+
+public :: get_lwork_pdormqr
+interface get_lwork_pdormqr
+  module procedure get_lwork_pdormqr_i32o64
+  module procedure ScaLAPACK_get_lwork_pdormqr
+  module procedure ScaLAPACK_matrix_get_lwork_pdormqr
 end interface
 
 public :: ScaLAPACK_pdgeqrf_wrapper, ScaLAPACK_pdtrtrs_wrapper, ScaLAPACK_pdormqr_wrapper
@@ -1468,6 +1475,8 @@ subroutine ScaLAPACK_to_array2d(A_info, A_data, array)
 #endif
 end subroutine ScaLAPACK_to_array2d
 
+! returns 64bit minimal work array length for pdgeqrf from 32bit sources
+! adapted from documentation of pdgeqrf
 function get_lwork_pdgeqrf_i32o64(m, n, ia, ja, mb_a, nb_a, &
     myrow, mycol, rsrc_a, csrc_a, nprow, npcol) result(lwork)
   integer, intent(in) :: m, n, ia, ja, mb_a, nb_a
@@ -1512,5 +1521,76 @@ function ScaLAPACK_matrix_get_lwork_pdgeqrf(this) result(lwork)
   lwork = get_lwork_pdgeqrf(this%ScaLAPACK_obj, this%N_R, this%N_C, this%NB_R, this%NB_C)
 #endif
 end function ScaLAPACK_matrix_get_lwork_pdgeqrf
+
+! returns 64bit minimal work array length for pdormqr from 32bit sources
+! adapted from documentation of pdormqr
+function get_lwork_pdormqr_i32o64(side, m, n, ia, ja, mb_a, nb_a, ic, jc, &
+    mb_c, nb_c, myrow, mycol, rsrc_a, csrc_a, rsrc_c, csrc_c, nprow, npcol) result(lwork)
+  character :: side
+  integer, intent(in) :: m, n, ia, ja, mb_a, nb_a
+  integer, intent(in) :: ic, jc, mb_c, nb_c
+  integer, intent(in) :: rsrc_a, csrc_a, rsrc_c, csrc_c
+  integer, intent(in) :: myrow, mycol, nprow, npcol
+  integer(idp) :: lwork
+
+  integer :: lcm, lcmq
+  integer :: iarow, iroffa, icoffa, iroffc, icoffc, icrow, iccol
+  integer(idp) :: npa0, mpc0, nqc0, nr, nb64, lwork1, lwork2
+
+#ifdef SCALAPACK
+  iroffc = mod(ic-1, mb_c)
+  icoffc = mod(jc-1, nb_c)
+  icrow = indxg2p(ic, mb_c, myrow, rsrc_c, nprow)
+  iccol = indxg2p(jc, nb_c, mycol, csrc_c, npcol)
+  mpc0 = numroc(m+iroffc, mb_c, myrow, icrow, nprow)
+  nqc0 = numroc(n+icoffc, nb_c, mycol, iccol, npcol)
+
+  nb64 = int(nb_a, idp)
+  lwork1 = (nb64 * (nb64 - 1)) / 2
+  if (side == 'L') then
+    lwork2 = (nqc0 + mpc0) * nb64
+  else if (side == 'R') then
+    iroffa = mod(ia-1, mb_a)
+    icoffa = mod(ja-1, nb_a)
+    iarow = indxg2p(ia, mb_a, myrow, rsrc_a, nprow)
+    npa0 = numroc(n+iroffa, mb_a, myrow, iarow, nprow)
+
+    lcm = ilcm(nprow, npcol)
+    lcmq = lcm / npcol
+    nr = numroc(n+icoffc, nb_a, 0, 0, npcol)
+    nr = numroc(nr, nb_a, 0, 0, lcmq)
+    nr = max(npa0 + nr, mpc0)
+    lwork2 = (nqc0 + nr) * nb64
+  end if
+  lwork = max(lwork1, lwork2) + nb64 * nb64
+#endif
+end function get_lwork_pdormqr_i32o64
+
+function ScaLAPACK_get_lwork_pdormqr(this, side, m, n, mb_a, nb_a, mb_c, nb_c) result(lwork)
+  type(ScaLAPACK), intent(in) :: this
+  character :: side
+  integer, intent(in) :: m, n, mb_a, nb_a, mb_c, nb_c
+  integer(idp) :: lwork
+
+  integer, parameter :: ia = 1, ja = 1, rsrc_a = 0, csrc_a = 0
+  integer, parameter :: ic = 1, jc = 1, rsrc_c = 0, csrc_c = 0
+
+#ifdef SCALAPACK
+  lwork = get_lwork_pdormqr(side, m, n, ia, ja, mb_a, nb_a, ic, jc, mb_c, nb_c, &
+    this%my_proc_row, this%my_proc_col, rsrc_a, csrc_a, rsrc_c, csrc_c, &
+    this%n_proc_rows, this%n_proc_cols)
+#endif
+end function ScaLAPACK_get_lwork_pdormqr
+
+function ScaLAPACK_matrix_get_lwork_pdormqr(A_info, C_info, side) result(lwork)
+  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info, C_info
+  character :: side
+  integer(idp) :: lwork
+
+#ifdef SCALAPACK
+  lwork = get_lwork_pdormqr(A_info%ScaLAPACK_obj, side, C_info%N_R, &
+    C_info%N_C, A_info%NB_R, A_info%NB_C, A_info%NB_R, A_info%NB_C)
+#endif
+end function ScaLAPACK_matrix_get_lwork_pdormqr
 
 end module ScaLAPACK_module
