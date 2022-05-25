@@ -1387,7 +1387,6 @@ subroutine ScaLAPACK_pdormqr_wrapper(A_info, A_data, C_info, C_data, tau, work)
   n = C_info%N_C
   k = size(tau)
 
-  call reallocate(tau, k) ! @fixme circular logic
   call reallocate(work, 1)
   call pdormqr('L', 'T', m, n, k, A_data, 1, 1, A_info%desc, &
     tau, C_data, 1, 1, C_info%desc, work, -1, info)
