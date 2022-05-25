@@ -1557,7 +1557,7 @@ function get_lwork_pdormqr_i32o64(side, m, n, ia, ja, mb_a, nb_a, ic, jc, &
     lcm = ilcm(nprow, npcol)
     lcmq = lcm / npcol
     nr = numroc(n+icoffc, nb_a, 0, 0, npcol)
-    nr = numroc(nr, nb_a, 0, 0, lcmq)
+    nr = numroc(int(nr, isp), nb_a, 0, 0, lcmq)
     nr = max(npa0 + nr, mpc0)
     lwork2 = (nqc0 + nr) * nb64
   end if
