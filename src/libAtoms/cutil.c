@@ -153,7 +153,7 @@ void system_command_(char* command, int* status, int *error, int len)
 int fmd5sum_(char* filename, char md5sum[static 33]) {
    FILE *file;
    MD5_CTX context;
-   int len;
+   int i, len;
    unsigned char buffer[1024], digest[16];
 
    if ((file = fopen (filename, "rb")) == NULL) {
@@ -167,7 +167,7 @@ int fmd5sum_(char* filename, char md5sum[static 33]) {
       MD5Final (digest, &context);
       fclose (file);
 
-      for(int i = 0; i < 16; i++)
+      for(i = 0; i < 16; i++)
          sprintf(md5sum+2*i, "%02x", digest[i]);
       return 0;
    }
