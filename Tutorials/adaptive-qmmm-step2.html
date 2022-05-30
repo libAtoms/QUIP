@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 6f2ad16 documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 35d481d documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -36,7 +37,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                6f2ad16
+                35d481d
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -132,15 +133,15 @@
 }
 </style>
 <section id="step-2-classical-md-simulation-of-fracture-in-si">
-<span id="step2"></span><h1>Step 2: Classical MD simulation of fracture in Si<a class="headerlink" href="#step-2-classical-md-simulation-of-fracture-in-si" title="Permalink to this headline"></a></h1>
+<span id="step2"></span><h1>Step 2: Classical MD simulation of fracture in Si<a class="headerlink" href="#step-2-classical-md-simulation-of-fracture-in-si" title="Permalink to this heading"></a></h1>
 <p>This part of the tutorial requires the initial crack structure <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code>
 produced in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a>. If you had problems completing the first part, you
 can <code class="xref download docutils literal notranslate"><span class="pre">download</span> <span class="pre">it</span> <span class="pre">here</span></code> instead. Start by creating a new
 empty script, named <code class="docutils literal notranslate"><span class="pre">run_crack_classical.py</span></code>.</p>
 <section id="initialisation-of-the-atomic-system-20-minutes">
-<h2>2.1 Initialisation of the atomic system (20 minutes)<a class="headerlink" href="#initialisation-of-the-atomic-system-20-minutes" title="Permalink to this headline"></a></h2>
+<h2>2.1 Initialisation of the atomic system (20 minutes)<a class="headerlink" href="#initialisation-of-the-atomic-system-20-minutes" title="Permalink to this heading"></a></h2>
 <section id="import-the-relevant-modules">
-<h3>Import the relevant modules<a class="headerlink" href="#import-the-relevant-modules" title="Permalink to this headline"></a></h3>
+<h3>Import the relevant modules<a class="headerlink" href="#import-the-relevant-modules" title="Permalink to this heading"></a></h3>
 <p>As before, we import the necessary modules, classes and functions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -164,7 +165,7 @@ empty script, named <code class="docutils literal notranslate"><span class="pre"
 crack-specific functionality come from <cite>quippy</cite>.</p>
 </section>
 <section id="definition-of-the-simulation-parameters">
-<h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this headline"></a></h3>
+<h3>Definition of the simulation parameters<a class="headerlink" href="#definition-of-the-simulation-parameters" title="Permalink to this heading"></a></h3>
 <p id="parameters2">Let’s define the simulation parameters. The meaning of each parameter is explained
 in the comments on the right of each line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;crack.xyz&#39;</span>         <span class="c1"># File from which to read crack slab structure</span>
@@ -187,7 +188,7 @@ in the comments on the right of each line:</p>
 </div>
 </section>
 <section id="setup-of-the-atomic-structure">
-<h3>Setup of the atomic structure<a class="headerlink" href="#setup-of-the-atomic-structure" title="Permalink to this headline"></a></h3>
+<h3>Setup of the atomic structure<a class="headerlink" href="#setup-of-the-atomic-structure" title="Permalink to this heading"></a></h3>
 <p>As a first step, we need to initialise the
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> object by loading the atomic structure created
 in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a> from the <cite>input_file</cite> <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code>. Note that the global
@@ -210,7 +211,7 @@ of <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span cla
 as it is updated during the dynamical simulation.</p>
 </section>
 <section id="setup-of-the-constraints">
-<h3>Setup of the constraints<a class="headerlink" href="#setup-of-the-constraints" title="Permalink to this headline"></a></h3>
+<h3>Setup of the constraints<a class="headerlink" href="#setup-of-the-constraints" title="Permalink to this heading"></a></h3>
 <p>Now we can set constraints on the atomic structure which will be
 enforced during dynamics. In order to carry out the fracture MD
 simulation, we need to fix the positions of the top and bottom atomic
@@ -253,7 +254,7 @@ use the <code class="xref py py-class docutils literal notranslate"><span class=
 all atoms. We will attach this to the dynamics in step 2.2 below.</p>
 </section>
 <section id="setup-of-the-potential">
-<h3>Setup of the potential<a class="headerlink" href="#setup-of-the-potential" title="Permalink to this headline"></a></h3>
+<h3>Setup of the potential<a class="headerlink" href="#setup-of-the-potential" title="Permalink to this heading"></a></h3>
 <p>Before starting the MD simulation, the SW classical potential must be
 initialised and attached to the <cite>atoms</cite> object.  As in <cite>Step 1</cite>, we
 use quippy’s <code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code> class, but now we
@@ -273,14 +274,14 @@ to set the calculator to the SW potential:</p>
 </div>
 </section>
 <section id="milestone-2-1">
-<h3>Milestone 2.1<a class="headerlink" href="#milestone-2-1" title="Permalink to this headline"></a></h3>
+<h3>Milestone 2.1<a class="headerlink" href="#milestone-2-1" title="Permalink to this heading"></a></h3>
 <p>At this stage your script should look something like <a class="reference download internal" download="" href="../_downloads/da9d1fa53f735fa02946580e528535ee/run_crack_classical_1.py"><code class="xref download docutils literal notranslate"><span class="pre">this</span></code></a>.</p>
 </section>
 </section>
 <section id="setup-and-run-the-classical-md-20-minutes">
-<h2>2.2 Setup and run the classical MD (20 minutes)<a class="headerlink" href="#setup-and-run-the-classical-md-20-minutes" title="Permalink to this headline"></a></h2>
+<h2>2.2 Setup and run the classical MD (20 minutes)<a class="headerlink" href="#setup-and-run-the-classical-md-20-minutes" title="Permalink to this heading"></a></h2>
 <section id="setting-initial-velocities-and-constructing-the-dynamics-object">
-<h3>Setting initial velocities and constructing the dynamics object<a class="headerlink" href="#setting-initial-velocities-and-constructing-the-dynamics-object" title="Permalink to this headline"></a></h3>
+<h3>Setting initial velocities and constructing the dynamics object<a class="headerlink" href="#setting-initial-velocities-and-constructing-the-dynamics-object" title="Permalink to this heading"></a></h3>
 <p>There are still a few things that need to be done before running the
 MD fracture simulation. We will follow the standard <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/tutorials/md/md.html">ASE molecular
 dynamics methodology</a>. We will set
@@ -299,7 +300,7 @@ arguments: the atoms and the time step (which should come from the
 </div>
 </section>
 <section id="printing-status-information">
-<h3>Printing status information<a class="headerlink" href="#printing-status-information" title="Permalink to this headline"></a></h3>
+<h3>Printing status information<a class="headerlink" href="#printing-status-information" title="Permalink to this heading"></a></h3>
 <p>Let’s also define a function that prints the relevant information at
 each time step of the MD simulation. The information can be saved
 inside the <code class="xref py py-attr docutils literal notranslate"><span class="pre">info</span></code> dictionary, so that it
@@ -343,7 +344,7 @@ printed at every time step during the simulations:</p>
 </div>
 </section>
 <section id="checking-if-the-crack-has-advanced">
-<h3>Checking if the crack has advanced<a class="headerlink" href="#checking-if-the-crack-has-advanced" title="Permalink to this headline"></a></h3>
+<h3>Checking if the crack has advanced<a class="headerlink" href="#checking-if-the-crack-has-advanced" title="Permalink to this heading"></a></h3>
 <p>The same can be done to check during the simulation if the crack has advanced,
 and to stop incrementing the strain if it has:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">check_if_cracked</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
@@ -368,7 +369,7 @@ of <cite>strain_atoms</cite> to the dynamics:</p>
 </div>
 </section>
 <section id="saving-the-trajectory">
-<h3>Saving the trajectory<a class="headerlink" href="#saving-the-trajectory" title="Permalink to this headline"></a></h3>
+<h3>Saving the trajectory<a class="headerlink" href="#saving-the-trajectory" title="Permalink to this heading"></a></h3>
 <p>Finally, we need to initialise the trajectory file <cite>traj_file</cite> and to
 save frames to the trajectory every <cite>traj_interval</cite> time steps. This
 is done by creating a trajectory object with the
@@ -384,7 +385,7 @@ file format that is similar with the <span class="xref std std-ref">extendedxyz<
 earlier, with the advantage of being more efficient for large files.</p>
 </section>
 <section id="running-the-dynamics">
-<h3>Running the dynamics<a class="headerlink" href="#running-the-dynamics" title="Permalink to this headline"></a></h3>
+<h3>Running the dynamics<a class="headerlink" href="#running-the-dynamics" title="Permalink to this heading"></a></h3>
 <p>After all this, a single command will run the MD for <cite>nsteps</cite> (see the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/tutorials/md/md.html">ASE
 molecular dynamics methodology</a> for more information):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dynamics</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
@@ -392,7 +393,7 @@ molecular dynamics methodology</a> for more information):</p>
 </div>
 </section>
 <section id="milestone-2-2">
-<h3>Milestone 2.2<a class="headerlink" href="#milestone-2-2" title="Permalink to this headline"></a></h3>
+<h3>Milestone 2.2<a class="headerlink" href="#milestone-2-2" title="Permalink to this heading"></a></h3>
 <p>If you have problems you can look at the complete version of the
 <a class="reference internal" href="adaptive-qmmm-solutions.html#run-crack-classical"><span class="std std-ref">Step 2 solution — run_crack_classical.py</span></a> script. Leave your classical MD simulation
 running and move on to the next section of the tutorial.</p>
@@ -424,7 +425,7 @@ towards <code class="docutils literal notranslate"><span class="pre">sim_T</span
 </section>
 </section>
 <section id="visualisation-and-analysis-as-time-permits">
-<span id="visualisation2"></span><h2>2.3 Visualisation and Analysis (as time permits)<a class="headerlink" href="#visualisation-and-analysis-as-time-permits" title="Permalink to this headline"></a></h2>
+<span id="visualisation2"></span><h2>2.3 Visualisation and Analysis (as time permits)<a class="headerlink" href="#visualisation-and-analysis-as-time-permits" title="Permalink to this heading"></a></h2>
 <p>Start another <cite>ipython</cite> session is a new terminal with plotting
 support enabled, using the shell command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ipython</span> <span class="o">--</span><span class="n">pylab</span>
@@ -469,7 +470,7 @@ command as your simulation progresses to reload the file (you can use <cite>Ctrl
 in the <cite>ipython</cite> console to search backwards in the session history to save
 typing).</p>
 <section id="stress-field-analysis">
-<span id="stress-analysis"></span><h3>Stress field analysis<a class="headerlink" href="#stress-field-analysis" title="Permalink to this headline"></a></h3>
+<span id="stress-analysis"></span><h3>Stress field analysis<a class="headerlink" href="#stress-field-analysis" title="Permalink to this heading"></a></h3>
 <p>To compute and display the instantaneous principal per-atom stress
 <span class="math notranslate nohighlight">\(\sigma_{yy}\)</span> as computed by the SW potential for a
 configuration near the beginning of your dynamical simulation:</p>
@@ -541,7 +542,7 @@ above. You can use the matplotlib <a class="reference external" href="https://ma
 produce a plot.</p>
 </section>
 <section id="time-averaged-stress-field">
-<span id="time-avg-stress"></span><h3>Time-averaged stress field<a class="headerlink" href="#time-averaged-stress-field" title="Permalink to this headline"></a></h3>
+<span id="time-avg-stress"></span><h3>Time-averaged stress field<a class="headerlink" href="#time-averaged-stress-field" title="Permalink to this heading"></a></h3>
 <p>By now, you should have a few picoseconds of dynamics in your trajectory file.
 Reload with <code class="docutils literal notranslate"><span class="pre">view(&quot;traj.nc&quot;)</span></code> to see what is happening. You can jump to the
 end with <cite>Ctrl+Delete</cite>, or by typing <cite>last()</cite> into the <cite>ipython</cite> console. Here
@@ -564,7 +565,7 @@ i.e.</p>
 <a class="reference internal image-reference" href="../_images/classical-crack-sigma-yy-average.png"><img alt="../_images/classical-crack-sigma-yy-average.png" class="align-center" src="../_images/classical-crack-sigma-yy-average.png" style="width: 600px;" /></a>
 </section>
 <section id="geometry-and-coordination-analysis">
-<span id="coordination"></span><h3>Geometry and coordination analysis<a class="headerlink" href="#geometry-and-coordination-analysis" title="Permalink to this headline"></a></h3>
+<span id="coordination"></span><h3>Geometry and coordination analysis<a class="headerlink" href="#geometry-and-coordination-analysis" title="Permalink to this heading"></a></h3>
 <p>Press <cite>k</cite> to colour the atoms by coordination. This is based on the
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">nneightol</span></code> attribute of the Atoms object, which we set
 to a value of 1.3 in the <code class="docutils literal notranslate"><span class="pre">make_crack.py</span></code> script. This factor acts as
@@ -585,7 +586,7 @@ mechanisms, such as dislocation emission from the crack tip.</p>
 <a class="reference internal image-reference" href="../_images/classical-crack-coordination.png"><img alt="../_images/classical-crack-coordination.png" class="align-center" src="../_images/classical-crack-coordination.png" style="width: 600px;" /></a>
 </section>
 <section id="rendering-a-movie-of-the-simulation">
-<span id="render-movie"></span><h3>Rendering a movie of the simulation<a class="headerlink" href="#rendering-a-movie-of-the-simulation" title="Permalink to this headline"></a></h3>
+<span id="render-movie"></span><h3>Rendering a movie of the simulation<a class="headerlink" href="#rendering-a-movie-of-the-simulation" title="Permalink to this heading"></a></h3>
 <p>If you would like to make a movie of your simulation, you can use
 the <code class="xref py py-func docutils literal notranslate"><span class="pre">render_movie()</span></code> function. Arrange the AtomEye window so that the
 crack is on the left hand side of the window at the beginning of the simulation
@@ -613,7 +614,7 @@ that, as a description of fracture in real silicon, the SW potential falls some
 way short.</p>
 </section>
 <section id="position-of-the-crack-tip">
-<span id="position-crack-tip"></span><h3>Position of the crack tip<a class="headerlink" href="#position-of-the-crack-tip" title="Permalink to this headline"></a></h3>
+<span id="position-crack-tip"></span><h3>Position of the crack tip<a class="headerlink" href="#position-of-the-crack-tip" title="Permalink to this heading"></a></h3>
 <p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">find_crack_tip_stress_field()</span></code> function works by
 fitting per-atom stresses calculated with the SW potential (the
 concept of per-atom stresses will be discussed in more detail below)
@@ -638,7 +639,7 @@ accurate enough to use as the basis for selecting a region around the
 crack tip to be treated at the QM level?</p>
 </section>
 <section id="evolution-of-energy-release-rate-and-crack-position">
-<span id="plot-g-and-crack-pos-x"></span><h3>Evolution of energy release rate and crack position<a class="headerlink" href="#evolution-of-energy-release-rate-and-crack-position" title="Permalink to this headline"></a></h3>
+<span id="plot-g-and-crack-pos-x"></span><h3>Evolution of energy release rate and crack position<a class="headerlink" href="#evolution-of-energy-release-rate-and-crack-position" title="Permalink to this heading"></a></h3>
 <p>For <span class="xref std std-ref">netcdf</span> trajectories,
 the <code class="xref py py-attr docutils literal notranslate"><span class="pre">AtomsReaderViewer.reader.netcdf_file</span></code> attribute of the current
 viewer object <code class="xref py py-func docutils literal notranslate"><span class="pre">gcv()</span></code> provides direct access to the underlying NetCDF
@@ -675,7 +676,7 @@ the high strain rate and small system used here, and how much to the
 choice of interatomic potential? How would you check this?</p>
 </section>
 <section id="temperature-and-velocity-analysis">
-<span id="plot-temperature"></span><h3>Temperature and velocity analysis<a class="headerlink" href="#temperature-and-velocity-analysis" title="Permalink to this headline"></a></h3>
+<span id="plot-temperature"></span><h3>Temperature and velocity analysis<a class="headerlink" href="#temperature-and-velocity-analysis" title="Permalink to this heading"></a></h3>
 <p>Using the method above, plot the evolution of the temperature during
 your simulation. Here is another example plot, with the temperature
 shown in blue and the crack position in red.</p>
@@ -713,7 +714,7 @@ trajectory and use the speeds data to produce a histogram:</p>
 <a class="reference internal image-reference" href="../_images/crack-max-bolt-distrib.png"><img alt="../_images/crack-max-bolt-distrib.png" class="align-center" src="../_images/crack-max-bolt-distrib.png" style="width: 600px;" /></a>
 </section>
 <section id="atom-resolved-strain-tensor">
-<span id="arsf"></span><h3>Atom-resolved strain tensor<a class="headerlink" href="#atom-resolved-strain-tensor" title="Permalink to this headline"></a></h3>
+<span id="arsf"></span><h3>Atom-resolved strain tensor<a class="headerlink" href="#atom-resolved-strain-tensor" title="Permalink to this heading"></a></h3>
 <p>The virial stress expression above is only valid when averaged over
 time and space, so this method of calculating per-atom stresses can
 lead to unphysical oscillations <a class="reference internal" href="adaptive-qmmm-references.html#zimmerman2004" id="id2"><span>[Zimmerman2004]</span></a>. One alternative is the

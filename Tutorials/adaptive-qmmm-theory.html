@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Theoretical background &mdash; quippy 6f2ad16 documentation</title>
+  <title>Theoretical background &mdash; quippy 35d481d documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -36,7 +37,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                6f2ad16
+                35d481d
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -132,9 +133,9 @@
 }
 </style>
 <section id="theoretical-background">
-<h1>Theoretical background<a class="headerlink" href="#theoretical-background" title="Permalink to this headline"></a></h1>
+<h1>Theoretical background<a class="headerlink" href="#theoretical-background" title="Permalink to this heading"></a></h1>
 <section id="introduction-to-atomic-scale-modelling-of-fracture">
-<span id="theory1"></span><h2>Introduction to Atomic-scale Modelling of Fracture<a class="headerlink" href="#introduction-to-atomic-scale-modelling-of-fracture" title="Permalink to this headline"></a></h2>
+<span id="theory1"></span><h2>Introduction to Atomic-scale Modelling of Fracture<a class="headerlink" href="#introduction-to-atomic-scale-modelling-of-fracture" title="Permalink to this heading"></a></h2>
 <p>Fracture is the main lifetime limiting failure mode of many materials, from
 metals to ceramics and glasses. There are two broad classes of
 fracture: <em>brittle</em> and <em>ductile</em>.</p>
@@ -173,7 +174,7 @@ Image reproduced from <a class="reference internal" href="adaptive-qmmm-referenc
 </figcaption>
 </figure>
 <section id="fracture-mechanics">
-<span id="theory-griffith"></span><h3>Fracture Mechanics<a class="headerlink" href="#fracture-mechanics" title="Permalink to this headline"></a></h3>
+<span id="theory-griffith"></span><h3>Fracture Mechanics<a class="headerlink" href="#fracture-mechanics" title="Permalink to this heading"></a></h3>
 <p>The study of fracture mechanics dates back around 100 years, to
 Griffith, who first proposed a thermodynamic energy balance criteria
 to understand when cracks will propagate <a class="reference internal" href="adaptive-qmmm-references.html#griffith1921" id="id2"><span>[Griffith1921]</span></a>. The key idea
@@ -218,7 +219,7 @@ crack propagation becomes favourable when</p>
 the crack tip exceeds the cost of creating two new surfaces.</p>
 </section>
 <section id="atomic-scale-modelling-of-fracture">
-<span id="theory-atomic-fracture"></span><h3>Atomic scale modelling of fracture<a class="headerlink" href="#atomic-scale-modelling-of-fracture" title="Permalink to this headline"></a></h3>
+<span id="theory-atomic-fracture"></span><h3>Atomic scale modelling of fracture<a class="headerlink" href="#atomic-scale-modelling-of-fracture" title="Permalink to this heading"></a></h3>
 <p>Much work has been done to understand fracture at the continuum level
 (see, e.g.  <a class="reference internal" href="adaptive-qmmm-references.html#freund1998" id="id3"><span>[Freund1998]</span></a> and <a class="reference internal" href="adaptive-qmmm-references.html#lawn1993" id="id4"><span>[Lawn1993]</span></a>), but here we would like to
 simulate fracture at the atomic level, to examine the combined effects
@@ -264,7 +265,7 @@ non-linear <em>process zone</em>, where chemically interesting things are happen
 Here, we would like to treat this region at a quantum mechanical (QM) level.</p>
 </section>
 <section id="coupled-multiscale-approach">
-<span id="theory-multiscale"></span><h3>Coupled multiscale approach<a class="headerlink" href="#coupled-multiscale-approach" title="Permalink to this headline"></a></h3>
+<span id="theory-multiscale"></span><h3>Coupled multiscale approach<a class="headerlink" href="#coupled-multiscale-approach" title="Permalink to this heading"></a></h3>
 <p>QM approaches such as density functional theory (DFT) do correctly
 describe bond-breaking in silicon. However, the strong bidirectional
 coupling between bond-breaking at the crack tip and the long-range
@@ -288,7 +289,7 @@ of QM methods and empirical interatomic potentials. Image source: G. Csányi.</
 </figure>
 </section>
 <section id="thin-strip-loading-geometry-and-elasticity-theory">
-<span id="thin-strip"></span><h3>Thin strip loading geometry and elasticity theory<a class="headerlink" href="#thin-strip-loading-geometry-and-elasticity-theory" title="Permalink to this headline"></a></h3>
+<span id="thin-strip"></span><h3>Thin strip loading geometry and elasticity theory<a class="headerlink" href="#thin-strip-loading-geometry-and-elasticity-theory" title="Permalink to this heading"></a></h3>
 <p>We will use the thin strip fracture loading geometry illustrated below for our
 fracture simulations, where the load is applied by displacing the top and bottom
 surfaces.</p>
@@ -330,7 +331,7 @@ do this from the elastic constant matrix <span class="math notranslate nohighlig
 </section>
 </section>
 <section id="classical-interatomic-potentials-for-silicon">
-<h2>Classical interatomic potentials for silicon<a class="headerlink" href="#classical-interatomic-potentials-for-silicon" title="Permalink to this headline"></a></h2>
+<h2>Classical interatomic potentials for silicon<a class="headerlink" href="#classical-interatomic-potentials-for-silicon" title="Permalink to this heading"></a></h2>
 <p>The Stillinger-Weber <a class="reference internal" href="adaptive-qmmm-references.html#stillinger1985" id="id6"><span>[Stillinger1985]</span></a> interatomic potential provides a fairly good
 description of many properties of crystalline and amorphous silicon. Its
 functional form is a two- and three-body expansion suitable for the
@@ -369,7 +370,7 @@ Verlet scheme <a class="reference internal" href="adaptive-qmmm-references.html#
 equations of motion.</p>
 </section>
 <section id="qm-mm-force-mixing-and-the-learn-on-the-fly-scheme">
-<span id="theory3"></span><h2>QM/MM Force Mixing and the ‘Learn on the Fly’ scheme<a class="headerlink" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme" title="Permalink to this headline"></a></h2>
+<span id="theory3"></span><h2>QM/MM Force Mixing and the ‘Learn on the Fly’ scheme<a class="headerlink" href="#qm-mm-force-mixing-and-the-learn-on-the-fly-scheme" title="Permalink to this heading"></a></h2>
 <p>In this last part of the tutorial, we will perform an accurate MD simulation of
 Si fracture using the “Learn on the fly” (LOTF) hybrid QM/MM technique
 <a class="reference internal" href="adaptive-qmmm-references.html#devita1998" id="id12"><span>[DeVita1998]</span></a>, <a class="reference internal" href="adaptive-qmmm-references.html#csanyi2004" id="id13"><span>[Csanyi2004]</span></a>. In the present case, all atoms that are not suitably described by
@@ -396,7 +397,7 @@ articles <a class="reference internal" href="adaptive-qmmm-references.html#devit
 <a class="reference internal" href="adaptive-qmmm-references.html#kermode2008a" id="id20"><span>[Kermode2008a]</span></a>, <a class="reference internal" href="adaptive-qmmm-references.html#bernstein2009" id="id21"><span>[Bernstein2009]</span></a>, we will here briefly explain the
 basic concepts that will allow us to perform the crack simulation.</p>
 <section id="calculation-of-the-forces-buffered-force-mixing">
-<span id="buffer"></span><h3>Calculation of the forces: buffered force mixing<a class="headerlink" href="#calculation-of-the-forces-buffered-force-mixing" title="Permalink to this headline"></a></h3>
+<span id="buffer"></span><h3>Calculation of the forces: buffered force mixing<a class="headerlink" href="#calculation-of-the-forces-buffered-force-mixing" title="Permalink to this heading"></a></h3>
 <p>The first problem we have to face, when performing a QM/MM MD simulation is to
 calculate accurate forces. While the calculation of the MM forces, using a
 short-ranged potential (e.g. the SW potential) is trivially solved by
@@ -443,7 +444,7 @@ the lattice constant and bulk modulus of the QM model (for simplicity we omit
 this step in this tutorial, but the mismatch here is not too big).</p>
 </section>
 <section id="hysteretic-selection-of-the-qm-active-and-buffer-regions">
-<span id="hysteretic"></span><h3>Hysteretic selection of the QM active and buffer regions<a class="headerlink" href="#hysteretic-selection-of-the-qm-active-and-buffer-regions" title="Permalink to this headline"></a></h3>
+<span id="hysteretic"></span><h3>Hysteretic selection of the QM active and buffer regions<a class="headerlink" href="#hysteretic-selection-of-the-qm-active-and-buffer-regions" title="Permalink to this heading"></a></h3>
 <p>A key advantage of the buffered force mixing approach is that the QM region can
 be redefined during a simulation. This works because new atoms first enter the
 QM calculation at the outer boundary of the buffer region, where they do not
@@ -489,7 +490,7 @@ time-averaged positions <a class="reference internal" href="adaptive-qmmm-refere
 will use only the hysteretic selection technique.</p>
 </section>
 <section id="lotf-adjustable-potential-and-predictor-corrector-scheme">
-<span id="lotf"></span><h3>LOTF adjustable potential and predictor-corrector scheme<a class="headerlink" href="#lotf-adjustable-potential-and-predictor-corrector-scheme" title="Permalink to this headline"></a></h3>
+<span id="lotf"></span><h3>LOTF adjustable potential and predictor-corrector scheme<a class="headerlink" href="#lotf-adjustable-potential-and-predictor-corrector-scheme" title="Permalink to this heading"></a></h3>
 <p>The QM/MM forces calculated as just explained, using a buffered QM region, can
 be directly used to perform an MD simulation, provided that the total sum of the
 forces is constrained to be zero, as explained above. However, in many cases,
