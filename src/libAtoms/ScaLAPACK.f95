@@ -1384,32 +1384,45 @@ subroutine ScaLAPACK_pdormqr_wrapper(A_info, A_data, C_info, C_data, tau, work)
 #endif
 end subroutine ScaLAPACK_pdormqr_wrapper
 
-subroutine ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data)
-  type(Matrix_ScaLAPACK_Info), intent(in) :: A_info, B_info
+subroutine ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data, cheat_nb_A)
+  type(Matrix_ScaLAPACK_Info), intent(inout) :: A_info, B_info
   real(dp), intent(inout), dimension(:,:) :: A_data ! distributed triangular matrix
   real(dp), intent(inout), dimension(:,:)  :: B_data !
+  logical, intent(in) :: cheat_nb_A
 
-  integer :: n, nrhs, info
+  integer, parameter :: mb_ = 5, nb_ = 6
+  integer :: n, nrhs, info, nb
 
 #ifdef SCALAPACK
   n = min(A_info%N_R, A_info%N_C)
   nrhs = B_info%N_C
 
+  if (cheat_nb_A) then
+    nb = A_info%desc(nb_)
+    A_info%desc(nb_) = A_info%desc(mb_)
+  end if
+
   ! A(lda,n+), B(ldb,nrhs+)
   call pdtrtrs('U', 'N', 'N', n, nrhs, A_data, 1, 1, A_info%desc, &
       B_data, 1, 1, B_info%desc, info)
+
+  if (cheat_nb_A) then
+    A_info%desc(nb_) = nb
+  end if
+
 #endif
 end subroutine ScaLAPACK_pdtrtrs_wrapper
 
-subroutine ScaLAPACK_matrix_QR_solve(A_info, A_data, B_info, B_data)
+subroutine ScaLAPACK_matrix_QR_solve(A_info, A_data, B_info, B_data, cheat_nb_A)
   type(Matrix_ScaLAPACK_Info), intent(inout) :: A_info, B_info
   real(dp), intent(inout), dimension(:,:) :: A_data, B_data
+  logical, intent(in) :: cheat_nb_A
 
   real(dp), dimension(:), allocatable :: tau, work
 
   call ScaLAPACK_pdgeqrf_wrapper(A_info, A_data, tau, work)
   call ScaLAPACK_pdormqr_wrapper(A_info, A_data, B_info, B_data, tau, work)
-  call ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data)
+  call ScaLAPACK_pdtrtrs_wrapper(A_info, A_data, B_info, B_data, cheat_nb_A)
 end subroutine ScaLAPACK_matrix_QR_solve
 
 subroutine ScaLAPACK_to_array1d(A_info, A_data, array)
