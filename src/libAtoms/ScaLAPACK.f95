@@ -1485,6 +1485,8 @@ function get_lwork_pdgeqrf_i32o64(m, n, ia, ja, mb_a, nb_a, &
   integer :: iarow, iacol, iroff, icoff
   integer(idp) :: mp0, nq0, nb64
 
+  lwork = 0
+
 #ifdef SCALAPACK
   iroff = mod(ia-1, mb_a)
   icoff = mod(ja-1, nb_a)
@@ -1505,6 +1507,8 @@ function ScaLAPACK_get_lwork_pdgeqrf(this, m, n, mb_a, nb_a) result(lwork)
 
   integer, parameter :: ia = 1, ja = 1, rsrc_a = 0, csrc_a = 0
 
+  lwork = 0
+
 #ifdef SCALAPACK
   lwork = get_lwork_pdgeqrf(m, n, ia, ja, mb_a, nb_a, &
     this%my_proc_row, this%my_proc_col, rsrc_a, csrc_a, &
@@ -1515,6 +1519,8 @@ end function ScaLAPACK_get_lwork_pdgeqrf
 function ScaLAPACK_matrix_get_lwork_pdgeqrf(this) result(lwork)
   type(Matrix_ScaLAPACK_Info), intent(in) :: this
   integer(idp) :: lwork
+
+  lwork = 0
 
 #ifdef SCALAPACK
   lwork = get_lwork_pdgeqrf(this%ScaLAPACK_obj, this%N_R, this%N_C, this%NB_R, this%NB_C)
@@ -1535,6 +1541,8 @@ function get_lwork_pdormqr_i32o64(side, m, n, ia, ja, mb_a, nb_a, ic, jc, &
   integer :: lcm, lcmq
   integer :: iarow, iroffa, icoffa, iroffc, icoffc, icrow, iccol
   integer(idp) :: npa0, mpc0, nqc0, nr, nb64, lwork1, lwork2
+
+  lwork = 0
 
 #ifdef SCALAPACK
   iroffc = mod(ic-1, mb_c)
@@ -1574,6 +1582,8 @@ function ScaLAPACK_get_lwork_pdormqr(this, side, m, n, mb_a, nb_a, mb_c, nb_c) r
   integer, parameter :: ia = 1, ja = 1, rsrc_a = 0, csrc_a = 0
   integer, parameter :: ic = 1, jc = 1, rsrc_c = 0, csrc_c = 0
 
+  lwork = 0
+
 #ifdef SCALAPACK
   lwork = get_lwork_pdormqr(side, m, n, ia, ja, mb_a, nb_a, ic, jc, mb_c, nb_c, &
     this%my_proc_row, this%my_proc_col, rsrc_a, csrc_a, rsrc_c, csrc_c, &
@@ -1585,6 +1595,8 @@ function ScaLAPACK_matrix_get_lwork_pdormqr(A_info, C_info, side) result(lwork)
   type(Matrix_ScaLAPACK_Info), intent(in) :: A_info, C_info
   character :: side
   integer(idp) :: lwork
+
+  lwork = 0
 
 #ifdef SCALAPACK
   lwork = get_lwork_pdormqr(A_info%ScaLAPACK_obj, side, C_info%N_R, &
