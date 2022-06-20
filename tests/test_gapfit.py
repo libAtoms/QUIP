@@ -135,12 +135,20 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_gap_fit_silicon_scalapack(self):
         command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
-        command_line += ' mpi_blocksize=101'  # not a divisor of n_sparse
+        command_line += ' mpi_blocksize_rows=101'  # not a divisor of nrows
         self.run_gap_fit(command_line, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
         self.check_gap_fit()
         self.check_latest_sparsex_file_hash()
+
+    @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
+    def test_gap_fit_silicon_scalapack_big_blocksize(self):
+        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
+        command_line += ' mpi_blocksize_cols=37838'  # too large for 32bit integer
+        self.run_gap_fit(command_line, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("too large for 32bit work array in ScaLAPACK" in f.read())
 
 if __name__ == '__main__':
     unittest.main()
