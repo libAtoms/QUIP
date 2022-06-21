@@ -98,14 +98,6 @@ ifeq (${HAVE_GAP},1)
   GAPFIT_LIB += -lgapfit
   GAPFIT_LIBFILE += libgapfit.a
 endif
-ifeq (${HAVE_TURBOGAP},1)
-  DEFINES += -DHAVE_TURBOGAP
-  INCLUDES += $(addprefix -I,${TURBOGAP_DIR}/include)
-  SYSLIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
-  SYSLIBS += -lturbogap
-  QUIPPY_LIBS += $(addprefix -L,${TURBOGAP_DIR}/lib)
-  QUIPPY_LIBS += -lturbogap
-endif
 ifeq (${HAVE_TB},1)
   DEFINES += -DHAVE_TB
 endif
