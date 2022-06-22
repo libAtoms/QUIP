@@ -13,7 +13,7 @@ Various hybrid combinations are also supported in the style of QM/MM,
 with a particular focus on materials systems such as metals and
 semiconductors.
 
-For more details, see the [online documentation](http://libatoms.github.io/QUIP).
+For more details, see the [online documentation](http://libatoms.github.io/QUIP). There is separate [documentation for SOAP and GAP](https://libatoms.github.io/GAP).
 
 Long term support of the package is ensured by:
  - Noam Bernstein ([@bernstei](https://github.com/bernstei), Naval Research Laboratory)
