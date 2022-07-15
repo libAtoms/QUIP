@@ -255,6 +255,15 @@ RUN cd src \
  && make -j4 mpi \
  && make clean-all
 
+##################################### 
+## RUST
+#####################################
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh
+RUN chmod u+r rust.sh
+RUN ./rust.sh -y
+
+RUN pip install git+https://github.com/Luthaf/rascaline.git
 
 #################################################################################
 ## Data
