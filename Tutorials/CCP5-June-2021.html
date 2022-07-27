@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>&lt;no title&gt; &mdash; quippy c56a5b2 documentation</title>
+  <title>&lt;no title&gt; &mdash; quippy 8b69c51 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -35,7 +35,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                c56a5b2
+                8b69c51
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -134,12 +134,12 @@
 “&lt;br&gt;n”,
 “n”,
 “&lt;h4&gt;CCP5++ Software Seminar - 17th June 2021&lt;/h4&gt;    n”,
-”    n”,
-”    n”,
+“    n”,
+“    n”,
 “&lt;table bgcolor=&quot;#ffffff&quot;&gt;   n”,
 “&lt;tr&gt;n”,
-”    &lt;td&gt;&lt;img src=&quot;WCPM_logo_text.png&quot; width=&quot;100%&quot;&gt;&lt;/td&gt;n”,
-”    &lt;td&gt;&lt;img src=&quot;hybrid.png&quot; width=&quot;100%&quot;&gt;&lt;/td&gt;n”,
+“    &lt;td&gt;&lt;img src=&quot;WCPM_logo_text.png&quot; width=&quot;100%&quot;&gt;&lt;/td&gt;n”,
+“    &lt;td&gt;&lt;img src=&quot;hybrid.png&quot; width=&quot;100%&quot;&gt;&lt;/td&gt;n”,
 “&lt;/tr&gt;n”,
 “&lt;/table&gt;n”,
 “n”,
@@ -203,14 +203,14 @@
 “from ase.neighborlist import neighbor_listn”,
 “n”,
 “def get_bonds(atoms, cutoff=3.05, filter_in_cell=True):n”,
-”    i, j, S = neighbor_list(‘ijS’, atoms, cutoff)n”,
-”    if filter_in_cell:n”,
-”        in_cell = np.all(S == 0., axis=1)n”,
-”        i = i[in_cell]n”,
-”        j = j[in_cell]n”,
-”    bonds = [ np.r_[[atoms.positions[I, :], n”,
-”                     atoms.positions[J, :]]] for (I, J) in zip(i, j)]n”,
-”    return bonds”</p>
+“    i, j, S = neighbor_list(‘ijS’, atoms, cutoff)n”,
+“    if filter_in_cell:n”,
+“        in_cell = np.all(S == 0., axis=1)n”,
+“        i = i[in_cell]n”,
+“        j = j[in_cell]n”,
+“    bonds = [ np.r_[[atoms.positions[I, :], n”,
+“                     atoms.positions[J, :]]] for (I, J) in zip(i, j)]n”,
+“    return bonds”</p>
 </div></blockquote>
 <p>]</p>
 </div></blockquote>
@@ -234,9 +234,9 @@
 “- Many of the activities our community is interested in require <em>robust</em>, <em>automated</em> coupling of two or more codesn”,
 “- For example, current projects include:n”,
 “n”,
-”    - developing and applying multiscale methodsn”,
-”    - generating interatomic potentialsn”,
-”    - uncertainty quantificationn”,
+“    - developing and applying multiscale methodsn”,
+“    - generating interatomic potentialsn”,
+“    - uncertainty quantificationn”,
 “n”,
 “&lt;center&gt;n”,
 “&lt;img src=&quot;multiscale.png&quot; width=&quot;80%&quot;&gt;n”,
@@ -270,10 +270,10 @@
 “- Hybrid combinations in the style of QM/MM with a particular focus on materials systems such as metals and semiconductorsn”,
 “n”,
 “Long-term support of the package is ensured by:n”,
-”   - James Kermode (Warwick)n”,
-”   - Gabor Csanyi (Cambridge)n”,
-”   - Noam Bernstein (Naval Research Lab)n”,
-”   n”,
+“   - James Kermode (Warwick)n”,
+“   - Gabor Csanyi (Cambridge)n”,
+“   - Noam Bernstein (Naval Research Lab)n”,
+“   n”,
 “<strong>Portions of the code were written by:</strong> Albert Bartok-Partay, Livian”,
 “Bartok-Partay, Federico Bianchini, Anke Butenuth, Marco Caccin,n”,
 “Silvia Cereda, Gabor Csanyi, Alessio Comisso, Tom Daff, ST John,n”,
@@ -309,9 +309,9 @@
 “n”,
 “- The Atomic Simulation Environment (ASE) also does does this, and is much more widely used, but QUIP has a number of unique features:n”,
 “n”,
-”    - Access to Fortran types and routines from Python via the quippy packagen”,
-”    - Support for Gaussian Approximation Potentials (GAP)n”,
-”    - Does not assume minimum image convention, so interatomic potentials can have cutoffs that are larger than the periodic unit cell size”</p>
+“    - Access to Fortran types and routines from Python via the quippy packagen”,
+“    - Support for Gaussian Approximation Potentials (GAP)n”,
+“    - Does not assume minimum image convention, so interatomic potentials can have cutoffs that are larger than the periodic unit cell size”</p>
 </div></blockquote>
 <p>]</p>
 </div></blockquote>
@@ -335,8 +335,8 @@
 “- QUIP began as rewrite of earlier C++ and Fortran 77 codes in ca. 2005n”,
 “- Coded in modern Fortran (Fortran 95 plus allocatable array extensions, but none of the object-oriented features from 2003/2008, mostly because of limited compiler support historically)n”,
 “- [Expressive Programming](<a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf</a>), where code is as close as possible to abstract algorithm, without sacrificing (too much) performancen”,
-”    - e.g. we have a <cite>type(Atoms)</cite> with components <cite>Atoms%positions</cite>, etcn”,
-”    - not a full OO approach with arrays of individual <cite>Atom</cite> objects, which would risk reducing cache efficiencyn”,
+“    - e.g. we have a <cite>type(Atoms)</cite> with components <cite>Atoms%positions</cite>, etcn”,
+“    - not a full OO approach with arrays of individual <cite>Atom</cite> objects, which would risk reducing cache efficiencyn”,
 “- OpenMP and MPI parallelisation for potential evaluation (although LAMMPS <cite>pair_style quip</cite> will be faster)n”,
 “- <cite>quippy</cite> deep Python bindings provided acccess to elements within derived types”</p>
 </div></blockquote>
@@ -402,9 +402,9 @@
 <span class="pre">&quot;`</span></code>n”,
 “n”,
 “Required: n”,
-”   - recent <cite>gfortran</cite> or <cite>ifort</cite> compilern”,
-”   - LAPACK/BLAS linear algebra libraries (e.g. <cite>libblas-dev</cite> and <cite>liblapack-dev</cite> on Ubuntu or Intel MKL)n”,
-”    n”,
+“   - recent <cite>gfortran</cite> or <cite>ifort</cite> compilern”,
+“   - LAPACK/BLAS linear algebra libraries (e.g. <cite>libblas-dev</cite> and <cite>liblapack-dev</cite> on Ubuntu or Intel MKL)n”,
+“    n”,
 “See the GitHub [README](<a class="reference external" href="https://github.com/libAtoms/QUIP">https://github.com/libAtoms/QUIP</a>) for detailed instructions, or try one of the pre-compiled binary releases.”</p>
 </div></blockquote>
 <p>]</p>
@@ -470,18 +470,18 @@
 “n”,
 “The following interatomic potentials are presently coded or linked in QUIP:n”,
 “n”,
-” - BKS (van Beest, Kremer and van Santen) (silica)n”,
-” - EAM (fcc metals)n”,
-” - Fanourgakis-Xantheas (water)n”,
-” - Finnis-Sinclair (bcc metals)n”,
-” - Flikkema-Bromleyn”,
-” - GAP (Gaussian Approximation Potentials)n”,
-” - Guggenheim-McGlashann”,
-” - Brenner (carbon)n”,
-” - OpenKIM (general interface)n”,
-” - Lennard-Jonesn”,
-” - …n”,
-” “</p>
+“ - BKS (van Beest, Kremer and van Santen) (silica)n”,
+“ - EAM (fcc metals)n”,
+“ - Fanourgakis-Xantheas (water)n”,
+“ - Finnis-Sinclair (bcc metals)n”,
+“ - Flikkema-Bromleyn”,
+“ - GAP (Gaussian Approximation Potentials)n”,
+“ - Guggenheim-McGlashann”,
+“ - Brenner (carbon)n”,
+“ - OpenKIM (general interface)n”,
+“ - Lennard-Jonesn”,
+“ - …n”,
+“ “</p>
 </div></blockquote>
 <p>]</p>
 </div></blockquote>
@@ -500,24 +500,24 @@
 <p>},
 “source”: [</p>
 <blockquote>
-<div><p>” - …n”,
-” - MBD (many-body dispersion correction)n”,
-” - Morsen”,
-” - Partridge-Schwenke (water monomer)n”,
-” - Stillinger-Weber (carbon, silicon, germanium)n”,
-” - Si MEAM (silicon)n”,
-” - Sutton-Chenn”,
-” - Tangney-Scandolo (silica, titania etc) - including short-ranged reparamaterisationn”,
-” - Tersoff (silicon, carbon)n”,
-” - Tkatchenko-Sheffler pairwise dispersion correctionn”,
+<div><p>“ - …n”,
+“ - MBD (many-body dispersion correction)n”,
+“ - Morsen”,
+“ - Partridge-Schwenke (water monomer)n”,
+“ - Stillinger-Weber (carbon, silicon, germanium)n”,
+“ - Si MEAM (silicon)n”,
+“ - Sutton-Chenn”,
+“ - Tangney-Scandolo (silica, titania etc) - including short-ranged reparamaterisationn”,
+“ - Tersoff (silicon, carbon)n”,
+“ - Tkatchenko-Sheffler pairwise dispersion correctionn”,
 “n”,
 “The following tight-binding functional forms and parametrisations aren”,
 “implemented:n”,
 “n”,
-” - Bowlern”,
-” - DFTBn”,
-” - GSPn”,
-” - NRL-TB”</p>
+“ - Bowlern”,
+“ - DFTBn”,
+“ - GSPn”,
+“ - NRL-TB”</p>
 </div></blockquote>
 <p>]</p>
 </div></blockquote>
@@ -633,8 +633,8 @@
 <div><p>“#!/bin/bashrn”,
 “rn”,
 “if [[ ! -f gp_iter6_sparse9k.xml ]]; thenrn”,
-”    curl <a class="reference external" href="https://www.repository.cam.ac.uk/bitstream/handle/1810/317974/Si_PRX_GAP.zip">https://www.repository.cam.ac.uk/bitstream/handle/1810/317974/Si_PRX_GAP.zip</a> -o Si_PRX_GAP.ziprn”,
-”    unzip Si_PRX_GAP.ziprn”,
+“    curl <a class="reference external" href="https://www.repository.cam.ac.uk/bitstream/handle/1810/317974/Si_PRX_GAP.zip">https://www.repository.cam.ac.uk/bitstream/handle/1810/317974/Si_PRX_GAP.zip</a> -o Si_PRX_GAP.ziprn”,
+“    unzip Si_PRX_GAP.ziprn”,
 “firn”,
 “rn”,
 “cat &lt;&lt; EOF &gt; lammps.inrn”,
@@ -695,7 +695,7 @@
 “- [matplotlib](<a class="reference external" href="http://matplotlib.org/">http://matplotlib.org/</a>) plotting and interactive graphicsn”,
 “- [jupyter](<a class="reference external" href="https://jupyter.org/)/IPython">https://jupyter.org/)/IPython</a> notebooks encourage reproducible researchn”,
 “- [anaconda](<a class="reference external" href="https://jupyter.org/">https://jupyter.org/</a>) distribution and package management systemn”,
-”   n”,
+“   n”,
 “&lt;center&gt;&lt;img src=&quot;scipy-stack.png&quot; width=&quot;70%&quot;&gt;&lt;/center&gt;n”,
 “n”,
 “<a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a>”</p>
@@ -784,8 +784,8 @@
 “n”,
 “# construct a potential, usage is the same as <cite>quip</cite> command linen”,
 “pot = Potential(‘xml_label=GAP_2017_6_17_60_4_3_56_165’,n”,
-”                param_filename=’gp_iter6_sparse9k.xml’,n”,
-”                calc_args=’local_gap_variance’)n”,
+“                param_filename=’gp_iter6_sparse9k.xml’,n”,
+“                calc_args=’local_gap_variance’)n”,
 “n”,
 “si = bulk(‘Si’, cubic=True) # 8 atom cubic silicon celln”,
 “si.calc = pot # associated Atoms with GAP calculatorn”,
@@ -830,18 +830,18 @@
 <dt>{</dt><dd><dl>
 <dt>“data”: {</dt><dd><dl class="simple">
 <dt>“text/plain”: [</dt><dd><p>“array([1.09028249, 1.06446493, 1.08042361, 1.09726393, 1.04964909,n”,
-”       1.07696073, 1.04253642, 1.05756564, 1.07986555, 1.21075713,n”,
-”       1.08904488, 1.06067924, 1.03184873, 1.0483741 , 1.50264259,n”,
-”       8.82800571, 1.13526427, 1.07445902, 1.06308149, 1.05085032,n”,
-”       1.36672006, 7.41051599, 1.07830702, 1.05714689, 1.07577689,n”,
-”       1.11775393, 1.02777397, 1.03472811, 1.37581384, 1.07758179,n”,
-”       1.40593821, 1.11762489, 1.02609731, 1.0472251 , 1.6245512 ,n”,
-”       9.00662199, 1.07141401, 1.07419136, 1.04675406, 1.09336236,n”,
-”       1.02187833, 1.09920161, 1.635866  , 1.07518514, 1.03719514,n”,
-”       1.035885  , 1.60476878, 1.11706124, 1.03425407, 1.09399015,n”,
-”       1.33701387, 1.06056646, 1.55086343, 1.16445632, 1.08280879,n”,
-”       1.07055096, 8.81939969, 1.39563815, 1.07894506, 1.62557041,n”,
-”       1.13917427, 1.38065722, 1.03189404])”</p>
+“       1.07696073, 1.04253642, 1.05756564, 1.07986555, 1.21075713,n”,
+“       1.08904488, 1.06067924, 1.03184873, 1.0483741 , 1.50264259,n”,
+“       8.82800571, 1.13526427, 1.07445902, 1.06308149, 1.05085032,n”,
+“       1.36672006, 7.41051599, 1.07830702, 1.05714689, 1.07577689,n”,
+“       1.11775393, 1.02777397, 1.03472811, 1.37581384, 1.07758179,n”,
+“       1.40593821, 1.11762489, 1.02609731, 1.0472251 , 1.6245512 ,n”,
+“       9.00662199, 1.07141401, 1.07419136, 1.04675406, 1.09336236,n”,
+“       1.02187833, 1.09920161, 1.635866  , 1.07518514, 1.03719514,n”,
+“       1.035885  , 1.60476878, 1.11706124, 1.03425407, 1.09399015,n”,
+“       1.33701387, 1.06056646, 1.55086343, 1.16445632, 1.08280879,n”,
+“       1.07055096, 8.81939969, 1.39563815, 1.07894506, 1.62557041,n”,
+“       1.13917427, 1.38065722, 1.03189404])”</p>
 </dd>
 </dl>
 <p>]</p>
@@ -928,12 +928,12 @@
 “ax = fig.add_subplot(111, projection=’3d’)n”,
 “n”,
 “for bond in get_bonds(si_vac):n”,
-”    ax.plot(bond[:, 0], bond[:, 1], bond[:, 2], c=’k’, lw=5, alpha=0.2)n”,
+“    ax.plot(bond[:, 0], bond[:, 1], bond[:, 2], c=’k’, lw=5, alpha=0.2)n”,
 “n”,
 “p = ax.scatter(si_vac.positions[:, 0], si_vac.positions[:, 1], si_vac.positions[:, 2],n”,
-”               s=200, c=local_sigma, label=’Predicted error (meV/atom)’, vmin=0)n”,
+“               s=200, c=local_sigma, label=’Predicted error (meV/atom)’, vmin=0)n”,
 “ax.scatter([vac_pos[0]], [vac_pos[1]], [vac_pos[2]], s=200, marker=’x’,n”,
-”           label=’Vacancy position’)n”,
+“           label=’Vacancy position’)n”,
 “fig.colorbar(p, ax=ax)n”,
 “ax.legend()n”,
 “ax.set_axis_off()          “</p>
@@ -1399,8 +1399,8 @@
 <div><p>“# visualise Hamiltonian and Overlap matricesn”,
 “fig, axs = plt.subplots(1, 2)n”,
 “for ax, mat, title in zip(axs, [H, S], [‘Hamiltonian’, ‘Overlap’]):n”,
-”    p = ax.imshow(mat)n”,
-”    ax.set_title(title);”</p>
+“    p = ax.imshow(mat)n”,
+“    ax.set_title(title);”</p>
 </div></blockquote>
 <p>]</p>
 </div></blockquote>
@@ -1528,7 +1528,7 @@
 <p>},
 “source”: [</p>
 <blockquote>
-<div><p>”   n”,
+<div><p>“   n”,
 “# Generalisation: <cite>f90wrap</cite> wraps other Fortran codesn”,
 “n”,
 “&lt;!– &lt;img src=&quot;f90wrap.png&quot; align=&quot;left&quot;&gt; –&gt;n”,
