@@ -3,9 +3,9 @@
 # H0 X   libAtoms+QUIP: atomistic simulation library
 # HQ X
 # HQ X   Portions of this code were written by
-# HQ X     Tamas K. Stenczel, Vlad Carare and Lars Schaaf
+# HQ X     Tamas K. Stenczel
 # HQ X
-# HQ X   Copyright 2021-2022
+# HQ X   Copyright 2022
 # HQ X
 # HQ X   working as of 17.08.2022
 # HQ X
@@ -16,37 +16,25 @@
 # recommended modules to use with this:
 # - GNU compilers version 11, python and FFTW
 # - obtain these with the following on Archer2
-# - this is a build with NO MPI
 #
 # module switch PrgEnv-cray PrgEnv-gnu/8.1.0
 # module load PrgEnv-gnu/8.1.0
 # module load cpe/22.04
 # module load cray-fftw
-# module load craype-network-none
-# module remove cray-mpich
 #
 # Notes:
 # - comms:
-#     This is the serial build, so you need to unload the MPI comms modules
-#     and load 'craype-network-none' instead. Otherwise the MPI versions of
-#     the lapack/blas routines may call the MPI libraries regardless of GAP
-#     not doing so.
+#     This is the MPI build, so just use the default MPI module.
 #
 # - math linking options
 #     No need for defining anything, the `ftn` & `cc` compiler wrapper take
 #     care of that, using libsci.
 #
 
+include arch/Makefile.archer2
 
-# declarations
-include arch/Makefile.linux_x86_64_gfortran
+# needed for MPI in gcc11
+F95FLAGS += -fallow-argument-mismatch
 
-# compiler settings, make sure this is GNU!
-F77 = ftn
-F90 = ftn
-F95 = ftn
-CC = cc
-CPLUSPLUS = cc
-LINKER = ftn
-
-export DEFAULT_MATH_LINKOPTS=
+DEFINES += -D_MPI
+QUIPPY_LDFLAGS=`ftn --cray-print-opts all`
