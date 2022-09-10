@@ -40,10 +40,12 @@ LIBS += -lthirdparty
 endif
 LIBFILES = libatoms.a ${GAP_LIBFILE} libquip_core.a libquiputils.a
 
+OBJS = helper.o
+
 PROGRAMS = evb_driver
 
-evb_driver : % :  %.o ${LIBFILES}
-	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${LIBS}  ${LINKOPTS}
+evb_driver : % : ${OBJS}  %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
 
 ifeq ($(HAVE_CP2K), 1)

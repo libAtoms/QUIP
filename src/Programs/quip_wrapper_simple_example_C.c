@@ -2,7 +2,7 @@
 
 extern void quip_wrapper_simple_(int*,double*,int*,double*,double*,double*,double*);
 
-main()
+void main()
 {
   int n=2;
   double lattice[3][3];

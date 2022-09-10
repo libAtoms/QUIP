@@ -2,6 +2,7 @@ program get_qw
 
   use libatoms_module
   use steinhardt_nelson_qw_module
+  use system_module, only: isnan
 
 
   implicit none

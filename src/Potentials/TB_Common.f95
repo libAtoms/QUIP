@@ -59,8 +59,8 @@ integer, parameter, public :: harrison_sign_sss = -1, harrison_sign_sps = 1, &
 
 integer, parameter, public :: N_SK = 20
 integer, parameter, public :: SK_SSS = 1, SK_SPS = 2, SK_PPS = 3, SK_PPP = 4, &
-                      SK_SDS = 5, SK_PDS = 6, SK_PDP = 7, SK_DDS = 8, SK_DDP = 9, SK_DDD = 10, \
-                      SK_SFS = 11, SK_PFS = 12, SK_PFP = 13, SK_DFS = 14, SK_DFP = 15, SK_DFD = 16, \
+                      SK_SDS = 5, SK_PDS = 6, SK_PDP = 7, SK_DDS = 8, SK_DDP = 9, SK_DDD = 10, &
+                      SK_SFS = 11, SK_PFS = 12, SK_PFP = 13, SK_DFS = 14, SK_DFP = 15, SK_DFD = 16, &
                       SK_FFS = 17, SK_FFP = 18, SK_FFD = 19, SK_FFF = 20
 
 public :: angular_function, dangular_function, spin_orbit_function

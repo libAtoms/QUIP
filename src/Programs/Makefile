@@ -32,7 +32,9 @@ include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 
-OBJS = vacancy_map_mod.o
+OBJS = vacancy_map_mod.o helper.o
+
+COBJS = vacancy_map_mod.o 
 
 PROGRAMS = quip md \
   FC_to_xml analyze_md_phonons \
@@ -42,8 +44,10 @@ PROGRAMS = quip md \
   fix_traj_latest randomise_calc \
   quip_wrapper_example descriptors_wrapper_example \
   slice_sample order_atoms_as_molecules md_gid \
-  quip_wrapper_simple_example quip_wrapper_simple_example_C \
+  quip_wrapper_simple_example  \
   get_qw test_task_manager
+
+CPROGRAMS = quip_wrapper_simple_example_C
 
 ifeq (${HAVE_TB},1)
    PROGRAMS += NRL_TB_to_xml DFTB_to_xml calc_n_poles 
@@ -67,6 +71,10 @@ EXTRA_PROGRAMS = test_CASTEP_MM_buffer_crack test_CASTEP_water_chain test_CASTEP
 -include Makefile.extra
 
 
+${CPROGRAMS} : % :  ${COBJS} %.o ${LIBFILES}
+	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${COBJS} ${LIBS}  ${LINKOPTS}
+
+
 ${PROGRAMS} ${EXTRA_PROGRAMS} ${MINIM_PROGRAMS}: % :  ${OBJS} %.o ${LIBFILES}
 	$(LINKER) $(LINKFLAGS) -o $@ ${F90OPTS} $@.o ${OBJS} ${LIBS}  ${LINKOPTS}
 
@@ -84,4 +92,9 @@ install:
 	    echo "Copying $$f to ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX}" ; \
 	    cp $$f ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX} ; \
 	  done ;\
+	  for f in ${CPROGRAMS} ; do \
+	    echo "Copying $$f to ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX}" ; \
+	    cp $$f ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX} ; \
+	  done ;\
+
 	fi

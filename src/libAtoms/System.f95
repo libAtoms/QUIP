@@ -152,6 +152,11 @@ private
   character(255), public,       save :: EXEC_NAME              !% The name of the executable
   character(2550), public, dimension(MAX_READABLE_ARGS), save :: COMMAND_ARG !% The first 'MAX_READABLE_ARGS' command arguments
 
+
+#ifdef NO_FORTRAN_ISNAN
+  public :: isnan
+#endif
+
   private :: inoutput_initialise
   public :: initialise
   interface initialise
@@ -2031,7 +2036,13 @@ contains
     character(*),      intent(in)  :: string
     character(*),      intent(in)  :: values(:)
     ! we work out the exact length of the resultant string
+    #ifndef __PGI    
     character(len(string)+size(values)*len(values(1))) :: string_cat_string_array
+    #else
+    #warning temporal fix in size of string_cat_string_array
+    ! nvfortran: temporal fix
+    character(len(string)) :: string_cat_string_array
+    #endif
     character(32) :: format
 
     if (size(values)>0) then
