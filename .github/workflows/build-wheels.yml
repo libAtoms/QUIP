@@ -23,6 +23,7 @@ jobs:
         run: |
            mkdir -p build/${QUIP_ARCH}
            cp quippy/setup.py build/${QUIP_ARCH}
+           ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
            python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
         env:
            QUIP_ARCH: linux_x86_64_gfortran_openmp        
