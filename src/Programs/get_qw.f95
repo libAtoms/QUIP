@@ -2,7 +2,9 @@ program get_qw
 
   use libatoms_module
   use steinhardt_nelson_qw_module
+#ifdef NO_FORTRAN_ISNAN
   use system_module, only: isnan
+#endif
 
 
   implicit none
