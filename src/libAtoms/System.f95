@@ -2036,13 +2036,13 @@ contains
     character(*),      intent(in)  :: string
     character(*),      intent(in)  :: values(:)
     ! we work out the exact length of the resultant string
-    #ifndef __PGI    
+#ifndef __PGI    
     character(len(string)+size(values)*len(values(1))) :: string_cat_string_array
-    #else
-    #warning temporal fix in size of string_cat_string_array
+#else
+#warning temporal fix in size of string_cat_string_array
     ! nvfortran: temporal fix
     character(len(string)) :: string_cat_string_array
-    #endif
+#endif
     character(32) :: format
 
     if (size(values)>0) then
