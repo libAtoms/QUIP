@@ -19,15 +19,10 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.5.0      
       
-      - name: Build libraries
-        id: buildlibs
-        run : |
-           bash .github/workflows/prepare-build.sh
-        env:
-           QUIP_ARCH: linux_x86_64_gfortran_openmp
-
       - name: Build wheels
         run: |
+           mkdir -p build/${QUIP_ARCH}
+           cp quippy/setup.py build/${QUIP_ARCH}
            python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
         env:
            QUIP_ARCH: linux_x86_64_gfortran_openmp        
@@ -37,7 +32,7 @@ jobs:
            CIBW_ARCHS_MACOS: "x86_64 arm64"           
            CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
-           CIBW_BEFORE_BUILD: "rm -f build/${QUIP_ARCH}/quippy; make quippy"
+           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
            CIBW_TEST_COMMAND: "cd {project}/tests; HAVE_GAP=1 python run_all.py -v"
            
       # Uncomment to get SSH access for testing
