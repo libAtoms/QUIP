@@ -22,7 +22,7 @@ jobs:
       - name: Build libraries
         id: buildlibs
         run : |
-           bash .github/workflows/prepare_build.sh
+           bash .github/workflows/prepare-build.sh
         env:
            QUIP_ARCH: linux_x86_64_gfortran_openmp
 
