@@ -40,7 +40,7 @@ fi
 
 # Install Openblas -- adapted from https://github.com/numpy/numpy/blob/main/tools/wheels/cibw_before_build.sh
 if [[ $RUNNER_OS == "Linux" || $RUNNER_OS == "macOS" ]] ; then
-    basedir=$(python tools/openblas_support.py)
+    basedir=$(python .github/workflows/openblas_support.py)
     cp -r $basedir/lib/* /usr/local/lib
     cp $basedir/include/* /usr/local/include
     if [[ $RUNNER_OS == "macOS" && $PLATFORM == "macosx-arm64" ]]; then
