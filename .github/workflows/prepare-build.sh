@@ -38,10 +38,11 @@ else
     export QUIP_ARCH=linux_x86_64_gfortran_openmp
 fi
 
-BUILD_DIR=build/${QUIP_ARCH}
+WORK_DIR=$(dirname $0)
+BUILD_DIR=$PWD/build/${QUIP_ARCH}
 
 [[ -d ${BUILD_DIR} ]] || mkdir -p ${BUILD_DIR}
-cp Makefile.${QUIP_ARCH}.inc ${BUILD_DIR}/Makefile.inc
+cp $WORK_DIR/Makefile.${QUIP_ARCH}.inc ${BUILD_DIR}/Makefile.inc
 
 export NPY_DISTUTILS_APPEND_FLAGS=1
 (cd ${BUILD_DIR}/../.. && make quippy)
