@@ -37,7 +37,7 @@ CC = nvc
 CPLUSPLUS = nvc++
 LINKER = nvc
 #LINKFLAGS=-fPIC
-LINKFLAGS=-fortranlibs
+LINKFLAGS=-fortranlibs /opt/nvidia/hpc_sdk/Linux_x86_64/22.5/compilers/lib/f90main.o
 
 #LINKER = nvfortran
 LINKOPTS= -lgfortran
