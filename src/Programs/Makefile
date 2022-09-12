@@ -32,7 +32,7 @@ include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 
-OBJS = vacancy_map_mod.o helper.o
+OBJS = vacancy_map_mod.o 
 
 COBJS = vacancy_map_mod.o 
 
