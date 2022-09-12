@@ -38,6 +38,19 @@ else
     export QUIP_ARCH=linux_x86_64_gfortran_openmp
 fi
 
+# Install Openblas -- adapted from https://github.com/numpy/numpy/blob/main/tools/wheels/cibw_before_build.sh
+if [[ $RUNNER_OS == "Linux" || $RUNNER_OS == "macOS" ]] ; then
+    basedir=$(python tools/openblas_support.py)
+    cp -r $basedir/lib/* /usr/local/lib
+    cp $basedir/include/* /usr/local/include
+    if [[ $RUNNER_OS == "macOS" && $PLATFORM == "macosx-arm64" ]]; then
+        sudo mkdir -p /opt/arm64-builds/lib /opt/arm64-builds/include
+        sudo chown -R $USER /opt/arm64-builds
+        cp -r $basedir/lib/* /opt/arm64-builds/lib
+        cp $basedir/include/* /opt/arm64-builds/include
+    fi
+fi
+
 WORK_DIR=$(dirname $0)
 BUILD_DIR=$PWD/build/${QUIP_ARCH}
 
