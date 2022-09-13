@@ -40,7 +40,7 @@ LIBS += -lthirdparty
 endif
 LIBFILES = libatoms.a ${GAP_LIBFILE} libquip_core.a libquiputils.a
 
-OBJS = helper.o
+#OBJS = helper.o
 
 PROGRAMS = evb_driver
 
