@@ -7,7 +7,7 @@ if [[ "${RUNNER_OS" == "Linux" ]]; then
 	basedir=$(python .github/workflows/openblas_support.py)
 	cp -r $basedir/lib/* /usr/local/lib
 	cp $basedir/include/* /usr/local/include
-elif [[ "${RUNNER_OS} == "macOS" ]]; then
+elif [[ "${RUNNER_OS}" == "macOS" ]]; then
 	if [[ "$ARCHS" == "arm64" ]]; then
 		basedir=$(python .github/workflows/openblas_support.py)
 		cp -r $basedir/lib/* /usr/local/lib
