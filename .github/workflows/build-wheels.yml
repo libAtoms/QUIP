@@ -83,7 +83,7 @@ jobs:
         env:
            CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "[[ ! -f /usr/local/bin/gfortran ]] && ln -s $(which gfortran-10) /usr/local/bin/gfortran"
+           CIBW_BEFORE_ALL_MACOS: "[[ ! -f /usr/local/bin/gfortran ]] && ln -s $(which gfortran-10) /usr/local/bin/gfortran || echo skipping linking"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
