@@ -21,49 +21,48 @@ jobs:
      
       - name: Build wheels
         run: |
-           if [ "$RUNNER_OS" == "Linux ]; then
-             QUIP_ARCHS=linux_x86_64_gfortran_openmp
-           elif [ "$RUNNER_OS" == "macOS" ]; then
-             QUIP_ARCHS="darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp"
-           else
-             echo "RUNNER_OS=$RUNNER_OS not supported!"
-             exit 1           
-           fi
-           echo "RUNNER_OS=$RUNNER_OS"
-           echo "QUIP_ARCHS=${QUIP_ARCHS}"
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                QUIP_ARCHS=linux_x86_64_gfortran_openmp
+             elif [ "$RUNNER_OS" == "macOS" ]; then
+                QUIP_ARCHS="darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp"
+             else
+               echo "RUNNER_OS=$RUNNER_OS not supported!"
+               exit 1
+             fi
+             echo "RUNNER_OS=$RUNNER_OS"
+             echo "QUIP_ARCHS=${QUIP_ARCHS}"
 
-           for QUIP_ARCH in $QUIP_ARCHS; do
+             for QUIP_ARCH in $QUIP_ARCHS; do
+                case $QUIP_ARCH in
 
-             case QUIP_ARCH in 
+                    linux_x86_64_gfortran_openmp)
+                      ARCHS=auto64
+                      ;;
 
-               linux_x86_64_gfortran_openmp)
-                 ARCH=auto64
-                 ;;
+                    darwin_x86_64_gfortran_openmp)
+                      ARCHS=x86_64
+                      ;;
 
-               darwin_x86_64_gfortran_openmp)
-                 ARCH=x86_64
-                 ;;
+                    darwin_arm64_gfortran_openmp)
+                      ARCHS=arm64
+                      ;;
 
-               darwin_arm64_gfortran_openmp)
-                 ARCH=arm64
-                 ;;
+                esac
 
-             esac
+                echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
 
-             echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
-
-             mkdir -p build/${QUIP_ARCH}
-             cp quippy/setup.py build/${QUIP_ARCH}
-             ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
-             python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
-           done
+                mkdir -p build/${QUIP_ARCH}
+                cp quippy/setup.py build/${QUIP_ARCH}
+                ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
+                export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
+                python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
+             done
         env:
            CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
-           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
-           CIBW_TEST_COMMAND: "cd {project}/tests; QUIP_WHEEL_TEST=1 HAVE_GAP=1 python run_all.py -v"
+           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
       # Uncomment to get SSH access for testing
       - name: Setup tmate session
