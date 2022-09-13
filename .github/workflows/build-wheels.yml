@@ -32,6 +32,8 @@ jobs:
              echo "RUNNER_OS=$RUNNER_OS"
              echo "QUIP_ARCHS=${QUIP_ARCHS}"
 
+             export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
+
              for QUIP_ARCH in $QUIP_ARCHS; do
                 case $QUIP_ARCH in
 
@@ -51,14 +53,35 @@ jobs:
 
                 echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
 
+                if [[ $ARCHS == "arm64" ]]; then
+                  # taken from https://github.com/MacPython/gfortran-install/blob/master/gfortran_utils.sh#L97
+                  curl -L -O https://github.com/isuruf/gcc/releases/download/gcc-10-arm-20210228/gfortran-darwin-arm64.tar.gz
+                  export GFORTRAN_SHA=f26990f6f08e19b2ec150b9da9d59bd0558261dd
+                  if [[ "$(shasum gfortran-darwin-arm64.tar.gz)" != "${GFORTRAN_SHA}  gfortran-darwin-arm64.tar.gz" ]]; then
+                            echo "shasum mismatch for gfortran-darwin-arm64"
+                            exit 1
+                  fi
+                  sudo mkdir -p /opt/
+                  sudo cp "gfortran-darwin-arm64.tar.gz" /opt/gfortran-darwin-arm64.tar.gz
+                  pushd /opt
+                        sudo tar -xvf gfortran-darwin-arm64.tar.gz
+                        sudo rm gfortran-darwin-arm64.tar.gz
+                  popd
+                  export FC_ARM64="$(find /opt/gfortran-darwin-arm64/bin -name "*-gfortran")"
+                  libgfortran="$(find /opt/gfortran-darwin-arm64/lib -name libgfortran.dylib)"
+                  libdir=$(dirname $libgfortran)
+                  export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
+                  export CIBW_ENVIRONMENT="$CIBW_ENVIRONMENT FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\"$FC_ARM64_LDFLAGS\" NPY_DISTUTILS_APPEND_FLAGS=1"
+                fi
+
                 mkdir -p build/${QUIP_ARCH}
                 cp quippy/setup.py build/${QUIP_ARCH}
                 ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
-                export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
+                echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
                 python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
              done
         env:
-           CIBW_SKIP: cp27-* cp35-* cp36-* pp*
+           CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
