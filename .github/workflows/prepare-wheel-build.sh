@@ -3,7 +3,7 @@ echo "prepare-build.sh received environment ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH
 # Install Openblas -- adapted from https://github.com/numpy/numpy/blob/main/tools/wheels/cibw_before_build.sh
 echo "Installing OpenBLAS..."
 
-if [[ "${RUNNER_OS" == "Linux" ]]; then
+if [[ "${RUNNER_OS}" == "Linux" ]]; then
 	basedir=$(python .github/workflows/openblas_support.py)
 	cp -r $basedir/lib/* /usr/local/lib
 	cp $basedir/include/* /usr/local/include
