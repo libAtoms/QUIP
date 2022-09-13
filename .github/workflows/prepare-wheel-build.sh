@@ -1,6 +1,6 @@
 echo "prepare-build.sh received environment ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
 
-if [[ "${RUNNER_OS}" == "macOS" && "$ARCHS" == "arm64" ]] then
+if [[ "${RUNNER_OS}" == "macOS" && "$ARCHS" == "arm64" ]]; then
 
 	echo "Installing arm64 cross compiler..."
 
