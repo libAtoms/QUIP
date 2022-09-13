@@ -27,7 +27,7 @@ from pathlib import Path
 
 import numpy as np
 import quippytest
-
+import quippy
 
 def file2hash(filename, chunksize=4096):
     hasher = hashlib.sha256()
@@ -46,7 +46,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     xml_name = 'gp.xml'
     config_name = 'gap_fit.config'
     here = Path('.')
-    prog_path = Path(os.environ.get('BUILDDIR')) / 'gap_fit'
+    prog_path = Path(quippy.__path__) / 'gap_fit'
     with open('si_gap_fit_test.json') as f:
         ref_data = json.load(f)
     si_sparsex_hash = 'bf3d99356e16bc666cee1f1abc6a2cfc63e98a8f69658bcc5ab84e01d9e3ab2d'
