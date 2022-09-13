@@ -21,18 +21,45 @@ jobs:
      
       - name: Build wheels
         run: |
-           # repeat basic setup for each architecture; only the relevant ones will be used
-           for QUIP_ARCH in linux_x86_64_gfortran_openmp darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp; do
+           if [ "$RUNNER_OS" == "Linux ]; then
+             QUIP_ARCHS=linux_x86_64_gfortran_openmp
+           elif ["$RUNNER_OS" == "macOS" ]; then
+             QUIP_ARCHS="darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp"
+           else
+             echo "RUNNER_OS=$RUNNER_OS not supported!"
+             exit 1           
+           fi
+           echo "RUNNER_OS=$RUNNER_OS"
+           echo "QUIP_ARCHS=${QUIP_ARCHS}"
+
+           for QUIP_ARCH in $QUIP_ARCHS; do
+
+             case QUIP_ARCH in 
+
+               linux_x86_64_gfortran_openmp)
+                 ARCH=auto64
+                 ;;
+
+               darwin_x86_64_gfortran_openmp)
+                 ARCH=x86_64
+                 ;;
+
+               darwin_arm64_gfortran_openmp)
+                 ARCH=arm64
+                 ;;
+
+             esac
+
+             echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
+
              mkdir -p build/${QUIP_ARCH}
              cp quippy/setup.py build/${QUIP_ARCH}
              ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
-             python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
+             python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
            done
         env:
            CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_ARCHS_LINUX: "auto64"
-           CIBW_ARCHS_MACOS: "x86_64 arm64"           
            CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
