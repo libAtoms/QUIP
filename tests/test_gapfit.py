@@ -46,7 +46,14 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     xml_name = 'gp.xml'
     config_name = 'gap_fit.config'
     here = Path('.')
-    prog_path = Path(quippy.__path__) / 'gap_fit'
+    if 'BUILDDIR' in os.environ:
+        prog_path = Path(os.environ.get('BUILDDIR')) / 'gap_fit'
+    else:
+        prog_path = Path(quippy.__path__[0]) / 'gap_fit'
+        
+    if not os.path.isfile(prog_path):
+        raise unittest.SkipTest(f"gap_fit exectuable does not exist at {prog_path}")
+        
     with open('si_gap_fit_test.json') as f:
         ref_data = json.load(f)
     si_sparsex_hash = 'bf3d99356e16bc666cee1f1abc6a2cfc63e98a8f69658bcc5ab84e01d9e3ab2d'
