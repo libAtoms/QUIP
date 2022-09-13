@@ -26,7 +26,8 @@ jobs:
            ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
            python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
         env:
-           QUIP_ARCH: linux_x86_64_gfortran_openmp        
+           QUIP_ARCH: linux_x86_64_gfortran_openmp
+           BUILDDIR: "{project}/build/${QUIP_ARCH}"
            CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_ARCHS_LINUX: "auto64"
