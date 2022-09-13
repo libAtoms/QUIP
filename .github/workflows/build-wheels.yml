@@ -69,7 +69,10 @@ jobs:
                   libgfortran="$(find /opt/gfortran-darwin-arm64/lib -name libgfortran.dylib)"
                   libdir=$(dirname $libgfortran)
                   export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
-                  export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS} FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\"$FC_ARM64_LDFLAGS\" NPY_DISTUTILS_APPEND_FLAGS=1"
+
+                  # Setup cross build for single arch arm_64 wheels
+                  # host_alias automatically lets autoconf know that we are cross compiling for arm64 darwin
+                  export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS} FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\" -arch arm64 $FC_ARM64_LDFLAGS\" NPY_DISTUTILS_APPEND_FLAGS=1 CFLAGS=\" -arch arm64\" CXXFLAGS=\" -arch arm64\" CPPFLAGS=\" -arch arm64\" _PYTHON_HOST_PLATFORM=macosx-11.0-arm64 ARCHFLAGS=\" -arch arm64\" FCFLAGS=\" -arch arm64\" CROSS_COMPILING=1 host_alias=aarch64-apple-darwin20.0.0"
                 else
                   export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
                 fi
