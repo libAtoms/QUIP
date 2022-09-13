@@ -23,7 +23,7 @@ jobs:
         run: |
            if [ "$RUNNER_OS" == "Linux ]; then
              QUIP_ARCHS=linux_x86_64_gfortran_openmp
-           elif ["$RUNNER_OS" == "macOS" ]; then
+           elif [ "$RUNNER_OS" == "macOS" ]; then
              QUIP_ARCHS="darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp"
            else
              echo "RUNNER_OS=$RUNNER_OS not supported!"

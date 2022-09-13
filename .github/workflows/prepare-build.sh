@@ -19,7 +19,7 @@ if [ "$(uname)" == "Darwin" ]; then
 	local libdir=$(dirname $libgfortran)
 
 	export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
-	if [[ "${PLAT:-}" == "arm64" ]]; then
+	if [[ "${ARCHS:-}" == "arm64" ]]; then
             export FC=$FC_ARM64
 	    export F90=$FC
 	    export F95=$FC
@@ -27,7 +27,7 @@ if [ "$(uname)" == "Darwin" ]; then
 	fi
     }
 
-    if [ "$PLAT" == "arm64" ]; then
+    if [ "$ARCHS" == "arm64" ]; then
 	export QUIP_ARCH=darwin_arm64_gfortran_openmp
 	install_arm64_cross_gfortran
     else
@@ -43,7 +43,7 @@ echo Installing OpenBLAS...
 basedir=$(python .github/workflows/openblas_support.py)
 cp -r $basedir/lib/* /usr/local/lib
 cp $basedir/include/* /usr/local/include
-if [[ "$(uname)" == "Darwin" && "$PLAT" == "arm64" ]]; then
+if [[ "$(uname)" == "Darwin" && "$ARCHS" == "arm64" ]]; then
     sudo mkdir -p /opt/arm64-builds/lib /opt/arm64-builds/include
     sudo chown -R $USER /opt/arm64-builds
     cp -r $basedir/lib/* /opt/arm64-builds/lib
