@@ -70,6 +70,8 @@ jobs:
                   libdir=$(dirname $libgfortran)
                   export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
                   export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS} FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\"$FC_ARM64_LDFLAGS\" NPY_DISTUTILS_APPEND_FLAGS=1"
+                else
+                  export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
                 fi
 
                 mkdir -p build/${QUIP_ARCH}
@@ -81,7 +83,7 @@ jobs:
         env:
            CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
+           CIBW_BEFORE_ALL_MACOS: "[[ ! -f /usr/local/bin/gfortran ]] && ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
