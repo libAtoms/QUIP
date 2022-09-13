@@ -18,15 +18,17 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.9.0
-      
+     
       - name: Build wheels
         run: |
-           mkdir -p build/${QUIP_ARCH}
-           cp quippy/setup.py build/${QUIP_ARCH}
-           ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
-           python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
+           # repeat basic setup for each architecture; only the relevant ones will be used
+           for QUIP_ARCH in linux_x86_64_gfortran_openmp darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp; do
+             mkdir -p build/${QUIP_ARCH}
+             cp quippy/setup.py build/${QUIP_ARCH}
+             ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
+             python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
+           done
         env:
-           QUIP_ARCH: linux_x86_64_gfortran_openmp
            CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_ARCHS_LINUX: "auto64"
