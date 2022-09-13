@@ -27,7 +27,6 @@ jobs:
            python -m cibuildwheel --output-dir wheelhouse build/${QUIP_ARCH}
         env:
            QUIP_ARCH: linux_x86_64_gfortran_openmp
-           BUILDDIR: "{project}/build/${QUIP_ARCH}"
            CIBW_SKIP: cp27-* cp35-* cp36-* pp*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_ARCHS_LINUX: "auto64"
@@ -35,7 +34,7 @@ jobs:
            CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
            CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
-           CIBW_TEST_COMMAND: "cd {project}/tests; HAVE_GAP=1 python run_all.py -v"
+           CIBW_TEST_COMMAND: "cd {project}/tests; QUIP_WHEEL_TEST=1 HAVE_GAP=1 python run_all.py -v"
            
       # Uncomment to get SSH access for testing
       - name: Setup tmate session
