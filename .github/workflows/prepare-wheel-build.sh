@@ -23,7 +23,7 @@ if [[ "${RUNNER_OS}" == "macOS" && "$ARCHS" == "arm64" ]]; then
 
 	export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
 	if [[ "${ARCHS:-}" == "arm64" ]]; then
-            export FC=$FC_ARM64
+        export FC=$FC_ARM64
 	    export F90=$FC
 	    export F95=$FC
 	    export F77=$FC
