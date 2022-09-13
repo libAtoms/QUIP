@@ -51,31 +51,31 @@ if [[ "$(uname)" == "Darwin" && "$PLAT" == "arm64" ]]; then
 fi
 
 WORK_DIR=$(dirname $0)
-BUILD_DIR=$PWD/build/${QUIP_ARCH}
+BUILDDIR=$PWD/build/${QUIP_ARCH}
 
-[[ -d ${BUILD_DIR} ]] || mkdir -p ${BUILD_DIR}
-cp $WORK_DIR/Makefile.${QUIP_ARCH}.inc ${BUILD_DIR}/Makefile.inc
+[[ -d ${BUILDDIR} ]] || mkdir -p ${BUILDDIR}
+cp $WORK_DIR/Makefile.${QUIP_ARCH}.inc ${BUILDDIR}/Makefile.inc
 
 export NPY_DISTUTILS_APPEND_FLAGS=1
 
 echo Making QUIP
-(cd ${BUILD_DIR}/../.. && make)
+(cd ${BUILDDIR}/../.. && make)
 
 echo Making quippy
-(cd ${BUILD_DIR}/../.. && make quippy)
+(cd ${BUILDDIR}/../.. && make quippy)
 
 # if we're building a release then use tag name as version
 if [[ -f GITHUB_TAG ]]; then
-    cat GITHUB_TAG > ${BUILD_DIR}/VERSION
+    cat GITHUB_TAG > ${BUILDDIR}/VERSION
 fi
 
 # get ready to run `pip wheel` in build directory
-cp ${BUILD_DIR}/../../README.md ${BUILD_DIR}
-cp ${BUILD_DIR}/../../quippy/setup.py ${BUILD_DIR}
+cp ${BUILDDIR}/../../README.md ${BUILDDIR}
+cp ${BUILDDIR}/../../quippy/setup.py ${BUILDDIR}
 
 # include `quip` and `gap_fit` command line tools
-cp ${BUILD_DIR}/quip ${BUILD_DIR}/quippy
-cp ${BUILD_DIR}/gap_fit ${BUILD_DIR}/quippy/
+cp ${BUILDDIR}/quip ${BUILDDIR}/quippy
+cp ${BUILDDIR}/gap_fit ${BUILDDIR}/quippy/
 
 # Python build dependencies
 pip install oldest-supported-numpy
