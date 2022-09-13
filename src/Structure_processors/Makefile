@@ -32,7 +32,7 @@ include Makefile.${QUIP_ARCH}
 include Makefile.inc
 include Makefile.rules
 
-OBJS = 
+#OBJS =  helper.o
 
 PROGRAMS = elastic_fields density_1d decimate move_displacement_field density_new \
   clean_traj file_rewrite find_space_minim \

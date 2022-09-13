@@ -6,7 +6,7 @@ implicit none
    type(Atoms) :: at, m_at
    integer i_at, j_at, nn_ii, nn_i
    integer, pointer :: mol_id(:)
-   character(len=10) :: specie
+   character(len=32) :: specie
 
    call system_initialise(verbosity=PRINT_SILENT)
    call verbosity_push(PRINT_NORMAL)
@@ -15,6 +15,8 @@ implicit none
 
    call calc_connect(at)
    call find_molecule_ids(at)
+
+   specie = " "
 
    if (.not. assign_pointer(at, "mol_id", mol_id)) &
       call system_abort("Failed to find mol_id property")
@@ -36,7 +38,8 @@ implicit none
             do nn_ii=n_neighbours(m_at, j_at)+1, 6
                line = trim(line)//" "//0
             end do
-            specie = string_cat_string_array(" ",m_at%species(:,j_at))
+            ! nvfortran may complain
+            specie = string_cat_string_array(specie,m_at%species(:,j_at))
             line = trim(line)//" "//trim(specie)//"  0.0 "//trim(specie)
             call print(trim(line))
          end do

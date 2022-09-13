@@ -356,8 +356,8 @@ subroutine IPModel_vdW_Calc(this, at, e, local_e, f, virial, local_virial, args_
   if( present(mpi) ) then
      if(mpi%active) then
         if(has_atom_mask_name) then
-           RAISE_ERROR("IPModel_vdW: atom_mask_name "//trim(atom_mask_name)//" present while running MPI version. &
-              The use of atom_mask_name is intended for serial-compiled code called from an external parallel code, such as LAMMPS",error)
+           RAISE_ERROR("IPModel_vdW: atom_mask_name "//trim(atom_mask_name)//" present while running MPI version."// \
+              " The use of atom_mask_name is intended for serial-compiled code called from an external parallel code, such as LAMMPS",error)
         endif
 
         if( has_property(at,"mpi_local_mask") ) then

@@ -194,7 +194,7 @@ subroutine yukawa_charges(at, charge, cutoff, alpha, smoothlength, &
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
             if (sigma > 0.0_dp .and. r_ij < 9.0_dp*sigma) then
-               erf_val = derf(r_ij/(sqrt_2 * sigma))
+               erf_val = erf(r_ij/(sqrt_2 * sigma))
                erf_deriv = sqrt_2/(sqrt_pi*sigma)*exp(-r_ij*r_ij/(2.0_dp*sigma*sigma))
             end if
          end if
@@ -459,7 +459,7 @@ subroutine yukawa_dipoles(at, charge, dip, cutoff, alpha, smoothlength, pol, b_p
             erf_deriv = 0.0_dp
             ! pseudise if sigma > 0, correction for r >= 9s is < 1e-16
             if (sigma > 0.0_dp .and. r_ij < 9.0_dp*sigma) then
-               erf_val = derf(r_ij/(sqrt_2 * sigma))
+               erf_val = erf(r_ij/(sqrt_2 * sigma))
                erf_deriv = sqrt_2/(sqrt_pi*sigma)*exp(-r_ij*r_ij/(2.0_dp*sigma*sigma))
             end if
          end if

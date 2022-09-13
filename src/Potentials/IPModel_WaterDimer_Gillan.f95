@@ -295,6 +295,7 @@ end subroutine IPModel_WaterDimer_Gillan_Print
       real*8 e_ind_1o, e_ind_1h1, e_ind_1h2,  e_ind_2o, e_ind_2h1, e_ind_2h2
       real*8 d6oo, d6oh1, d6oh2, d6h1o, d6h1h1, d6h1h2, d6h2o, d6h2h1, d6h2h2
       real*8 evec1(3), evec2(3), evec3(3), evec4(3), evect(3)
+      character(len=STRING_LENGTH) fname
 ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 !   begin loop over monomers
 ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -382,7 +383,8 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 ! ... x-, y- and z-axes form a normal right-handed set.
 ! ... dipole vector
         init3d = 1
-        call lin3d_2(init3d,theta_deg,r1,r2,mux,muz,repeat(' ',20))
+        fname=repeat(' ',20)
+        call lin3d_2(init3d,theta_deg,r1,r2,mux,muz,fname)
         dipvec_0(1) = mux
         dipvec_0(2) = 0.d0
         dipvec_0(3) = muz
@@ -392,7 +394,8 @@ end subroutine IPModel_WaterDimer_Gillan_Print
 !  132   format(3x,3f15.6)
 ! ... compute components of quadrupole tensor
         init3d = 1
-        call lin3d_3(init3d,theta_deg,r1,r2,qxx,qzz,qxz,repeat(' ',20))
+        fname=repeat(' ',20)
+        call lin3d_3(init3d,theta_deg,r1,r2,qxx,qzz,qxz,fname)
         quadten_0(1) = qxx
         quadten_0(2) = 0.d0
         quadten_0(3) = qxz
