@@ -1,4 +1,13 @@
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [ public ]
+    tags:
+       - v*
+  pull_request:
+    branches: [ public ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build_wheels:
@@ -6,29 +15,97 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-10.15]
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'      
       
-      - name: Build libraries
-        id: build-libs
-        run : |
-          QUIP_ARCH=linux_x86_64_gfortran_openmp
-          echo ::set-output name=quip_arch::${QUIP_ARCH}
+      - uses: actions/setup-python@v2
 
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.9.0
+     
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.11.1.post1 build/${{ steps.build-libs.quip_arch }}
+        run: |
+             if [ "$RUNNER_OS" == "Linux" ]; then
+                QUIP_ARCHS=linux_x86_64_gfortran_openmp
+             elif [ "$RUNNER_OS" == "macOS" ]; then
+                QUIP_ARCHS="darwin_x86_64_gfortran_openmp darwin_arm64_gfortran_openmp"
+             else
+               echo "RUNNER_OS=$RUNNER_OS not supported!"
+               exit 1
+             fi
+             echo "RUNNER_OS=$RUNNER_OS"
+             echo "QUIP_ARCHS=${QUIP_ARCHS}"
+
+             # see if this workflow run was triggered from a tag
+             event_ref=${{ github.ref }}
+             if [[ ! -z $event_ref && $event_ref =~ ^refs/tags/ ]]; then
+                 echo ${{ github.ref }} | sed -e 's|refs/tags/||' > GITHUB_TAG
+             fi
+
+             # map from QUIP_ARCH to cibuildwheel architecture
+             for QUIP_ARCH in $QUIP_ARCHS; do
+                case $QUIP_ARCH in
+
+                    linux_x86_64_gfortran_openmp)
+                      ARCHS=auto64
+                      ;;
+
+                    darwin_x86_64_gfortran_openmp)
+                      ARCHS=x86_64
+                      ;;
+
+                    darwin_arm64_gfortran_openmp)
+                      ARCHS=arm64
+                      ;;
+
+                esac
+
+                echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
+
+                if [[ $ARCHS == "arm64" ]]; then
+                  # install arm64 cross compiler
+                  # taken from https://github.com/MacPython/gfortran-install/blob/master/gfortran_utils.sh#L97
+                  curl -L -O https://github.com/isuruf/gcc/releases/download/gcc-10-arm-20210228/gfortran-darwin-arm64.tar.gz
+                  export GFORTRAN_SHA=f26990f6f08e19b2ec150b9da9d59bd0558261dd
+                  if [[ "$(shasum gfortran-darwin-arm64.tar.gz)" != "${GFORTRAN_SHA}  gfortran-darwin-arm64.tar.gz" ]]; then
+                            echo "shasum mismatch for gfortran-darwin-arm64"
+                            exit 1
+                  fi
+                  sudo mkdir -p /opt/
+                  sudo cp "gfortran-darwin-arm64.tar.gz" /opt/gfortran-darwin-arm64.tar.gz
+                  pushd /opt
+                        sudo tar -xvf gfortran-darwin-arm64.tar.gz
+                        sudo rm gfortran-darwin-arm64.tar.gz
+                  popd
+                  export FC_ARM64="$(find /opt/gfortran-darwin-arm64/bin -name "*-gfortran")"
+                  libgfortran="$(find /opt/gfortran-darwin-arm64/lib -name libgfortran.dylib)"
+                  libdir=$(dirname $libgfortran)
+                  export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
+
+                  # Setup cross build for single arch arm_64 wheels
+                  # host_alias automatically lets autoconf know that we are cross compiling for arm64 darwin
+                  export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS} FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\" -arch arm64 $FC_ARM64_LDFLAGS\" NPY_DISTUTILS_APPEND_FLAGS=1 CFLAGS=\" -arch arm64\" CXXFLAGS=\" -arch arm64\" CPPFLAGS=\" -arch arm64\" _PYTHON_HOST_PLATFORM=macosx-11.0-arm64 ARCHFLAGS=\" -arch arm64\" FCFLAGS=\" -arch arm64\" CROSS_COMPILING=1 host_alias=aarch64-apple-darwin20.0.0  MACOSX_DEPLOYMENT_TARGET=11.0 SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"
+                else
+                  export CIBW_ENVIRONMENT="ARCHS=${ARCHS} QUIP_ARCH=${QUIP_ARCH} RUNNER_OS=${RUNNER_OS}"
+                fi
+
+                mkdir -p build/${QUIP_ARCH}
+                cp quippy/setup.py build/${QUIP_ARCH}
+                ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
+                echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
+                python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
+             done
         env:
-           CIBW_SKIP: cp27-* cp35-* pp*
+           CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp* *musllinux*
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_ARCHS_LINUX: "auto64"
-           CIBW_ARCHS_MACOS: "x86_64 arm64"           
-           CIBW_BEFORE_ALL_MACOS: "ln -s $(which gfortran-10) /usr/local/bin/gfortran"
-           CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran"
-           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-build.sh"
-           CIBW_TEST_COMMAND: "cd {project}/tests; HAVE_GAP=1 python run_all.py -v"
+           CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
+           CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
+           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
       # Uncomment to get SSH access for testing
       - name: Setup tmate session
@@ -39,3 +116,27 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+
+      - name: Release wheels
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: wheelhouse/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check tag
+        id: check-tag
+        run: |
+          if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo ::set-output name=match::true
+          fi
+
+      - name: Deploy to PyPI
+        if: steps.check-tag.outputs.match == 'true'
+        run: |
+          pip install twine
+          twine upload wheelhouse/*.whl
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

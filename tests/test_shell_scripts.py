@@ -6,12 +6,9 @@ from subprocess import Popen, PIPE
 
 import quippytest
 
+@unittest.skipIf('QUIP_WHEEL_TEST' in os.environ, 'Skipping when testing Python wheels')
 class TestShellScripts(quippytest.QuippyTestCase):
-    def test_shell_scripts(self):
-        if 'QUIP_WHEEL_TEST' in os.environ:
-            print(f'Skipping test when testing built wheels')
-            return
-        
+    def test_shell_scripts(self):        
         for f in Path(__file__).parent.glob('test_*.sh'):
             print("shell script test", f)
 
