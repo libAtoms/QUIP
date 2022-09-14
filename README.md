@@ -368,9 +368,32 @@ to get up and running quickly.
   git commit -m "updating the version of GAP"
   ```
 
-### Mac OS
+## Mac OS
 
 We do not recommend Apple-shipped compilers and python, and we do not test
 compatibility with them. Either use MacPorts or Homebrew to obtain GNU compilers,
 and also use the python from there or Anaconda. As of this edit, gcc-8.1 produces as
 internal compiler error, but gcc-4.6 through to gcc-7 is fine.
+
+## Triggering the wheel build
+
+Wheels are built on push and pull requests to `public` using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/)
+with [this workflow](.github/workflows/build-wheels.yml).
+
+To make a release candidate create a tag with a suffix such as `-rc1` for the first attempt,
+push to trigger the build:
+
+```bash
+git commit -m 'release v0.x.z-rc1'
+git tag v0.x.y-rc1
+git push --tags
+```
+
+If all goes well, the `.whl` files will show up as assets within a new GitHub
+release. The installation process can now be tested locally.
+
+## Release wheels to PyPI
+
+Once everything works correctly, make a full release (i.e. create a tag named
+just `v0.x.y` without the `-rc1` suffix). This will trigger the upload of wheels
+and source distribution to PyPI.
