@@ -28,10 +28,10 @@ BUILDDIR=$PWD/build/${QUIP_ARCH}
 [[ -d ${BUILDDIR} ]] || mkdir -p ${BUILDDIR}
 cp $WORK_DIR/Makefile.${QUIP_ARCH}.inc ${BUILDDIR}/Makefile.inc
 
-echo Building QUIP
-(cd ${BUILDDIR}/../.. && make)
+# Python build dependencies
+pip install oldest-supported-numpy
 
-echo Building quippy
+echo Building QUIP and quippy
 (cd ${BUILDDIR}/../.. && make quippy)
 
 # if we're building a release then use tag name as version
@@ -47,6 +47,3 @@ cp ${BUILDDIR}/../../quippy/setup.py ${BUILDDIR}
 cp ${BUILDDIR}/quip ${BUILDDIR}/quippy
 cp ${BUILDDIR}/gap_fit ${BUILDDIR}/quippy/
 cp ${BUILDDIR}/libquip.a ${BUILDDIR}/quippy/
-
-# Python build dependencies
-pip install oldest-supported-numpy
