@@ -41,6 +41,13 @@ jobs:
              echo "RUNNER_OS=$RUNNER_OS"
              echo "QUIP_ARCHS=${QUIP_ARCHS}"
 
+             # see if this workflow run was triggered from a tag
+             event_ref=${{ github.ref }}
+             if [[ ! -z $event_ref && $event_ref =~ ^refs/tags/ ]]; then
+                 echo ${{ github.ref }} | sed -e 's|refs/tags/||' > GITHUB_TAG
+             fi
+
+             # map from QUIP_ARCH to cibuildwheel architecture
              for QUIP_ARCH in $QUIP_ARCHS; do
                 case $QUIP_ARCH in
 
@@ -61,6 +68,7 @@ jobs:
                 echo "QUIP_ARCH=${QUIP_ARCH}, ARCHS=${ARCHS}"
 
                 if [[ $ARCHS == "arm64" ]]; then
+                  # install arm64 cross compiler
                   # taken from https://github.com/MacPython/gfortran-install/blob/master/gfortran_utils.sh#L97
                   curl -L -O https://github.com/isuruf/gcc/releases/download/gcc-10-arm-20210228/gfortran-darwin-arm64.tar.gz
                   export GFORTRAN_SHA=f26990f6f08e19b2ec150b9da9d59bd0558261dd
