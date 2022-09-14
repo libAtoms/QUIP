@@ -99,16 +99,21 @@ jobs:
                 ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
                 echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
                 if [ "$RUNNER_OS" == "macOS" ]; then
+                   export CIBW_SKIP="cp27-* cp35-* cp36-* cp311-* pp* *musllinux*"
                    python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH} 
                  else
                    for CIBW_MANYLINUX_X86_64_IMAGE in manylinux2010 manylinux2014; do
+                     if [ "$CIBW_MANYLINUX_X86_64_IMAGE" == "manylinux2010" ]; then
+                       export CIBW_SKIP="cp27-* cp35-* cp36-* cp310-* cp311-* pp* *musllinux*"
+                     else
+                       export CIBW_SKIP="cp27-* cp35-* cp36-* cp311-* pp* *musllinux*"
+                     fi
                      export CIBW_MANYLINUX_X86_64_IMAGE
                      python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
                    done
                  fi                
              done
         env:
-           CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp* *musllinux*
            CIBW_TEST_SKIP: "*-macosx_arm64"
            CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
            CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
