@@ -98,7 +98,14 @@ jobs:
                 cp quippy/setup.py build/${QUIP_ARCH}
                 ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
                 echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
-                python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
+                if [ "$RUNNER_OS" == "macOS" ]; then
+                   python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH} 
+                 else
+                   for CIBW_MANYLINUX_X86_64_IMAGE in manylinux2010 manylinux2014; do
+                     export CIBW_MANYLINUX_X86_64_IMAGE
+                     python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
+                   done
+                 fi                
              done
         env:
            CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp* *musllinux*
