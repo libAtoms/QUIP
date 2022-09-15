@@ -115,7 +115,7 @@ jobs:
              done
         env:
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "brew install gcc@9 && ln -s /usr/local/bin/gfortran-9 /usr/local/bin/gfortran"
+           CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
           #  CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
