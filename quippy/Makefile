@@ -32,6 +32,9 @@ include Makefile.rules
 
 PY_VERSION=$(shell ${PYTHON} -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 HAVE_PYTHON3=$(shell ${PYTHON} -c 'import sys; print(int(sys.version_info[0] >= 3))')
+ifeq (${PIP},)
+PIP=${PYTHON} -m pip
+endif
 
 QUIPPY_SRC_DIR := ../../quippy
 
