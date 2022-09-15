@@ -115,8 +115,8 @@ jobs:
              done
         env:
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
-           CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
+           CIBW_BEFORE_ALL_MACOS: "brew install gfortran@9 && brew unlink gfortran && brew link gfortran@9"
+          #  CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
       # Uncomment to get SSH access for testing
