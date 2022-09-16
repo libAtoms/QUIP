@@ -656,7 +656,7 @@ contains
 
     ! ---
 
-    call print("DomainDecomposition : finalise", PRINT_VERBOSE)
+    call print("DomainDecomposition : finalise", PRINT_NERD)
 
     if (allocated(this%send_l))  deallocate(this%send_l)
     if (allocated(this%send_r))  deallocate(this%send_r)
@@ -673,11 +673,11 @@ contains
 
     if (this%n_send_p_tot > 0 .and. this%n_recv_p_tot > 0 .and. &
         this%n_send_g_tot > 0 .and. this%n_recv_g_tot > 0) then
-       call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_VERBOSE)
-       call print("DomainDecomposition : Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_VERBOSE)
-       call print("DomainDecomposition : Particles recv  = " // (1.0_DP*this%n_recv_p_tot)/this%nit_p, PRINT_VERBOSE)
-       call print("DomainDecomposition : Ghosts send     = " // (1.0_DP*this%n_send_g_tot)/this%nit_g, PRINT_VERBOSE)
-       call print("DomainDecomposition : Ghosts recv     = " // (1.0_DP*this%n_recv_g_tot)/this%nit_g, PRINT_VERBOSE)
+       call print("DomainDecomposition : Average number of particles sent/received per iteration:", PRINT_NERD)
+       call print("DomainDecomposition : Particles send  = " // (1.0_DP*this%n_send_p_tot)/this%nit_p, PRINT_NERD)
+       call print("DomainDecomposition : Particles recv  = " // (1.0_DP*this%n_recv_p_tot)/this%nit_p, PRINT_NERD)
+       call print("DomainDecomposition : Ghosts send     = " // (1.0_DP*this%n_send_g_tot)/this%nit_g, PRINT_NERD)
+       call print("DomainDecomposition : Ghosts recv     = " // (1.0_DP*this%n_recv_g_tot)/this%nit_g, PRINT_NERD)
     endif
 
     call finalise(this%atoms_properties)
