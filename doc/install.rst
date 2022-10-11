@@ -21,10 +21,7 @@
 Installation of QUIP and quippy
 *******************************
 
-For installation instructions, please see the
-`installation instructions <https://libatoms.github.io/GAP/installation.html>`_
-provided with the ``GAP`` code, or the
-`top-level README <https://github.com/libAtoms/QUIP/blob/public/README.md>`_
+For installation instructions see the `top-level README <https://github.com/libAtoms/QUIP/blob/public/README.md>`_
 for QUIP.
 
 

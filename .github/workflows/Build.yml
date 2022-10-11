@@ -123,8 +123,12 @@ jobs:
       - name: Build documentation
         run: |
           sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
-          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2
-          pip install nbconvert[execute] ipython
+          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2 nbconvert[execute] ipython
+
+          # FIXME: currently we use the released version of quippy package to build docs, 
+          # would be better to cache wheel from step above
+          pip install quippy-ase
+
           cd doc
           python -m sphinx . _build/html
 

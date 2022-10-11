@@ -1,7 +1,6 @@
-QUIP Overview Tutorial
-======================
+QUIP Overview Tutorials
+=======================
 
 .. toctree::
-    :maxdepth: 2
+    CCP5-June-2021
 
-    CCP5-June-2021.ipynb
