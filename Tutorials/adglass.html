@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 04faa82 documentation</title>
+  <title>Molecular Dynamics Simulation of Fracture in Quartz &mdash; quippy 5d74be5 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -18,6 +18,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -37,7 +38,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                04faa82
+                5d74be5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -51,7 +52,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="overview.html">QUIP Overview Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html">QUIP Overview Tutorials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Molecular Dynamics Simulation of Fracture in Quartz</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#setting-up-your-working-environment">Setting up your working environment</a></li>
@@ -191,14 +192,14 @@ platform (see <a class="reference internal" href="../install.html#installation">
 refers to the directory where the the QUIP source code is located.</p>
 </div>
 <p>To make the command <cite>crack</cite> availale, copy the executable
-<code class="docutils literal notranslate"><span class="pre">${QUIP_ROOT}/build/${QUIP_ARCH}</span></code> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="https://matplotlib.org/stable/users/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v3.5.3)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a>,
+<code class="docutils literal notranslate"><span class="pre">${QUIP_ROOT}/build/${QUIP_ARCH}</span></code> to a directory on your <span class="target" id="index-2"></span><a class="reference external" href="https://matplotlib.org/stable/users/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v3.6.0)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a>,
 e.g. <code class="docutils literal notranslate"><span class="pre">~/bin</span></code>.</p>
 <p>Similarly, to compile <cite>eval</cite> run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make QUIP_Programs/eval
 </pre></div>
 </div>
 <p>It is highly recommended to change the name when copying the <cite>eval</cite> prgram to a
-directory on <span class="target" id="index-3"></span><a class="reference external" href="https://matplotlib.org/stable/users/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v3.5.3)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a> to avoid a clash with the builtin <code class="docutils literal notranslate"><span class="pre">eval</span></code> command.</p>
+directory on <span class="target" id="index-3"></span><a class="reference external" href="https://matplotlib.org/stable/users/faq/environment_variables_faq.html#envvar-PATH" title="(in Matplotlib v3.6.0)"><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PATH</span></code></a> to avoid a clash with the builtin <code class="docutils literal notranslate"><span class="pre">eval</span></code> command.</p>
 <p>Start the simulation by running the <cite>crack</cite> program, which takes
 the “stem” of the input filenames as its only argument:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ crack quartz_crack &gt; quartz_crack.out &amp;
