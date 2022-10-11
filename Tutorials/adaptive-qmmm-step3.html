@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy 5d74be5 documentation</title>
+  <title>Step 3: LOTF hybrid MD simulation of fracture in Si &mdash; quippy d0c1885 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -38,7 +38,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5d74be5
+                d0c1885
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -178,7 +178,7 @@ to be combined into a hybrid QM/MM potential (<cite>qmmm_pot</cite>), which mixe
 and MM forces.</p>
 <p>Leave the initialisiton of the SW classical potential as it is. After this, we
 want to add some lines of code to setup the QM potential. Using the same
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code> class, we initialise now the Density
+<a class="reference internal" href="../potential.html#quippy.potential.Potential" title="quippy.potential.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> class, we initialise now the Density
 functional tight binding (DFTB) potential. This is done by passing the new QM
 <cite>qm_init_args</cite> as the <cite>init_args</cite> parameter and the same XML file as before for
 the <cite>param_filename</cite> to the Potential constructor (note that the single file

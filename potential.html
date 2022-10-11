@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Potential objects &mdash; quippy 5d74be5 documentation</title>
+  <title>Potential objects &mdash; quippy d0c1885 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
@@ -36,7 +36,7 @@
             <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                5d74be5
+                d0c1885
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -52,7 +52,10 @@
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="quippy.html#high-level-python-api">High-level Python API</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Potential objects</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Potential objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#quippy.potential.Potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="descriptors.html">Descriptors for atomic environments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dynamicalsystem.html">Molecular Dynamics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="convert.html">Conversion between quippy and ASE</a></li>
@@ -120,8 +123,339 @@
     text-align: unset;
 }
 </style>
-<section id="potential-objects">
-<h1>Potential objects<a class="headerlink" href="#potential-objects" title="Permalink to this heading"></a></h1>
+<section id="module-quippy.potential">
+<span id="potential-objects"></span><h1>Potential objects<a class="headerlink" href="#module-quippy.potential" title="Permalink to this heading"></a></h1>
+<p>ASE-compatible Calculator from a quip-potential object</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="quippy.potential.Potential">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">quippy.potential.</span></span><span class="sig-name descname"><span class="pre">Potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculation_always_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/development/calculators.html#ase.calculators.calculator.Calculator" title="(in ASE)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></a></p>
+<p>Module potential_module</p>
+<p>Defined at Potential.fpp lines 201-3752</p>
+<p>This module encapsulates all the interatomic potentials implemented in QUIP</p>
+<p>A Potential object represents an interatomic potential, a
+tight binding model or an interface to an external code used to
+perform calculations. It is initialised from an <cite>args_str</cite>
+describing the type of potential, and an XML formatted string
+<cite>param_str</cite> giving the parameters.</p>
+<p>Types of Potential:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p><cite>args_str</cite> prefix</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">IP</span></code></p></td>
+<td><p>Interatomic Potential</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span></code></p></td>
+<td><p>Tight Binding Model</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">FilePot</span></code></p></td>
+<td><p>File potential, used to communicate with external program</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CallbackPot</span></code></p></td>
+<td><p>Callback potential, computation done by Python function</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Sum</span></code></p></td>
+<td><p>Sum of two other potentials</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ForceMixing</span></code></p></td>
+<td><p>Combination of forces from two other potentials</p></td>
+</tr>
+</tbody>
+</table>
+<p>Types of interatomic potential available:</p>
+<p>Types of tight binding potential available:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p><cite>args_str</cite> prefix</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span> <span class="pre">Bowler</span></code></p></td>
+<td><p>Bowler tight binding model</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span> <span class="pre">DFTB</span></code></p></td>
+<td><p>Density functional tight binding</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span> <span class="pre">GSP</span></code></p></td>
+<td><p>Goodwin-Skinner-Pettifor tight binding model</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span> <span class="pre">NRL_TB</span></code></p></td>
+<td><p>Naval Research Laboratory tight binding model</p></td>
+</tr>
+</tbody>
+</table>
+<p>Examples of the XML parameters for each of these potential can be
+found in the <a class="reference external" href="https://github.com/libAtoms/QUIP/tree/public/share/Parameters">src/Parameters</a></p>
+<p>Pythonic interface to auto-generated quippy.potential_module.Potential class</p>
+<p>directory of the QUIP git repository.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_properties</span></code></a>()</p></td>
+<td><p>Get the list of properties to be calculated by default</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#quippy.potential.Potential.set_default_properties" title="quippy.potential.Potential.set_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default_properties</span></code></a>(properties)</p></td>
+<td><p>Set the list of properties to be calculated by default</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.band_structure">
+<span class="sig-name descname"><span class="pre">band_structure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.band_structure" title="Permalink to this definition"></a></dt>
+<dd><p>Create band-structure object for plotting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.calculate">
+<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">at</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">virial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_virial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.calculate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential.calculate" title="Permalink to this definition"></a></dt>
+<dd><p>Defined at Potential.fpp lines 933-1098</p>
+<p>Pythonic wrapper to <cite>quippy.potential_module.Potential.calc()</cite></p>
+<dl>
+<dt>atoms: ase.atoms.Atoms object</dt><dd><p>Atoms object with which to calculate. This is converted to
+a <cite>quippy.atoms_module.Atoms</cite> object to pass to Fortran.</p>
+</dd>
+<dt>properties: list of str</dt><dd><p>List of what needs to be calculated.  Can be any combination
+of ‘energy’, ‘forces’, ‘stress’, ‘dipole’, ‘charges’, ‘magmom’
+and ‘magmoms’.</p>
+</dd>
+<dt>system_changes: list of str</dt><dd><p>List of what has changed since last calculation.  Can be
+any combination of these six: ‘positions’, ‘numbers’, ‘cell’,
+‘pbc’, ‘initial_charges’ and ‘initial_magmoms’.</p>
+</dd>
+<dt>calc_args: argument string to pass to Fortran calc() routine.</dt><dd><p>This is appended to <cite>self.calc_args</cite>, if this is set.</p>
+</dd>
+<dt>add_arrays: list, str or True</dt><dd><p>Arrays to carry over from <cite>atoms.arrays</cite> to the Fortran atoms object when calling calculate()
+If the same argument is filled in calculate, then it will overwrite this.
+String arrays not supported.
+possible types:</p>
+<blockquote>
+<div><p>None - only defaults: <cite>pos</cite>, <cite>Z</cite>, <cite>cell</cite>, <cite>pbc</cite>, <cite>momenta</cite> (as velo, if exists)
+str  - single key
+list - all list elements as keys
+True - all of the arrays from <cite>atoms.arrays</cite></p>
+</div></blockquote>
+</dd>
+<dt>add_info: list, str or True</dt><dd><p>Info to carry over from <cite>atoms.info</cite> to the Fortran atoms object when calling calculate()
+If the same argument is filled in calculate, then it will overwrite this.
+possible types:</p>
+<blockquote>
+<div><p>None - only defaults: <cite>pos</cite>, <cite>Z</cite>, <cite>cell</cite>, <cite>pbc</cite>, <cite>momenta</cite> (as velo, if exists)
+str  - single key
+list - all list elements as keys
+True - all of the values from <cite>atoms.info</cite></p>
+</div></blockquote>
+</dd>
+</dl>
+<p>Arrays can also be passed directly to the Fortran routine using
+the <cite>forces</cite>, <cite>virial</cite>, <cite>local_energy</cite>, <cite>local_virial</cite>
+arguments. These should be pre-allocated as Fortran-contigous arrays,
+e.g. <cite>forces = np.zeros((len(atoms), 3), order=’F’)</cite>.</p>
+<p>If present, <cite>vol_per_atom</cite> is used to convert from local_virial to per-atom
+stresses; this can either be a scalar or the name of an array in
+<cite>atoms.arrays</cite>. If not present the average volume per atom is used.</p>
+<p>Additional keyword arguments are appended to <cite>calc_args</cite>.</p>
+<p>Non-standard calculation results (such as <cite>gap_local_variance</cite>) are stored in
+<cite>self.extra_results</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">Potential</span></dt><dd></dd>
+<dt><strong>at</strong><span class="classifier">Atoms</span></dt><dd></dd>
+<dt><strong>energy</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>force</strong><span class="classifier">float array</span></dt><dd></dd>
+<dt><strong>virial</strong><span class="classifier">float array</span></dt><dd></dd>
+<dt><strong>local_energy</strong><span class="classifier">float array</span></dt><dd></dd>
+<dt><strong>local_virial</strong><span class="classifier">float array</span></dt><dd></dd>
+<dt><strong>args_str</strong><span class="classifier">str</span></dt><dd></dd>
+<dt><strong>error</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>Apply this Potential to the Atoms object</strong></dt><dd></dd>
+<dt><strong>‘at’. Atoms%calc_connect is automatically called to update the</strong></dt><dd></dd>
+<dt><strong>connecticvity information – if efficiency is important to you,</strong></dt><dd></dd>
+<dt><strong>ensure that at%cutoff_skin is set to a non-zero value to decrease</strong></dt><dd></dd>
+<dt><strong>the frequence of connectivity updates.</strong></dt><dd></dd>
+<dt><strong>optional arguments determine what should be calculated and how</strong></dt><dd></dd>
+<dt><strong>it will be returned. Each physical quantity has a</strong></dt><dd></dd>
+<dt><strong>corresponding optional argument, which can either be an ‘True’</strong></dt><dd></dd>
+<dt><strong>to store the result inside the Atoms object(i.e. in</strong></dt><dd></dd>
+<dt><strong>Atoms%params’ or in ‘Atoms%properties’ with the</strong></dt><dd></dd>
+<dt><strong>default name, a string to specify a different property or</strong></dt><dd></dd>
+<dt><strong>parameter name, or an array of the the correct shape to</strong></dt><dd></dd>
+<dt><strong>receive the quantity in question, as set out in the table</strong></dt><dd></dd>
+<dt><strong>below.</strong></dt><dd></dd>
+<dt><strong>================  ============= ================ =========================</strong></dt><dd></dd>
+<dt><strong>Array argument    Quantity      Shape            Default storage location</strong></dt><dd></dd>
+<dt><strong>================  ============= ================ =========================</strong></dt><dd></dd>
+<dt><strong>``energy``        Energy        ``()``                  ``energy`` param</strong></dt><dd></dd>
+<dt><strong>``local_energy``  Local energy  ``(at.n,)``      ``local_energy`` property</strong></dt><dd></dd>
+<dt><strong>``force``         Force         ``(3,at.n)``     ``force`` property</strong></dt><dd></dd>
+<dt><strong>``virial``        Virial tensor ``(3,3)``        ``virial`` param</strong></dt><dd></dd>
+<dt><strong>``local_virial``  Local virial  ``(3,3,at.n)``   ``local_virial`` property</strong></dt><dd></dd>
+<dt><strong>================  ============= ================ =========================</strong></dt><dd></dd>
+<dt><strong>The ‘args_str’ argument is an optional string  containing</strong></dt><dd></dd>
+<dt><strong>additional arguments which depend on the particular Potential</strong></dt><dd></dd>
+<dt><strong>being used.</strong></dt><dd></dd>
+<dt><strong>Not all Potentials support all of these quantities: an error</strong></dt><dd></dd>
+<dt><strong>will be raised if you ask for something that is not supported.</strong></dt><dd></dd>
+<dt><strong>.. rubric:: args_str options</strong></dt><dd></dd>
+<dt><strong>=============== ===== ===== ===========================================================================</strong></dt><dd></dd>
+<dt><strong>Name            Type  Value Doc</strong></dt><dd></dd>
+<dt><strong>=============== ===== ===== ===========================================================================</strong></dt><dd></dd>
+<dt><strong>energy          None        If present, calculate energy and put it in field with this string as name</strong></dt><dd></dd>
+<dt><strong>virial          None        If present, calculate virial and put it in field with this string as name</strong></dt><dd></dd>
+<dt><strong>force           None        If present, calculate force and put it in field with this string as name</strong></dt><dd></dd>
+<dt><strong>local_energy    None        If present, calculate local energy and put it in field with this string as</strong></dt><dd><p>name</p>
+</dd>
+<dt><strong>local_virial    None        If present, calculate local virial and put it in field with this string as</strong></dt><dd><p>name</p>
+</dd>
+<dt><strong>r_scale         float 0.0   Distance rescale factor. Overrides r_scale init arg</strong></dt><dd></dd>
+<dt><strong>E_scale         float 0.0   Energy rescale factor. Overrides E_scale init arg</strong></dt><dd></dd>
+<dt><strong>do_calc_connect bool  T     Switch on/off automatic calc_connect() calls.</strong></dt><dd></dd>
+<dt><strong>=============== ===== ===== ===========================================================================</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.calculate_numerical_forces">
+<span class="sig-name descname"><span class="pre">calculate_numerical_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_forces" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate numerical forces using finite difference.</p>
+<p>All atoms will be displaced by +d and -d in all directions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.calculate_numerical_stress">
+<span class="sig-name descname"><span class="pre">calculate_numerical_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voigt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_numerical_stress" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate numerical stress using finite difference.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.calculate_properties">
+<span class="sig-name descname"><span class="pre">calculate_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.calculate_properties" title="Permalink to this definition"></a></dt>
+<dd><p>This method is experimental; currently for internal use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.check_state">
+<span class="sig-name descname"><span class="pre">check_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.check_state" title="Permalink to this definition"></a></dt>
+<dd><p>Check for any system changes since last calculation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.get_default_properties">
+<span class="sig-name descname"><span class="pre">get_default_properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_default_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential.get_default_properties" title="Permalink to this definition"></a></dt>
+<dd><p>Get the list of properties to be calculated by default</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.get_magnetic_moments">
+<span class="sig-name descname"><span class="pre">get_magnetic_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_magnetic_moments" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate magnetic moments projected onto atoms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.get_property">
+<span class="sig-name descname"><span class="pre">get_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_calculation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.get_property" title="Permalink to this definition"></a></dt>
+<dd><p>Get the named property.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.get_stresses">
+<span class="sig-name descname"><span class="pre">get_stresses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.get_stresses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential.get_stresses" title="Permalink to this definition"></a></dt>
+<dd><p>the calculator should return intensive stresses, i.e., such that
+stresses.sum(axis=0) == stress</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.read" title="Permalink to this definition"></a></dt>
+<dd><p>Read atoms, parameters and calculated properties from output file.</p>
+<p>Read result from self.label file.  Raise ReadError if the file
+is not there.  If the file is corrupted or contains an error
+message from the calculation, a ReadError should also be
+raised.  In case of succes, these attributes must set:</p>
+<dl class="simple">
+<dt>atoms: Atoms object</dt><dd><p>The state of the atoms from last calculation.</p>
+</dd>
+<dt>parameters: Parameters object</dt><dd><p>The parameter dictionary.</p>
+</dd>
+<dt>results: dict</dt><dd><p>Calculated properties like energy and forces.</p>
+</dd>
+</dl>
+<p>The FileIOCalculator.read() method will typically read atoms
+and parameters and get the results dict by calling the
+read_results() method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Clear all information from old calculation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set" title="Permalink to this definition"></a></dt>
+<dd><p>Set parameters like set(key1=value1, key2=value2, …).</p>
+<p>A dictionary containing the parameters that have been changed
+is returned.</p>
+<p>Subclasses must implement a set() method that will look at the
+chaneged parameters and decide if a call to reset() is needed.
+If the changed parameters are harmless, like a change in
+verbosity, then there is no need to call reset().</p>
+<p>The special keyword ‘parameters’ can be used to read
+parameters from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.set_default_properties">
+<span class="sig-name descname"><span class="pre">set_default_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/potential.html#Potential.set_default_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.potential.Potential.set_default_properties" title="Permalink to this definition"></a></dt>
+<dd><p>Set the list of properties to be calculated by default</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="quippy.potential.Potential.set_label">
+<span class="sig-name descname"><span class="pre">set_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#quippy.potential.Potential.set_label" title="Permalink to this definition"></a></dt>
+<dd><p>Set label and convert label to directory and prefix.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p>label=’abc’: (directory=’.’, prefix=’abc’)</p></li>
+<li><p>label=’dir1/abc’: (directory=’dir1’, prefix=’abc’)</p></li>
+<li><p>label=None: (directory=’.’, prefix=None)</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="quippy.potential.Potential.default_parameters">
+<span class="sig-name descname"><span class="pre">default_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.default_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Default parameters</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="quippy.potential.Potential.discard_results_on_any_change">
+<span class="sig-name descname"><span class="pre">discard_results_on_any_change</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#quippy.potential.Potential.discard_results_on_any_change" title="Permalink to this definition"></a></dt>
+<dd><p>Whether we purge the results following any change in the set() method.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="quippy.potential.Potential.ignored_changes">
+<span class="sig-name descname"><span class="pre">ignored_changes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.10)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.ignored_changes" title="Permalink to this definition"></a></dt>
+<dd><p>Properties of Atoms which we ignore for the purposes of cache</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="quippy.potential.Potential.implemented_properties">
+<span class="sig-name descname"><span class="pre">implemented_properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['energy',</span> <span class="pre">'free_energy',</span> <span class="pre">'forces',</span> <span class="pre">'stress',</span> <span class="pre">'stresses',</span> <span class="pre">'energies']</span></em><a class="headerlink" href="#quippy.potential.Potential.implemented_properties" title="Permalink to this definition"></a></dt>
+<dd><p>Properties calculator can handle (energy, forces, …)</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
