@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 8ac2933 documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 2643d91 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
@@ -35,7 +35,7 @@
             <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                8ac2933
+                2643d91
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -148,7 +148,7 @@
 <section id="module-quippy.dictionary_module">
 <span id="fortran-dictionary-objects-for-storing-key-value-pairs"></span><h1>Fortran Dictionary objects for storing key/value pairs<a class="headerlink" href="#module-quippy.dictionary_module" title="Permalink to this heading"></a></h1>
 <p>Module dictionary_module</p>
-<p>Defined at Dictionary.fpp lines 127-2676</p>
+<p>Defined at Dictionary.fpp lines 127-2662</p>
 <p>A Dictionary object contains a list of keys(strings) and corresponding entries.
 Entries are a variable type, containing one of:
 ‘integer’, ‘real(dp)’, ‘complex(dp)’, ‘logical’, extendable_str
@@ -398,7 +398,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <td><p>Defined at Dictionary.fpp lines 268-282</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.deepcopy" title="quippy.dictionary_module.Dictionary.deepcopy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deepcopy</span></code></a>(self, from_[, error])</p></td>
-<td><p>Defined at Dictionary.fpp lines 2607-2613</p></td>
+<td><p>Defined at Dictionary.fpp lines 2593-2599</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.get_key" title="quippy.dictionary_module.Dictionary.get_key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_key</span></code></a>(self, i[, error])</p></td>
 <td><p>Defined at Dictionary.fpp lines 478-487</p></td>
@@ -410,10 +410,10 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <td><p>Defined at Dictionary.fpp lines 247-254</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.has_key" title="quippy.dictionary_module.Dictionary.has_key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_key</span></code></a>(self, key[, case_sensitive])</p></td>
-<td><p>Defined at Dictionary.fpp lines 2256-2261</p></td>
+<td><p>Defined at Dictionary.fpp lines 2242-2247</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.lookup_entry_i" title="quippy.dictionary_module.Dictionary.lookup_entry_i"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lookup_entry_i</span></code></a>(self, key[, case_sensitive])</p></td>
-<td><p>Defined at Dictionary.fpp lines 2232-2253</p></td>
+<td><p>Defined at Dictionary.fpp lines 2218-2239</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.print" title="quippy.dictionary_module.Dictionary.print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a>(self[, verbosity, file])</p></td>
 <td><p>Defined at Dictionary.fpp lines 412-420</p></td>
@@ -422,10 +422,10 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <td><p>Defined at Dictionary.fpp lines 395-410</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.read_string" title="quippy.dictionary_module.Dictionary.read_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_string</span></code></a>(self, str[, append, error])</p></td>
-<td><p>Defined at Dictionary.fpp lines 1827-1862</p></td>
+<td><p>Defined at Dictionary.fpp lines 1813-1848</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.remove_value" title="quippy.dictionary_module.Dictionary.remove_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_value</span></code></a>(self, key)</p></td>
-<td><p>Defined at Dictionary.fpp lines 1816-1825</p></td>
+<td><p>Defined at Dictionary.fpp lines 1802-1811</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.set_value" title="quippy.dictionary_module.Dictionary.set_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_value</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Defined at Dictionary.fpp lines 224-233</p></td>
@@ -434,13 +434,13 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <td><p>Defined at Dictionary.fpp lines 236-243</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.subset" title="quippy.dictionary_module.Dictionary.subset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subset</span></code></a>(self, keys, out[, case_sensitive, ...)</p></td>
-<td><p>Defined at Dictionary.fpp lines 2263-2282</p></td>
+<td><p>Defined at Dictionary.fpp lines 2249-2268</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.swap" title="quippy.dictionary_module.Dictionary.swap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">swap</span></code></a>(self, key1, key2[, case_sensitive, error])</p></td>
-<td><p>Defined at Dictionary.fpp lines 2385-2412</p></td>
+<td><p>Defined at Dictionary.fpp lines 2371-2398</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.write_string" title="quippy.dictionary_module.Dictionary.write_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_string</span></code></a>(self[, real_format, entry_sep, ...)</p></td>
-<td><p>Defined at Dictionary.fpp lines 2057-2135</p></td>
+<td><p>Defined at Dictionary.fpp lines 2043-2121</p></td>
 </tr>
 </tbody>
 </table>
@@ -470,7 +470,7 @@ _add_array_r2_a</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.deepcopy">
 <span class="sig-name descname"><span class="pre">deepcopy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.deepcopy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.deepcopy" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2607-2613</p>
+<dd><p>Defined at Dictionary.fpp lines 2593-2599</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -553,7 +553,7 @@ _get_value_dict</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.has_key">
 <span class="sig-name descname"><span class="pre">has_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.has_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.has_key" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2256-2261</p>
+<dd><p>Defined at Dictionary.fpp lines 2242-2247</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -574,7 +574,7 @@ _get_value_dict</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.lookup_entry_i">
 <span class="sig-name descname"><span class="pre">lookup_entry_i</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.lookup_entry_i"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.lookup_entry_i" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2232-2253</p>
+<dd><p>Defined at Dictionary.fpp lines 2218-2239</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -626,7 +626,7 @@ _get_value_dict</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.read_string">
 <span class="sig-name descname"><span class="pre">read_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">append</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.read_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.read_string" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 1827-1862</p>
+<dd><p>Defined at Dictionary.fpp lines 1813-1848</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -644,7 +644,7 @@ _get_value_dict</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.remove_value">
 <span class="sig-name descname"><span class="pre">remove_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.remove_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.remove_value" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 1816-1825</p>
+<dd><p>Defined at Dictionary.fpp lines 1802-1811</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -701,7 +701,7 @@ _set_value_pointer_r2</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.subset">
 <span class="sig-name descname"><span class="pre">subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_no_initialise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.subset" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2263-2282</p>
+<dd><p>Defined at Dictionary.fpp lines 2249-2268</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -719,7 +719,7 @@ _set_value_pointer_r2</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.swap">
 <span class="sig-name descname"><span class="pre">swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.swap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.swap" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2385-2412</p>
+<dd><p>Defined at Dictionary.fpp lines 2371-2398</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -737,7 +737,7 @@ _set_value_pointer_r2</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="quippy.dictionary_module.Dictionary.write_string">
 <span class="sig-name descname"><span class="pre">write_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">real_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry_sep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">char_a_sep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quote_char</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.write_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.write_string" title="Permalink to this definition"></a></dt>
-<dd><p>Defined at Dictionary.fpp lines 2057-2135</p>
+<dd><p>Defined at Dictionary.fpp lines 2043-2121</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>quippy.potential &mdash; quippy 8ac2933 documentation</title>
+  <title>quippy.potential &mdash; quippy 2643d91 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
@@ -33,7 +33,7 @@
             <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                8ac2933
+                2643d91
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -185,7 +185,7 @@
         <span class="c1"># from old</span>
         <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">args_str</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args_str</span> <span class="o">=</span> <span class="n">args_str</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calc_args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">calc_args</span> <span class="o">=</span> <span class="n">key_val_dict_to_str</span><span class="p">(</span><span class="n">calc_args</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">calc_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -195,6 +195,19 @@
         <span class="c1"># storage of non-standard results</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extra_results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;config&#39;</span><span class="p">:</span> <span class="p">{},</span>
                               <span class="s1">&#39;atoms&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+
+    <span class="c1"># These three functions below are left in only for purposebackward compatibility, </span>
+    <span class="c1"># we remember to clean it up if/when we decide ASE pre-3.23.0 isn&#39;t worth supporting.</span>
+    <span class="k">def</span> <span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_name</span><span class="p">()</span>
+    
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_</span> <span class="o">=</span> <span class="n">name</span>
 
 <div class="viewcode-block" id="Potential.calculate"><a class="viewcode-back" href="../../potential.html#quippy.potential.Potential.calculate">[docs]</a>    <span class="nd">@set_doc</span><span class="p">(</span><span class="n">quippy</span><span class="o">.</span><span class="n">potential_module</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
     <span class="sd">&quot;&quot;&quot;</span>

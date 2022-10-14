@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quippy library reference &mdash; quippy 8ac2933 documentation</title>
+  <title>Quippy library reference &mdash; quippy 2643d91 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
@@ -36,7 +36,7 @@
             <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                8ac2933
+                2643d91
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -148,6 +148,7 @@ classes and modules.</p>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.deactivate"><code class="docutils literal notranslate"><span class="pre">InOutput.deactivate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.mpi_all_inoutput"><code class="docutils literal notranslate"><span class="pre">InOutput.mpi_all_inoutput()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.parse_line"><code class="docutils literal notranslate"><span class="pre">InOutput.parse_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.print_inoutput"><code class="docutils literal notranslate"><span class="pre">InOutput.print_inoutput()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.print_mpi_id"><code class="docutils literal notranslate"><span class="pre">InOutput.print_mpi_id()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.read_ascii"><code class="docutils literal notranslate"><span class="pre">InOutput.read_ascii()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="system.html#quippy.system_module.InOutput.read_line"><code class="docutils literal notranslate"><span class="pre">InOutput.read_line()</span></code></a></li>
@@ -196,7 +197,6 @@ classes and modules.</p>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_array_command_arg"><code class="docutils literal notranslate"><span class="pre">get_array_command_arg()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_cmd_arg"><code class="docutils literal notranslate"><span class="pre">get_cmd_arg()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_complex_size"><code class="docutils literal notranslate"><span class="pre">get_complex_size()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_dp"><code class="docutils literal notranslate"><span class="pre">get_dp()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_env_var"><code class="docutils literal notranslate"><span class="pre">get_env_var()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_errorlog"><code class="docutils literal notranslate"><span class="pre">get_errorlog()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_exec_name"><code class="docutils literal notranslate"><span class="pre">get_exec_name()</span></code></a></li>
@@ -217,7 +217,6 @@ classes and modules.</p>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_print_normal"><code class="docutils literal notranslate"><span class="pre">get_print_normal()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_print_silent"><code class="docutils literal notranslate"><span class="pre">get_print_silent()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_print_verbose"><code class="docutils literal notranslate"><span class="pre">get_print_verbose()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_qp"><code class="docutils literal notranslate"><span class="pre">get_qp()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_quip_new_line"><code class="docutils literal notranslate"><span class="pre">get_quip_new_line()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_quippy_running"><code class="docutils literal notranslate"><span class="pre">get_quippy_running()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_ran_a"><code class="docutils literal notranslate"><span class="pre">get_ran_a()</span></code></a></li>
@@ -232,11 +231,15 @@ classes and modules.</p>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_trace_memory"><code class="docutils literal notranslate"><span class="pre">get_trace_memory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.get_traced_memory"><code class="docutils literal notranslate"><span class="pre">get_traced_memory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.increase_stack"><code class="docutils literal notranslate"><span class="pre">increase_stack()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.increase_to_multiple"><code class="docutils literal notranslate"><span class="pre">increase_to_multiple()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.int_format_length"><code class="docutils literal notranslate"><span class="pre">int_format_length()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.is_file_readable"><code class="docutils literal notranslate"><span class="pre">is_file_readable()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.is_open"><code class="docutils literal notranslate"><span class="pre">is_open()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.linebreak_string"><code class="docutils literal notranslate"><span class="pre">linebreak_string()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.link_run_directory"><code class="docutils literal notranslate"><span class="pre">link_run_directory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.lower_case"><code class="docutils literal notranslate"><span class="pre">lower_case()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.make_run_directory"><code class="docutils literal notranslate"><span class="pre">make_run_directory()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.mem_info"><code class="docutils literal notranslate"><span class="pre">mem_info()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.mpi_id"><code class="docutils literal notranslate"><span class="pre">mpi_id()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.mpi_n_procs"><code class="docutils literal notranslate"><span class="pre">mpi_n_procs()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="system.html#quippy.system_module.num_fields_in_string_simple"><code class="docutils literal notranslate"><span class="pre">num_fields_in_string_simple()</span></code></a></li>
