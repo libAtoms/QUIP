@@ -125,12 +125,19 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+          
+      - name: Build source tarball
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+           pip install git-archive-all
+           version=$(echo ${{ github.ref }} | sed -e 's|refs/tags/||')
+           git-archive-all QUIP-$version.tar.gz
 
-      - name: Release wheels
+      - name: Release wheels and source tarball
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: wheelhouse/*.whl
+          files: wheelhouse/*.whl QUIP-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
