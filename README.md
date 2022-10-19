@@ -146,10 +146,10 @@ much more widely used, but QUIP has a number of unique features:
 - Support for Gaussian Approximation Potentials (GAP) - [online docs](https://libatoms.github.io/GAP)
 - Does not assume minimum image convention, so interatomic potentials can
   have cutoffs that are larger than the periodic unit cell size
-  
+
 ## Binary Installation of QUIP and quippy
 
-Binary wheels for QUIP and the associated quippy Python bindings 
+Binary wheels for QUIP and the associated quippy Python bindings
 that provide interopability with the Atomic Simulation Environment (ASE) are
 available from the [Python package index](https://pypi.org/project/quippy-ase/)
 (PyPI) under the package name `quippy-ase`.
@@ -159,15 +159,15 @@ This means you can install the latest release with:
 pip install quippy-ase
 ```
 
-Installing via `pip` also makes the `quip` and `gap_fit` command line 
-programs available (providing the [directory that pip installs scripts 
+Installing via `pip` also makes the `quip` and `gap_fit` command line
+programs available (providing the [directory that pip installs scripts
 to](https://stackoverflow.com/questions/62162970/programmatically-determine-pip-user-install-location-scripts-directory/62167797#62167797) is on your `PATH`).
 
 Currently, wheels are available for `x86_64` architectures
 with Python 3.6+ on Mac OS X and glibc-based Linux distributions
 (e.g. Ubuntu, CentOS). The wheels are updated periodically
-using the [quippy-wheels](https://github.com/libAtoms/quippy-wheels) 
-repository using GitHub Actions CI. Please open 
+using the [quippy-wheels](https://github.com/libAtoms/quippy-wheels)
+repository using GitHub Actions CI. Please open
 [issues](https://github.com/libAtoms/quippy-wheels/issues)
 there if you have problems installing with `pip`.
 
@@ -189,6 +189,10 @@ to get up and running quickly.
       reference versions `libblas-dev` and `liblapack-dev` on Ubuntu
       12.04, and `mkl` 11.1 with `ifort`.
 
+    - MPI: To use the MPI parallelisatin of `gap_fit`, you need a
+      ScaLAPACK library, e.g. `libscalapack-openmpi` on Ubuntu, or
+      as part of the MKL.
+
 2.  Clone the QUIP repository from GitHub. The `--recursive` option
     brings in submodules automatically (If you don't do this, then
     you will need to run `git submodule update --init --recursive`
@@ -200,7 +204,7 @@ to get up and running quickly.
     One submodule is the GAP code, which can be found in `src/GAP`.
     Note that GAP is distributed under a diferent
     [license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md).
-    
+
     GAP is a machine learning method that uses Gaussian process
     regression, and needs large data files to run. You can find
     potentials that have been published as well as training data in
@@ -215,6 +219,9 @@ to get up and running quickly.
     compiler is being used, if you do not like the defaults. You may need to
     create your own `arch/Makefile.${QUIP_ARCH}` file based on an existing file for
     more exotic systems.
+
+    MPI: Some arch files already include adjustments for MPI use. Those
+    usually have `mpi` in their name, e.g. `linux_x86_64_gfortran_openmpi+openmp`.
 
 4.  Customise QUIP, set the maths libraries and provide linking options::
     ```bash
@@ -231,7 +238,12 @@ to get up and running quickly.
     If you later make significant changes to the configuration such as
     enabling or disabling tight-binding support you should force a
     full rebuild by doing a `make deepclean; make`.
-    
+
+    MPI: To use the MPI parallelisation of `gap_fit`, you have to add
+    your system library to the linking options, e.g. `-lscalapack` or
+    `-lscalapack-openmpi`, enable GAP support, enable QR decomposition,
+    and enable ScaLAPACK.
+
 5.  Compile all programs, modules and libraries::
     ```bash
     make
@@ -307,8 +319,8 @@ to get up and running quickly.
     (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of
     your virtual environment) _before_ building `quippy` (otherwise library
     versions may cause unexpected conflicts).
-    
-9.  To compile the Python wrappers (`quippy`), run::
+
+8.  To compile the Python wrappers (`quippy`), run::
     ```bash
     make quippy
     ```
@@ -326,23 +338,25 @@ to get up and running quickly.
     specific directory. `QUIPPY_INSTALL_OPTS` can also be set in the file
     `build/${QUIP_ARCH}/Makefile.inc`.
 
-10.  More details on the quippy installation process and troubleshooting for
+9.  More details on the quippy installation process and troubleshooting for
     common build problems are available in the
     [online documentation](http://libatoms.github.io/QUIP/).
 
-11.  To run the unit and regression tests, which depend on `quippy`::
+10.  To run the unit and regression tests, which depend on `quippy`::
     ```bash
     make test
     ```
-12.  To get back to a state near to a fresh clone, use
+
+11.  To get back to a state near to a fresh clone, use
     ```bash
     make distclean
     ```
-13. Some functionality is only available if you check out other
+
+12. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
     (DFTB parameters, TTM3f water model).
 
-14. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
+13. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
 
@@ -353,11 +367,11 @@ to get up and running quickly.
   ```bash
   cd src/GAP
   ```
-  ```bash 
-  git checkout <commit> 
+  ```bash
+  git checkout <commit>
   ```
-  OR 
-  ```bash 
+  OR
+  ```bash
   git checkout main
 
   ```
