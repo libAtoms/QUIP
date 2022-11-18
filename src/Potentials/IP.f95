@@ -127,7 +127,7 @@ module IP_module
 
 ! use system_module, only : dp
 use error_module
-use system_module, only : dp, inoutput, initialise, INPUT, print, print_warning, PRINT_VERBOSE, PRINT_ALWAYS, system_timer
+use system_module, only : dp, inoutput, initialise, INPUT, print, print_message, PRINT_VERBOSE, PRINT_ALWAYS, system_timer
 use units_module
 use mpi_context_module
 use extendable_str_module

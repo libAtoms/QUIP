@@ -119,7 +119,7 @@ module Potential_module
 
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
-   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
+   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_message, system_timer, system_abort, operator(//)
   use units_module, only : EV_A3_IN_GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
