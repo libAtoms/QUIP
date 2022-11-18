@@ -2418,7 +2418,14 @@ contains
 #endif
   end subroutine system_finalise
 
-  !% Print a warning message to log
+  !% Backward compatible (replaced with print_message) routine to print a warning message to log
+  subroutine print_warning(message)
+    character(*), intent(in) :: message
+    !write (0,*) 'WARNING: '//message
+    call print_message('WARNING', message)
+  end subroutine print_warning
+
+  !% Print a message to log
   subroutine print_message(message_type, message, verbosity)
     character(*), intent(in) :: message_type
     character(*), intent(in) :: message
