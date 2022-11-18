@@ -380,6 +380,7 @@ private
   public :: verbosity_push_decrement
   public :: verbosity_pop
   public :: print_message
+  public :: print_warning
   public :: pad
   public :: get_quippy_running
   public :: system_timer
