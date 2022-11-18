@@ -531,7 +531,8 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
      tag_start = index(param_str, '<')
      tag_end = index(param_str, '>')
      xml_label = param_str(tag_start+1:tag_end-1)
-     call print_warning('Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"')
+     call print_warning('Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"', &
+                        'INFO', PRINT_VERBOSE)
      my_args_str = 'Potential xml_label='//xml_label
   end if
 

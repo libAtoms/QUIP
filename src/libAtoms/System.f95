@@ -2419,10 +2419,14 @@ contains
   end subroutine system_finalise
 
   !% Print a warning message to log
-  subroutine print_warning(message)
+  subroutine print_warning(message, message_type, verbosity)
     character(*), intent(in) :: message
+    character(*), intent(in), optional :: message_type ! default 'WARNING'
+    integer, intent(in), optional :: verbosity ! default passed to print()
+    character(100) :: my_message_type
     !write (0,*) 'WARNING: '//message
-    call print('WARNING: '//message)
+    my_message_type = optional_default('WARNING', message_type)
+    call print(my_message_type // ': ' // message, verbosity=verbosity)
   end subroutine print_warning
 
   !% Take the values from 'date_and_time' and make a nice string
