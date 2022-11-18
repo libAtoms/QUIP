@@ -153,6 +153,8 @@ module Potential_module
   private
 #endif
 
+  logical, save :: printed_cutoff_warning = .false.
+
   !*************************************************************************
   !*
   !*  Potential header
@@ -816,7 +818,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale, do_calc_connect
     integer i
-    logical, save :: printed_cutoff_warning = .false.
 
     INIT_ERROR(error)
 
@@ -846,7 +847,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
        if (at%cutoff < cutoff(this)) then
           if (printed_cutoff_warning) call verbosity_push_decrement()
-          call print_message('WARNING', 'Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          ! print warning unless cutoff was 0.0 or -1, these are defaults for "no cutoff", so probably no warning needed
+          if (at%cutoff /= 0.0_dp .and. at%cutoff /= -1.0_dp) then
+             call print_message('WARNING', 'Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          end if
           if (printed_cutoff_warning) call verbosity_pop()
           printed_cutoff_warning = .true.
           call set_cutoff(at, cutoff(this))
@@ -1167,10 +1171,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
        ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
        if (at%cutoff < cutoff(this)) then
+          if (printed_cutoff_warning) call verbosity_push_decrement()
           ! print warning unless cutoff was 0.0 or -1, these are defaults for "no cutoff", so probably no warning needed
           if (at%cutoff /= 0.0_dp .and. at%cutoff /= -1.0_dp) then
              call print_message('WARNING', 'Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
           end if
+          if (printed_cutoff_warning) call verbosity_pop()
+          printed_cutoff_warning = .true.
           call set_cutoff(at, cutoff(this))
        end if
        call calc_connect(at)
