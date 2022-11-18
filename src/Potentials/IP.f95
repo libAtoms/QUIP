@@ -852,12 +852,12 @@ subroutine IP_Calc(this, at, energy, local_e, f, virial, local_virial, args_str,
           if (n_groups * pgroup_size == this%mpi_glob%n_procs) then
              do_auto_pgroups = .false.
           else
-             call print_warning("Invalid parallel group size specified: " // pgroup_size)
-             call print_warning("Falling back to automatic selection")
+             call print_message('WARNING', "Invalid parallel group size specified: " // pgroup_size)
+             call print_message('WARNING', "Falling back to automatic selection")
           endif
        else
-          call print_warning("Invalid parallel group size specified: " // pgroup_size)
-          call print_warning("Falling back to automatic selection")
+          call print_message('WARNING', "Invalid parallel group size specified: " // pgroup_size)
+          call print_message('WARNING', "Falling back to automatic selection")
        endif
     endif
     if (do_auto_pgroups) then

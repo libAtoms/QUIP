@@ -941,7 +941,7 @@ contains
 
     if(present(supercell_index_name)) then
        if( has_property(aa, trim(supercell_index_name)) ) then
-          call print_warning("supercell_index_name = "//trim(supercell_index_name)//" but it is already present in atoms object, it will be overwritten.")
+          call print_message('WARNING', "supercell_index_name = "//trim(supercell_index_name)//" but it is already present in atoms object, it will be overwritten.")
        endif
        call add_property(aa, trim(supercell_index_name), 0, n_cols=3, ptr2=supercell_index, error=error, overwrite=.true.)
        PASS_ERROR(error)

@@ -3418,7 +3418,7 @@ type(inoutput), optional :: debugfile
       endif
 
       if (do_ignore_silica_residue) then
-         call print_warning('Overriding min_images_only since ignore_silica_residue=T')
+         call print_message('WARNING', 'Overriding min_images_only since ignore_silica_residue=T')
          do_min_images_only = .true. !lam81
       end if
       ! start with core

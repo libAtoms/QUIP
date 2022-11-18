@@ -545,7 +545,7 @@ module Potential_Precon_Minim_module
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
-             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
           endif
        endif
@@ -777,7 +777,7 @@ module Potential_Precon_Minim_module
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
-             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
           endif
        endif
@@ -1001,7 +1001,7 @@ module Potential_Precon_Minim_module
 !       & (am(I)%external_pressure(3,1) .fne. 0.0_dp) .or. &
 !       & (am(I)%external_pressure(3,2) .fne. 0.0_dp) ) then
 !          if(trim(use_method) /= 'fire') then
-!             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+!             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
 !             use_method = 'fire'
 !          endif
 !       endif

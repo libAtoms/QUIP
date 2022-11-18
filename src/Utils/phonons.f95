@@ -322,7 +322,7 @@ contains
                r_ij = distance_min_image(at,i,j,shift=shift_ij)
                if( r_ij >= at_max_cutoff ) then
                   if( any(abs(fp0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) .or. any(abs(fm0(:,j,:,i)) > PHONON_FORCE_TOLERANCE) ) then
-                     call print_warning( "Phonon_fine_calc: in the supercell there are non-zero forces on atoms outside of the minimum-image cutoff sphere. &
+                     call print_message('WARNING',  "Phonon_fine_calc: in the supercell there are non-zero forces on atoms outside of the minimum-image cutoff sphere. &
                      Phonons computed in the fine supercell may be inaccurate. This problem may be eliminated by increasing phonon_supercell. &
                      Atoms in supercell: "//i//" and"//j//" from "//r_ij//" A from each other, forces are: "//reshape(fp0(:,j,:,i),(/9/)) &
                      //" "//reshape(fm0(:,j,:,i),(/9/)) )
@@ -344,7 +344,7 @@ contains
 
 ! Printing out the force constant and atomic positions in the phonopy format:
       if_my_phonopy_force_const_mat: if (my_phonopy_force_const_mat) then
-         call print_warning("phonopy_force_const_mat: This program prints out the force constants and atoms in the way phonopy 1.12.4 expects them. It is not guaranteed to work with other versions and does only support a single atomic species at a time (no alloys).")
+         call print_message('WARNING', "phonopy_force_const_mat: This program prints out the force constants and atoms in the way phonopy 1.12.4 expects them. It is not guaranteed to work with other versions and does only support a single atomic species at a time (no alloys).")
          !species_array = at_in%species
 !         do i_species = 2,len(at_in%species)
 !            print *, at_in%species(:,1)

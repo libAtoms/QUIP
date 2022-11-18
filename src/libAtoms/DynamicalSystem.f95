@@ -2576,7 +2576,7 @@ contains
 
      !Do nothing for i==j
      if (i==j .or. i == k .or. j == k) then
-        call print_warning('Constrain_bondanglecos: Tried to constrain bond angle cosine '//i//'--'//j//'--'//k)
+        call print_message('WARNING', 'Constrain_bondanglecos: Tried to constrain bond angle cosine '//i//'--'//j//'--'//k)
         return
      end if
 
@@ -2621,7 +2621,7 @@ contains
 
      !Do nothing for i==j
      if (i==j) then
-        call print_warning('Constrain_bondlength: Tried to constrain bond '//i//'--'//j)
+        call print_message('WARNING', 'Constrain_bondlength: Tried to constrain bond '//i//'--'//j)
         return
      end if
 
@@ -2672,7 +2672,7 @@ contains
 
      !Do nothing for i==j
      if (i==j) then
-        call print_warning('Constrain_bondlength_sq: Tried to constrain bond '//i//'--'//j)
+        call print_message('WARNING', 'Constrain_bondlength_sq: Tried to constrain bond '//i//'--'//j)
         return
      end if
 
@@ -2711,7 +2711,7 @@ contains
 
      !Do nothing for i==j
      if (i==j) then
-        call print_warning('Constrain_bondlength_dev_pow: Tried to constrain bond '//i//'--'//j)
+        call print_message('WARNING', 'Constrain_bondlength_dev_pow: Tried to constrain bond '//i//'--'//j)
         return
      end if
 
@@ -2766,7 +2766,7 @@ contains
 
      !Do nothing for i==j or i==k or j==k
      if (i==j.or.i==k.or.j==k) then
-        call print_warning('Constrain_bondlength_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
+        call print_message('WARNING', 'Constrain_bondlength_Diff: Tried to constrain bond '//i//'--'//j//'--'//k)
         return
      end if
 
@@ -3126,7 +3126,7 @@ contains
 
         !Give warning if they constraint is not being satisfied
         if (abs(this%constraint(new_constraint)%C) > CONSTRAINT_WARNING_TOLERANCE) &
-             call print_warning('ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
+             call print_message('WARNING', 'ds_add_constraint: This constraint ('//new_constraint//') is not currently obeyed: C = '// &
              round(this%constraint(new_constraint)%C,5))
 
         call constraint_store_gradient(this%constraint(new_constraint))

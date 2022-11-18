@@ -379,7 +379,7 @@ private
   public :: system_abort
   public :: verbosity_push_decrement
   public :: verbosity_pop
-  public :: print_warning
+  public :: print_message
   public :: pad
   public :: get_quippy_running
   public :: system_timer
@@ -776,7 +776,7 @@ contains
     else
        if (present(precision)) then
           if (precision > 99) then
-             call print_warning('Inoutput_Print_Real: Precision too high. Capping to 99.')
+             call print_message('WARNING', 'Inoutput_Print_Real: Precision too high. Capping to 99.')
              write(myformat,'(a)')'(f0.99)'
           else
              write(myformat,'(a,i0,a)')'(f0.',precision,')'
@@ -2419,15 +2419,13 @@ contains
   end subroutine system_finalise
 
   !% Print a warning message to log
-  subroutine print_warning(message, message_type, verbosity)
+  subroutine print_message(message_type, message, verbosity)
+    character(*), intent(in) :: message_type
     character(*), intent(in) :: message
-    character(*), intent(in), optional :: message_type ! default 'WARNING'
     integer, intent(in), optional :: verbosity ! default passed to print()
-    character(100) :: my_message_type
     !write (0,*) 'WARNING: '//message
-    my_message_type = optional_default('WARNING', message_type)
-    call print(my_message_type // ': ' // message, verbosity=verbosity)
-  end subroutine print_warning
+    call print(message_type // ': ' // message, verbosity=verbosity)
+  end subroutine print_message
 
   !% Take the values from 'date_and_time' and make a nice string
   function date_and_time_string(values)
@@ -2533,7 +2531,7 @@ contains
 !$  call print('libAtoms::Hello World: OpenMP parallelisation with '//OMP_get_num_threads()//' threads')
 !$  call get_env_var('OMP_STACKSIZE',omp_stacksize)
 !$  if(len_trim(omp_stacksize) == 0) then
-!$     call print_warning('libAtoms::Hello World: environment variable OMP_STACKSIZE not set explicitly. The default value - system and compiler dependent - may be too small for some applications.')
+!$     call print_message('WARNING', 'libAtoms::Hello World: environment variable OMP_STACKSIZE not set explicitly. The default value - system and compiler dependent - may be too small for some applications.')
 !$  else
 !$     call print('libAtoms::Hello World: OMP_STACKSIZE='//trim(omp_stacksize))
 !$  endif
@@ -2785,7 +2783,7 @@ contains
         ! Start a new timer
         stack_pos = stack_pos + 1
         if (stack_pos > TIMER_STACK) then
-           call print_warning('System_Timer: stack overflow, name ' // trim(name))
+           call print_message('WARNING', 'System_Timer: stack overflow, name ' // trim(name))
            return
         end if
 

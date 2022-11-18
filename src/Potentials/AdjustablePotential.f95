@@ -1255,7 +1255,7 @@ contains
     integer, intent(in) :: atom1,atom2,shift(3)
 
     if (atom1 == atom2) then
-       call print_warning('Adjustable_Potential_Add_Exclusion: Atom1 = Atom2')
+       call print_message('WARNING', 'Adjustable_Potential_Add_Exclusion: Atom1 = Atom2')
        return
     end if
 

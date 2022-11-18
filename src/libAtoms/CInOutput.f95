@@ -1076,8 +1076,8 @@ contains
 
      my_stat = fmd5sum(trim(filename)//C_NULL_CHAR,tmp_md5sum)
      if( my_stat /= 0 ) then
-        call print_warning("quip_md5sum: could not obtain md5 sum of "//trim(filename))
-        call print_warning("quip_md5sum: fmd5sum returned with code "//my_stat)
+        call print_message('WARNING', "quip_md5sum: could not obtain md5 sum of "//trim(filename))
+        call print_message('WARNING', "quip_md5sum: fmd5sum returned with code "//my_stat)
         md5sum = ""
      else
         md5sum = tmp_md5sum(1:32)
