@@ -16,10 +16,6 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '11.3'
-    
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -116,7 +112,7 @@ jobs:
              done
         env:
            CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
+           CIBW_BEFORE_ALL_MACOS: " sudo xcode-select --switch /Applications/Xcode_11.3.app && brew install gfortran && brew unlink gfortran && brew link gfortran"
           #  CIBW_BEFORE_ALL_LINUX: "which yum && yum install -y gcc-gfortran || apk add gfortran"
            CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
            
