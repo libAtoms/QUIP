@@ -367,7 +367,9 @@ private
   public :: string_to_real
   public :: string_to_int
   public :: string_to_logical
+  public :: upper_case
   public :: lower_case
+  public :: replace
   public :: split_string
   public :: parse_string
   public :: linebreak_string
@@ -3610,6 +3612,23 @@ end function pad
        end if
     end do
   end function lower_case
+
+  pure function replace(string, search, substitute) result(res)
+    character(len=*), intent(in) :: string
+    character(len=1), intent(in) :: search, substitute
+    character(len=len(string)) :: res
+
+    integer :: i
+
+    i = 1
+    do i = 1, len(string)
+      if (string(i:i) == search) then
+        res(i:i) = substitute
+      else
+        res(i:i) = string(i:i)
+      end if
+    end do
+  end function replace
 
   !% Print a progress bar
   subroutine progress(total,current, name)
