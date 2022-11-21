@@ -16,9 +16,13 @@ jobs:
       fail-fast: false
 
     steps:
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '11.3'
+    
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'      
+          submodules: 'recursive'
       
       - uses: actions/setup-python@v2
 
