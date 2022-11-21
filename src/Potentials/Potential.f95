@@ -119,7 +119,7 @@ module Potential_module
 
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
-   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
+   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push, verbosity_pop, print_message, system_timer, system_abort, operator(//)
   use units_module, only : EV_A3_IN_GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
@@ -152,6 +152,8 @@ module Potential_module
 #ifndef POTENTIAL_NO_DEFAULT_PRIVATE
   private
 #endif
+
+  logical, save :: printed_cutoff_warning = .false.
 
   !*************************************************************************
   !*
@@ -531,7 +533,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
      tag_start = index(param_str, '<')
      tag_end = index(param_str, '>')
      xml_label = param_str(tag_start+1:tag_end-1)
-     call print_warning('Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"')
+     call print_message('INFO', 'Potential_initialise using default init_args "Potential xml_label='//trim(xml_label)//'"', PRINT_VERBOSE)
      my_args_str = 'Potential xml_label='//xml_label
   end if
 
@@ -816,7 +818,6 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
     real(dp) :: r_scale, E_scale
     logical :: has_r_scale, has_E_scale, do_calc_connect
     integer i
-    logical, save :: printed_cutoff_warning = .false.
 
     INIT_ERROR(error)
 
@@ -846,7 +847,10 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
        if (at%cutoff < cutoff(this)) then
           if (printed_cutoff_warning) call verbosity_push_decrement()
-          call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          ! print warning unless cutoff was 0.0 or -1, these are defaults for "no cutoff", so probably no warning needed
+          if (at%cutoff /= 0.0_dp .and. at%cutoff /= -1.0_dp) then
+             call print_message('WARNING', 'Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+          end if
           if (printed_cutoff_warning) call verbosity_pop()
           printed_cutoff_warning = .true.
           call set_cutoff(at, cutoff(this))
@@ -1167,10 +1171,13 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        ! Also call calc_connect() to update connectivity information. This incurrs minimial overhead
        ! if at%cutoff_skin is non-zero, as the full rebuild will only be done when atoms have moved sufficiently
        if (at%cutoff < cutoff(this)) then
+          if (printed_cutoff_warning) call verbosity_push_decrement()
           ! print warning unless cutoff was 0.0 or -1, these are defaults for "no cutoff", so probably no warning needed
           if (at%cutoff /= 0.0_dp .and. at%cutoff /= -1.0_dp) then
-             call print_warning('Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
+             call print_message('WARNING', 'Potential_calc: cutoff of Atoms object ('//at%cutoff//') < Potential cutoff ('//cutoff(this)//') - increasing it now')
           end if
+          if (printed_cutoff_warning) call verbosity_pop()
+          printed_cutoff_warning = .true.
           call set_cutoff(at, cutoff(this))
        end if
        call calc_connect(at)
@@ -1206,7 +1213,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
-             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
           endif
        endif
@@ -1294,7 +1301,7 @@ recursive subroutine potential_initialise(this, args_str, pot1, pot2, param_str,
 
     integer :: d, i, k, n, alpha
 
-    call print_warning("TLV: potential_test_local_virial: your cell has to be big enough so no multiple images are used for any atom.")
+    call print_message('WARNING', "TLV: potential_test_local_virial: your cell has to be big enough so no multiple images are used for any atom.")
 
     if(at%cutoff < cutoff(this)) call set_cutoff(at,cutoff(this))
 

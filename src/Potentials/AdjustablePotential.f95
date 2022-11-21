@@ -65,7 +65,7 @@
 
 
 module AdjustablePotential_module
-  use system_module, only : dp, print, inoutput, PRINT_VERBOSE, PRINT_NERD, line, optional_default, mainlog, value, system_abort, reallocate, print_warning, operator(//), mpi_id, abort_on_mpi_error
+  use system_module, only : dp, print, inoutput, PRINT_VERBOSE, PRINT_NERD, line, optional_default, mainlog, value, system_abort, reallocate, print_message, operator(//), mpi_id, abort_on_mpi_error
   use linearalgebra_module
   use table_module
   use sparse_module
@@ -1255,7 +1255,7 @@ contains
     integer, intent(in) :: atom1,atom2,shift(3)
 
     if (atom1 == atom2) then
-       call print_warning('Adjustable_Potential_Add_Exclusion: Atom1 = Atom2')
+       call print_message('WARNING', 'Adjustable_Potential_Add_Exclusion: Atom1 = Atom2')
        return
     end if
 

@@ -472,7 +472,7 @@ contains
        F_tmp = lattice_p .mult. this%lattice0_inv
        F_tmp = 0.5_dp*(F_tmp + transpose(F_tmp))
        if (abs(deviation_from_identity(F_tmp) - this%F_tmp_norm) > 5.0e-2) then
-         call print_warning("barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
+         call print_message('WARNING', "barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
        endif
        this%F_tmp_norm = deviation_from_identity(F_tmp)
        lattice_p = F_tmp .mult. this%lattice0
@@ -520,7 +520,7 @@ contains
         F_tmp = lattice_p .mult. this%lattice0_inv
         F_tmp = 0.5_dp*(F_tmp + transpose(F_tmp))
         if (abs(deviation_from_identity(F_tmp) - this%F_tmp_norm) > 5.0e-2) then
-           call print_warning("barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
+           call print_message('WARNING', "barostat transformation projecting away rotations is very different from previous one.  Did the lattice change?")
         endif
         this%F_tmp_norm = deviation_from_identity(F_tmp)
         lattice_p = F_tmp .mult. this%lattice0

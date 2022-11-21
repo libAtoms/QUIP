@@ -6,7 +6,7 @@ module Potential_Precon_Minim_module
   use Potential_Module, only : Potential, potential_minimise, energy_func, gradient_func, cutoff, max_rij_change, calc, print_hook, constrain_virial, fix_atoms_deform_grad, pack_pos_dg, unpack_pos_dg, prep_atoms_deform_grad
   use error_module
   use system_module, only : dp, inoutput, print, PRINT_ALWAYS, PRINT_NORMAL, PRINT_VERBOSE, PRINT_NERD, initialise, finalise, INPUT, &
-   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push,verbosity_push_increment, verbosity_pop, print_warning, system_timer, system_abort, operator(//)
+   optional_default, current_verbosity, mainlog, round, verbosity_push_decrement, verbosity_push,verbosity_push_increment, verbosity_pop, print_message, system_timer, system_abort, operator(//)
   use units_module, only : EV_A3_IN_GPA
   use periodictable_module, only :  ElementCovRad, ElementMass
   use extendable_str_module, only : extendable_str, initialise, read, string, finalise
@@ -545,7 +545,7 @@ module Potential_Precon_Minim_module
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
-             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
           endif
        endif
@@ -777,7 +777,7 @@ module Potential_Precon_Minim_module
        & (am%external_pressure(3,1) .fne. 0.0_dp) .or. &
        & (am%external_pressure(3,2) .fne. 0.0_dp) ) then
           if(trim(use_method) /= 'fire') then
-             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
              use_method = 'fire'
           endif
        endif
@@ -1001,7 +1001,7 @@ module Potential_Precon_Minim_module
 !       & (am(I)%external_pressure(3,1) .fne. 0.0_dp) .or. &
 !       & (am(I)%external_pressure(3,2) .fne. 0.0_dp) ) then
 !          if(trim(use_method) /= 'fire') then
-!             call print_warning('Anisotrpic pressure is being used. Switching to fire_minim.')
+!             call print_message('WARNING', 'Anisotrpic pressure is being used. Switching to fire_minim.')
 !             use_method = 'fire'
 !          endif
 !       endif

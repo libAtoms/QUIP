@@ -34,7 +34,7 @@
 module Multipoles_module
 
 use error_module
-!use system_module, only : dp, print, inoutput, optional_default, system_timer, operator(//), print_warning
+!use system_module, only : dp, print, inoutput, optional_default, system_timer, operator(//), print_message
 use system_module
 use cinoutput_module
 use units_module

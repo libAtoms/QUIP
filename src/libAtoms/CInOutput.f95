@@ -39,7 +39,7 @@ module CInOutput_module
   use linearalgebra_module, only: print, operator(.mult.), operator(.fne.)
   use Extendable_str_module, only: Extendable_str, operator(//), string, concat, assignment(=)
   use System_module, only: dp, current_verbosity, optional_default, s2a, a2s, parse_string, print, &
-       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, INPUT, OUTPUT, INOUT, lower_case, print_warning
+       PRINT_NORMAL, PRINT_VERBOSE, PRINT_ALWAYS, PRINT_NERD, INPUT, OUTPUT, INOUT, lower_case, print_message
   use PeriodicTable_module, only: atomic_number_from_symbol, ElementName
   use Table_module, only: Table, allocate, append, TABLE_STRING_LENGTH
   use Dictionary_module, only: Dictionary, has_key, get_value, set_value, print, subset, swap, lookup_entry_i, &
@@ -1076,8 +1076,8 @@ contains
 
      my_stat = fmd5sum(trim(filename)//C_NULL_CHAR,tmp_md5sum)
      if( my_stat /= 0 ) then
-        call print_warning("quip_md5sum: could not obtain md5 sum of "//trim(filename))
-        call print_warning("quip_md5sum: fmd5sum returned with code "//my_stat)
+        call print_message('WARNING', "quip_md5sum: could not obtain md5 sum of "//trim(filename))
+        call print_message('WARNING', "quip_md5sum: fmd5sum returned with code "//my_stat)
         md5sum = ""
      else
         md5sum = tmp_md5sum(1:32)

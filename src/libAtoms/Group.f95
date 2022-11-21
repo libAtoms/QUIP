@@ -695,7 +695,7 @@ contains
         do i = 1, size(lookup)
            if (lookup(i) == ungrouped) then
               write(line,'(a,i0,a)')'Groups_Create_Lookup: Atom ',i,' is ungrouped'
-              call print_warning(line)
+              call print_message('WARNING', line)
               ok = .false.
            end if
         end do
