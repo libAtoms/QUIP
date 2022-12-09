@@ -4,6 +4,7 @@ module kind_module
 
   integer, parameter, public :: isp = selected_int_kind(9)
   integer, parameter, public :: idp = selected_int_kind(18)
+  integer, parameter, public :: iwp = kind(isp)
 
 #ifdef QUAD_PRECISION
   integer, parameter, public :: dp = 16

@@ -67,7 +67,7 @@ private
 
   logical, public :: system_use_fortran_random = .false.
 
-  public :: isp, idp, dp, qp
+  public :: isp, idp, iwp, dp, qp
 
   character, public :: quip_new_line
 
