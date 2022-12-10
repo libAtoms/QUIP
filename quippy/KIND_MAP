@@ -10,6 +10,7 @@
  'complex' : {'8':   'complex_double',
               'dp':  'complex_double'},
  'integer' : {'':       'int',
+             'isp':     'int',
              '8':      'long_long',
              'idp':     'long_long',
              'c_intptr_t': 'long_long',
