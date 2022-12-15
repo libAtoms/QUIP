@@ -208,7 +208,7 @@ to get up and running quickly.
     GAP is a machine learning method that uses Gaussian process
     regression, and needs large data files to run. You can find
     potentials that have been published as well as training data in
-    our [data repository](http://www.libatoms.org/Home/DataRepository), see also the [online docs](https://libatoms.github.io/GAP).
+    our [data repository](https://libatoms.github.io/GAP/data.html), see also the [online docs](https://libatoms.github.io/GAP).
 
 3.  Decide your architecture by looking in the `arch/` directory, and
     define an environmental variable `QUIP_ARCH`, e.g.::
