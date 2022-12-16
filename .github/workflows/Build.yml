@@ -51,7 +51,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
             openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
-            python-numpy
+            python3-numpy
 
           if [[ "$HAVE_SCALAPACK" == 1 ]]; then
             sudo apt-get install -y libscalapack-openmpi-dev

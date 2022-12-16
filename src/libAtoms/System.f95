@@ -67,7 +67,7 @@ private
 
   logical, public :: system_use_fortran_random = .false.
 
-  public :: isp, idp, dp, qp
+  public :: isp, idp, iwp, dp, qp
 
   character, public :: quip_new_line
 
@@ -1934,7 +1934,7 @@ contains
   end function string_cat_logical_array
 
   elemental function int_format_length_isp(i) result(len)
-    integer, intent(in)::i
+    integer(isp), intent(in)::i
     integer::len
     len = max(1,(-sign(1, i)+1)/2 + ceiling(log10(abs(real(i,dp))+0.01_dp)))
   end function int_format_length_isp
@@ -1947,7 +1947,7 @@ contains
 
   function string_cat_isp(string, int) result(res)
     character(*),      intent(in)  :: string
-    integer,           intent(in)  :: int
+    integer(isp),           intent(in)  :: int
     ! below we work out the exact length of the resultant string
     character(len(string)+int_format_length(int)) :: res
 
