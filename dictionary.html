@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 74517d2 documentation</title>
+  <title>Fortran Dictionary objects for storing key/value pairs &mdash; quippy 55ab5a3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
@@ -18,7 +18,6 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -35,7 +34,7 @@
             <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                74517d2
+                55ab5a3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -53,35 +52,7 @@
 <li class="toctree-l2"><a class="reference internal" href="quippy.html#high-level-python-api">High-level Python API</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="quippy.html#low-level-api-fortran-wrappers">Low-level API (Fortran wrappers)</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="system.html">Low-level system routines</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Fortran Dictionary objects for storing key/value pairs</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.DictData"><code class="docutils literal notranslate"><span class="pre">DictData</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.DictEntry"><code class="docutils literal notranslate"><span class="pre">DictEntry</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.Dictionary"><code class="docutils literal notranslate"><span class="pre">Dictionary</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.c_dictionary_ptr_type"><code class="docutils literal notranslate"><span class="pre">c_dictionary_ptr_type</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_c_key_len"><code class="docutils literal notranslate"><span class="pre">get_c_key_len()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_dict_n_fields"><code class="docutils literal notranslate"><span class="pre">get_dict_n_fields()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_property_int"><code class="docutils literal notranslate"><span class="pre">get_property_int()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_property_logical"><code class="docutils literal notranslate"><span class="pre">get_property_logical()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_property_real"><code class="docutils literal notranslate"><span class="pre">get_property_real()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_property_str"><code class="docutils literal notranslate"><span class="pre">get_property_str()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_string_length"><code class="docutils literal notranslate"><span class="pre">get_string_length()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_char"><code class="docutils literal notranslate"><span class="pre">get_t_char()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_char_a"><code class="docutils literal notranslate"><span class="pre">get_t_char_a()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_complex"><code class="docutils literal notranslate"><span class="pre">get_t_complex()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_complex_a"><code class="docutils literal notranslate"><span class="pre">get_t_complex_a()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_data"><code class="docutils literal notranslate"><span class="pre">get_t_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_dict"><code class="docutils literal notranslate"><span class="pre">get_t_dict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_integer"><code class="docutils literal notranslate"><span class="pre">get_t_integer()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_integer_a"><code class="docutils literal notranslate"><span class="pre">get_t_integer_a()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_integer_a2"><code class="docutils literal notranslate"><span class="pre">get_t_integer_a2()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_logical"><code class="docutils literal notranslate"><span class="pre">get_t_logical()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_logical_a"><code class="docutils literal notranslate"><span class="pre">get_t_logical_a()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_none"><code class="docutils literal notranslate"><span class="pre">get_t_none()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_real"><code class="docutils literal notranslate"><span class="pre">get_t_real()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_real_a"><code class="docutils literal notranslate"><span class="pre">get_t_real_a()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.dictionary_module.get_t_real_a2"><code class="docutils literal notranslate"><span class="pre">get_t_real_a2()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Fortran Dictionary objects for storing key/value pairs</a></li>
 </ul>
 </li>
 </ul>
@@ -159,7 +130,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 152-153</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><a class="reference internal" href="#quippy.dictionary_module.DictData.d" title="quippy.dictionary_module.DictData.d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d</span></code></a></dt><dd><p>Element d ftype=integer pytype=int</p>
 </dd>
@@ -182,7 +153,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <p>Defined at Dictionary.fpp lines 156-174</p>
 <p>OMIT</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><a class="reference internal" href="#quippy.dictionary_module.DictEntry.c" title="quippy.dictionary_module.DictEntry.c"><code class="xref py py-obj docutils literal notranslate"><span class="pre">c</span></code></a></dt><dd><p>Element c ftype=complex(dp) pytype=complex</p>
 </dd>
@@ -221,6 +192,10 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 </dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.DictEntry.print" title="quippy.dictionary_module.DictEntry.print"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print</span></code></a>(self, key[, verbosity, file])</p></td>
 <td><p>Defined at Dictionary.fpp lines 335-393</p></td>
@@ -232,7 +207,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#DictEntry.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.DictEntry.print" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 335-393</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictentry</span></dt><dd></dd>
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
@@ -380,7 +355,7 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 <li><p>Arbitrary data, via Fortran <code class="docutils literal notranslate"><span class="pre">transform()</span></code> intrinsic</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><a class="reference internal" href="#quippy.dictionary_module.Dictionary.cache_invalid" title="quippy.dictionary_module.Dictionary.cache_invalid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_invalid</span></code></a></dt><dd><p>Element cache_invalid ftype=integer  pytype=int</p>
 </dd>
@@ -393,6 +368,10 @@ or a 1-D array of any of those. 2-D arrays of integers and reals are also suppor
 </dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.dictionary_module.Dictionary.add_array" title="quippy.dictionary_module.Dictionary.add_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_array</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Defined at Dictionary.fpp lines 268-282</p></td>
@@ -472,7 +451,7 @@ _add_array_r2_a</p>
 <span class="sig-name descname"><span class="pre">deepcopy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.deepcopy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.deepcopy" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2593-2599</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>from_</strong><span class="classifier">Dictionary</span></dt><dd></dd>
@@ -488,14 +467,14 @@ _add_array_r2_a</p>
 <span class="sig-name descname"><span class="pre">get_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_key" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 478-487</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>i</strong><span class="classifier">int</span></dt><dd></dd>
 <dt><strong>error</strong><span class="classifier">int</span></dt><dd></dd>
 </dl>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
 </dl>
@@ -508,7 +487,7 @@ _add_array_r2_a</p>
 <span class="sig-name descname"><span class="pre">get_type_and_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thesize2</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.get_type_and_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.get_type_and_size" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 489-502</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
@@ -516,7 +495,7 @@ _add_array_r2_a</p>
 <dt><strong>error</strong><span class="classifier">int</span></dt><dd></dd>
 </dl>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>type_bn</strong><span class="classifier">int</span></dt><dd></dd>
 <dt><strong>thesize</strong><span class="classifier">int</span></dt><dd></dd>
@@ -555,14 +534,14 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">has_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.has_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.has_key" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2242-2247</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
 <dt><strong>case_sensitive</strong><span class="classifier">bool</span></dt><dd></dd>
 </dl>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>dictionary_has_key</strong><span class="classifier">bool</span></dt><dd></dd>
 <dt>Return true if ‘key’ is in Dictionary or false if not</dt><dd></dd>
@@ -576,14 +555,14 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">lookup_entry_i</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.lookup_entry_i"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.lookup_entry_i" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2218-2239</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
 <dt><strong>case_sensitive</strong><span class="classifier">bool</span></dt><dd></dd>
 </dl>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>lookup_entry_i</strong><span class="classifier">int</span></dt><dd></dd>
 <dt>OMIT</dt><dd></dd>
@@ -597,7 +576,7 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 412-420</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>verbosity</strong><span class="classifier">int</span></dt><dd></dd>
@@ -613,7 +592,7 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">print_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.print_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.print_keys" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 395-410</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>verbosity</strong><span class="classifier">int</span></dt><dd></dd>
@@ -628,7 +607,7 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">read_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">append</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.read_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.read_string" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 1813-1848</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>str</strong><span class="classifier">str</span></dt><dd></dd>
@@ -646,7 +625,7 @@ _get_value_dict</p>
 <span class="sig-name descname"><span class="pre">remove_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.remove_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.remove_value" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 1802-1811</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>key</strong><span class="classifier">str</span></dt><dd></dd>
@@ -703,7 +682,7 @@ _set_value_pointer_r2</p>
 <span class="sig-name descname"><span class="pre">subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_no_initialise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.subset" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2249-2268</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>keys</strong><span class="classifier">str array</span></dt><dd></dd>
@@ -721,7 +700,7 @@ _set_value_pointer_r2</p>
 <span class="sig-name descname"><span class="pre">swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.swap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.swap" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2371-2398</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>key1</strong><span class="classifier">str</span></dt><dd></dd>
@@ -739,7 +718,7 @@ _set_value_pointer_r2</p>
 <span class="sig-name descname"><span class="pre">write_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">real_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry_sep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">char_a_sep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quote_char</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/quippy/dictionary_module.html#Dictionary.write_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#quippy.dictionary_module.Dictionary.write_string" title="Permalink to this definition"></a></dt>
 <dd><p>Defined at Dictionary.fpp lines 2043-2121</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Dictionary</span></dt><dd></dd>
 <dt><strong>real_format</strong><span class="classifier">str</span></dt><dd><p>Output format for reals, default is ‘f9.3’</p>
@@ -753,7 +732,7 @@ _set_value_pointer_r2</p>
 <dt><strong>error</strong><span class="classifier">int</span></dt><dd></dd>
 </dl>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>dictionary_write_string</strong><span class="classifier">str</span></dt><dd></dd>
 <dt>Write a string representation of this dictionary</dt><dd></dd>
@@ -794,7 +773,7 @@ _set_value_pointer_r2</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FortranDerivedType</span></code></p>
 <p>Defined at Dictionary.fpp lines 200-201</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><a class="reference internal" href="#quippy.dictionary_module.c_dictionary_ptr_type.p" title="quippy.dictionary_module.c_dictionary_ptr_type.p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">p</span></code></a></dt><dd><p>Element p ftype=type(dictionary) pytype=Dictionary</p>
 </dd>

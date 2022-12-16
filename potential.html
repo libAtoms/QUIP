@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Potential objects &mdash; quippy 74517d2 documentation</title>
+  <title>Potential objects &mdash; quippy 55ab5a3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
@@ -18,7 +18,6 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -36,7 +35,7 @@
             <img src="_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                74517d2
+                55ab5a3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -52,10 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="quippy.html">Quippy library reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="quippy.html#high-level-python-api">High-level Python API</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Potential objects</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#quippy.potential.Potential"><code class="docutils literal notranslate"><span class="pre">Potential</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Potential objects</a></li>
 <li class="toctree-l3"><a class="reference internal" href="descriptors.html">Descriptors for atomic environments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dynamicalsystem.html">Molecular Dynamics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="convert.html">Conversion between quippy and ASE</a></li>
@@ -140,6 +136,10 @@ describing the type of potential, and an XML formatted string
 <cite>param_str</cite> giving the parameters.</p>
 <p>Types of Potential:</p>
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 74%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><cite>args_str</cite> prefix</p></th>
 <th class="head"><p>Description</p></th>
@@ -169,6 +169,10 @@ describing the type of potential, and an XML formatted string
 <p>Types of interatomic potential available:</p>
 <p>Types of tight binding potential available:</p>
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 72%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><cite>args_str</cite> prefix</p></th>
 <th class="head"><p>Description</p></th>
@@ -195,6 +199,10 @@ found in the <a class="reference external" href="https://github.com/libAtoms/QUI
 <p>directory of the QUIP git repository.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#quippy.potential.Potential.get_default_properties" title="quippy.potential.Potential.get_default_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_properties</span></code></a>()</p></td>
 <td><p>Get the list of properties to be calculated by default</p></td>
@@ -262,7 +270,7 @@ stresses; this can either be a scalar or the name of an array in
 <p>Non-standard calculation results (such as <cite>gap_local_variance</cite>) are stored in
 <cite>self.extra_results</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>this</strong><span class="classifier">Potential</span></dt><dd></dd>
 <dt><strong>at</strong><span class="classifier">Atoms</span></dt><dd></dd>
@@ -432,7 +440,7 @@ parameters from a file.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="quippy.potential.Potential.default_parameters">
-<span class="sig-name descname"><span class="pre">default_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.11)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.default_parameters" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">default_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.default_parameters" title="Permalink to this definition"></a></dt>
 <dd><p>Default parameters</p>
 </dd></dl>
 
@@ -444,13 +452,13 @@ parameters from a file.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="quippy.potential.Potential.ignored_changes">
-<span class="sig-name descname"><span class="pre">ignored_changes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Set" title="(in Python v3.11)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.ignored_changes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ignored_changes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#quippy.potential.Potential.ignored_changes" title="Permalink to this definition"></a></dt>
 <dd><p>Properties of Atoms which we ignore for the purposes of cache</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="quippy.potential.Potential.implemented_properties">
-<span class="sig-name descname"><span class="pre">implemented_properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['energy',</span> <span class="pre">'free_energy',</span> <span class="pre">'forces',</span> <span class="pre">'stress',</span> <span class="pre">'stresses',</span> <span class="pre">'energies']</span></em><a class="headerlink" href="#quippy.potential.Potential.implemented_properties" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">implemented_properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['energy',</span> <span class="pre">'free_energy',</span> <span class="pre">'forces',</span> <span class="pre">'stress',</span> <span class="pre">'stresses',</span> <span class="pre">'energies']</span></em><a class="headerlink" href="#quippy.potential.Potential.implemented_properties" title="Permalink to this definition"></a></dt>
 <dd><p>Properties calculator can handle (energy, forces, …)</p>
 </dd></dl>
 
