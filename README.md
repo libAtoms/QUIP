@@ -149,7 +149,8 @@ much more widely used, but QUIP has a number of unique features:
 
 ## Binary Installation of QUIP and quippy
 
-Binary wheels for QUIP and the associated quippy Python bindings
+Binary 
+for QUIP and the associated quippy Python bindings
 that provide interopability with the Atomic Simulation Environment (ASE) are
 available from the [Python package index](https://pypi.org/project/quippy-ase/)
 (PyPI) under the package name `quippy-ase`.
@@ -164,12 +165,10 @@ programs available (providing the [directory that pip installs scripts
 to](https://stackoverflow.com/questions/62162970/programmatically-determine-pip-user-install-location-scripts-directory/62167797#62167797) is on your `PATH`).
 
 Currently, wheels are available for `x86_64` architectures
-with Python 3.6+ on Mac OS X and glibc-based Linux distributions
-(e.g. Ubuntu, CentOS). The wheels are updated periodically
-using the [quippy-wheels](https://github.com/libAtoms/quippy-wheels)
-repository using GitHub Actions CI. Please open
-[issues](https://github.com/libAtoms/quippy-wheels/issues)
-there if you have problems installing with `pip`.
+with Python 3.6+ on macOS and glibc-based Linux distributions
+(e.g. Ubuntu, CentOS) and for macOS arm64. The wheels are updated periodically
+using GitHub Actions CI. Please open [issues](https://github.com/libAtoms/QUIP/issues)
+here if you have problems installing with `pip`.
 
 ## Precompiled Containers
 
