@@ -238,7 +238,7 @@ ENV LAMMPS_PATH /opt/lammps
 ENV PATH ${LAMMPS_PATH}/src/:${PATH}
 
 # Build LAMMPS from github - faster and more reliable than from the website
-RUN git clone --branch stable --depth 1 https://github.com/lammps/lammps.git .
+RUN git clone --branch stable_29Sep2021_update3 --depth 1 https://github.com/lammps/lammps.git .
 
 # Build `shlib` objects first so they have `-fPIC` then symlink the directory
 # so they can be reused to build the binaries halving the compilation time.
@@ -260,8 +260,9 @@ RUN cd src \
 #####################################
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh
-RUN chmod u+r rust.sh
+RUN chmod u+rx rust.sh
 RUN ./rust.sh -y
+ENV PATH /root/.cargo/bin:$PATH
 
 RUN pip install git+https://github.com/Luthaf/rascaline.git
 
