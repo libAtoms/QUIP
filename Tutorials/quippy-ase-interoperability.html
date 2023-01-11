@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interoperability with Atomic Simulation Environment &mdash; quippy 55ab5a3 documentation</title>
+  <title>Interoperability with Atomic Simulation Environment &mdash; quippy 88a6240 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -35,7 +35,7 @@
             <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                55ab5a3
+                88a6240
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -136,35 +136,35 @@ using ASE as <em>lingua franca</em></p></li>
 <li><p>Elastic constant fitting routine from <code class="docutils literal notranslate"><span class="pre">matscipy</span></code>, internal
 relaxations with <code class="docutils literal notranslate"><span class="pre">ASE</span></code> FIRE minimiser</p></li>
 </ul>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%pylab inline
-from ase.build import bulk
-from ase.optimize import BFGS
-from ase.optimize.precon import PreconLBFGS
-from quippy.potential import Potential
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pylab</span> inline
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">BFGS</span>
+<span class="kn">from</span> <span class="nn">ase.optimize.precon</span> <span class="kn">import</span> <span class="n">PreconLBFGS</span>
+<span class="kn">from</span> <span class="nn">quippy.potential</span> <span class="kn">import</span> <span class="n">Potential</span>
 
-si = bulk(&#39;Si&#39;, a=5.44, cubic=True)
-sw_pot = Potential(&#39;IP SW&#39;,
-                   param_filename=&#39;../../share/Parameters/ip.parms.SW.xml&#39;)
-si.set_calculator(sw_pot)
-e_bulk_per_atom = si.get_potential_energy()/len(si)
+<span class="n">si</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Si&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">5.44</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sw_pot</span> <span class="o">=</span> <span class="n">Potential</span><span class="p">(</span><span class="s1">&#39;IP SW&#39;</span><span class="p">,</span>
+                   <span class="n">param_filename</span><span class="o">=</span><span class="s1">&#39;../../share/Parameters/ip.parms.SW.xml&#39;</span><span class="p">)</span>
+<span class="n">si</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">sw_pot</span><span class="p">)</span>
+<span class="n">e_bulk_per_atom</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">si</span><span class="p">)</span>
 
-# call general purpose elastic constants calculator
-#   using ASE Atoms and QUIP Potential
-from matscipy.elasticity import fit_elastic_constants
-Cij = fit_elastic_constants(si, optimizer=BFGS,
-                            symmetry=&#39;cubic&#39;, logfile=&#39;-&#39;)
-vac1 = si.copy()
-vac1 *= (3, 3, 3)
-half_cell = np.diag(vac1.cell)/2.
-vac_atom = ((vac1.positions - half_cell)**2).sum(axis=1).argmin()
-del vac1[vac_atom]
+<span class="c1"># call general purpose elastic constants calculator</span>
+<span class="c1">#   using ASE Atoms and QUIP Potential</span>
+<span class="kn">from</span> <span class="nn">matscipy.elasticity</span> <span class="kn">import</span> <span class="n">fit_elastic_constants</span>
+<span class="n">Cij</span> <span class="o">=</span> <span class="n">fit_elastic_constants</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">BFGS</span><span class="p">,</span>
+                            <span class="n">symmetry</span><span class="o">=</span><span class="s1">&#39;cubic&#39;</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+<span class="n">vac1</span> <span class="o">=</span> <span class="n">si</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">vac1</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">half_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">vac1</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+<span class="n">vac_atom</span> <span class="o">=</span> <span class="p">((</span><span class="n">vac1</span><span class="o">.</span><span class="n">positions</span> <span class="o">-</span> <span class="n">half_cell</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="k">del</span> <span class="n">vac1</span><span class="p">[</span><span class="n">vac_atom</span><span class="p">]</span>
 
-vac1.set_calculator(sw_pot)
-vac1.rattle(0.01)
-opt = PreconLBFGS(vac1) # big cell, use preconditioned minimiser
-opt.run(fmax=1e-6)
-e_vac = vac1.get_potential_energy() - e_bulk_per_atom*len(vac1)
-print(&#39;SW vacancy formation energy&#39;, e_vac, &#39;eV&#39;)
+<span class="n">vac1</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">sw_pot</span><span class="p">)</span>
+<span class="n">vac1</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">PreconLBFGS</span><span class="p">(</span><span class="n">vac1</span><span class="p">)</span> <span class="c1"># big cell, use preconditioned minimiser</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="n">e_vac</span> <span class="o">=</span> <span class="n">vac1</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">e_bulk_per_atom</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">vac1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SW vacancy formation energy&#39;</span><span class="p">,</span> <span class="n">e_vac</span><span class="p">,</span> <span class="s1">&#39;eV&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Populating</span> <span class="n">the</span> <span class="n">interactive</span> <span class="n">namespace</span> <span class="kn">from</span> <span class="nn">numpy</span> <span class="ow">and</span> <span class="n">matplotlib</span>
