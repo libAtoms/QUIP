@@ -43,7 +43,9 @@ fi
 cp ${BUILDDIR}/../../README.md ${BUILDDIR}
 cp ${BUILDDIR}/../../quippy/setup.py ${BUILDDIR}
 
-# include `quip` and `gap_fit` command line tools and `libquip.a`
+# include desired command line tools and `libquip.a`
 cp ${BUILDDIR}/quip ${BUILDDIR}/quippy
 cp ${BUILDDIR}/gap_fit ${BUILDDIR}/quippy/
+cp ${BUILDDIR}/md ${BUILDDIR}/quippy/
+cp ${BUILDDIR}/vasp_driver ${BUILDDIR}/quippy/
 cp ${BUILDDIR}/libquip.a ${BUILDDIR}/quippy/
