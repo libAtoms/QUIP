@@ -3,6 +3,7 @@ on:
     branches: [ public ]
     tags:
        - v*
+  pull_request:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -21,7 +22,8 @@ jobs:
           submodules: 'recursive'
       
       - uses: actions/setup-python@v4
-
+        with:
+          python-version: '3.x'
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.9.0
      
