@@ -20,7 +20,7 @@ jobs:
         with:
           submodules: 'recursive'
       
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.9.0
@@ -122,7 +122,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 15
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
           
