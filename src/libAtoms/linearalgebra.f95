@@ -155,7 +155,7 @@ module linearalgebra_module
   endinterface Matrix_Solve
 
   interface Matrix_QR_Solve
-    module procedure LA_Matrix_QR_Solve_Vector, LA_Matrix_QR_Solve_Matrix
+    module procedure LA_Matrix_QR_Solve_Vector, LA_Matrix_QR_Solve_Matrix, Fixed_LA_Matrix_QR_Solve_Vector
   endinterface Matrix_QR_Solve
 
   interface find
@@ -2841,6 +2841,68 @@ CONTAINS
 
   endsubroutine LA_Matrix_GetQR
 
+  subroutine Fixed_LA_Matrix_QR_Solve_Vector(factor, tau, vector, vec_result)
+   !supply factor and tau from QR factorisation only
+   real(dp), dimension(:), intent(in) :: vector
+   real(dp), dimension(:), intent(out) :: vec_result
+   real(dp), dimension(:, :), intent(in) :: factor
+   real(dp), dimension(:), intent(in)    :: tau
+
+   integer :: n, m, o, lwork, info, i, j
+   real(dp), dimension(:), allocatable :: work
+   real(dp), dimension(:, :), allocatable :: matrix, my_result
+   !real(dp) :: start, mid, end
+
+   !reshape vector into matrix
+   n = size(vector)
+   allocate(matrix(n, 1))
+   matrix = reshape(vector,(/n,1/))
+
+   ! sizes, n is already set
+   o = 1
+   m = size(factor, 2)
+
+   allocate(my_result(n, o))
+   my_result = matrix
+
+   ! start = factor(1,1)
+
+   ! copied this directly from LA_Matrix_QR_Solve_Matrix in linearalgebra
+   lwork = -1
+   allocate(work(1))
+   call dormqr('L', 'T', n, o, m, factor, n, tau, my_result, n, work, lwork, info)
+   lwork = nint(work(1))
+   deallocate(work)
+
+   !mid = factor(1,1)
+
+   allocate(work(lwork))
+   call dormqr('L', 'T', n, o, m, factor, n, tau, my_result, n, work, lwork, info)
+   deallocate(work)
+
+   !end = factor(1,1)
+   !print*, "jpd47 in fixed", start, mid, end
+   ! NOTE WARNING TODO with OMP_NUM_THREADS > 1 factor gets modified between start and end
+   ! dormqr documentation says that  "A is modified by the routine but restored on exit." (A=factor)
+
+   if( info /= 0 ) then
+      print*, "paramater", info, "had an illegal value"
+   endif
+
+   do i = 1, o
+      do j = m, 2, -1
+         my_result(j,i) = my_result(j,i)/factor(j,j)
+         my_result(1:j-1,i) = my_result(1:j-1,i) - my_result(j,i)*factor(1:j-1,j)
+      enddo
+      my_result(1,i) = my_result(1,i) / factor(1,1)
+   enddo
+
+   !result = my_result(1:m,:)
+   vec_result = my_result(1:m, 1)
+   deallocate(my_result)
+   deallocate(matrix)
+endsubroutine
+
   subroutine LA_Matrix_QR_Solve_Matrix(this,matrix,result,error)
      type(LA_Matrix), intent(inout) :: this
      real(qp), dimension(:,:), intent(in) :: matrix
@@ -3753,11 +3815,11 @@ CONTAINS
     integer, allocatable :: ipiv(:), iwork(:)
     real(dp), allocatable :: work(:)
     real(dp), allocatable :: Acopy(:,:)
-    
+
     real(dp), external :: dlange
-        
+
     rcond = -1.0_dp
-    
+
     m = size(A, 1)
     n = size(A, 2)
     lda = m
