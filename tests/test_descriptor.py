@@ -2,7 +2,10 @@
 # HQ X
 # HQ X   quippy: Python interface to QUIP atomistic simulation library
 # HQ X
-# HQ X   Copyright James Kermode 2019
+# HQ X   Portions of this code were written by
+# HQ X     James Kermode, Tamas K. Stenczel
+# HQ X
+# HQ X   Copyright 2019-2023
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -220,8 +223,24 @@ class Test_Descriptor(quippytest.QuippyTestCase):
         self.assertArrayIntEqual(data["grad_index_0based"], self.ref_grad_index_0based)
 
         # test the gradient's values
-        self.assertArrayAlmostEqual(data['grad_data'][:2], self.ref_grad_array)
+        self.assertArrayAlmostEqual(data["grad_data"][:2], self.ref_grad_array)
+
+    def test_grad_ii(self):
+        # test that ii array is preserved when calculating gradients
+        # for https://github.com/libAtoms/QUIP/issues/453
+
+        desc = quippy.descriptors.Descriptor(
+            "soap cutoff=1.3 l_max=4 n_max=4 atom_sigma=0.5 n_Z=2 Z={1 6}"
+        )
+        data = desc.calc(self.at_C2H, grad=True)
+
+        ii = data["ii"]
+        grad_data = data["grad_index_0based"]
+        for ii_arr in ii:
+            # n.b. `ii` is kept with Fortran indexing
+            for ii_item in set(ii_arr - 1):
+                assert ii_item in grad_data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

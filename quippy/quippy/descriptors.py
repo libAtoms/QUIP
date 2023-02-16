@@ -5,7 +5,7 @@
 # HQ X   Portions of this code were written by
 # HQ X     Tamas K. Stenczel, James Kermode
 # HQ X
-# HQ X   Copyright 2019
+# HQ X   Copyright 2019-2023
 # HQ X
 # HQ X   These portions of the source code are released under the GNU General
 # HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
@@ -214,6 +214,9 @@ class Descriptor:
                 descriptor_out[key] = np.concatenate([x.T for x in val])
             elif key == "grad_data":
                 descriptor_out[key] = np.transpose(np.concatenate(val, axis=2), axes=(2, 1, 0))
+            elif key == "ii":
+                # copy cross-index into Numpy arrays (f90wrap exposes pointers)
+                descriptor_out[key] = [np.copy(x) for x in val]
 
         if "ii" in descriptor_out.keys():
             grad_index_0based = []
