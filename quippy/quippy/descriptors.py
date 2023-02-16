@@ -216,7 +216,7 @@ class Descriptor:
                 descriptor_out[key] = np.transpose(np.concatenate(val, axis=2), axes=(2, 1, 0))
             elif key == "ii":
                 # copy cross-index into Numpy arrays (f90wrap exposes pointers)
-                descriptor_out[key] = [np.array(x) for x in val]
+                descriptor_out[key] = [np.copy(x) for x in val]
 
         if "ii" in descriptor_out.keys():
             grad_index_0based = []
