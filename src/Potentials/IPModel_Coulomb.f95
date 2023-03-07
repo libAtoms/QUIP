@@ -100,8 +100,14 @@ type IPModel_Coulomb
 
   real(dp) :: dsf_alpha = 0.0_dp
 
-  character(len=STRING_LENGTH) :: label
+  logical :: use_gp_charges = .false.
 
+#ifdef HAVE_GAP
+  type(gpSparse) :: my_gp
+  type(descriptor), dimension(:), allocatable :: my_descriptor
+#endif
+
+  character(len=STRING_LENGTH) :: label
 
 endtype IPModel_Coulomb
 
@@ -141,13 +147,20 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   call param_register(params, 'label', '', this%label, help_string="No help yet.  This source file was $LastChangedBy$")
   call param_register(params, 'method', '', method_str, help_string="If present, method for Coulomb calculation.  Will be overridden &
       by xml parameters if present", has_value_target=has_method)
+  call param_register(params, 'use_gp_charges', 'F', this%use_gp_charges, help_string="Calculate charges from a Gaussian Process model "
+      "instead of reading from XYZ (must supply an appropriate GAP params string in the XML)")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Initialise_str args_str')) then
     call system_abort("IPModel_Coulomb_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
+#ifndef HAVE_GAP
+  if (this%use_gp_charges) then
+      call system_abort("IPModel_Coulomb_Initialise_str: Must be compiled with GAP support to use GP charges!")
+  endif
+#endif
+
   call finalise(params)
 
   call IPModel_Coulomb_read_params_xml(this, param_str)
-
   if(this%method == 0) then
      if(has_method) then
         this%method = IPModel_Coulomb_get_method(method_str)
@@ -156,6 +169,12 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
      endif
   endif
 
+  if (this%use_gp_charges) then
+     if (this%method /= IPCoulomb_Method_Direct) then
+        call system_abort("IPModel_Coulomb_Initialise_str: GP charges only supported for method==direct at the moment")
+     endif
+     call gp_readXML(this%my_gp, param_str,label=trim(this%label))
+  endif
 
   !  Add initialisation code here
 
@@ -187,6 +206,9 @@ subroutine IPModel_Coulomb_Finalise(this)
 
   ! Add finalisation code here
 
+#ifdef HAVE_GAP
+  if (this%my_gp%initialised) call finalise(this%my_gp)
+#endif
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
   if (allocated(this%charge)) deallocate(this%charge)
@@ -211,6 +233,9 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    type(Dictionary) :: params
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
+#ifdef HAVE_GAP
+   real(dp), dimension(:), allocatable :: gp_charge
+#endif
    real(dp), dimension(:,:), allocatable :: dummy_force
    real(dp) :: r_scale, E_scale, e_pre_calc
    logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f
