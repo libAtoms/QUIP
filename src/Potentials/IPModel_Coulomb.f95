@@ -233,9 +233,6 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    type(Dictionary) :: params
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
-#ifdef HAVE_GAP
-   real(dp), dimension(:), allocatable :: gp_charge
-#endif
    real(dp), dimension(:,:), allocatable :: dummy_force
    real(dp) :: r_scale, E_scale, e_pre_calc
    logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f
@@ -247,7 +244,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
 
    real(dp), allocatable :: gamma_mat(:,:)
 
-   integer :: i, i_Z
+   integer :: i, i_Z, ddims
 
    character(len=STRING_LENGTH) :: charge_property_name, atom_mask_name, source_mask_name
 
@@ -294,6 +291,19 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       if(.not. assign_pointer(at, charge_property_name, charge)) then
          RAISE_ERROR('IPModel_Coulomb_Calc failed to assign pointer to '//trim(charge_property_name)//' property', error)
       endif
+#ifdef HAVE_GAP
+   elseif (this%use_gp_charges) then
+      allocate(my_charge(at%N))
+      charge => my_charge
+      ! Initialize charges from GP
+      ! Would be better placed in a new subroutine tbh
+      do i_coordinate = 1, this%my_gp%n_coordinate
+         ddims = descriptor_dimensions(this%my_descriptor(i_coordinate))
+         call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
+           do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
+         !TODO multiply descriptor with weights to calculate the charge
+      enddo
+#endif
    else
       allocate(my_charge(at%N))
       charge => my_charge
