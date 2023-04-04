@@ -304,8 +304,16 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       end if
       do i_coordinate = 1, this%my_gp%n_coordinate
          ddims = descriptor_dimensions(this%my_descriptor(i_coordinate))
-         call calc(this%my_descriptor(i_coordinate),at,my_descriptor_data, &
-           do_descriptor=.true.,do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), args_str=trim(string(my_args_str)), error=error)
+         call calc(this%my_descriptor(i_coordinate),at, my_descriptor_data, &
+           do_descriptor=.true., do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), &
+           args_str=trim(string(my_args_str)), error=error)
+         ! Really...? We have to iterate explicitly over the coordinates, when
+         ! in principle this is just a plain matrix multiplication??
+         do i_desc = 1, size(my_descriptor_data%x)
+            charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
+               xStar=my_descriptor_data%x(i_desc)%data(:))
+            ! TODO predict gradients
+         end do
          if (present(f) .or. present(virial) .or. present(local_virial)) then
             do i_desc = 1, size(this%my_descriptor(i_coordinate)%x)
                if( size(this%my_descriptor(i_coordinate)%x(i_desc)%ci) /= 1 ) then
@@ -321,7 +329,6 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
             end do
          end if
       end do
-      !TODO multiply descriptor with weights to calculate the charge
 #endif
    else
       allocate(my_charge(at%N))
