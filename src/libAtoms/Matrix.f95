@@ -272,6 +272,45 @@ subroutine MatrixD_to_array1d(this, array)
   end if
 end subroutine MatrixD_to_array1d
 
+subroutine MatrixD_to_MatrixD(A, B, M, N, ia, ja, ib, jb, UPLO)
+  ! Copy general submatrix A%data(ia:ia+M, ja:ja+N) to B%data(ib:ib+M, jb:jb+N)
+  ! For ScaLAPACK use, assumes the BLACS context of B is the same as (or a child of) the context of A
+  ! If UPLO is present, only copy upper (UPLO="U") or lower (UPLO="L") triangle
+  type(MatrixD), intent(in) :: A
+  type(MatrixD), intent(inout) :: B
+  integer, intent(in) :: M, N
+  integer, intent(in), optional:: ia, ja, ib, jb
+  character(1), intent(in), optional :: UPLO
+
+  integer :: my_ia, my_ja, my_ib, my_jb
+
+  character(1) :: my_uplo
+
+  my_uplo = optional_default("F", UPLO)
+
+  if (A%ScaLAPACK_Info_obj%active .and. B%ScaLAPACK_Info_obj%active) then ! ScaLAPACK
+
+    if (.not. present(UPLO)) then ! Assume full matrix copy
+      call ScaLAPACK_pdgemr2d_wrapper(A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
+          A%ScaLAPACK_Info_obj%ScaLAPACK_obj%blacs_context, M, N, ia, ja, ib, jb)
+
+    else
+      ! Triangular matrix ScaLAPACK copy
+      call ScaLAPACK_pdtrmr2d_wrapper(my_uplo, "N", A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
+          A%ScaLAPACK_Info_obj%ScaLAPACK_obj%blacs_context, M, N, ia, ja, ib, jb)
+    endif
+
+  else ! non-MPI
+    my_ia = optional_default(1, ia)
+    my_ja = optional_default(1, ja)
+    my_ib = optional_default(1, ib)
+    my_jb = optional_default(1, jb)
+
+    ! my_uplo = "F" will be interpreted as default full copy
+    call dlacpy(my_uplo, M, N, A%data(my_ia:my_ia+M, my_ja:my_ja+N), M, B%data(my_ib:my_ib+M, my_jb:my_jb+N), M)
+  end if
+end subroutine MatrixD_to_MatrixD
+
 subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   type(MatrixD), intent(inout) :: A_SP, B_SP
   logical, intent(in) :: cheat_nb_A
