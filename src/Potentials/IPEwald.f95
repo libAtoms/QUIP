@@ -50,8 +50,8 @@ contains
   ! Container for charge gradients and associated indexing information
   ! In case we are using a variable-charge model (e.g. GP-charges)
   type charge_gradients
-     integer :: n_neigh_lo, n_neigh_hi
-     integer, dimension(:), allocatable :: neigh_j
+     integer :: neigh_lo, neigh_up
+     integer, dimension(:), allocatable :: neigh_idx
      real(dp), dimension(:,:), allocatable :: gradients
   endtype charge_gradients
 
@@ -396,10 +396,10 @@ contains
     real(dp), intent(in), optional                     :: cutoff
     integer, intent(out), optional                     :: error
 
-    integer  :: i, j, n
+    integer  :: i, j, k, n, nk
 
     real(dp) :: my_cutoff, r_ij, de
-    real(dp), dimension(3) :: force, u_ij
+    real(dp), dimension(3) :: force, u_ij, grad_k_term
 
     real(dp), dimension(:), pointer :: my_charge
 
@@ -431,7 +431,7 @@ contains
           j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
            
-          de = 0.5_dp * charge(i)*charge(j) / r_ij
+          de = e.5_dp * charge(i)*charge(j) / r_ij
 
           if( present(e) ) e = e + de
           if( present(local_e) ) local_e(i) = local_e(i) + de
@@ -447,8 +447,11 @@ contains
                  ! we need to add the charge-gradient term to the pairwise forces
                  ! this works out to q_j/r_ij grad_k q_i
                  ! for all k in the neighbourhood of i
-                 ! (add this on to the gradient for atom k)
-                 ! (and it's forces, so remember the minus sign)
+                 do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
+                    k = charge_grads(i)%neigh_idx(nk)
+                    grad_k_term = charge(j) / r_ij * charge_grads(i)%gradients(:,nk)
+                    f(:,k) -= grad_k_term
+                 end do
               endif
 
               if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
