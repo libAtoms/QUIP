@@ -169,6 +169,7 @@ interface get_lwork_pdormqr
 end interface
 
 public :: ScaLAPACK_pdgeqrf_wrapper, ScaLAPACK_pdtrtrs_wrapper, ScaLAPACK_pdormqr_wrapper
+public :: ScaLAPACK_pdgemr2d_wrapper, ScaLAPACK_pdtrmr2d_wrapper
 public :: ScaLAPACK_matrix_QR_solve, ScaLAPACK_to_array1d, ScaLAPACK_to_array2d
 
 contains
