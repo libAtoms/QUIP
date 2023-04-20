@@ -47,6 +47,14 @@ public :: Ewald_calc, Ewald_corr_calc, Direct_Coulomb_Calc, DSF_Coulomb_calc
 
 contains
 
+  ! Container for charge gradients and associated indexing information
+  ! In case we are using a variable-charge model (e.g. GP-charges)
+  type charge_gradients
+     integer :: n_neigh_lo, n_neigh_hi
+     integer, dimension(:), allocatable :: neigh_j
+     real(dp), dimension(:,:), allocatable :: gradients
+  endtype charge_gradients
+
   ! Ewald routine
   ! input: atoms object, has to have charge property
   ! input, optional: ewald_error (controls speed and ewald_error)
@@ -375,10 +383,11 @@ contains
 
   endsubroutine Ewald_corr_calc
 
-  subroutine Direct_Coulomb_calc(at_in,charge, e,f,virial,local_e,cutoff,error)
+  subroutine Direct_Coulomb_calc(at_in,charge,charge_grads, e,f,virial,local_e,cutoff,error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
+    type(charge_gradients), dimension(:), intent(in), optional :: charge_grads
 
     real(dp), intent(out), optional                    :: e
     real(dp), dimension(:,:), intent(out), optional    :: f
@@ -429,15 +438,23 @@ contains
 
           if( present(f) .or. present(virial) ) then
               force = - de / r_ij * u_ij
-
               if(present(f)) then
                  f(:,i) = f(:,i) + force
                  f(:,j) = f(:,j) - force
               endif
 
+              if( present(charge_grads) ) then
+                 ! we need to add the charge-gradient term to the pairwise forces
+                 ! this works out to q_j/r_ij grad_k q_i
+                 ! for all k in the neighbourhood of i
+                 ! (add this on to the gradient for atom k)
+                 ! (and it's forces, so remember the minus sign)
+              endif
+
               if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
+              ! TODO charge-gradient correction for the virial?
+              ! forces are no longer strictly pairwise...
           endif
- 
       enddo
     enddo
              
