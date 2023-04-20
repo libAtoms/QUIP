@@ -312,8 +312,8 @@ subroutine Matrix_ScaLAPACK_Info_coords_local_to_global(this, l_i, l_j, i, j)
 #ifdef SCALAPACK
 
   if (this%active) then
-    i = indxl2g(l_i, this%NB_R, this%ScaLAPACK_obj%my_proc_row, 0, this%ScaLAPACK_obj%n_proc_rows)
-    j = indxl2g(l_j, this%NB_C, this%ScaLAPACK_obj%my_proc_col, 0, this%ScaLAPACK_obj%n_proc_cols)
+    i = indxl2g(l_i, this%NB_R, this%ScaLAPACK_obj%my_proc_row, ROOT_, this%ScaLAPACK_obj%n_proc_rows)
+    j = indxl2g(l_j, this%NB_C, this%ScaLAPACK_obj%my_proc_col, ROOT_, this%ScaLAPACK_obj%n_proc_cols)
   else
 #endif
     i = l_i
@@ -343,6 +343,7 @@ subroutine ScaLAPACK_init_matrix_desc(this, N_R, N_C, NB_R, NB_C, desc, l_N_R, l
   l_N_C = 0
 
 #ifdef SCALAPACK
+
   if (this%active) then
     if (present(N_C)) then
       use_N_C = N_C
@@ -356,13 +357,13 @@ subroutine ScaLAPACK_init_matrix_desc(this, N_R, N_C, NB_R, NB_C, desc, l_N_R, l
       use_NB_C = NB_R
     endif
 
-    l_N_R = numroc(N_R, NB_R, this%my_proc_row, 0, this%n_proc_rows)
-    l_N_C = numroc(use_N_C, use_NB_C, this%my_proc_col, 0, this%n_proc_cols)
+    l_N_R = numroc(N_R, NB_R, this%my_proc_row, ROOT_, this%n_proc_rows)
+    l_N_C = numroc(use_N_C, use_NB_C, this%my_proc_col, ROOT_, this%n_proc_cols)
 
     lld = l_N_R
     if (l_N_r < 1) lld = 1
 
-    call descinit (desc, N_R, use_N_C, NB_R, use_NB_C, 0, 0, this%blacs_context, lld, err)
+    call descinit (desc, N_R, use_N_C, NB_R, use_NB_C, ROOT_, ROOT_, this%blacs_context, lld, err)
   endif
 #endif
 end subroutine ScaLAPACK_init_matrix_desc
@@ -458,7 +459,7 @@ subroutine ScaLAPACK_inverse_r(this, data, inv_scalapack_info, inv_data, positiv
     u_inv_desc => this%desc
   endif
 
-  allocate(ipiv(numroc(this%N_C, this%NB_C, this%scalapack_obj%my_proc_row, 0, this%scalapack_obj%n_proc_rows)+this%NB_C))
+  allocate(ipiv(numroc(this%N_C, this%NB_C, this%scalapack_obj%my_proc_row, ROOT_, this%scalapack_obj%n_proc_rows)+this%NB_C))
   call pdgetrf(this%N_R, this%N_C, u_inv_data, 1, 1, u_inv_desc, ipiv, info)
   if (info /= 0) then
     call system_abort("ScaLAPACK_inverse_r got pdgetrf info " // info)
@@ -522,7 +523,7 @@ subroutine ScaLAPACK_inverse_c(this, data, inv_scalapack_info, inv_data, positiv
     u_inv_desc => this%desc
   endif
 
-  allocate(ipiv(numroc(this%N_C, this%NB_C, this%scalapack_obj%my_proc_row, 0, this%scalapack_obj%n_proc_rows)+this%NB_C))
+  allocate(ipiv(numroc(this%N_C, this%NB_C, this%scalapack_obj%my_proc_row, ROOT_, this%scalapack_obj%n_proc_rows)+this%NB_C))
 ! call system_timer("ScaLAPACK_inverse_c/prep")
 ! call system_timer("ScaLAPACK_inverse_c/pzgetrf")
   call pzgetrf(this%N_R, this%N_C, u_inv_data, 1, 1, u_inv_desc, ipiv, info)
@@ -1501,7 +1502,7 @@ subroutine ScaLAPACK_to_array1d(A_info, A_data, array)
   nrows = min(A_info%N_R, size(array, 1))
   ncols = 1
   array(nrows+1:) = 0.0_dp
-  call descinit(desc, nrows, ncols, nrows, ncols, 0, 0, &
+  call descinit(desc, nrows, ncols, nrows, ncols, ROOT_, ROOT_, &
                 A_info%ScaLAPACK_obj%blacs_context, size(array, 1), info)
   call pdgeadd("N", nrows, ncols, 1.0_dp, A_data, 1, 1, A_info%desc, &
                0.0_dp, array, 1, 1, desc)
@@ -1517,7 +1518,7 @@ subroutine ScaLAPACK_to_array2d(A_info, A_data, array)
   integer, dimension(9) :: desc
 
 #ifdef SCALAPACK
-  call descinit(desc, A_info%N_R, A_info%N_C, A_info%N_R, A_info%N_C, 0, 0, &
+  call descinit(desc, A_info%N_R, A_info%N_C, A_info%N_R, A_info%N_C, ROOT_, ROOT_, &
                 A_info%ScaLAPACK_obj%blacs_context, A_info%N_R, info)
   call pdgeadd("N", A_info%N_R, A_info%N_C, 1.0_dp, A_data, 1, 1, A_info%desc, &
                0.0_dp, array, 1, 1, desc)
@@ -1614,8 +1615,8 @@ function get_lwork_pdormqr_i32o64(side, m, n, ia, ja, mb_a, nb_a, ic, jc, &
 
     lcm = ilcm(nprow, npcol)
     lcmq = lcm / npcol
-    nr = numroc(n+icoffc, nb_a, 0, 0, npcol)
-    nr = numroc(int(nr, isp), nb_a, 0, 0, lcmq)
+    nr = numroc(n+icoffc, nb_a, 0, ROOT_, npcol)
+    nr = numroc(int(nr, isp), nb_a, 0, ROOT_, lcmq)
     nr = max(npa0 + nr, mpc0)
     lwork2 = (nqc0 + nr) * nb64
   end if
