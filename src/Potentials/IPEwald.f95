@@ -45,15 +45,15 @@ real(dp), parameter :: reciprocal_time_by_real_time = 1.0_dp / 3.0_dp
 private
 public :: Ewald_calc, Ewald_corr_calc, Direct_Coulomb_Calc, DSF_Coulomb_calc
 
-contains
+! Container for charge gradients and associated indexing information
+! In case we are using a variable-charge model (e.g. GP-charges)
+type charge_gradients
+ integer :: neigh_lo, neigh_up
+ integer, dimension(:), allocatable :: neigh_idx
+ real(dp), dimension(:,:), allocatable :: gradients
+endtype charge_gradients
 
-  ! Container for charge gradients and associated indexing information
-  ! In case we are using a variable-charge model (e.g. GP-charges)
-  type charge_gradients
-     integer :: neigh_lo, neigh_up
-     integer, dimension(:), allocatable :: neigh_idx
-     real(dp), dimension(:,:), allocatable :: gradients
-  endtype charge_gradients
+contains
 
   ! Ewald routine
   ! input: atoms object, has to have charge property
@@ -431,7 +431,7 @@ contains
           j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
            
-          de = e.5_dp * charge(i)*charge(j) / r_ij
+          de = 0.5_dp * charge(i)*charge(j) / r_ij
 
           if( present(e) ) e = e + de
           if( present(local_e) ) local_e(i) = local_e(i) + de
@@ -450,7 +450,7 @@ contains
                  do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
                     k = charge_grads(i)%neigh_idx(nk)
                     grad_k_term = charge(j) / r_ij * charge_grads(i)%gradients(:,nk)
-                    f(:,k) -= grad_k_term
+                    f(:,k) = f(:,k) - grad_k_term
                  end do
               endif
 
