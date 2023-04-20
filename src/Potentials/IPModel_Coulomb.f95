@@ -235,12 +235,13 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    real(dp), dimension(:), pointer :: charge
    real(dp), dimension(:,:), allocatable :: dummy_force
    real(dp) :: r_scale, E_scale, e_pre_calc
-   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f
+   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, do_grads
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
-   integer :: n_uniq_Zs
+   integer :: n_uniq_Zs, neigh_idx
    type(charge_gradients), dimension(:), allocatable :: charge_grads
+   real(dp), allocatable :: grad_coeffs(:), charge_grad_contrib(:)
 
 
    real(dp), allocatable :: gamma_mat(:,:)
@@ -299,22 +300,16 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       ! Initialize charges from GP
       ! Would be better placed in a new subroutine tbh
       ! First construct the gradients object, if we need it
-      if (present(f) .or. present(virial) .or. present(local_virial)) then
-         allocate(charge_gradients(at%N))
+      do_grads = present(f) .or. present(virial) .or. present(local_virial)
+      if (do_grads) then
+         allocate(charge_grads(at%N))
       end if
       do i_coordinate = 1, this%my_gp%n_coordinate
          ddims = descriptor_dimensions(this%my_descriptor(i_coordinate))
          call calc(this%my_descriptor(i_coordinate),at, my_descriptor_data, &
-           do_descriptor=.true., do_grad_descriptor=present(f) .or. present(virial) .or. present(local_virial), &
+           do_descriptor=.true., do_grad_descriptor=do_grads, &
            args_str=trim(string(my_args_str)), error=error)
-         ! Really...? We have to iterate explicitly over the coordinates, when
-         ! in principle this is just a plain matrix multiplication??
-         do i_desc = 1, size(my_descriptor_data%x)
-            charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
-               xStar=my_descriptor_data%x(i_desc)%data(:))
-            ! TODO predict gradients
-         end do
-         if (present(f) .or. present(virial) .or. present(local_virial)) then
+         if (do_grads) then
             do i_desc = 1, size(this%my_descriptor(i_coordinate)%x)
                if( size(this%my_descriptor(i_coordinate)%x(i_desc)%ci) /= 1 ) then
                   RAISE_ERROR("IPModel_vdW_Calc: descriptor is not local and atomic",error)
@@ -328,7 +323,28 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
                charge_gradients(i)%gradients = 0.0_dp
             end do
          end if
+         if (do_grads) then
+            do i_desc = 1, size(my_descriptor_data%x)
+               charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
+                  xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
+               i = this%my_descriptor(i_coordinate)%x(i_desc)%ci(1)
+               do neigh_idx = charge_gradients(i_desc)%neigh_lo, charge_gradients(i)%neigh_hi
+                  if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
+                  !TODO this is also missing the cutoff function contribution
+                  charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,n_neigh))
+                  charge_grads(i)%gradients(:,neigh_idx) = charge_grads(i)%gradients(:,neigh_idx) + charge_grad_contrib
+               end do
+            end do
+         else
+            ! Really...? We still have to iterate explicitly over the coordinates, when
+            ! in principle this is just a plain matrix multiplication??
+            do i_desc = 1, size(my_descriptor_data%x)
+               charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
+                  xStar=my_descriptor_data%x(i_desc)%data(:))
+            end do
+         end if
       end do
+      !TODO incorporate smooth cutoff function
 #endif
    else
       allocate(my_charge(at%N))
