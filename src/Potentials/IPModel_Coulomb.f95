@@ -234,7 +234,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
    real(dp), dimension(:,:), allocatable :: dummy_force
-   real(dp) :: r_scale, E_scale, e_pre_calc
+   real(dp) :: r_scale, E_scale, e_pre_calc, charge_no_cutoff
    logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, do_grads
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
@@ -325,13 +325,15 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
          end if
          if (do_grads) then
             do i_desc = 1, size(my_descriptor_data%x)
-               charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
+               charge_no_cutoff = gp_predict(this%my_gp%coordinate(i_coordinate), &
                   xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
+               charge(i_desc) = charge_no_cutoff * this%my_descriptor(i_coordinate)%x(i_desc)%covariance_cutoff
                i = this%my_descriptor(i_coordinate)%x(i_desc)%ci(1)
                do neigh_idx = charge_gradients(i_desc)%neigh_lo, charge_gradients(i)%neigh_hi
                   if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
-                  !TODO this is also missing the cutoff function contribution
-                  charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,n_neigh))
+                  charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,neigh_idx)) &
+                     * my_descriptor_data%x(i_desc)%covariance_cutoff &
+                     + charge_no_cutoff * my_descriptor_data%x(i_desc)%grad_covariance_cutoff(:,neigh_idx)
                   charge_grads(i)%gradients(:,neigh_idx) = charge_grads(i)%gradients(:,neigh_idx) + charge_grad_contrib
                end do
             end do
@@ -340,11 +342,11 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
             ! in principle this is just a plain matrix multiplication??
             do i_desc = 1, size(my_descriptor_data%x)
                charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
-                  xStar=my_descriptor_data%x(i_desc)%data(:))
+                     xStar=my_descriptor_data%x(i_desc)%data(:)) &
+                  * my_descriptor_data%x(i_desc)%covariance_cutoff
             end do
          end if
       end do
-      !TODO incorporate smooth cutoff function
 #endif
    else
       allocate(my_charge(at%N))
