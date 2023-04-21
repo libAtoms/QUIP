@@ -324,12 +324,13 @@ subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   endif
 end subroutine MatrixD_QR_Solve
 
-subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
+subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R)
   real(dp), intent(inout), dimension(:,:), target :: A
   real(dp), intent(inout), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
   integer, intent(in) :: mb_A, nb_A
+  real(dp), intent(out), dimension(:, :), optional :: R
 
   logical :: cheat_nb_A
   integer :: mb, nb, ml, nl, mg, ng
@@ -365,31 +366,44 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
   ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
   call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   !call MatrixD_to_array1d(B_SP, X)
-  call MatrixD_QR_Get_Weights(B_SP, ng, X)
+  call MatrixD_QR_Get_Weights(A_SP, B_SP, ng, X, R)
 
   call finalise(A_SP)
   call finalise(B_SP)
 end subroutine SP_Matrix_QR_Solve
 
-subroutine MatrixD_QR_Get_Weights(b, M, weights)
+subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R)
   ! Extract weights from b after MatrixD_QR_Solve
-  type(MatrixD), intent(in) :: b
+  ! Optionally extract R
+  type(MatrixD), intent(in) :: A, b
   integer, intent(in) :: M
   real(dp), dimension(M), intent(out), target :: weights
+  real(dp), dimension(M, M), intent(out), target, optional :: R
 
   type(ScaLAPACK) :: wt_scalapack
-  type(MatrixD) :: wt_matrixd
+  type(MatrixD) :: wt_matrixD, R_matrixD
 
   ! Initialise 1x1 scalapack process grid
   call initialise(wt_scalapack, b%ScaLAPACK_Info_obj%ScaLAPACK_obj%MPI_obj, 1, 1)
 
-  call initialise(wt_matrixd, M, 1, M, 1, wt_scalapack, use_allocate=.false.)
+  call initialise(wt_matrixD, M, 1, M, 1, wt_scalapack, use_allocate=.false.)
 
+  ! weights
   weights(:) = 0.0_dp
   wt_matrixd%data(lbound(weights,1):ubound(weights,1),1:1) => weights(:)
 
-  call MatrixD_to_MatrixD(b, wt_matrixd, M, 1)
-  call Finalise(wt_matrixd)
+  call MatrixD_to_MatrixD(b, wt_matrixD, M, 1)
+  call Finalise(wt_matrixD)
+
+  ! R
+  if (present(R)) then
+    R(:, :) = 0.0_dp
+    ! Reuse wt_scalapack, assuming context of A equal to context of B
+    call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
+    R_matrixd%data(lbound(R,1):ubound(R,1),lbound(R,2):ubound(R,2)) => R(:, :)
+    call MatrixD_to_MatrixD(A, R_matrixD, M, M, UPLO="U")
+    call Finalise(R_matrixD)
+  end if
   call Finalise(wt_scalapack)
 
 end subroutine MatrixD_QR_Get_Weights
