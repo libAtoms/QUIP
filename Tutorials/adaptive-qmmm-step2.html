@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy b55e89d documentation</title>
+  <title>Step 2: Classical MD simulation of fracture in Si &mdash; quippy 15eeaea documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                b55e89d
+                15eeaea
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -112,31 +112,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="step-2-classical-md-simulation-of-fracture-in-si">
+  <section id="step-2-classical-md-simulation-of-fracture-in-si">
 <span id="step2"></span><h1>Step 2: Classical MD simulation of fracture in Si<a class="headerlink" href="#step-2-classical-md-simulation-of-fracture-in-si" title="Permalink to this heading"></a></h1>
 <p>This part of the tutorial requires the initial crack structure <code class="docutils literal notranslate"><span class="pre">crack.xyz</span></code>
 produced in <a class="reference internal" href="adaptive-qmmm-step1.html#step1"><span class="std std-ref">Step 1: Setup of the Silicon model system</span></a>. If you had problems completing the first part, you
@@ -542,7 +518,7 @@ stress along the line <span class="math notranslate nohighlight">\(y=0\)</span> 
 obeys the expected <span class="math notranslate nohighlight">\(1/\sqrt{r}\)</span> divergence near the crack tip, and tends
 to a constant value ahead of the crack, due to the thin strip loading. <em>Hint:</em>
 use a mask to select the relevant atoms, as we did when fixing the edge atoms
-above. You can use the matplotlib <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.7.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> function to
+above. You can use the matplotlib <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="(in Matplotlib v3.7.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot()</span></code></a> function to
 produce a plot.</p>
 </section>
 <section id="time-averaged-stress-field">
@@ -668,7 +644,7 @@ that we increment at a constant rate).</p>
 <p>The following plot shows the evolution of <cite>G</cite> (blue) and of the
 position of the crack (red; stored as <cite>crack_pos_x</cite>). Note that a
 second vertical axis can be produced with the
-<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.twinx.html#matplotlib.pyplot.twinx" title="(in Matplotlib v3.7.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">twinx()</span></code></a> function.</p>
+<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.twinx.html#matplotlib.pyplot.twinx" title="(in Matplotlib v3.7.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">twinx()</span></code></a> function.</p>
 <a class="reference internal image-reference" href="../_images/energy-release-rate-crack-position.png"><img alt="../_images/energy-release-rate-crack-position.png" class="align-center" src="../_images/energy-release-rate-crack-position.png" style="width: 600px;" /></a>
 <p>In this case the crack actually arrests for a while at around <span class="math notranslate nohighlight">\(t
 = 6\)</span> ps. This is another characteristic feature of non-brittle

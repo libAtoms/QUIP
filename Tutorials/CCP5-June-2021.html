@@ -4,10 +4,11 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Motivation &mdash; quippy b55e89d documentation</title>
+  <title>Motivation &mdash; quippy 15eeaea documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
@@ -41,7 +42,7 @@
               <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                b55e89d
+                15eeaea
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -129,292 +130,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS for nbsphinx extension */
-
-/* remove conflicting styling from Sphinx themes */
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt *,
-div.nbinput.container div.input_area pre,
-div.nboutput.container div.output_area pre,
-div.nbinput.container div.input_area .highlight,
-div.nboutput.container div.output_area .highlight {
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-}
-
-div.nbinput.container > div[class*=highlight],
-div.nboutput.container > div[class*=highlight] {
-    margin: 0;
-}
-
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt * {
-    background: none;
-}
-
-div.nboutput.container div.output_area .highlight,
-div.nboutput.container div.output_area pre {
-    background: unset;
-}
-
-div.nboutput.container div.output_area div.highlight {
-    color: unset;  /* override Pygments text color */
-}
-
-/* avoid gaps between output lines */
-div.nboutput.container div[class*=highlight] pre {
-    line-height: normal;
-}
-
-/* input/output containers */
-div.nbinput.container,
-div.nboutput.container {
-    display: -webkit-flex;
-    display: flex;
-    align-items: flex-start;
-    margin: 0;
-    width: 100%;
-}
-@media (max-width: 540px) {
-    div.nbinput.container,
-    div.nboutput.container {
-        flex-direction: column;
-    }
-}
-
-/* input container */
-div.nbinput.container {
-    padding-top: 5px;
-}
-
-/* last container */
-div.nblast.container {
-    padding-bottom: 5px;
-}
-
-/* input prompt */
-div.nbinput.container div.prompt pre {
-    color: #307FC1;
-}
-
-/* output prompt */
-div.nboutput.container div.prompt pre {
-    color: #BF5B3D;
-}
-
-/* all prompts */
-div.nbinput.container div.prompt,
-div.nboutput.container div.prompt {
-    width: 4.5ex;
-    padding-top: 5px;
-    position: relative;
-    user-select: none;
-}
-
-div.nbinput.container div.prompt > div,
-div.nboutput.container div.prompt > div {
-    position: absolute;
-    right: 0;
-    margin-right: 0.3ex;
-}
-
-@media (max-width: 540px) {
-    div.nbinput.container div.prompt,
-    div.nboutput.container div.prompt {
-        width: unset;
-        text-align: left;
-        padding: 0.4em;
-    }
-    div.nboutput.container div.prompt.empty {
-        padding: 0;
-    }
-
-    div.nbinput.container div.prompt > div,
-    div.nboutput.container div.prompt > div {
-        position: unset;
-    }
-}
-
-/* disable scrollbars and line breaks on prompts */
-div.nbinput.container div.prompt pre,
-div.nboutput.container div.prompt pre {
-    overflow: hidden;
-    white-space: pre;
-}
-
-/* input/output area */
-div.nbinput.container div.input_area,
-div.nboutput.container div.output_area {
-    -webkit-flex: 1;
-    flex: 1;
-    overflow: auto;
-}
-@media (max-width: 540px) {
-    div.nbinput.container div.input_area,
-    div.nboutput.container div.output_area {
-        width: 100%;
-    }
-}
-
-/* input area */
-div.nbinput.container div.input_area {
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    /*background: #f5f5f5;*/
-}
-
-/* override MathJax center alignment in output cells */
-div.nboutput.container div[class*=MathJax] {
-    text-align: left !important;
-}
-
-/* override sphinx.ext.imgmath center alignment in output cells */
-div.nboutput.container div.math p {
-    text-align: left;
-}
-
-/* standard error */
-div.nboutput.container div.output_area.stderr {
-    background: #fdd;
-}
-
-/* ANSI colors */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-default-inverse-fg { color: #FFFFFF; }
-.ansi-default-inverse-bg { background-color: #000000; }
-
-.ansi-bold { font-weight: bold; }
-.ansi-underline { text-decoration: underline; }
-
-
-div.nbinput.container div.input_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight].math,
-div.nboutput.container div.output_area.rendered_html,
-div.nboutput.container div.output_area > div.output_javascript,
-div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 5px;
-    margin: 0;
-}
-
-/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
-div.nbinput.container div.input_area > div[class^='highlight'],
-div.nboutput.container div.output_area > div[class^='highlight']{
-    overflow-y: hidden;
-}
-
-/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt .copybtn {
-    display: none;
-}
-
-/* Some additional styling taken form the Jupyter notebook CSS */
-.jp-RenderedHTMLCommon table,
-div.rendered_html table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 12px;
-  table-layout: fixed;
-}
-.jp-RenderedHTMLCommon thead,
-div.rendered_html thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-.jp-RenderedHTMLCommon tr,
-.jp-RenderedHTMLCommon th,
-.jp-RenderedHTMLCommon td,
-div.rendered_html tr,
-div.rendered_html th,
-div.rendered_html td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-.jp-RenderedHTMLCommon th,
-div.rendered_html th {
-  font-weight: bold;
-}
-.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
-div.rendered_html tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-.jp-RenderedHTMLCommon tbody tr:hover,
-div.rendered_html tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
-}
-
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<center><p><img alt="ba0ebbb244a7436c91feadb9e9782363" src="../_images/warwick-logo.png" /></p>
+  <center><p><img alt="cdf1dda8bb4b4308ba9a889eb323c4a9" src="../_images/warwick-logo.png" /></p>
 <h1><p>Quantum Mechanics and Interatomic Potentials – the QUIP code</p>
 </h1><h3><p>James Kermode</p>
 </h3><p>Warwick Centre for Predictive Modelling / School of Engineering University of Warwick</p>
 <h4><p>CCP5++ Software Seminar - 17th June 2021</p>
-</h4><table bgcolor="#ffffff"><tr><td><p><img alt="078e43c2560b4546822d717ad9a8fd8b" class="no-scaled-link" src="../_images/WCPM_logo_text.png" style="width: 100%;" /></p>
-</td><td><p><img alt="0847a9ff46284ff2a18ba6dc85498e53" class="no-scaled-link" src="../_images/hybrid.png" style="width: 100%;" /></p>
+</h4><table bgcolor="#ffffff"><tr><td><p><img alt="4e930888c74f4604bb056b8ac236f4d3" class="no-scaled-link" src="../_images/WCPM_logo_text.png" style="width: 100%;" /></p>
+</td><td><p><img alt="b8d6fd29a5074730b54fbb91a81edc8e" class="no-scaled-link" src="../_images/hybrid.png" style="width: 100%;" /></p>
 </td></tr></table></center><p><em>These slides will subsequently be made available at https://libatoms.github.io/QUIP/Tutorials</em></p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
@@ -465,7 +187,7 @@ div.rendered_html tbody tr:hover {
 </ul>
 </li>
 </ul>
-<center><p><img alt="e2dcbfdd1ec84128af8c1a721f0c55c4" class="no-scaled-link" src="../_images/multiscale.png" style="width: 80%;" /></p>
+<center><p><img alt="2788ece9fcc3465080130dac68b9bc7d" class="no-scaled-link" src="../_images/multiscale.png" style="width: 80%;" /></p>
 </center><p><em>Image credit: Gábor Csányi</em></p>
 </section>
 <section id="The-QUIP-code">
@@ -499,7 +221,7 @@ div.rendered_html tbody tr:hover {
 <li><p>Coded in modern Fortran (Fortran 95 plus allocatable array extensions, but none of the object-oriented features from 2003/2008, mostly because of limited compiler support historically)</p></li>
 <li><p><a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">Expressive Programming</a>, where code is as close as possible to abstract algorithm, without sacrificing (too much) performance</p>
 <ul>
-<li><p>e.g. we have a <code class="docutils literal notranslate"><span class="pre">type(Atoms)</span></code> with components <code class="docutils literal notranslate"><span class="pre">Atoms%positions</span></code>, etc</p></li>
+<li><p>e.g. we have a <code class="docutils literal notranslate"><span class="pre">type(Atoms)</span></code> with components <code class="docutils literal notranslate"><span class="pre">Atoms%positions</span></code>, etc</p></li>
 <li><p>not a full OO approach with arrays of individual <code class="docutils literal notranslate"><span class="pre">Atom</span></code> objects, which would risk reducing cache efficiency</p></li>
 </ul>
 </li>
@@ -516,7 +238,7 @@ div.rendered_html tbody tr:hover {
 <li><p>Code is now ~80% Fortran with minimal Python high-level interface to ASE</p></li>
 <li><p>Unit tests, driven via <code class="docutils literal notranslate"><span class="pre">quippy</span></code> Python package, have reasonable coverage of public API</p></li>
 <li><p>Continuous integration runs unit tests on GitHub Actions (recently migrated from Travis-CI) on all commits and before PRs get merged, and also builds <a class="reference external" href="https://libatoms.github.io/QUIP">documentation</a></p></li>
-<li><p>High-level generic functionality has (mostly) been moved out of QUIP and contributed to more widely used codes, e.g. the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html#preconditioned-optimizers">preconditioned optimizers</a> in ASE were first prototyped in QUIP</p></li>
+<li><p>High-level generic functionality has (mostly) been moved out of QUIP and contributed to more widely used codes, e.g. the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html#preconditioned-optimizers">preconditioned optimizers</a> in ASE were first prototyped in QUIP</p></li>
 </ul>
 </section>
 </section>
@@ -524,7 +246,7 @@ div.rendered_html tbody tr:hover {
 <h1>Code Availability<a class="headerlink" href="#Code-Availability" title="Permalink to this heading"></a></h1>
 <section id="License">
 <h2>License<a class="headerlink" href="#License" title="Permalink to this heading"></a></h2>
-<p>Most of QUIP is licensed under the GPLv2, with some code in the public domain. Submodules have different licences, e.g. GAP has a non-commerical <a class="reference external" href="https://github.com/libAtoms/GAP/blob/main/LICENSE.md">academic software license</a>.</p>
+<p>Most of QUIP is licensed under the GPLv2, with some code in the public domain. Submodules have different licences, e.g. GAP has a non-commerical <a class="reference external" href="https://github.com/libAtoms/GAP/blob/main/LICENSE.md">academic software license</a>.</p>
 </section>
 <section id="Building-from-source">
 <h2>Building from source<a class="headerlink" href="#Building-from-source" title="Permalink to this heading"></a></h2>
@@ -536,7 +258,7 @@ make config # answer some y/n questions
 make
 </pre></div>
 </div>
-<p>Required: - recent <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> or <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler - LAPACK/BLAS linear algebra libraries (e.g. <code class="docutils literal notranslate"><span class="pre">libblas-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">liblapack-dev</span></code> on Ubuntu or Intel MKL)</p>
+<p>Required: - recent <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> or <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler - LAPACK/BLAS linear algebra libraries (e.g. <code class="docutils literal notranslate"><span class="pre">libblas-dev</span></code> and <code class="docutils literal notranslate"><span class="pre">liblapack-dev</span></code> on Ubuntu or Intel MKL)</p>
 <p>See the GitHub <a class="reference external" href="https://github.com/libAtoms/QUIP">README</a> for detailed instructions, or try one of the pre-compiled binary releases.</p>
 </section>
 <section id="Binary-Installation">
@@ -608,7 +330,7 @@ Si  1.35902303  1.35726585  1.35726586  0.00017116  -0.00001541  -0.00014705
 </div>
 <p>This maps onto QUIP’s flexible (but not too flexible) data model for atomic per-configuration and per-atom properties, analogous to <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.arrays</span></code> and <code class="docutils literal notranslate"><span class="pre">ase.atoms.Atoms.info</span></code> dictionaries in ASE.</p>
 <ul class="simple">
-<li><p>Extended XYZ now quite widely used and supported, e.g. in <a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">ASE</a> and the <a class="reference external" href="https://www.ovito.org">OVITO</a> visualisation package.</p></li>
+<li><p>Extended XYZ now quite widely used and supported, e.g. in <a class="reference external" href="http://www.southampton.ac.uk/~fangohr/randomnotes/iop_cpg_newsletter/2007_1.pdf">ASE</a> and the <a class="reference external" href="https://www.ovito.org">OVITO</a> visualisation package.</p></li>
 <li><p>Specification has recently been formalised to tidy up what’s allowed in the <code class="docutils literal notranslate"><span class="pre">key=value</span></code> pairs. A canonical parser with C, Fortran, Python and Julia bindings will shortly be <a class="reference external" href="https://github.com/libAtoms/extxyz">released</a>, and integration with all dependencies.</p></li>
 </ul>
 </section>
@@ -622,7 +344,7 @@ Si  1.35902303  1.35726585  1.35726586  0.00017116  -0.00001541  -0.00014705
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>quip <span class="nv">init_args</span><span class="o">=</span><span class="s2">&quot;xml_label=TS_potential&quot;</span> <span class="nv">param_filename</span><span class="o">=</span>TS_params.xml <span class="nv">atoms_filename</span><span class="o">=</span>quartz.xyz E
 </pre></div>
 </div>
-<p>The latter is more flexible as it supports potentials which are a combination of other potentials (e.g. a GAP with a 2-body and manybody contributions which must be summed to get the total potential).</p>
+<p>The latter is more flexible as it supports potentials which are a combination of other potentials (e.g. a GAP with a 2-body and manybody contributions which must be summed to get the total potential).</p>
 <p>There is also a built in MD code which has some specialised features, such as a Nose-Hoover-Langevin chain thermostat, but for general usage we recommend driving MD from either ASE or LAMMPS.</p>
 </section>
 <section id="Usage-with-LAMMPS">
@@ -683,7 +405,7 @@ lmp_mpi &lt; lammps.in
 <li><p><a class="reference external" href="https://jupyter.org/">jupyter</a>/IPython notebooks encourage reproducible research</p></li>
 <li><p><a class="reference external" href="https://jupyter.org/">anaconda</a> distribution and package management system</p></li>
 </ul>
-<center><p><img alt="4fc6f9f7b58c43a7a9cb1de9bf6416d9" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
+<center><p><img alt="0700cc2b3fb148d7bb185bfd23abc8a3" class="no-scaled-link" src="../_images/scipy-stack.png" style="width: 70%;" /></p>
 </center><p><a class="reference external" href="http://www.scipy.org">http://www.scipy.org</a></p>
 </section>
 <section id="Atomic-Simulation-Environment-(ASE)">
@@ -693,7 +415,7 @@ lmp_mpi &lt; lammps.in
 <li><p>Wide range of calculators, very similar data model for Atoms objects to QUIP</p></li>
 <li><p>Can use many codes as drop-in replacements:</p></li>
 </ul>
-<center><p><img alt="a3b695b09b8542fd8abc729533354e6c" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
+<center><p><img alt="3b098ed8b7cb40e393dcd90604cd1577" class="no-scaled-link" src="../_images/ase-calculators.png" style="width: 60%;" /></p>
 </center><p><a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">https://wiki.fysik.dtu.dk/ase/</a></p>
 </section>
 <section id="quippy-demo:-analysing-GAP-models-with-predictive-variance">
@@ -1025,7 +747,7 @@ array([1.09028249, 1.06446493, 1.08042361, 1.09726393, 1.04964909,
 <ul class="simple">
 <li><p><a class="reference external" href="https://wiki.fysik.dtu.dk/ase/index.html">ASE</a> integration has already been discussed</p></li>
 <li><p><a class="reference external" href="https://asr.readthedocs.io/en/latest/">ASR</a> (Atomic Simulation Recipes) recently released workflow management tool</p></li>
-<li><p><a class="reference external" href="https://github.com/libAtoms/matscipy">matscipy</a>, developed by James Kermode and Lars Pastewka, provides generic materials science tools, e.g. elastic constants, dislocation and fracture structure generation, as well as acting as a gateway for functionality which will later be contributed to ASE</p></li>
+<li><p><a class="reference external" href="https://github.com/libAtoms/matscipy">matscipy</a>, developed by James Kermode and Lars Pastewka, provides generic materials science tools, e.g. elastic constants, dislocation and fracture structure generation, as well as acting as a gateway for functionality which will later be contributed to ASE</p></li>
 <li><p><a class="reference external" href="https://github.com/libAtoms/testing-framework">testing-framework</a> is a generic testing framework for atomistic models, particularly relevant for data-driven/machine learning potentials. There’s a Binderised <a class="reference external" href="https://mybinder.org/v2/gh/libAtoms/testing-framework/public?filepath=examples%2Fdemo.ipynb">demo notebook</a> in its repo.</p></li>
 <li><p><a class="reference external" href="https://github.com/libAtoms/pymatnest">pymatnest</a> is a package for carrying out nested sampling to explore the energy landscape of materials. It has efficient interfaces to both QUIP and LAMMPS.</p></li>
 </ul>
@@ -1034,7 +756,7 @@ array([1.09028249, 1.06446493, 1.08042361, 1.09726393, 1.04964909,
 <h1>Generalisation: <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> wraps other Fortran codes<a class="headerlink" href="#Generalisation:-f90wrap-wraps-other-Fortran-codes" title="Permalink to this heading"></a></h1>
 <!-- <img src="f90wrap.png" align="left"> --><ul class="simple">
 <li><p>Writing deep Python interfaces ‘by hand’ is possible but tedious</p></li>
-<li><p>There are good automatic interface generators for C++ codes (e.g. SWIG or Boost.Python), but nothing support modern Fortran.</p></li>
+<li><p>There are good automatic interface generators for C++ codes (e.g. SWIG or Boost.Python), but nothing support modern Fortran.</p></li>
 <li><p>NumPy’s <code class="docutils literal notranslate"><span class="pre">f2py</span></code> tool provides basic Fortran wrapping</p></li>
 <li><p>My <a class="reference external" href="https://github.com/jameskermode/f90wrap">f90wrap</a> package adds an additional layer of wrappers, giving support for derived types, module data, efficient array access</p></li>
 <li><p>As well as <code class="docutils literal notranslate"><span class="pre">quippy</span></code>, <code class="docutils literal notranslate"><span class="pre">f90wrap</span></code> provides a deep <a class="reference external" href="http://wrap.warwick.ac.uk/67696/2/18112256">Python interface</a> to CASTEP (named <code class="docutils literal notranslate"><span class="pre">CasPyTep</span></code>) which allows in-place modification of data, efficient continuation of electronic calculations , etc.</p></li>
