@@ -324,13 +324,14 @@ subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   endif
 end subroutine MatrixD_QR_Solve
 
-subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R)
+subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R, do_export_R)
   real(dp), intent(inout), dimension(:,:), target :: A
   real(dp), intent(inout), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
   integer, intent(in) :: mb_A, nb_A
-  real(dp), intent(out), dimension(:, :), optional :: R
+  real(dp), intent(out), dimension(:, :), allocatable, optional :: R
+  logical, intent(in), optional :: do_export_R
 
   logical :: cheat_nb_A
   integer :: mb, nb, ml, nl, mg, ng
@@ -366,19 +367,20 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R)
   ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
   call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   !call MatrixD_to_array1d(B_SP, X)
-  call MatrixD_QR_Get_Weights(A_SP, B_SP, ng, X, R)
+  call MatrixD_QR_Get_Weights(A_SP, B_SP, ng, X, R, do_export_R)
 
   call finalise(A_SP)
   call finalise(B_SP)
 end subroutine SP_Matrix_QR_Solve
 
-subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R)
+subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
   ! Extract weights from b after MatrixD_QR_Solve
   ! Optionally extract R
   type(MatrixD), intent(in) :: A, b
   integer, intent(in) :: M
   real(dp), dimension(M), intent(out), target :: weights
   real(dp), dimension(M, M), intent(out), target, optional :: R
+  logical, intent(in), optional :: do_export_R
 
   type(ScaLAPACK) :: wt_scalapack
   type(MatrixD) :: wt_matrixD, R_matrixD
@@ -396,7 +398,14 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R)
   call Finalise(wt_matrixD)
 
   ! R
-  if (present(R)) then
+  if (present(R) .and. present(do_export_R)) then
+
+    if (wt_scalapack%blacs_context > -1) then
+      allocate(R(M, M))
+    else
+      allocate(R(1, 1))
+    end if
+
     R(:, :) = 0.0_dp
     ! Reuse wt_scalapack, assuming context of A equal to context of B
     call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
