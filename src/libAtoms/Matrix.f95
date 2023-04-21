@@ -400,6 +400,7 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
   ! R
   if (present(R) .and. present(do_export_R)) then
     if (do_export_R) then
+      call print("Extracting Posterior Covariance", PRINT_VERBOSE)
       if (wt_scalapack%blacs_context > -1) then
         allocate(R(M, M))
       else
