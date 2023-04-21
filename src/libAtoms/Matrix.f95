@@ -399,19 +399,20 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
 
   ! R
   if (present(R) .and. present(do_export_R)) then
+    if (do_export_R) then
+      if (wt_scalapack%blacs_context > -1) then
+        allocate(R(M, M))
+      else
+        allocate(R(1, 1))
+      end if
 
-    if (wt_scalapack%blacs_context > -1) then
-      allocate(R(M, M))
-    else
-      allocate(R(1, 1))
+      R(:, :) = 0.0_dp
+      ! Reuse wt_scalapack, assuming context of A equal to context of B
+      call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
+      R_matrixd%data(lbound(R,1):ubound(R,1),lbound(R,2):ubound(R,2)) => R(:, :)
+      call MatrixD_to_MatrixD(A, R_matrixD, M, M, UPLO="U")
+      call Finalise(R_matrixD)
     end if
-
-    R(:, :) = 0.0_dp
-    ! Reuse wt_scalapack, assuming context of A equal to context of B
-    call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
-    R_matrixd%data(lbound(R,1):ubound(R,1),lbound(R,2):ubound(R,2)) => R(:, :)
-    call MatrixD_to_MatrixD(A, R_matrixD, M, M, UPLO="U")
-    call Finalise(R_matrixD)
   end if
   call Finalise(wt_scalapack)
 
