@@ -53,6 +53,8 @@ type charge_gradients
  real(dp), dimension(:,:), allocatable :: gradients
 endtype charge_gradients
 
+public :: charge_gradients
+
 contains
 
   ! Ewald routine

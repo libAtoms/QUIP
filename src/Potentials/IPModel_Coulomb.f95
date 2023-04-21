@@ -315,17 +315,17 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
          !TODO check preprocessing on the args_str above
          call calc(this%my_descriptor(i_coordinate), at, my_descriptor_data, &
            do_descriptor=.true., do_grad_descriptor=do_grads, &
-           args_str=trim(string(args_str)), error=error)
+           args_str=trim(args_str), error=error)
          if (do_grads) then
             do i_desc = 1, size(my_descriptor_data%x)
                if( size(my_descriptor_data%x(i_desc)%ci) /= 1 ) then
-                  RAISE_ERROR("IPModel_vdW_Calc: descriptor is not local and atomic",error)
+                  RAISE_ERROR("IPModel_Coulomb_Calc: descriptor is not local and atomic",error)
                end if
                i = my_descriptor_data%x(i_desc)%ci(1)
                charge_grads(i)%neigh_lo = lbound(my_descriptor_data%x(i_desc)%ii, 1)
                charge_grads(i)%neigh_up = ubound(my_descriptor_data%x(i_desc)%ii, 1)
-               allocate(charge_grads(i)%gradients(charge_grads(i)%n_lo : charge_grads(i)%n_up))
-               allocate(charge_grads(i)%neigh_idx(charge_grads(i)%n_lo : charge_grads(i)%n_up))
+               allocate(charge_grads(i)%gradients(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
+               allocate(charge_grads(i)%neigh_idx(charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
                charge_grads(i)%neigh_idx = my_descriptor_data%x(i_desc)%ii
                charge_grads(i)%gradients = 0.0_dp
 
@@ -334,7 +334,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
                   xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
                charge(i_desc) = charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
                i = my_descriptor_data%x(i_desc)%ci(1)
-               do neigh_idx = charge_grads(i_desc)%neigh_lo, charge_grads(i)%neigh_hi
+               do neigh_idx = charge_grads(i_desc)%neigh_lo, charge_grads(i)%neigh_up
                   if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
                   charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,neigh_idx)) &
                      * my_descriptor_data%x(i_desc)%covariance_cutoff &
