@@ -379,7 +379,7 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
   type(MatrixD), intent(in) :: A, b
   integer, intent(in) :: M
   real(dp), dimension(M), intent(out), target :: weights
-  real(dp), dimension(M, M), intent(out), target, optional :: R
+  real(dp), dimension(:, :), intent(out), allocatable, target, optional :: R
   logical, intent(in), optional :: do_export_R
 
   type(ScaLAPACK) :: wt_scalapack
