@@ -273,7 +273,7 @@ subroutine MatrixD_to_array1d(this, array)
 end subroutine MatrixD_to_array1d
 
 subroutine MatrixD_to_MatrixD(A, B, M, N, ia, ja, ib, jb, UPLO)
-  ! Copy general submatrix A%data(ia:ia+M, ja:ja+N) to B%data(ib:ib+M, jb:jb+N)
+  ! Copy general submatrix A%data(ia:ia+M-1, ja:ja+N-1) to B%data(ib:ib+M-1, jb:jb+N-1)
   ! For ScaLAPACK use, assumes the BLACS context of B is the same as (or a child of) the context of A
   ! If UPLO is present, only copy upper (UPLO="U") or lower (UPLO="L") triangle
   type(MatrixD), intent(in) :: A
@@ -307,7 +307,7 @@ subroutine MatrixD_to_MatrixD(A, B, M, N, ia, ja, ib, jb, UPLO)
     my_jb = optional_default(1, jb)
 
     ! my_uplo = "F" will be interpreted as default full copy
-    call dlacpy(my_uplo, M, N, A%data(my_ia:my_ia+M, my_ja:my_ja+N), M, B%data(my_ib:my_ib+M, my_jb:my_jb+N), M)
+    call dlacpy(my_uplo, M, N, A%data(my_ia:my_ia+M-1, my_ja:my_ja+N-1), M, B%data(my_ib:my_ib+M-1, my_jb:my_jb+N-1), M)
   end if
 end subroutine MatrixD_to_MatrixD
 
@@ -364,11 +364,36 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
 
   ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
   call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
-  call MatrixD_to_array1d(B_SP, X)
+  !call MatrixD_to_array1d(B_SP, X)
+  call MatrixD_QR_Get_Weights(B_SP, ng, X)
 
   call finalise(A_SP)
   call finalise(B_SP)
 end subroutine SP_Matrix_QR_Solve
+
+subroutine MatrixD_QR_Get_Weights(b, M, weights)
+  ! Extract weights from b after MatrixD_QR_Solve
+  type(MatrixD), intent(in) :: b
+  integer, intent(in) :: M
+  real(dp), dimension(M), intent(out), target :: weights
+
+  type(ScaLAPACK) :: wt_scalapack
+  type(MatrixD) :: wt_matrixd
+
+  ! Initialise 1x1 scalapack process grid
+  call initialise(wt_scalapack, b%ScaLAPACK_Info_obj%ScaLAPACK_obj%MPI_obj, 1, 1)
+
+  call initialise(wt_matrixd, M, 1, M, 1, wt_scalapack, use_allocate=.false.)
+
+  weights(:) = 0.0_dp
+  wt_matrixd%data(lbound(weights,1):ubound(weights,1),1:1) => weights(:)
+
+  call MatrixD_to_MatrixD(b, wt_matrixd, M, 1)
+  call Finalise(wt_matrixd)
+  call Finalise(wt_scalapack)
+
+end subroutine MatrixD_QR_Get_Weights
+
 
 subroutine MatrixZ_Initialise(this, N, M, NB, MB, scalapack_obj)
   type(MatrixZ), intent(out) :: this
