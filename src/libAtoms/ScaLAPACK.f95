@@ -257,7 +257,7 @@ subroutine ScaLAPACK_Finalise(this)
   type(ScaLAPACK), intent(inout) :: this
 
 #ifdef SCALAPACK
-  if (this%active) then
+  if (this%active .and. this%blacs_context > -1) then
     call blacs_gridexit(this%blacs_context)
   endif
   this%active = .false.
@@ -363,7 +363,11 @@ subroutine ScaLAPACK_init_matrix_desc(this, N_R, N_C, NB_R, NB_C, desc, l_N_R, l
     lld = l_N_R
     if (l_N_r < 1) lld = 1
 
-    call descinit (desc, N_R, use_N_C, NB_R, use_NB_C, 0, 0, this%blacs_context, lld, err)
+    if (this%blacs_context >-1) then
+      call descinit (desc, N_R, use_N_C, NB_R, use_NB_C, 0, 0, this%blacs_context, lld, err)
+    else
+      desc(:) = -1
+    end if
   endif
 #endif
 end subroutine ScaLAPACK_init_matrix_desc
