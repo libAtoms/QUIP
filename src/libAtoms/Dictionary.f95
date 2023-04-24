@@ -63,7 +63,7 @@ module dictionary_module
 
   public :: C_KEY_LEN, STRING_LENGTH, DICT_N_FIELDS
   integer, parameter :: C_KEY_LEN = 256
-  integer, parameter :: STRING_LENGTH = SYSTEM_STRING_LENGTH_LONG     !% Maximum string length
+  integer, parameter :: STRING_LENGTH = 102400     !% Maximum string length
   integer, parameter :: DICT_N_FIELDS = 1000       !% Maximum number of fields during parsing
 
   public :: dictdata
