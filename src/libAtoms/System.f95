@@ -111,8 +111,8 @@ private
   real(dp),private                  :: start_time         ! Initial time
   integer, parameter, private       :: SYSTEM_STRING_LENGTH = 1024 !max line length read
   integer, parameter, private       :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
-  character(10240),public           :: line               ! 'line' is global and is used by other modules
-  character(10240),private          :: local_line         ! 'local_line' is private and System should use this instead
+  character(SYSTEM_STRING_LENGTH_LONG),public           :: line               ! 'line' is global and is used by other modules
+  character(SYSTEM_STRING_LENGTH_LONG),private          :: local_line         ! 'local_line' is private and System should use this instead
   type(inoutput),target,save,public :: mainlog            !% main output, connected to 'stdout' by default
   type(inoutput),target,save,public :: errorlog           !% error output, connected to 'stderr' by default
   type(inoutput),target,save,public :: mpilog             !% MPI output, written to by each mpi process
