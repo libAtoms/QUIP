@@ -1,11 +1,11 @@
 {
     'key_len':256,
-    'value_len':1024,
-    'value_length':1023,
-    'field_length':1023,
+    'value_len':102400,
+    'value_length':102399,
+    'field_length':102399,
     'string_length':102400,
     'table_string_length':10,
-    'default': 1024,
+    'default': 102400,
     'dict_char_a_len': 10,
     '*': 102400
     }
