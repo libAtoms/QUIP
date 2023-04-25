@@ -54,6 +54,7 @@ use error_module
 use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int
 use dictionary_module
 use paramreader_module
+use extendable_str_module
 use linearalgebra_module
 use atoms_types_module
 use atoms_module
@@ -142,7 +143,9 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
 
   type(Dictionary) :: params
   character(len=STRING_LENGTH) :: method_str
+  character(len=STRING_LENGTH) :: gp_label
   logical :: has_method
+  integer :: i_coordinate
 
   call Finalise(this)
   call initialise(params)
@@ -153,6 +156,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
       by xml parameters if present", has_value_target=has_method)
   call param_register(params, 'use_gp_charges', 'F', this%use_gp_charges, help_string="Calculate charges from a Gaussian Process model &
       instead of reading from XYZ (must supply an appropriate GAP params string in the XML)")
+  call param_register(params, 'charge_gp_label', '', gp_label, help_string="Label for the GP used to compute charges, if using")
   if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Initialise_str args_str')) then
     call system_abort("IPModel_Coulomb_Initialise_str failed to parse label from args_str="//trim(args_str))
   endif
@@ -177,7 +181,13 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
      if (this%method /= IPCoulomb_Method_Direct) then
         call system_abort("IPModel_Coulomb_Initialise_str: GP charges only supported for method==direct at the moment")
      endif
-     call gp_readXML(this%my_gp, param_str,label=trim(this%label))
+     call gp_readXML(this%my_gp, param_str,label=trim(gp_label))
+     allocate(this%my_descriptor(this%my_gp%n_coordinate))
+     do i_coordinate = 1, this%my_gp%n_coordinate
+        !TODO add GAP ("XML") version support once we get this working
+        !call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%xml_version)
+        call initialise(this%my_descriptor(i_coordinate), string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
+     enddo
   endif
 
   !  Add initialisation code here
@@ -211,7 +221,9 @@ subroutine IPModel_Coulomb_Finalise(this)
   ! Add finalisation code here
 
 #ifdef HAVE_GAP
+  !TODO find out what else we initialized (e.g. descriptors) that we need to clean up
   if (this%my_gp%initialised) call finalise(this%my_gp)
+  if (allocated(this%my_descriptor)) deallocate(this%my_descriptor)
 #endif
   if (allocated(this%atomic_num)) deallocate(this%atomic_num)
   if (allocated(this%type_of_atomic_num)) deallocate(this%type_of_atomic_num)
