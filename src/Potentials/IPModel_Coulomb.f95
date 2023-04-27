@@ -194,8 +194,7 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
      call gp_readXML(this%my_gp, param_str,label=trim(gp_label))
      allocate(this%my_descriptor(this%my_gp%n_coordinate))
      do i_coordinate = 1, this%my_gp%n_coordinate
-        !TODO add GAP ("XML") version support once we get this working
-        !call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%xml_version)
+        call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%gap_xml_version)
         call initialise(this%my_descriptor(i_coordinate), string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      enddo
   endif
@@ -327,6 +326,9 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       !TODO put all this in a subroutine
       allocate(my_charge(at%N))
       charge => my_charge
+      do i = 1, at%N
+         charge(i) = this%q0(at%Z(i))
+      end do
       ! Initialize charges from GP
       ! Would be better placed in a new subroutine tbh
       ! First construct the gradients object, if we need it
@@ -360,7 +362,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
                ! effectively ignores its value anyway
                charge_no_cutoff = gp_predict(this%my_gp%coordinate(i_coordinate), &
                   xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
-               charge(i) = charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
+               charge(i) = charge(i) + charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
                do neigh_idx = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
                   if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
                   charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,neigh_idx)) &
@@ -373,7 +375,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
             ! Really...? We still have to iterate explicitly over the coordinates, when
             ! in principle this is just a plain matrix multiplication??
             do i_desc = 1, size(my_descriptor_data%x)
-               charge(i_desc) = gp_predict(this%my_gp%coordinate(i_coordinate), &
+               charge(i) = charge(i) + gp_predict(this%my_gp%coordinate(i_coordinate), &
                      xStar=my_descriptor_data%x(i_desc)%data(:)) &
                   * my_descriptor_data%x(i_desc)%covariance_cutoff
             end do
