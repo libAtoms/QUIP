@@ -257,9 +257,10 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    integer, allocatable :: Z_s(:), Z_u(:)
    integer :: n_uniq_Zs, i_coordinate, i_desc, neigh_idx
    type(charge_gradients), dimension(:), allocatable :: charge_grads
-   real(dp), allocatable :: grad_coeffs(:), charge_grad_contrib(:)
+   real(dp), allocatable :: grad_coeffs(:)
+   real(dp) :: charge_grad_contrib(3)
 
-   type(descriptor_data), target :: my_descriptor_data
+   type(descriptor_data) :: my_descriptor_data
 
    real(dp), allocatable :: gamma_mat(:,:)
 
@@ -329,6 +330,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
            do_descriptor=.true., do_grad_descriptor=do_grads, &
            args_str=trim(args_str), error=error)
          if (do_grads) then
+            if (allocated(grad_coeffs)) deallocate(grad_coeffs)
+            allocate(grad_coeffs(ddims))
             do i_desc = 1, size(my_descriptor_data%x)
                if( size(my_descriptor_data%x(i_desc)%ci) /= 1 ) then
                   RAISE_ERROR("IPModel_Coulomb_Calc: descriptor is not local and atomic",error)
@@ -342,6 +345,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
                charge_grads(i)%gradients = 0.0_dp
 
                ! Now predict the charges and their gradients
+               ! Don't need to re-zero grad_coeffs since the gp_predict routine
+               ! effectively ignores its value anyway
                charge_no_cutoff = gp_predict(this%my_gp%coordinate(i_coordinate), &
                   xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
                charge(i_desc) = charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
@@ -363,6 +368,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
                   * my_descriptor_data%x(i_desc)%covariance_cutoff
             end do
          end if
+         call finalise(my_descriptor_data)
+         if (allocated(grad_coeffs)) deallocate(grad_coeffs)
       end do
 #endif
    else
