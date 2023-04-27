@@ -52,6 +52,7 @@ module IPModel_Coulomb_module
 
 use error_module
 use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int
+use periodictable_module, only : total_elements
 use dictionary_module
 use paramreader_module
 use extendable_str_module
@@ -76,6 +77,12 @@ implicit none
 private
 
 include 'IPModel_interface.h'
+
+#ifdef GAP_VERSION
+   integer, parameter :: gap_version = GAP_VERSION
+#else
+   integer, parameter :: gap_version = 0
+#endif
 
 integer, parameter :: IPCoulomb_Method_Direct = 1
 integer, parameter :: IPCoulomb_Method_Yukawa = 2
@@ -107,16 +114,19 @@ type IPModel_Coulomb
 
   logical :: use_gp_charges = .false.
 
+  real(dp), dimension(total_elements) :: q0 = 0.0_dp
+  integer :: gap_xml_version
 #ifdef HAVE_GAP
   type(gpSparse) :: my_gp
   type(descriptor), dimension(:), allocatable :: my_descriptor
 #endif
 
   character(len=STRING_LENGTH) :: label
+  character(len=STRING_LENGTH) :: gap_label
 
 endtype IPModel_Coulomb
 
-logical, private :: parse_in_ip, parse_matched_label
+logical, private :: parse_in_ip, parse_matched_label, parse_gap_params, parse_gap_data
 type(IPModel_Coulomb), private, pointer :: parse_ip
 
 interface Initialise
@@ -494,6 +504,8 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
 
   parse_in_ip = .false.
   parse_matched_label = .false.
+  parse_gap_params = .false.
+  parse_gap_data = .false.
   parse_ip => this
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
@@ -524,7 +536,7 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
   character(len=STRING_LENGTH), dimension(99) :: signature_fields
 
   logical :: energy_shift, linear_force_shift
-  integer :: ti, tj, i ,n_atoms
+  integer :: ti, tj, i ,n_atoms, Z
   real(dp) :: alpha_au
 
   if (name == 'Coulomb_params') then ! new Coulomb stanza
@@ -646,6 +658,48 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
         parse_ip%type_of_atomic_num(parse_ip%atomic_num(ti)) = ti
     end do
 
+  elseif (name == "GAP_params") then
+     call QUIP_FoX_get_value(attributes, 'label', value, status)
+     if (status /= 0) value = ''
+     !TODO check that this matches the GAP label given in the init_args
+     parse_ip%gap_label = trim(value)
+
+     call QUIP_FoX_get_value(attributes, 'gap_version', value, status)
+     if (status == 0) then
+        parse_ip%gap_xml_version = string_to_int(value)
+        if (parse_ip%gap_xml_version > gap_version) &
+        call system_abort( &
+           'Database was created with a later version of the code.' // &
+           'Version of code used to generate the database is '//trim(value)//'.'// &
+           'Version of current code is '//gap_version//'. Please update your code.')
+     else
+        parse_ip%gap_xml_version = 0
+     endif
+     parse_gap_params = .true.
+  elseif (name == "GAP_data" .and. parse_gap_params) then
+     call QUIP_FoX_get_value(attributes, 'e0', value, status)
+     ! Supplied one e0 (aka q0) for the whole fit
+     if(status == 0) then
+        read (value, *) parse_ip%q0(1)
+        parse_ip%q0 = parse_ip%q0(1)
+     endif
+     parse_gap_data = .true.
+  elseif (name == "e0" .and. parse_gap_data) then
+     ! Per-species e0/q0 data
+     call QUIP_FoX_get_value(attributes, 'Z', value, status)
+     if(status == 0) then
+        read (value, *) Z
+     else
+        call system_abort('IPModel_vdW_read_params_xml cannot find Z')
+     endif
+     if( Z > size(parse_ip%q0) ) call system_abort('IPModel_vdW_read_params_xml: attribute Z = '//Z//' > '//size(parse_ip%q0))
+
+     call QUIP_FoX_get_value(attributes, 'value', value, status)
+     if(status == 0) then
+        read (value, *) parse_ip%q0(Z)
+     else
+        call system_abort('IPModel_vdW_read_params_xml cannot find value in e0')
+     endif
   endif
 
 
@@ -661,6 +715,16 @@ subroutine IPModel_endElement_handler(URI, localname, name)
       parse_in_ip = .false.
     end if
   endif
+  if (parse_gap_params) then
+    if (name == 'GAP_params') then
+      parse_gap_params = .false.
+    end if
+  end if
+  if (parse_gap_data) then
+    if (name == 'GAP_data') then
+      parse_gap_data = .false.
+    end if
+  end if
 
 end subroutine IPModel_endElement_handler
 
