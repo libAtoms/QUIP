@@ -259,17 +259,14 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    real(dp), dimension(:), allocatable, target :: my_charge
    real(dp), dimension(:), pointer :: charge
    real(dp), dimension(:,:), allocatable :: dummy_force
-   real(dp) :: r_scale, E_scale, e_pre_calc, charge_no_cutoff
+   real(dp) :: r_scale, E_scale, e_pre_calc
    logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, do_grads, do_print_charges
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
-   integer :: n_uniq_Zs, i_coordinate, i_desc, neigh_idx
+   integer :: n_uniq_Zs
    type(charge_gradients), dimension(:), allocatable :: charge_grads
-   real(dp), allocatable :: grad_coeffs(:)
-   real(dp) :: charge_grad_contrib(3)
 
-   type(descriptor_data) :: my_descriptor_data
 
    real(dp), allocatable :: gamma_mat(:,:)
 
@@ -323,67 +320,10 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       endif
 #ifdef HAVE_GAP
    elseif (this%use_gp_charges) then
-      !TODO put all this in a subroutine
       allocate(my_charge(at%N))
       charge => my_charge
-      do i = 1, at%N
-         charge(i) = this%q0(at%Z(i))
-      end do
-      ! Initialize charges from GP
-      ! Would be better placed in a new subroutine tbh
-      ! First construct the gradients object, if we need it
       do_grads = present(f) .or. present(virial) .or. present(local_virial)
-      if (do_grads) then
-         allocate(charge_grads(at%N))
-      end if
-      do i_coordinate = 1, this%my_gp%n_coordinate
-         ddims = descriptor_dimensions(this%my_descriptor(i_coordinate))
-         !TODO check preprocessing on the args_str above
-         call calc(this%my_descriptor(i_coordinate), at, my_descriptor_data, &
-           do_descriptor=.true., do_grad_descriptor=do_grads, &
-           args_str=trim(args_str), error=error)
-         if (do_grads) then
-            if (allocated(grad_coeffs)) deallocate(grad_coeffs)
-            allocate(grad_coeffs(ddims))
-            do i_desc = 1, size(my_descriptor_data%x)
-               if( size(my_descriptor_data%x(i_desc)%ci) /= 1 ) then
-                  RAISE_ERROR("IPModel_Coulomb_Calc: descriptor is not local and atomic",error)
-               end if
-               i = my_descriptor_data%x(i_desc)%ci(1)
-               charge_grads(i)%neigh_lo = lbound(my_descriptor_data%x(i_desc)%ii, 1)
-               charge_grads(i)%neigh_up = ubound(my_descriptor_data%x(i_desc)%ii, 1)
-               allocate(charge_grads(i)%gradients(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
-               allocate(charge_grads(i)%neigh_idx(charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
-               charge_grads(i)%neigh_idx = my_descriptor_data%x(i_desc)%ii
-               charge_grads(i)%gradients = 0.0_dp
-
-               ! Now predict the charges and their gradients
-               ! Don't need to re-zero grad_coeffs since the gp_predict routine
-               ! effectively ignores its value anyway
-               charge_no_cutoff = gp_predict(this%my_gp%coordinate(i_coordinate), &
-                  xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
-               charge(i) = charge(i) + charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
-               do neigh_idx = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
-                  if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
-                  charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,neigh_idx)) &
-                     * my_descriptor_data%x(i_desc)%covariance_cutoff &
-                     + charge_no_cutoff * my_descriptor_data%x(i_desc)%grad_covariance_cutoff(:,neigh_idx)
-                  charge_grads(i)%gradients(:,neigh_idx) = charge_grads(i)%gradients(:,neigh_idx) + charge_grad_contrib
-               end do
-            end do
-         else
-            ! Really...? We still have to iterate explicitly over the coordinates, when
-            ! in principle this is just a plain matrix multiplication??
-            do i_desc = 1, size(my_descriptor_data%x)
-               charge(i) = charge(i) + gp_predict(this%my_gp%coordinate(i_coordinate), &
-                     xStar=my_descriptor_data%x(i_desc)%data(:)) &
-                  * my_descriptor_data%x(i_desc)%covariance_cutoff
-            end do
-         end if
-         call finalise(my_descriptor_data)
-         if (allocated(grad_coeffs)) deallocate(grad_coeffs)
-      end do
-      if (do_print_charges) call print ("Predicted charges: " // my_charge(:))
+      call IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_grads, do_print_charges, args_str, error)
 #endif
    else
       allocate(my_charge(at%N))
@@ -460,6 +400,92 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
 
 end subroutine IPModel_Coulomb_Calc
 
+
+subroutine IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_grads,&
+                                           do_print_charges, args_str, error)
+   type(IPModel_Coulomb), intent(inout) :: this
+   type(Atoms), intent(in) :: at
+   real(dp), dimension(:), pointer, intent(out) :: charge
+   logical, intent(in) :: do_grads
+   type(charge_gradients), dimension(:), allocatable, intent(out), optional :: charge_grads
+   character(len=*) :: args_str
+   logical, intent(in), optional :: do_print_charges
+   integer, intent(out), optional :: error
+
+   integer :: i, i_coordinate, i_desc, ddims, neigh_idx
+   type(descriptor_data) :: my_descriptor_data
+   real(dp), allocatable :: grad_coeffs(:)
+   real(dp) :: charge_grad_contrib(3)
+   real(dp) :: charge_no_cutoff
+   logical :: do_print
+
+   INIT_ERROR(error)
+   if (.not. present(do_print_charges)) then
+      do_print = .false.
+   else
+      do_print = do_print_charges
+   end if
+
+   ! Initialize charges with baseline
+   do i = 1, at%N
+      charge(i) = this%q0(at%Z(i))
+   end do
+   ! First construct the gradients object, if we need it
+   if (do_grads) allocate(charge_grads(at%N))
+   do i_coordinate = 1, this%my_gp%n_coordinate
+      ddims = descriptor_dimensions(this%my_descriptor(i_coordinate))
+      !TODO check preprocessing on the args_str in IPModel_init and Calc
+      call calc(this%my_descriptor(i_coordinate), at, my_descriptor_data, &
+        do_descriptor=.true., do_grad_descriptor=do_grads, &
+        args_str=trim(args_str), error=error)
+      if (do_grads) then
+         if (.not. present(charge_grads)) then
+            RAISE_ERROR("IPModel_Coulomb_Predict_charges: requested gradients &
+               but didn't provide a charge_grads argument to store them", error)
+         end if
+         if (allocated(grad_coeffs)) deallocate(grad_coeffs)
+         allocate(grad_coeffs(ddims))
+         do i_desc = 1, size(my_descriptor_data%x)
+            if( size(my_descriptor_data%x(i_desc)%ci) /= 1 ) then
+               RAISE_ERROR("IPModel_Coulomb_Predict_charges: descriptor is not local and atomic",error)
+            end if
+            i = my_descriptor_data%x(i_desc)%ci(1)
+            charge_grads(i)%neigh_lo = lbound(my_descriptor_data%x(i_desc)%ii, 1)
+            charge_grads(i)%neigh_up = ubound(my_descriptor_data%x(i_desc)%ii, 1)
+            allocate(charge_grads(i)%gradients(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
+            allocate(charge_grads(i)%neigh_idx(charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
+            charge_grads(i)%neigh_idx = my_descriptor_data%x(i_desc)%ii
+            charge_grads(i)%gradients = 0.0_dp
+
+            ! Now predict the charges and their gradients
+            ! Don't need to re-zero grad_coeffs since the gp_predict routine
+            ! effectively ignores its value anyway
+            charge_no_cutoff = gp_predict(this%my_gp%coordinate(i_coordinate), &
+               xStar=my_descriptor_data%x(i_desc)%data(:), gradPredict=grad_coeffs)
+            charge(i) = charge(i) + charge_no_cutoff * my_descriptor_data%x(i_desc)%covariance_cutoff
+            do neigh_idx = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
+               if( .not. my_descriptor_data%x(i_desc)%has_grad_data(neigh_idx) ) cycle
+               charge_grad_contrib = matmul(grad_coeffs, my_descriptor_data%x(i_desc)%grad_data(:,:,neigh_idx)) &
+                  * my_descriptor_data%x(i_desc)%covariance_cutoff &
+                  + charge_no_cutoff * my_descriptor_data%x(i_desc)%grad_covariance_cutoff(:,neigh_idx)
+               charge_grads(i)%gradients(:,neigh_idx) = charge_grads(i)%gradients(:,neigh_idx) + charge_grad_contrib
+            end do
+         end do
+      else
+         ! Really...? We still have to iterate explicitly over the coordinates, when
+         ! in principle this is just a plain matrix multiplication??
+         do i_desc = 1, size(my_descriptor_data%x)
+            charge(i) = charge(i) + gp_predict(this%my_gp%coordinate(i_coordinate), &
+                  xStar=my_descriptor_data%x(i_desc)%data(:)) &
+               * my_descriptor_data%x(i_desc)%covariance_cutoff
+         end do
+      end if
+      call finalise(my_descriptor_data)
+      if (allocated(grad_coeffs)) deallocate(grad_coeffs)
+   end do
+   if (do_print) call print ("Predicted charges: " // charge(1:at%N))
+
+end subroutine
 
 subroutine IPModel_Coulomb_Print(this, file)
   type(IPModel_Coulomb), intent(in) :: this
