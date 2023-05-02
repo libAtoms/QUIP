@@ -1322,7 +1322,7 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(my_counts) /= size(v_out)) then
+  if (sum(my_counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_gatherv_int1 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
   endif
 
@@ -1375,7 +1375,7 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(my_counts) /= size(v_out)) then
+  if (sum(my_counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_gatherv_real2 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
   endif
 
@@ -1423,7 +1423,7 @@ subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
   call mpi_allgather(my_count, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(counts) /= size(v_out)) then
+  if (sum(counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_allgatherv_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
   endif
 
