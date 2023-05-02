@@ -191,7 +191,20 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
      if (this%method /= IPCoulomb_Method_Direct) then
         call system_abort("IPModel_Coulomb_Initialise_str: GP charges only supported for method==direct at the moment")
      endif
-     call gp_readXML(this%my_gp, param_str,label=trim(gp_label))
+     if (trim(this%gap_label) /= '') then
+        if ((trim(gp_label) /= '') .and. (trim(gp_label) /= trim(this%gap_label))) then
+           !TODO this could also be due to supplying multiple GAP parameter sets in the XML, but
+           !     I don't think we want to support that right now
+           call system_abort("IPModel_Coulomb_Initialise_str: Supplied conflicting GAP labels in init_args and XML - &
+              init_args label: " // trim(gp_label) // ", XML label: " // trim(this%gap_label))
+        else
+           gp_label = this%gap_label
+        endif
+     elseif (trim(gp_label) == '') then
+        call system_abort("IPModel_Coulomb_Initialise_str: Asked for GP charges, but provided no GAP label &
+           in init_args or XML")
+     endif
+     call gp_readXML(this%my_gp, param_str, label=trim(gp_label))
      allocate(this%my_descriptor(this%my_gp%n_coordinate))
      do i_coordinate = 1, this%my_gp%n_coordinate
         call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%gap_xml_version)
@@ -534,6 +547,7 @@ subroutine IPModel_Coulomb_read_params_xml(this, param_str)
   parse_matched_label = .false.
   parse_gap_params = .false.
   parse_gap_data = .false.
+  this%gap_label = ''
   parse_ip => this
   call open_xml_string(fxml, param_str)
   call parse(fxml,  &
@@ -687,9 +701,9 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
     end do
 
   elseif (name == "GAP_params") then
+     if (trim(parse_ip%gap_label) /= '') return ! We already parsed a GAP_params block
      call QUIP_FoX_get_value(attributes, 'label', value, status)
      if (status /= 0) value = ''
-     !TODO check that this matches the GAP label given in the init_args
      parse_ip%gap_label = trim(value)
 
      call QUIP_FoX_get_value(attributes, 'gap_version', value, status)
