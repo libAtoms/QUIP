@@ -377,10 +377,6 @@ subroutine MPI_context_scatter_hosts(this, error)
   end if
   call print("MPI my_host  : "//this%my_host)
   call print("MPI hostname : "//this%hostname)
-
-  if (allocated(hostnames)) deallocate(hostnames)
-  if (allocated(refs)) deallocate(refs)
-  if (allocated(hosts)) deallocate(hosts)
 #endif
 end subroutine MPI_context_scatter_hosts
 
@@ -689,7 +685,6 @@ subroutine MPI_context_sum_in_place_real2(this, v, error)
   allocate(v_sum(size(v,1),size(v,2)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -718,7 +713,6 @@ subroutine MPI_context_sum_in_place_real3(this, v, error)
   allocate(v_sum(size(v,1),size(v,2),size(v,3)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -747,7 +741,6 @@ subroutine MPI_context_sum_in_place_complex2(this, v, error)
   allocate(v_sum(size(v,1),size(v,2)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
@@ -803,7 +796,6 @@ subroutine MPI_context_sum_in_place_int1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
 #endif
@@ -859,7 +851,6 @@ subroutine MPI_context_sum_in_place_real1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -888,7 +879,6 @@ subroutine MPI_context_sum_in_place_complex1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
@@ -1346,12 +1336,8 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   PASS_MPI_ERROR(err, error)
 
   if (present(counts)) then
-    if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
-
-  if (allocated(displs)) deallocate(displs)
-  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_int1
@@ -1403,12 +1389,8 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   PASS_MPI_ERROR(err, error)
 
   if (present(counts)) then
-    if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
-
-  if (allocated(displs)) deallocate(displs)
-  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_real2
@@ -1450,10 +1432,6 @@ subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
                       v_out, counts, displs, MPI_DOUBLE_PRECISION, &
                       this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  deallocate(displs)
-  deallocate(counts)
-
 #endif
 
 end subroutine MPI_context_allgatherv_real2
@@ -1531,8 +1509,6 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
 
   call MPI_scatterv(v_in, counts, displs, MPI_INTEGER, v_out, count, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_int1
@@ -1576,8 +1552,6 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_real1
@@ -1621,8 +1595,6 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_real2
