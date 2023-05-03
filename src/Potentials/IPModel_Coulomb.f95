@@ -350,7 +350,11 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
 
    selectcase(this%method)
    case(IPCoulomb_Method_Direct)
-      call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
+      if (this%use_gp_charges .and. do_grads) then
+         call Direct_Coulomb_calc(at, charge, charge_grads, e=e, f=f, virial=virial, error = error)
+      else
+         call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
+      endif
    case(IPCoulomb_Method_Yukawa)
       call yukawa_charges(at, charge, this%cutoff, this%yukawa_alpha, this%yukawa_smooth_length, &
       e, local_e, f, virial, &
