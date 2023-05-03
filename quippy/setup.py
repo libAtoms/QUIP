@@ -7,18 +7,32 @@ import shutil
 
 major_version = '0.9'
 
-# check for match with semantic version of the form a.b.c, plus optional suffix
-semver_re = re.compile(r"^(\d+\.)?(\d+\.)?(\*|\d+)(-[A-Za-z0-9]+)*$")
+# source: https://peps.python.org/pep-0440/
+# adapted for local version identifier
+def is_canonical(version):
+    return re.match(r'^([1-9][0-9]*!)?'
+                    r'(0|[1-9][0-9]*)'
+                    r'(\.(0|[1-9][0-9]*))*'
+                    r'((a|b|rc)(0|[1-9][0-9]*))?'
+                    r'(\.post(0|[1-9][0-9]*))?'
+                    r'(\.dev(0|[1-9][0-9]*))?'
+                    r'(\+[a-zA-Z0-9][a-zA-Z0-9\.]*)?$',
+                    version) is not None
 
 with open('VERSION') as fin:
     version_string = fin.readline().strip()
     if version_string.startswith('v'):
         version_string = version_string[1:]
-    if semver_re.match(version_string):
+
+    if is_canonical(version_string):
         version = version_string
     else:
-        version_string = version_string.replace('-dirty', '.dirty')
+        version_string = version_string.replace('-', '.')
         version = major_version + '+git' + version_string
+        if not is_canonical(version):
+            print(f"Warning: Version '{version}' is not PEP440 canonical. "
+                  f"This may prevent a successful build of wheels.")
+
 print('version:', version)
 
 platform = sysconfig.get_platform() + "-" + sysconfig.get_python_version()
