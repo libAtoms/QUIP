@@ -462,6 +462,7 @@ subroutine IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_gr
             if( size(my_descriptor_data%x(i_desc)%ci) /= 1 ) then
                RAISE_ERROR("IPModel_Coulomb_Predict_charges: descriptor is not local and atomic",error)
             end if
+            ! I suppose this %ci(1) is specific to single-center descriptors...
             i = my_descriptor_data%x(i_desc)%ci(1)
             charge_grads(i)%neigh_lo = lbound(my_descriptor_data%x(i_desc)%ii, 1)
             charge_grads(i)%neigh_up = ubound(my_descriptor_data%x(i_desc)%ii, 1)
@@ -488,6 +489,7 @@ subroutine IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_gr
          ! Really...? We still have to iterate explicitly over the coordinates, when
          ! in principle this is just a plain matrix multiplication??
          do i_desc = 1, size(my_descriptor_data%x)
+            i = my_descriptor_data%x(i_desc)%ci(1)
             charge(i) = charge(i) + gp_predict(this%my_gp%coordinate(i_coordinate), &
                   xStar=my_descriptor_data%x(i_desc)%data(:)) &
                * my_descriptor_data%x(i_desc)%covariance_cutoff
