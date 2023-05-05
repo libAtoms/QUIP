@@ -470,8 +470,9 @@ subroutine IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_gr
             i = my_descriptor_data%x(i_desc)%ci(1)
             charge_grads(i)%neigh_lo = lbound(my_descriptor_data%x(i_desc)%ii, 1)
             charge_grads(i)%neigh_up = ubound(my_descriptor_data%x(i_desc)%ii, 1)
-            allocate(charge_grads(i)%gradients(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
             allocate(charge_grads(i)%neigh_idx(charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
+            allocate(charge_grads(i)%gradients(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
+            allocate(charge_grads(i)%neigh_pos_diff(3, charge_grads(i)%neigh_lo : charge_grads(i)%neigh_up))
             charge_grads(i)%neigh_idx = my_descriptor_data%x(i_desc)%ii
             charge_grads(i)%gradients = 0.0_dp
 
@@ -487,6 +488,8 @@ subroutine IPModel_Coulomb_Predict_charges(this, at, charge, do_grads, charge_gr
                   * my_descriptor_data%x(i_desc)%covariance_cutoff &
                   + charge_no_cutoff * my_descriptor_data%x(i_desc)%grad_covariance_cutoff(:,neigh_idx)
                charge_grads(i)%gradients(:,neigh_idx) = charge_grads(i)%gradients(:,neigh_idx) + charge_grad_contrib
+               charge_grads(i)%neigh_pos_diff(:,neigh_idx) = my_descriptor_data%x(i_desc)%pos(:,neigh_idx) &
+                                                           - my_descriptor_data%x(i_desc)%pos(:,charge_grads(i)%neigh_lo)
             end do
          end do
       else

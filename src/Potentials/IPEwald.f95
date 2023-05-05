@@ -51,6 +51,7 @@ type charge_gradients
  integer :: neigh_lo, neigh_up
  integer, dimension(:), allocatable :: neigh_idx
  real(dp), dimension(:,:), allocatable :: gradients
+ real(dp), dimension(:,:), allocatable :: neigh_pos_diff
 endtype charge_gradients
 
 public :: charge_gradients
@@ -445,20 +446,24 @@ contains
                  f(:,j) = f(:,j) - force
               endif
 
+              if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
+
               if( present(charge_grads) ) then
+
                  ! we need to add the charge-gradient term to the pairwise forces
                  ! this works out to q_j/r_ij grad_k q_i
                  ! for all k in the neighbourhood of i
                  do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
                     k = charge_grads(i)%neigh_idx(nk)
                     grad_k_term = charge(j) / r_ij * charge_grads(i)%gradients(:,nk)
-                    f(:,k) = f(:,k) - grad_k_term
+                    if (present(f)) then
+                       f(:,k) = f(:,k) - grad_k_term
+                    endif
+                    if (present(virial)) then
+                       virial = virial - (grad_k_term .outer. charge_grads(i)%neigh_pos_diff(:,nk))
+                    endif
                  end do
               endif
-
-              if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
-              ! TODO charge-gradient correction for the virial?
-              ! forces are no longer strictly pairwise...
           endif
       enddo
     enddo
