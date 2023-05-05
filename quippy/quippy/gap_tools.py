@@ -1,4 +1,3 @@
-from ase.calculators.calculator import all_changes
 import numpy as np
 from xml.etree.ElementTree import parse, fromstring, tostring, ElementTree
 import re
@@ -8,7 +7,6 @@ from quippy.potential import Potential
 from ase.data import chemical_symbols
 from scipy.stats import norm
 from scipy.linalg import solve_triangular
-from ase.calculators.mixing import AverageCalculator
 
 
 class DescXMLWrapper():
