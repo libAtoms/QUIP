@@ -114,7 +114,9 @@ class GAPXMLWrapper():
             self._xml_tree.write(f)
 
     def as_potential(self):
-        return Potential(param_str=tostring(self._xml_tree.getroot()))
+        pot = Potential(param_str=tostring(self._xml_tree.getroot()))
+        pot.xml = self
+        return pot
 
     def _posterior_sample(self):
 
