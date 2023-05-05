@@ -188,8 +188,10 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   endif
 
   if (this%use_gp_charges) then
-     if (this%method /= IPCoulomb_Method_Direct) then
-        call system_abort("IPModel_Coulomb_Initialise_str: GP charges only supported for method==direct at the moment")
+     if (.not. ((this%method == IPCoulomb_Method_Direct) .or. &
+                (this%method == IPCoulomb_Method_DSF))) then
+        call system_abort("IPModel_Coulomb_Initialise_str: GP charges only supported &
+                           for method==direct or method==dsf at the moment")
      endif
      if (trim(this%gap_label) /= '') then
         if ((trim(gp_label) /= '') .and. (trim(gp_label) /= trim(this%gap_label))) then
@@ -398,7 +400,11 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
       endif
       deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
-      call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
+      if (this%use_gp_charges .and. do_grads) then
+         call DSF_Coulomb_calc(at, charge, this%DSF_alpha, charge_grads, e=e, f=f, local_e=local_e, virial=virial, cutoff=this%cutoff, error = error)
+      else
+         call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
+      endif
    case default
       RAISE_ERROR("IPModel_Coulomb_Calc: unknown method", error)
    endselect

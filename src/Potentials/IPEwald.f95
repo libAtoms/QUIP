@@ -477,11 +477,12 @@ contains
 
   endsubroutine Direct_Coulomb_calc
 
-  subroutine DSF_Coulomb_calc(at_in,charge, alpha, e, f, virial, local_e, e_potential, e_field, cutoff, error)
+  subroutine DSF_Coulomb_calc(at_in,charge, alpha, charge_grads, e, f, virial, local_e, e_potential, e_field, cutoff, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
     real(dp), intent(in)              :: alpha
+    type(charge_gradients), dimension(:), intent(in), optional :: charge_grads
 
     real(dp), intent(out), optional                    :: e
     real(dp), dimension(:,:), intent(out), optional    :: f
@@ -492,11 +493,11 @@ contains
     real(dp), intent(in), optional                     :: cutoff
     integer, intent(out), optional                     :: error
 
-    integer  :: i, j, n
+    integer  :: i, j, n, k, nk
 
-    real(dp) :: my_cutoff, r_ij, phi_i, e_i, v_ij, dv_ij, v_cutoff, dv_cutoff, two_alpha_over_square_root_pi
+    real(dp) :: my_cutoff, r_ij, phi_ij, phi_i, e_i, v_ij, dv_ij, v_cutoff, dv_cutoff, two_alpha_over_square_root_pi
 
-    real(dp), dimension(3) :: u_ij, dphi_i, dphi_ij
+    real(dp), dimension(3) :: u_ij, dphi_i, dphi_ij, grad_k_term
     real(dp), dimension(3,3) :: dphi_ij_outer_r_ij
 
     type(Atoms), target :: my_at
@@ -542,12 +543,29 @@ contains
           if (r_ij .feq. 0.0_dp) cycle
           
           v_ij = erfc(alpha*r_ij) / r_ij 
-          phi_i = phi_i + charge(j) * ( v_ij - v_cutoff + dv_cutoff * (r_ij - my_cutoff) )
+          phi_ij = charge(j) * ( v_ij - v_cutoff + dv_cutoff * (r_ij - my_cutoff) )
+          phi_i = phi_i + phi_ij
 
           if( present(f) .or. present(virial) .or. present(e_field) ) then
              dv_ij = ( v_ij + two_alpha_over_square_root_pi * exp(-(alpha*r_ij)**2) ) / r_ij
              dphi_ij = charge(j) * ( dv_ij - dv_cutoff ) * u_ij
              dphi_i = dphi_i + dphi_ij
+
+             ! Add the variable-charge term, very similar to the Direct case
+             ! Each ij pair contributes a gradient term to every atom in each
+             ! of the pair's atoms' respective neighbourhoods
+             if (present(charge_grads)) then
+                do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
+                   k = charge_grads(i)%neigh_idx(nk)
+                   grad_k_term = phi_ij * charge_grads(i)%gradients(:,nk)
+                   if (present(f)) then
+                      f(:,k) = f(:,k) - grad_k_term
+                   endif
+                   if (present(virial)) then
+                      virial = virial - (grad_k_term .outer. charge_grads(i)%neigh_pos_diff(:,nk))
+                   endif
+                enddo
+             endif
 
              if(present(virial) ) dphi_ij_outer_r_ij = dphi_ij_outer_r_ij + ( dphi_ij .outer. u_ij ) * r_ij
           endif
