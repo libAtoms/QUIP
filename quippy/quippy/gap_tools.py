@@ -13,7 +13,17 @@ from ase.calculators.mixing import AverageCalculator
 
 class DescXMLWrapper():
     '''
-    Small shell class for storing key descriptor info from a GAP xml read
+    Small wrapper for storing key descriptor info from a GAP xml file
+
+    Key attributes:
+    self.quip_desc : Corresponding quippy.descriptors.Descriptor object
+    self.nsparse : Number of sparse points in the descriptor sparse GP
+    self.weights : Weights for the descriptor sparse GP
+    self.sparse_cuts : Cutoff function evaluations for each of the sparse points
+    self.cov_type : Covariance kernel string
+    self.desc_type : Name of descriptor function
+    self.name : Useful name for the descriptor
+
 
     '''
     _Z_regex = "(Z|z)[1-9]*\s?=\s?([1-9]+)"  # RegEx to search command line for "Z=, Z1 = or z2= style args"
@@ -64,18 +74,24 @@ class DescXMLWrapper():
 
 class GAPXMLWrapper():
     '''
-    Small shell class to store key GAP information
+    Small wrapper class to store key GAP information
+
+    Key Attributes:
+    self.gap_label : Label of the GAP potential
+    self.isolated_atom_energies : dict of E0s; E0 for species Z is self.isolated_atom_energies[Z]
+    self.num_desc : Number of descriptors
+    self.descriptors : list of DescXMLWrapper objects for GAP descriptors
+    self.total_nsparse : Number of sparse points for the GAP model
+    self.weights : Full weights for the GAP model
+    self.mean_weights : Mean weights for the original GAP model (IE: self.weights are changed for committors, self.mean_weights is fixed)
+
+    Key Methods:
+    self.save(fname) : Save the xml data back to an xml file
+    self.as_potential() : Return the equivalent quippy.potential.Potential
+    self.draw_posterior_sample(num_samples) : Draw samples from the posterior, if available
     '''
 
     def __init__(self, xml, mean_weights=None):
-        '''
-        Read XML ETree for a GAP potential
-
-        Useful Attributes:
-        self.gap_label : Label of the GAP potential
-        self.isolated_atom_energies : dict of E0s; E0 for species Z is self.isolated_atom_energies[Z]
-        self.num_desc : Number of descriptors
-        '''
         self._xml_tree = xml
         root = self._xml_tree.getroot()
 
@@ -107,19 +123,21 @@ class GAPXMLWrapper():
 
     def save(self, fname):
         '''
-        Save internal XML tree back to file
+        Save internal XML tree to fname
         '''
 
         with open(fname, "wb") as f:
             self._xml_tree.write(f)
 
     def as_potential(self):
+        '''
+        Return quippy.potential.Potential equivalent to the model defined by the internal XML tree
+        '''
         pot = Potential(param_str=tostring(self._xml_tree.getroot()))
         pot.xml = self
         return pot
 
     def _posterior_sample(self):
-
         if self.R is not None:
             z = norm.rvs(size=self.total_nsparse)
 
@@ -159,6 +177,10 @@ class GAPXMLWrapper():
         return new_tree
 
     def draw_posterior_samples(self, num_samples=1):
+        '''
+        Draw samples from the posterior of the GAP model
+        Only possible if <GAP_fname>.R.<GAP_label> exists in the same dir as the GAP XML file
+        '''
         if num_samples == 1:
             return GAPXMLWrapper(self._xml_sample(), mean_weights=self.mean_weights)
         else:
@@ -166,7 +188,9 @@ class GAPXMLWrapper():
 
 
 def read_xml(path_to_xml):
-
+    '''
+    Generate an instance of GAPXMLWrapper for given XML file
+    '''
     gap = GAPXMLWrapper(parse(path_to_xml))
 
     R_fname = path_to_xml + ".R." + gap.gap_label
@@ -181,6 +205,9 @@ def read_xml(path_to_xml):
 
 
 def get_xml_committee(path_to_xml, num_committors, return_core_wrapper=False):
+    '''
+    Sample a comittee of GAPXMLWrappers based on the model defined by path_to_xml XML file
+    '''
     gap_wrapper = read_xml(path_to_xml)
 
     committee = gap_wrapper.draw_posterior_samples(num_committors)
@@ -192,6 +219,9 @@ def get_xml_committee(path_to_xml, num_committors, return_core_wrapper=False):
 
 
 def get_calc_committee(path_to_xml, num_committors, return_core_wrapper=False):
+    '''
+    Sample a comittee of quippy.potential.Potentials based on the model defined by path_to_xml XML file
+    '''
     xml_committee, gap_wrapper = get_xml_committee(
         path_to_xml, num_committors, return_core_wrapper=True)
     calc_committee = [committor.as_potential() for committor in xml_committee]
