@@ -96,5 +96,4 @@ install:
 	    echo "Copying $$f to ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX}" ; \
 	    cp $$f ${QUIP_INSTALLDIR}/$${f}${QUIP_MPI_SUFFIX} ; \
 	  done ;\
-
 	fi
