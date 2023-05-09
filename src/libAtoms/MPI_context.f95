@@ -145,6 +145,7 @@ end interface gather
 public :: gatherv
 interface gatherv
   module procedure MPI_context_gatherv_int1
+  module procedure MPI_context_gatherv_real1
   module procedure MPI_context_gatherv_real2
 end interface gatherv
 
@@ -1341,6 +1342,59 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
 #endif
 
 end subroutine MPI_context_gatherv_int1
+
+subroutine MPI_context_gatherv_real1(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:)
+  real(dp), intent(out) :: v_out(:)
+  integer, intent(out), allocatable, optional :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, my_count
+  integer, allocatable :: displs(:), my_counts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_gatherv_real1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
+
+  my_count = size(v_in)
+  call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (sum(my_counts) > size(v_out)) then
+    RAISE_ERROR("MPI_context_gatherv_real1 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this)) then
+    call get_displs(my_counts, displs)
+  else
+    allocate(displs(1), source=0)
+  end if
+
+  call MPI_gatherv(v_in, my_count, MPI_DOUBLE_PRECISION, v_out, my_counts, displs, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (present(counts)) then
+    allocate(counts, source=my_counts)
+  end if
+#endif
+
+end subroutine MPI_context_gatherv_real1
 
 subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   type(MPI_context), intent(in) :: this
