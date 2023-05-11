@@ -130,8 +130,27 @@ class GAPXMLWrapper():
         Save internal XML tree to fname
         '''
 
+        file_dir = os.path.dirname(fname)
+
+        if len(file_dir) == 0: # File should be saved to cwd
+            dest_dir = os.getcwd()
+
+        else:
+            dest_dir = file_dir
+
+        # Save XML file
         with open(fname, "wb") as f:
             self._xml_tree.write(f)
+
+        # Find all sparseX files from source of GAP xml
+        xml_src_files = [file for file in os.listdir(self.xml_dir) if ".sparseX."+self.gap_label in file]
+
+        xml_dest_files = os.listdir(dest_dir)
+
+        # Generate symlinks to original sparseX files
+        for sparse_file in xml_src_files:
+            if sparse_file not in xml_dest_files: # File does not exist in dir where xml will be saved
+                os.symlink(self.xml_dir + os.sep + sparse_file, dest_dir + os.sep + sparse_file)
 
     def as_potential(self):
         '''
@@ -209,6 +228,10 @@ def read_xml(path_to_xml):
     '''
 
     xml_dir = os.path.dirname(path_to_xml)
+
+    if len(xml_dir) == 0: # XML in cwd
+        xml_dir = os.getcwd()
+
     
     gap = GAPXMLWrapper(parse(path_to_xml), xml_dir=xml_dir)
 
