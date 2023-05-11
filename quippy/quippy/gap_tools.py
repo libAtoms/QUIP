@@ -89,9 +89,15 @@ class GAPXMLWrapper():
     self.draw_posterior_sample(num_samples) : Draw samples from the posterior, if available
     '''
 
-    def __init__(self, xml, mean_weights=None):
+    def __init__(self, xml, mean_weights=None, xml_dir=None):
         self._xml_tree = xml
         root = self._xml_tree.getroot()
+
+
+        if xml_dir is not None:
+            self.xml_dir = xml_dir
+        else:
+            self.xml_dir = os.getcwd()
 
         self.gap_label = root[0].attrib["label"]
 
@@ -131,8 +137,21 @@ class GAPXMLWrapper():
         '''
         Return quippy.potential.Potential equivalent to the model defined by the internal XML tree
         '''
-        pot = Potential(param_str=tostring(self._xml_tree.getroot()))
-        pot.xml = self
+
+        cwd = os.getcwd() # Remember which dir we're supposed to be in
+
+        try:
+            os.chdir(self.xml_dir) # Change to same dir as the xml, so QUIP can find sparseX files
+            
+            pot = Potential(param_str=tostring(self._xml_tree.getroot()))
+            pot.xml = self
+
+        except (TypeError, RuntimeError):
+            raise FileNotFoundError(f"Conversion to quippy Potential failed, likely because sparseX files were not found in directory {self.xml_dir}")
+
+        finally:
+            os.chdir(cwd) # Ensure we always end in the same dir we started
+
         return pot
 
     def _posterior_sample(self):
@@ -141,8 +160,7 @@ class GAPXMLWrapper():
 
             return self.mean_weights + solve_triangular(self.R, z)
         else:
-            raise FileNotFoundError(
-                f"R matrix not found. {self.R_fname} does not exist")
+            raise FileNotFoundError(f"R matrix not found in directory {self.xml_dir}.")
 
     def _xml_sample(self):
         new_weights = self._posterior_sample()
@@ -180,7 +198,7 @@ class GAPXMLWrapper():
         Only possible if <GAP_fname>.R.<GAP_label> exists in the same dir as the GAP XML file
         '''
         if num_samples == 1:
-            return GAPXMLWrapper(self._xml_sample(), mean_weights=self.mean_weights)
+            return GAPXMLWrapper(self._xml_sample(), mean_weights=self.mean_weights, xml_dir=self.xml_dir)
         else:
             return [self.draw_posterior_samples() for i in range(num_samples)]
 
@@ -189,7 +207,10 @@ def read_xml(path_to_xml):
     '''
     Generate an instance of GAPXMLWrapper for given XML file
     '''
-    gap = GAPXMLWrapper(parse(path_to_xml))
+
+    xml_dir = os.path.dirname(path_to_xml)
+    
+    gap = GAPXMLWrapper(parse(path_to_xml), xml_dir=xml_dir)
 
     R_fname = path_to_xml + ".R." + gap.gap_label
 
