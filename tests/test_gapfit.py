@@ -29,6 +29,7 @@ import numpy as np
 import quippytest
 import quippy
 
+
 def file2hash(filename, chunksize=4096):
     hasher = hashlib.sha256()
     with open(filename, 'rb') as f:
@@ -50,19 +51,19 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         prog_path = Path(os.environ.get('BUILDDIR')) / 'gap_fit'
     else:
         prog_path = Path(quippy.__path__[0]) / 'gap_fit'
-        
+
     if not os.path.isfile(prog_path):
         raise unittest.SkipTest(f"gap_fit exectuable does not exist at {prog_path}")
-        
-    with open('si_gap_fit_test.json') as f:
+
+    with open('Si.test.json') as f:
         ref_data = json.load(f)
-    si_sparsex_hash = 'bf3d99356e16bc666cee1f1abc6a2cfc63e98a8f69658bcc5ab84e01d9e3ab2d'
+    si_sparsex_hash = '5674bec9de58127d3c3f97b11ae90c9a8db2c76d995d11aa5c37d9a88f8a05ad'
 
     def setUp(self):
         self.cl_template = string.Template(
-            "at_file=train_sub4.xyz gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
+            "at_file=$XYZ_FILE gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
             "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
-            "n_sparse=500 delta=3.0 f0=0.0 covariance_type=dot_product "
+            "n_sparse=100 delta=3.0 f0=0.0 covariance_type=dot_product "
             "$SPARSE_METHOD} "
             "default_sigma={0.01 1.0 0.5 0.0} "
             "energy_parameter_name=dft_energy force_parameter_name=dft_force "
@@ -81,7 +82,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         for path in self.here.glob(self.xml_name + '*'):
             os.remove(path)
 
-    def run_gap_fit(self, command_line, new_test=False, prefix=''):        
+    def run_gap_fit(self, command_line, new_test=False, prefix=''):
         if new_test:
             if os.path.exists('sparse_file'):
                 os.unlink('sparse_file') # ensure we don't append to an old file
@@ -106,13 +107,12 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         alpha = np.array([float(tag.attrib['alpha']) for tag in root[1][1][0].findall('sparseX')])
         alpha = alpha[idx] # reorder correctly
         if new_test:
-            sparse_points = np.loadtxt('sparse_file').astype(int)
+            sparse_points = np.loadtxt('sparseX_index.out').astype(int)
             gap_dict = {'sparse_points': sparse_points.tolist(),
                         'alpha': alpha.tolist()}
             with open('dump.json', 'w') as f:
                 json.dump(gap_dict, f, indent=4)
         else:
-            print('max abs error in alpha =', np.abs((alpha - self.ref_data['alpha'])).max())
             assert np.abs((alpha - self.ref_data['alpha'])).max() < self.alpha_tol
 
     def check_latest_sparsex_file_hash(self):
@@ -123,7 +123,8 @@ class TestGAP_fit(quippytest.QuippyTestCase):
 
     def test_gap_fit_silicon_sparsify_only(self):
         with open(self.config_name, 'w') as f:
-            config = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=index_file sparse_file=sparse_file')
+            config = self.cl_template.safe_substitute(XYZ_FILE='Si.np1.xyz',
+                SPARSE_METHOD='sparse_method=index_file sparse_file=Si.sparseX_index.inp')
             config += ' sparsify_only_no_fit=T'
             print(config, file=f)
         command_line = f'config_file={self.config_name}'
@@ -131,17 +132,19 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         with open(self.log_name) as f:
             self.assertEqual(f.read().count('Number of partial derivatives of descriptors: 0'), 1)
 
-    # new test: 'sparse_method=cur_points print_sparse_index=sparse_file'
+    # new test: 'sparse_method=cur_points print_sparse_index=sparseX_index.out'
     def test_gap_fit_silicon(self):
         self.env['OMP_NUM_THREADS'] = '2'
-        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=index_file sparse_file=sparse_file')
+        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np1.xyz',
+            SPARSE_METHOD='sparse_method=index_file sparse_file=Si.sparseX_index.inp')
         command_line += ' condition_number_norm=I'
         self.run_gap_fit(command_line)
         self.check_gap_fit()
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
-    def test_gap_fit_silicon_scalapack(self):
-        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
+    def test_gap_fit_silicon_scalapack_file(self):
+        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np2.xyz',
+            SPARSE_METHOD='sparse_method=FILE sparse_file=Si.sparseX.inp')
         command_line += ' mpi_blocksize_rows=101'  # not a divisor of nrows
         self.run_gap_fit(command_line, prefix='mpirun -np 2')
         with open(self.log_name) as f:
@@ -151,11 +154,13 @@ class TestGAP_fit(quippytest.QuippyTestCase):
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_gap_fit_silicon_scalapack_big_blocksize(self):
-        command_line = self.cl_template.safe_substitute(SPARSE_METHOD='sparse_method=FILE sparse_file=si_gap_fit_sparseX.inp')
+        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np2.xyz',
+            SPARSE_METHOD='sparse_method=FILE sparse_file=Si.sparseX.inp')
         command_line += ' mpi_blocksize_cols=37838'  # too large for 32bit integer
         self.run_gap_fit(command_line, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("too large for 32bit work array in ScaLAPACK" in f.read())
+
 
 if __name__ == '__main__':
     unittest.main()
