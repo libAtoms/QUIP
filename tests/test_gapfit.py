@@ -51,6 +51,8 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     log_name = 'gap_fit.log'
     xml_name = 'gp.xml'
     index_name = 'sparse_index'
+    index_name_inp = 'sparse_index.inp'
+    index_name_out = 'sparse_index.out'
     config_name = 'gap_fit.config'
     here = Path('.')
     if 'BUILDDIR' in os.environ:
@@ -72,21 +74,21 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         " do_copy_atoms_file=F e0_offset=2.0 energy_parameter_name=dft_energy force_parameter_name=dft_force"
         " gap={$GAP} gp_file=$XML_NAME rnd_seed=1 sparse_jitter=1.0e-3 virial_parameter_name=dft_virial $EXTRA")
 
-    sparse_method_index = f'sparse_method=index_file sparse_file={index_name}'
-    gap_default_mapping = {'INDEX_NAME': index_name, 'SPARSE_METHOD': sparse_method_index}
+    sparse_method_index = f'sparse_method=index_file sparse_file={index_name_inp}'
+    gap_default_mapping = {'INDEX_NAME_OUT': index_name_out, 'SPARSE_METHOD': sparse_method_index}
     gap_distance_2b_template = string.Template(
-        "{distance_2b covariance_type=ard_se cutoff=6.0 delta=1.0 n_sparse=20 print_sparse_index=$INDEX_NAME"
+        "{distance_2b covariance_type=ard_se cutoff=6.0 delta=1.0 n_sparse=20 print_sparse_index=$INDEX_NAME_OUT"
         " theta_uniform=0.1 $SPARSE_METHOD}")
     gap_soap_template = string.Template(
         "{soap atom_sigma=0.5 central_weight=1.0 covariance_type=dot_product cutoff=4.0 cutoff_transition_width=1.0"
-        " delta=3.0 l_max=8 n_max=8 n_sparse=100 print_sparse_index=$INDEX_NAME zeta=4 $SPARSE_METHOD}")
+        " delta=3.0 l_max=8 n_max=8 n_sparse=100 print_sparse_index=$INDEX_NAME_OUT zeta=4 $SPARSE_METHOD}")
 
     def setUp(self):
         self.env = os.environ.copy()
         self.env['OMP_NUM_THREADS'] = '1'
 
     def tearDown(self):
-        for fname in [self.log_name, self.config_name, self.index_name]:
+        for fname in [self.log_name, self.config_name, self.index_name_inp, self.index_name_out]:
             try:
                 os.remove(self.here / fname)
             except FileNotFoundError:
@@ -103,13 +105,22 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         alpha = self.get_alpha_from_xml(self.xml_name)
         ref_data = self.read_ref_data(ref_file)
         self.assertLess(np.abs((alpha - ref_data['alpha'])).max(), self.alpha_tol)
-        self.check_latest_sparsex_file_hash(ref_data['sparse_hash'])
+        self.check_index_file(ref_data)
+        self.check_latest_sparsex_file_hash(ref_data)
+
+    def check_index_file(self, ref):
+        file = self.here / self.index_name_out
+        if not file.exists():
+            return
+
+        indices = np.loadtxt(file).astype(int).tolist()
+        self.assertEqual(indices, ref['indices'])
 
     def check_latest_sparsex_file_hash(self, ref):
         files = self.here.glob(self.xml_name + '.*')
         flast = max(files, key=os.path.getctime)
         hash = file2hash(flast)
-        self.assertEqual(hash, ref)
+        self.assertEqual(hash, ref['sparse_hash'])
 
     def get_alpha_from_xml(self, xml_file):
         root = ET.parse(xml_file).getroot()
@@ -135,7 +146,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
 
     def make_ref_file(self, config, ref_file='ref.json'):
         alpha = self.get_alpha_from_xml(self.xml_name)
-        indices = np.loadtxt(self.index_name).astype(int)
+        indices = np.loadtxt(self.index_name_out).astype(int)
 
         root = ET.parse(self.xml_name).getroot()
         gp_coord = root.find('GAP_params/gpSparse/gpCoordinates')
@@ -178,9 +189,9 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     def test_si_distance_2b_index(self):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
-        gap = self.get_gap(self.gap_distance_2b_template, f'sparse_method=index_file sparse_file={self.index_name}')
+        gap = self.get_gap(self.gap_distance_2b_template, f'sparse_method=index_file sparse_file={self.index_name_inp}')
         config = self.get_config('Si.np1.sp20.xyz', gap)
-        self.make_index_file_from_ref(ref_file, self.index_name)
+        self.make_index_file_from_ref(ref_file, self.index_name_inp)
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
