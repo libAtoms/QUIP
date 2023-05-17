@@ -16,6 +16,11 @@
 # HQ X
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+# To update a reference, add `self.make_ref_file(config, ref_file)` after
+# `self.run_gap_fit(config)`. To update a sparseX.inp file, prevent their
+# deletion in tearDown() and convert them via bin/gap_prepare_sparsex_input.py.
+# New xyz need reordered non-MPI frames per n_sparse due to unstable sorting.
+
 import unittest
 import os
 import xml.etree.ElementTree as ET
@@ -45,6 +50,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     alpha_tol = 1e-5
     log_name = 'gap_fit.log'
     xml_name = 'gp.xml'
+    index_name = 'sparse_index'
     config_name = 'gap_fit.config'
     here = Path('.')
     if 'BUILDDIR' in os.environ:
@@ -55,109 +61,171 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     if not os.path.isfile(prog_path):
         raise unittest.SkipTest(f"gap_fit exectuable does not exist at {prog_path}")
 
-    with open('Si.test.json') as f:
-        ref_data = json.load(f)
-    si_sparsex_hash = '5674bec9de58127d3c3f97b11ae90c9a8db2c76d995d11aa5c37d9a88f8a05ad'
+    ref_files = {
+        ('Si', 'soap', 'cur_points'): 'Si.soap.cur_points.json',
+        ('Si', 'distance_2b', 'uniform'): 'Si.distance_2b.uniform.json',
+    }
+
+    config_default_mapping = {'XML_NAME': xml_name, 'EXTRA': ''}
+    config_template = string.Template(
+        "at_file=$XYZ_FILE config_type_parameter_name=config_type default_sigma={0.01 1.0 0.5 0.0} "
+        " do_copy_atoms_file=F e0_offset=2.0 energy_parameter_name=dft_energy force_parameter_name=dft_force"
+        " gap={$GAP} gp_file=$XML_NAME rnd_seed=1 sparse_jitter=1.0e-3 virial_parameter_name=dft_virial $EXTRA")
+
+    sparse_method_index = f'sparse_method=index_file sparse_file={index_name}'
+    gap_default_mapping = {'INDEX_NAME': index_name, 'SPARSE_METHOD': sparse_method_index}
+    gap_distance_2b_template = string.Template(
+        "{distance_2b covariance_type=ard_se cutoff=6.0 delta=1.0 n_sparse=20 print_sparse_index=$INDEX_NAME"
+        " theta_uniform=0.1 $SPARSE_METHOD}")
+    gap_soap_template = string.Template(
+        "{soap atom_sigma=0.5 central_weight=1.0 covariance_type=dot_product cutoff=4.0 cutoff_transition_width=1.0"
+        " delta=3.0 l_max=8 n_max=8 n_sparse=100 print_sparse_index=$INDEX_NAME zeta=4 $SPARSE_METHOD}")
 
     def setUp(self):
-        self.cl_template = string.Template(
-            "at_file=$XYZ_FILE gap={soap l_max=8 n_max=8 atom_sigma=0.5 "
-            "zeta=4 cutoff=4.0 cutoff_transition_width=1.0 central_weight=1.0 "
-            "n_sparse=100 delta=3.0 f0=0.0 covariance_type=dot_product "
-            "$SPARSE_METHOD} "
-            "default_sigma={0.01 1.0 0.5 0.0} "
-            "energy_parameter_name=dft_energy force_parameter_name=dft_force "
-            "virial_parameter_name=dft_virial config_type_parameter_name=config_type "
-            "sparse_jitter=1.0e-3 e0_offset=2.0 gp_file=gp.xml rnd_seed=1 "
-        )
         self.env = os.environ.copy()
         self.env['OMP_NUM_THREADS'] = '1'
 
     def tearDown(self):
-        for fname in [self.log_name, self.config_name]:
+        for fname in [self.log_name, self.config_name, self.index_name]:
             try:
                 os.remove(self.here / fname)
             except FileNotFoundError:
                 pass
         for path in self.here.glob(self.xml_name + '*'):
             os.remove(path)
+        for path in self.here.glob('*.xyz.idx'):
+            os.remove(path)
 
-    def run_gap_fit(self, command_line, new_test=False, prefix=''):
-        if new_test:
-            if os.path.exists('sparse_file'):
-                os.unlink('sparse_file') # ensure we don't append to an old file
-        else:
-            with open('sparse_file', 'w') as fh:
-                for sp in self.ref_data['sparse_points']:
-                    fh.write(f'{sp}\n')
-
-        full_command = f'{prefix} {self.prog_path} {command_line}'
-        with open(self.log_name, 'w') as f:
-            self.proc = subprocess.run(full_command, shell=True, env=self.env, stdout=f, stderr=f)
-
-    def check_gap_fit(self, new_test=False):
+    def check_gap_fit(self, ref_file=None):
+        """check GP coefficients match expected values"""
         assert self.proc.returncode == 0, self.proc
 
-        tree = ET.parse(self.xml_name)
-        root = tree.getroot()
+        alpha = self.get_alpha_from_xml(self.xml_name)
+        ref_data = self.read_ref_data(ref_file)
+        self.assertLess(np.abs((alpha - ref_data['alpha'])).max(), self.alpha_tol)
+        self.check_latest_sparsex_file_hash(ref_data['sparse_hash'])
 
-        # check GP coefficients match expected values
-        idx = np.array([int(tag.attrib['i']) for tag in root[1][1][0].findall('sparseX')])
-        idx -= 1 # convert from one- to zero-based indexing
-        alpha = np.array([float(tag.attrib['alpha']) for tag in root[1][1][0].findall('sparseX')])
-        alpha = alpha[idx] # reorder correctly
-        if new_test:
-            sparse_points = np.loadtxt('sparseX_index.out').astype(int)
-            gap_dict = {'sparse_points': sparse_points.tolist(),
-                        'alpha': alpha.tolist()}
-            with open('dump.json', 'w') as f:
-                json.dump(gap_dict, f, indent=4)
-        else:
-            assert np.abs((alpha - self.ref_data['alpha'])).max() < self.alpha_tol
-
-    def check_latest_sparsex_file_hash(self):
+    def check_latest_sparsex_file_hash(self, ref):
         files = self.here.glob(self.xml_name + '.*')
         flast = max(files, key=os.path.getctime)
         hash = file2hash(flast)
-        self.assertEqual(hash, self.si_sparsex_hash)
+        self.assertEqual(hash, ref)
 
-    def test_gap_fit_silicon_sparsify_only(self):
+    def get_alpha_from_xml(self, xml_file):
+        root = ET.parse(xml_file).getroot()
+
+        idx = np.array([int(tag.attrib['i']) - 1 for tag in root[1][1][0].findall('sparseX')])
+        alpha = np.array([float(tag.attrib['alpha']) for tag in root[1][1][0].findall('sparseX')])
+        alpha = alpha[idx]  # reorder correctly
+        return alpha
+
+    def get_config(self, xyz_file, gap, *, extra=''):
+        config = self.config_template.substitute(self.config_default_mapping, XYZ_FILE=xyz_file, GAP=gap, EXTRA=extra)
+        return config
+
+    def get_gap(self, template, sparse_method):
+        gap = template.substitute(self.gap_default_mapping, SPARSE_METHOD=sparse_method)
+        return gap
+
+    def make_index_file_from_ref(self, ref_file, index_file):
+        ref_data = self.read_ref_data(ref_file)
+        with open(index_file, 'w') as f:
+            for sp in ref_data['indices']:
+                f.write(f'{sp}\n')
+
+    def make_ref_file(self, config, ref_file='ref.json'):
+        alpha = self.get_alpha_from_xml(self.xml_name)
+        indices = np.loadtxt(self.index_name).astype(int)
+
+        root = ET.parse(self.xml_name).getroot()
+        gp_coord = root.find('GAP_params/gpSparse/gpCoordinates')
+        sparse_hash = file2hash(gp_coord.attrib['sparseX_filename'])
+
+        gap_dict = {
+            'alpha': alpha.tolist(),
+            'config': config,
+            'indices': indices.tolist(),
+            'sparse_hash': sparse_hash,
+        }
+        with open(ref_file, 'w') as f:
+            json.dump(gap_dict, f, indent=4)
+
+    def read_ref_data(self, ref_file):
+        with open(ref_file) as f:
+            return json.load(f)
+
+    def run_gap_fit(self, config, prefix=''):
+        command = f'{prefix} {self.prog_path} {config}'
+        with open(self.log_name, 'w') as f:
+            self.proc = subprocess.run(command, shell=True, env=self.env, stdout=f, stderr=f)
+
+    def test_si_soap_cur_points(self):
+        self.env['OMP_NUM_THREADS'] = '2'
+        ref_file = self.ref_files[('Si', 'soap', 'cur_points')]
+        gap = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
+        config = self.get_config('Si.np1.sp100.xyz', gap, extra='condition_number_norm=I')
+        self.run_gap_fit(config)
+        self.check_gap_fit(ref_file)
+
+    def test_si_distance_2b_uniform(self):
+        self.env['OMP_NUM_THREADS'] = '2'
+        ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
+        gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        config = self.get_config('Si.np1.sp20.xyz', gap)
+        self.run_gap_fit(config)
+        self.check_gap_fit(ref_file)
+
+    def test_si_distance_2b_index(self):
+        self.env['OMP_NUM_THREADS'] = '2'
+        ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
+        gap = self.get_gap(self.gap_distance_2b_template, f'sparse_method=index_file sparse_file={self.index_name}')
+        config = self.get_config('Si.np1.sp20.xyz', gap)
+        self.make_index_file_from_ref(ref_file, self.index_name)
+        self.run_gap_fit(config)
+        self.check_gap_fit(ref_file)
+
+    def test_si_config_file_sparsify_only(self):
+        gap = self.get_gap(self.gap_soap_template, sparse_method='sparse_method=cur_points')
+        config = self.get_config('Si.np1.sp100.xyz', gap, extra='sparsify_only_no_fit=T')
         with open(self.config_name, 'w') as f:
-            config = self.cl_template.safe_substitute(XYZ_FILE='Si.np1.xyz',
-                SPARSE_METHOD='sparse_method=index_file sparse_file=Si.sparseX_index.inp')
-            config += ' sparsify_only_no_fit=T'
             print(config, file=f)
-        command_line = f'config_file={self.config_name}'
-        self.run_gap_fit(command_line)
+        config = f'config_file={self.config_name}'
+        self.run_gap_fit(config)
         with open(self.log_name) as f:
             self.assertEqual(f.read().count('Number of partial derivatives of descriptors: 0'), 1)
 
-    # new test: 'sparse_method=cur_points print_sparse_index=sparseX_index.out'
-    def test_gap_fit_silicon(self):
-        self.env['OMP_NUM_THREADS'] = '2'
-        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np1.xyz',
-            SPARSE_METHOD='sparse_method=index_file sparse_file=Si.sparseX_index.inp')
-        command_line += ' condition_number_norm=I'
-        self.run_gap_fit(command_line)
-        self.check_gap_fit()
-
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
-    def test_gap_fit_silicon_scalapack_file(self):
-        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np2.xyz',
-            SPARSE_METHOD='sparse_method=FILE sparse_file=Si.sparseX.inp')
-        command_line += ' mpi_blocksize_rows=101'  # not a divisor of nrows
-        self.run_gap_fit(command_line, prefix='mpirun -np 2')
+    def test_si_scalapack_soap_file(self):
+        gap = self.get_gap(self.gap_soap_template, 'sparse_method=file sparse_file=Si.cur_points.sparseX.inp')
+        config = self.get_config('Si.np2.xyz', gap, extra='mpi_blocksize_rows=101')
+        self.run_gap_fit(config, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
-        self.check_gap_fit()
-        self.check_latest_sparsex_file_hash()
+        self.check_gap_fit(self.ref_files[('Si', 'soap', 'cur_points')])
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
-    def test_gap_fit_silicon_scalapack_big_blocksize(self):
-        command_line = self.cl_template.safe_substitute(XYZ_FILE='Si.np2.xyz',
-            SPARSE_METHOD='sparse_method=FILE sparse_file=Si.sparseX.inp')
-        command_line += ' mpi_blocksize_cols=37838'  # too large for 32bit integer
-        self.run_gap_fit(command_line, prefix='mpirun -np 2')
+    def test_si_scalapack_soap_cur_points(self):
+        gap = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
+        config = self.get_config('Si.np2.xyz', gap)
+        self.run_gap_fit(config, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
+        self.check_gap_fit(self.ref_files[('Si', 'soap', 'cur_points')])
+
+    @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
+    def test_si_scalapack_distance_2b_uniform(self):
+        gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        config = self.get_config('Si.np2.xyz', gap)
+        self.run_gap_fit(config, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
+        self.check_gap_fit(self.ref_files[('Si', 'distance_2b', 'uniform')])
+
+    @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
+    def test_si_scalapack_big_blocksize(self):
+        gap = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
+        config = self.get_config('Si.np2.xyz', gap, extra='mpi_blocksize_cols=37838')  # too large for 32bit integer
+        self.run_gap_fit(config, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("too large for 32bit work array in ScaLAPACK" in f.read())
 
