@@ -538,6 +538,9 @@ subroutine IPModel_Coulomb_Print(this, file)
   endselect
 
   call Print("IPModel_Coulomb : n_types = " // this%n_types // " cutoff = " // this%cutoff, file=file)
+  if (this%use_gp_charges) then
+     call Print("IPModel_Coulomb : Charges from GP, xml_label = " // this%gap_label, file=file)
+  endif
 
   do ti=1, this%n_types
     call Print ("IPModel_Coulomb : type " // ti // " atomic_num " // this%atomic_num(ti), file=file)
