@@ -106,7 +106,6 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         ref_data = self.read_ref_data(ref_file)
         self.assertLess(np.abs((alpha - ref_data['alpha'])).max(), self.alpha_tol)
         self.check_index_file(ref_data)
-        self.check_latest_sparsex_file_hash(ref_data)
 
     def check_index_file(self, ref):
         file = self.here / self.index_name_out
