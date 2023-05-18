@@ -174,7 +174,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'soap', 'cur_points')]
         gap = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
-        config = self.get_config('Si.np1.sp100.xyz', gap, extra='condition_number_norm=I')
+        config = self.get_config('Si.np1.xyz', gap, extra='condition_number_norm=I')
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
@@ -182,7 +182,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
         gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
-        config = self.get_config('Si.np1.sp20.xyz', gap)
+        config = self.get_config('Si.np1.xyz', gap)
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
@@ -190,14 +190,14 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
         gap = self.get_gap(self.gap_distance_2b_template, f'sparse_method=index_file sparse_file={self.index_name_inp}')
-        config = self.get_config('Si.np1.sp20.xyz', gap)
+        config = self.get_config('Si.np1.xyz', gap)
         self.make_index_file_from_ref(ref_file, self.index_name_inp)
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
     def test_si_config_file_sparsify_only(self):
         gap = self.get_gap(self.gap_soap_template, sparse_method='sparse_method=cur_points')
-        config = self.get_config('Si.np1.sp100.xyz', gap, extra='sparsify_only_no_fit=T')
+        config = self.get_config('Si.np1.xyz', gap, extra='sparsify_only_no_fit=T')
         with open(self.config_name, 'w') as f:
             print(config, file=f)
         config = f'config_file={self.config_name}'
