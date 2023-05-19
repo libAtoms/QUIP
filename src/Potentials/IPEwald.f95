@@ -386,7 +386,7 @@ contains
 
   endsubroutine Ewald_corr_calc
 
-  subroutine Direct_Coulomb_calc(at_in,charge,charge_grads, e,f,virial,local_e,cutoff,error)
+  subroutine Direct_Coulomb_calc(at_in,charge,charge_grads, e,f,virial,local_e,cutoff,inner_cutoff,inner_transition_width,error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -397,11 +397,13 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), dimension(:), intent(out), optional      :: local_e
     real(dp), intent(in), optional                     :: cutoff
+    real(dp), intent(in), optional                     :: inner_cutoff
+    real(dp), intent(in), optional                     :: inner_transition_width
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, k, n, nk
 
-    real(dp) :: my_cutoff, r_ij, de
+    real(dp) :: my_cutoff, r_ij, de, my_inner_tw
     real(dp), dimension(3) :: force, u_ij, grad_k_term
 
     real(dp), dimension(:), pointer :: my_charge
@@ -422,7 +424,11 @@ contains
     else
         at => at_in
     endif
-         
+
+    ! Ideally we'd require the transition width to be specified with the inner
+    ! cutoff, but let's leave it like this for now TODO
+    my_inner_tw = optional_default(0.5_dp, inner_transition_width)
+
     if( present(e) ) e = 0.0_dp
     if( present(f) ) f = 0.0_dp
     if( present(virial) ) virial = 0.0_dp
@@ -433,14 +439,24 @@ contains
        do n = 1, n_neighbours(at,i)
           j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
           if( r_ij > my_cutoff )  cycle
-           
-          de = 0.5_dp * charge(i)*charge(j) / r_ij
+          if( present(inner_cutoff) .and. r_ij < inner_cutoff) cycle
+
+          if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
+             de = 0.5_dp * charge(i)*charge(j) / r_ij * (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
+          else
+             de = 0.5_dp * charge(i)*charge(j) / r_ij
+          endif
 
           if( present(e) ) e = e + de
           if( present(local_e) ) local_e(i) = local_e(i) + de
 
           if( present(f) .or. present(virial) ) then
               force = - de / r_ij * u_ij
+              if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
+                 !TODO check signs again
+                 force = force - dcoordination_function(r_ij, inner_cutoff, my_inner_tw) &
+                                 * -0.5_dp * charge(i)*charge(j) / r_ij * u_ij
+              endif
               if(present(f)) then
                  f(:,i) = f(:,i) + force
                  f(:,j) = f(:,j) - force
@@ -449,13 +465,16 @@ contains
               if (present(virial)) virial = virial - (force .outer. u_ij) * r_ij
 
               if( present(charge_grads) ) then
-
                  ! we need to add the charge-gradient term to the pairwise forces
                  ! this works out to q_j/r_ij grad_k q_i
                  ! for all k in the neighbourhood of i
+                 ! TODO What about if we're in the inner-cutoff region?  Ooh boy, this could get messy.
                  do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
                     k = charge_grads(i)%neigh_idx(nk)
                     grad_k_term = charge(j) / r_ij * charge_grads(i)%gradients(:,nk)
+                    if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
+                       ! TODO fingers crossed, hope this works
+                       grad_k_term = grad_k_term * (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
                     if (present(f)) then
                        f(:,k) = f(:,k) - grad_k_term
                     endif
