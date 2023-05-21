@@ -11,6 +11,7 @@ module task_manager_module
 
   use libatoms_module, only : initialise, finalise, print_title, print, &
       operator(//), system_abort, inoutput, optional_default, OUTPUT, PRINT_VERBOSE
+  use linearalgebra_module, only : insertion_sort
   use MPI_context_module, only : MPI_Context, print
   use ScaLAPACK_module, only : Scalapack, print
 
@@ -122,7 +123,7 @@ module task_manager_module
       idata1_list(i) = this%tasks(i)%idata(1)
       index_list(i) = this%tasks(i)%index
     end do
-    call stable_sort(idata1_list, index_list)
+    call insertion_sort(idata1_list, i_data=index_list)  ! stable sort for easier testing
 
     ! count workload of preset tasks
     workloads = 0
@@ -353,27 +354,5 @@ module task_manager_module
     allocate(this%idata, source=from%idata)
     this%worker_id = from%worker_id
   end subroutine task_deepcopy
-
-  ! insertion sort: stable, slow (O(n**2))
-  subroutine stable_sort(list, colist)
-    integer, intent(inout), dimension(:) :: list
-    integer, intent(inout), dimension(:) :: colist
-
-    integer :: i, j, val, coval
-
-    do i = 2, size(list)
-      if (list(i-1) <= list(i)) cycle
-      val = list(i)
-      coval = colist(i)
-
-      do j = (i - 1), 1, -1
-        if (list(j) < val) exit
-        list(j+1) = list(j)
-        colist(j+1) = colist(j)
-      end do
-      list(j+1) = val
-      colist(j+1) = coval
-    end do
-  end subroutine stable_sort
 
 end module task_manager_module
