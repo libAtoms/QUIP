@@ -6002,17 +6002,13 @@ endsubroutine
         v = array(i)
         if (present(i_data)) vi = i_data(i)
 
-        j = i-1
-        do while (j >= 1)
+        do j = (i - 1), 1, -1
            if (v > array(j)) exit
            array(j+1) = array(j)
-           array(j) = v
-           if (present(i_data)) then
-              i_data(j+1) = i_data(j)
-              i_data(j) = vi
-           end if
-           j = j - 1
+           if (present(i_data)) i_data(j+1) = i_data(j)
         end do
+        array(j+1) = v
+        if (present(i_data)) i_data(j+1) = vi
      end do
 
    end subroutine insertion_sort_i
@@ -6032,17 +6028,13 @@ endsubroutine
         v = array(i)
         if (present(i_data)) vi = i_data(i)
 
-        j = i-1
-        do while (j >= 1)
+        do j = (i - 1), 1, -1
            if (v > array(j)) exit
            array(j+1) = array(j)
-           array(j) = v
-           if (present(i_data)) then
-              i_data(j+1) = i_data(j)
-              i_data(j) = vi
-           end if
-           j = j - 1
+           if (present(i_data)) i_data(j+1) = i_data(j)
         end do
+        array(j+1) = v
+        if (present(i_data)) i_data(j+1) = vi
      end do
 
    end subroutine insertion_sort_r
