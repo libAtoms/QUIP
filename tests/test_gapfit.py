@@ -76,6 +76,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         ('Si', 'soap', 'cur_points'): 'Si.soap.cur_points.json',
         ('Si', 'distance_2b', 'uniform'): 'Si.distance_2b.uniform.json',
         ('Si', 'two_descriptors'): 'Si.two_descriptors.json',
+        ('SiC', 'distance_2b', 'uniform'): 'SiC.distance_2b.uniform.json',
     }
 
     config_default_mapping = {'XML_NAME': xml_name, 'EXTRA': ''}
@@ -221,6 +222,14 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
+    def test_sic_distance_2b_uniform(self):
+        self.env['OMP_NUM_THREADS'] = '2'
+        ref_file = self.ref_files[('SiC', 'distance_2b', 'uniform')]
+        gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        config = self.get_config('SiC.np1.xyz', gap)
+        self.run_gap_fit(config)
+        self.check_gap_fit(ref_file)
+
     def test_si_distance_2b_index(self):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
@@ -277,6 +286,16 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap2 = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
         gap = ":".join([gap1, gap2])
         config = self.get_config('Si.np2.xyz', gap)
+        self.run_gap_fit(config, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
+        self.check_gap_fit(ref_file)
+
+    @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
+    def test_sic_scalapack_distance_2b_uniform(self):
+        ref_file = self.ref_files[('SiC', 'distance_2b', 'uniform')]
+        gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        config = self.get_config('SiC.np2.xyz', gap)
         self.run_gap_fit(config, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
