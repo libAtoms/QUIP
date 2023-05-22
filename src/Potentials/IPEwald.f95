@@ -403,7 +403,7 @@ contains
 
     integer  :: i, j, k, n, nk
 
-    real(dp) :: my_cutoff, r_ij, de, my_inner_tw
+    real(dp) :: my_cutoff, r_ij, de, my_inner_tw, cutoff_fun_ij
     real(dp), dimension(3) :: force, u_ij, grad_k_term
 
     real(dp), dimension(:), pointer :: my_charge
@@ -442,7 +442,8 @@ contains
           if( present(inner_cutoff) .and. r_ij < inner_cutoff) cycle
 
           if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
-             de = 0.5_dp * charge(i)*charge(j) / r_ij * (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
+             cutoff_fun_ij = (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
+             de = 0.5_dp * charge(i)*charge(j) / r_ij * cutoff_fun_ij
           else
              de = 0.5_dp * charge(i)*charge(j) / r_ij
           endif
@@ -453,9 +454,10 @@ contains
           if( present(f) .or. present(virial) ) then
               force = - de / r_ij * u_ij
               if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
-                 !TODO check signs again
+                 ! We're using the "flipped" cutoff function for the inner cutoff,
+                 ! so the sign of the derivative is flipped too
                  force = force - dcoordination_function(r_ij, inner_cutoff, my_inner_tw) &
-                                 * -0.5_dp * charge(i)*charge(j) / r_ij * u_ij
+                                 * 0.5_dp * charge(i)*charge(j) / r_ij * u_ij
               endif
               if(present(f)) then
                  f(:,i) = f(:,i) + force
@@ -474,7 +476,8 @@ contains
                     grad_k_term = charge(j) / r_ij * charge_grads(i)%gradients(:,nk)
                     if( present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
                        ! TODO fingers crossed, hope this works
-                       grad_k_term = grad_k_term * (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
+                       grad_k_term = grad_k_term * cutoff_fun_ij
+                    endif
                     if (present(f)) then
                        f(:,k) = f(:,k) - grad_k_term
                     endif

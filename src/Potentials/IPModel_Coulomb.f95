@@ -51,7 +51,7 @@
 module IPModel_Coulomb_module
 
 use error_module
-use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int
+use system_module, only : dp, inoutput, print, lower_case, verbosity_push_decrement, verbosity_pop, operator(//), split_string, string_to_int, PRINT_NORMAL, PRINT_ALWAYS
 use periodictable_module, only : total_elements
 use dictionary_module
 use paramreader_module
@@ -101,6 +101,9 @@ type IPModel_Coulomb
   integer :: screening = 0
 
   real(dp) :: cutoff = 0.0_dp
+  real(dp) :: inner_cutoff = 0.0_dp
+  real(dp) :: inner_transition_width = 0.0_dp
+  logical :: use_inner_cutoff = .false.
 
   real(dp) :: yukawa_alpha = 0.0_dp
   real(dp) :: yukawa_smooth_length = 0.0_dp
@@ -212,6 +215,13 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
         call concat(this%my_gp%coordinate(i_coordinate)%descriptor_str," xml_version="//this%gap_xml_version)
         call initialise(this%my_descriptor(i_coordinate), string(this%my_gp%coordinate(i_coordinate)%descriptor_str))
      enddo
+  endif
+
+  if (this%use_inner_cutoff) then
+     if (.not. ((this%method == IPCoulomb_Method_Direct))) then
+        call print("Warning: Inner cutoff not yet supported for method " // this%method // &
+              " -- inner_cutoff will be ignored", PRINT_NORMAL)
+     endif
   endif
 
   !  Add initialisation code here
@@ -352,10 +362,21 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
 
    selectcase(this%method)
    case(IPCoulomb_Method_Direct)
+      !TODO is there a way to simplify this combinatorial explosion of options?
       if (this%use_gp_charges .and. do_grads) then
-         call Direct_Coulomb_calc(at, charge, charge_grads, e=e, f=f, virial=virial, error = error)
+         if (this%use_inner_cutoff) then
+            call Direct_Coulomb_calc(at, charge, charge_grads, inner_cutoff=this%inner_cutoff, &
+               inner_transition_width=this%inner_transition_width, e=e, f=f, virial=virial, error = error)
+         else
+            call Direct_Coulomb_calc(at, charge, charge_grads, e=e, f=f, virial=virial, error = error)
+         endif
       else
-         call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
+         if (this%use_inner_cutoff) then
+            call Direct_Coulomb_calc(at, charge, inner_cutoff=this%inner_cutoff, &
+               inner_transition_width=this%inner_transition_width, e=e, f=f, virial=virial, error = error)
+         else
+            call Direct_Coulomb_calc(at, charge, e=e, f=f, virial=virial, error = error)
+         endif
       endif
    case(IPCoulomb_Method_Yukawa)
       call yukawa_charges(at, charge, this%cutoff, this%yukawa_alpha, this%yukawa_smooth_length, &
@@ -643,6 +664,21 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
       call QUIP_FoX_get_value(attributes, "cutoff", value, status)
       if (status /= 0) call system_abort ("IPModel_Coulomb_read_params_xml cannot find cutoff")
       read (value, *) parse_ip%cutoff
+
+      call QUIP_FoX_get_value(attributes, "inner_cutoff", value, status)
+      if (status == 0) then
+         read (value, *) parse_ip%inner_cutoff
+         parse_ip%use_inner_cutoff = .true.
+      endif
+
+      call QUIP_FoX_get_value(attributes, "inner_transition_width", value, status)
+      if (status == 0) then
+         read (value, *) parse_ip%inner_transition_width
+      elseif (parse_ip%use_inner_cutoff) then
+         call print("Warning: IPModel_Coulomb_read_params_xml: Inner transition width &
+              not provided, using default of 0.5", PRINT_ALWAYS)
+         parse_ip%inner_transition_width = 0.5_dp
+      endif
 
 
       call QUIP_FoX_get_value(attributes, "yukawa_alpha", value, status)
