@@ -75,6 +75,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     ref_files = {
         ('Si', 'soap', 'cur_points'): 'Si.soap.cur_points.json',
         ('Si', 'distance_2b', 'uniform'): 'Si.distance_2b.uniform.json',
+        ('Si', 'two_descriptors'): 'Si.two_descriptors.json',
     }
 
     config_default_mapping = {'XML_NAME': xml_name, 'EXTRA': ''}
@@ -116,15 +117,15 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.check_index_file(ref_data)
 
         data = self.get_data_from_xml(self.xml_name)
-        self.assertLess(np.abs(data['sparsex'] - ref_data['sparsex']).max(), self.sparsex_tol)
-        self.assertLess(np.abs(data['alpha'] - ref_data['alpha']).max(), self.alpha_tol)
+        for coord, ref in zip(data['coords'], ref_data['coords']):
+            self.assertLess(np.abs(coord['sparsex'] - ref['sparsex']).max(), self.sparsex_tol)
+            self.assertLess(np.abs(coord['alpha'] - ref['alpha']).max(), self.alpha_tol)
 
     def check_index_file(self, ref):
         file = self.here / self.index_name_out
         if not file.exists():
             return
-
-        index = np.loadtxt(file).astype(int).tolist()
+        index = self.get_index_from_file(file)
         self.assertEqual(index, ref['index'])
 
     def check_latest_sparsex_file_hash(self, ref):
@@ -135,18 +136,20 @@ class TestGAP_fit(quippytest.QuippyTestCase):
 
     def get_data_from_xml(self, xml_file):
         root = ET.parse(xml_file).getroot()
-        coord = root.find('GAP_params/gpSparse/gpCoordinates')
-        alpha = np.array([float(tag.attrib['alpha']) for tag in coord.findall('sparseX')])
-        cutoff = np.array([float(tag.attrib['sparseCutoff']) for tag in coord.findall('sparseX')])
-        dimensions = int(coord.attrib['dimensions'])
-        sparsex_file = Path(xml_file).parent / coord.attrib['sparseX_filename']
-        sparsex = np.loadtxt(sparsex_file)
-        data = {
-            'dimensions': dimensions,
-            'alpha': alpha,
-            'cutoff': cutoff,
-            'sparsex': sparsex,
-        }
+        coords = root.findall('GAP_params/gpSparse/gpCoordinates')
+        data = {'coords': []}
+        for coord in coords:
+            alpha = np.array([float(tag.attrib['alpha']) for tag in coord.findall('sparseX')])
+            cutoff = np.array([float(tag.attrib['sparseCutoff']) for tag in coord.findall('sparseX')])
+            dimensions = int(coord.attrib['dimensions'])
+            sparsex_file = Path(xml_file).parent / coord.attrib['sparseX_filename']
+            sparsex = np.loadtxt(sparsex_file)
+            data['coords'].append({
+                'dimensions': dimensions,
+                'alpha': alpha,
+                'cutoff': cutoff,
+                'sparsex': sparsex,
+            })
         return data
 
     def get_config(self, xyz_file, gap, *, extra=''):
@@ -157,27 +160,31 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap = template.substitute(self.gap_default_mapping, SPARSE_METHOD=sparse_method)
         return gap
 
-    def make_index_file_from_ref(self, ref_file, index_file):
+    def get_index_from_file(self, index_file):
+        with open(index_file) as f:
+            return [[int(i) for i in line.split()] for line in f]
+
+    def make_first_index_file_from_ref(self, ref_file, index_file):
         ref_data = self.read_ref_data(ref_file)
         with open(index_file, 'w') as f:
-            for sp in ref_data['index']:
-                f.write(f'{sp}\n')
+            print(*ref_data['index'][0], sep='\n', file=f)
+
+    def make_first_sparsex_input_file_from_ref(self, ref, sparsex_file):
+        coord = ref['coords'][0]
+        with open(sparsex_file, 'w') as f:
+            size = coord['dimensions']
+            vectors = (coord['sparsex'][i:i+size] for i in range(0, len(coord['sparsex']), size))
+            for cutoff, vector in zip(coord['cutoff'], vectors):
+                print(cutoff, file=f)
+                print(*vector, sep='\n', file=f)
 
     def make_ref_file(self, config, ref_file='ref.json'):
         data = self.get_data_from_xml(self.xml_name)
-        data['index'] = np.loadtxt(self.index_name_out).astype(int)
         data['config'] = config
+        data['index'] = self.get_index_from_file(self.index_name_out)
 
         with open(ref_file, 'w') as f:
             json.dump(data, f, indent=4, cls=NumPyJSONEncoder)
-
-    def make_sparsex_input_file_from_ref(self, ref, sparsex_file):
-        with open(sparsex_file, 'w') as f:
-            size = ref['dimensions']
-            vectors = (ref['sparsex'][i:i+size] for i in range(0, len(ref['sparsex']), size))
-            for cutoff, vector in zip(ref['cutoff'], vectors):
-                print(cutoff, file=f)
-                print(*vector, sep='\n', file=f)
 
     def read_ref_data(self, ref_file):
         with open(ref_file) as f:
@@ -204,12 +211,22 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
+    def test_si_two_descriptors(self):
+        self.env['OMP_NUM_THREADS'] = '2'
+        ref_file = self.ref_files[('Si', 'two_descriptors')]
+        gap1 = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        gap2 = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
+        gap = ":".join([gap1, gap2])
+        config = self.get_config('Si.np1.xyz', gap)
+        self.run_gap_fit(config)
+        self.check_gap_fit(ref_file)
+
     def test_si_distance_2b_index(self):
         self.env['OMP_NUM_THREADS'] = '2'
         ref_file = self.ref_files[('Si', 'distance_2b', 'uniform')]
         gap = self.get_gap(self.gap_distance_2b_template, f'sparse_method=index_file sparse_file={self.index_name_inp}')
         config = self.get_config('Si.np1.xyz', gap)
-        self.make_index_file_from_ref(ref_file, self.index_name_inp)
+        self.make_first_index_file_from_ref(ref_file, self.index_name_inp)
         self.run_gap_fit(config)
         self.check_gap_fit(ref_file)
 
@@ -227,7 +244,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     def test_si_scalapack_soap_file(self):
         ref_file = self.ref_files[('Si', 'soap', 'cur_points')]
         ref_data = self.read_ref_data(ref_file)
-        self.make_sparsex_input_file_from_ref(ref_data, self.sparsex_name_inp)
+        self.make_first_sparsex_input_file_from_ref(ref_data, self.sparsex_name_inp)
         gap = self.get_gap(self.gap_soap_template, f'sparse_method=file sparse_file={self.sparsex_name_inp}')
         config = self.get_config('Si.np2.xyz', gap, extra='mpi_blocksize_rows=101')
         self.run_gap_fit(config, prefix='mpirun -np 2')
@@ -252,6 +269,18 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
         self.check_gap_fit(self.ref_files[('Si', 'distance_2b', 'uniform')])
+
+    @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
+    def test_si_scalapack_two_descriptors(self):
+        ref_file = self.ref_files[('Si', 'two_descriptors')]
+        gap1 = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
+        gap2 = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
+        gap = ":".join([gap1, gap2])
+        config = self.get_config('Si.np2.xyz', gap)
+        self.run_gap_fit(config, prefix='mpirun -np 2')
+        with open(self.log_name) as f:
+            self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
+        self.check_gap_fit(ref_file)
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_si_scalapack_big_blocksize(self):
