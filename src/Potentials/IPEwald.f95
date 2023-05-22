@@ -62,12 +62,13 @@ contains
   ! input: atoms object, has to have charge property
   ! input, optional: ewald_error (controls speed and ewald_error)
   ! input, optional: use_ewald_cutoff (forces original cutoff to be used)
+  ! input, optional: drop_real_space (drop the real-space term and only compute the long-range reciprocal-space summation)
   ! output: energy, force, virial
 
   ! procedure to determine optimal Ewald parameters:
   ! Optimization of the Ewald sum for large systems, Mol. Simul. 13 (1994), no. 1, 1-9.
 
-  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, error)
+  subroutine Ewald_calc(at_in, charge, e, f, virial, ewald_error, use_ewald_cutoff, smooth_coulomb_cutoff, drop_real_space, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -77,6 +78,7 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), intent(in), optional                     :: ewald_error
     logical, intent(in), optional                      :: use_ewald_cutoff
+    logical, intent(in), optional                      :: drop_real_space
     real(dp), intent(in), optional                     :: smooth_coulomb_cutoff
     integer, intent(out), optional                     :: error
 
@@ -220,6 +222,7 @@ contains
     if(present(virial)) virial  = 0.0_dp
 
     do i=1,at%N
+       if (drop_real_space) cycle
        !Loop over neighbours
        do n = 1, n_neighbours(at,i)
           j = neighbour(at,i,n,distance=r_ij,cosines=u_ij) ! nth neighbour of atom i
@@ -499,7 +502,8 @@ contains
 
   endsubroutine Direct_Coulomb_calc
 
-  subroutine DSF_Coulomb_calc(at_in,charge, alpha, charge_grads, e, f, virial, local_e, e_potential, e_field, cutoff, error)
+  subroutine DSF_Coulomb_calc(at_in,charge, alpha, charge_grads, e, f, virial, local_e, e_potential, e_field, cutoff, &
+          inner_cutoff, inner_transition_width, error)
 
     type(Atoms), intent(in), target    :: at_in
     real(dp), dimension(:), intent(in) :: charge
@@ -513,11 +517,13 @@ contains
     real(dp), dimension(:), intent(out), optional      :: e_potential
     real(dp), dimension(:,:), intent(out), optional    :: e_field
     real(dp), intent(in), optional                     :: cutoff
+    real(dp), intent(in), optional                     :: inner_cutoff
+    real(dp), intent(in), optional                     :: inner_transition_width
     integer, intent(out), optional                     :: error
 
     integer  :: i, j, n, k, nk
 
-    real(dp) :: my_cutoff, r_ij, phi_ij, phi_i, e_i, v_ij, dv_ij, v_cutoff, dv_cutoff, two_alpha_over_square_root_pi
+    real(dp) :: my_cutoff, my_inner_tw, r_ij, phi_ij, phi_ij_nocut, phi_i, e_i, v_ij, dv_ij, v_cutoff, dv_cutoff, two_alpha_over_square_root_pi, cutoff_fun_ij
 
     real(dp), dimension(3) :: u_ij, dphi_i, dphi_ij, grad_k_term
     real(dp), dimension(3,3) :: dphi_ij_outer_r_ij
@@ -529,6 +535,7 @@ contains
     call check_size('charge',charge,(/at_in%N/),'DSF_Coulomb_calc',error)
 
     my_cutoff = optional_default(at_in%cutoff,cutoff)
+    my_inner_tw = optional_default(0.5_dp, inner_transition_width)
 
     two_alpha_over_square_root_pi = 2.0_dp * alpha / sqrt(pi)
 
@@ -543,7 +550,7 @@ contains
     else
         at => at_in
     endif
-         
+
     if( present(e) ) e = 0.0_dp
     if( present(f) ) f = 0.0_dp
     if( present(virial) ) virial = 0.0_dp
@@ -566,11 +573,22 @@ contains
           
           v_ij = erfc(alpha*r_ij) / r_ij 
           phi_ij = charge(j) * ( v_ij - v_cutoff + dv_cutoff * (r_ij - my_cutoff) )
+          if (present(inner_cutoff) .and. r_ij < inner_cutoff) cycle
+          if (present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
+             cutoff_fun_ij = (1.0_dp - coordination_function(r_ij, inner_cutoff, my_inner_tw))
+             phi_ij_nocut = phi_ij
+             phi_ij = phi_ij * cutoff_fun_ij
+          endif
           phi_i = phi_i + phi_ij
+
 
           if( present(f) .or. present(virial) .or. present(e_field) ) then
              dv_ij = ( v_ij + two_alpha_over_square_root_pi * exp(-(alpha*r_ij)**2) ) / r_ij
              dphi_ij = charge(j) * ( dv_ij - dv_cutoff ) * u_ij
+             if (present(inner_cutoff) .and. r_ij < (inner_cutoff + my_inner_tw)) then
+                 dphi_ij = dphi_ij * cutoff_fun_ij
+                 dphi_ij = dphi_ij - (phi_ij_nocut * dcoordination_function(r_ij, inner_cutoff, my_inner_tw))
+             endif
              dphi_i = dphi_i + dphi_ij
 
              ! Add the variable-charge term, very similar to the Direct case
@@ -579,6 +597,7 @@ contains
              if (present(charge_grads)) then
                 do nk = charge_grads(i)%neigh_lo, charge_grads(i)%neigh_up
                    k = charge_grads(i)%neigh_idx(nk)
+                   ! The phi_ij value already includes the inner cutoff function, if using
                    grad_k_term = phi_ij * charge_grads(i)%gradients(:,nk)
                    if (present(f)) then
                       f(:,k) = f(:,k) - grad_k_term

@@ -218,7 +218,8 @@ subroutine IPModel_Coulomb_Initialise_str(this, args_str, param_str)
   endif
 
   if (this%use_inner_cutoff) then
-     if (.not. ((this%method == IPCoulomb_Method_Direct))) then
+     if (.not. ((this%method == IPCoulomb_Method_Direct) .or. &
+                (this%method == IPCoulomb_Method_DSF))) then
         call print("Warning: Inner cutoff not yet supported for method " // this%method // &
               " -- inner_cutoff will be ignored", PRINT_NORMAL)
      endif
@@ -422,9 +423,19 @@ call print("local_e_contrib "//i //" "//local_e_contrib)
       deallocate(gamma_mat)
    case(IPCoulomb_Method_DSF)
       if (this%use_gp_charges .and. do_grads) then
-         call DSF_Coulomb_calc(at, charge, this%DSF_alpha, charge_grads, e=e, f=f, local_e=local_e, virial=virial, cutoff=this%cutoff, error = error)
+         if (this%use_inner_cutoff) then
+            call DSF_Coulomb_calc(at, charge, this%DSF_alpha, charge_grads, e=e, f=f, local_e=local_e, virial=virial, &
+               inner_cutoff=this%inner_cutoff, inner_transition_width=this%inner_transition_width, cutoff=this%cutoff, error = error)
+         else
+            call DSF_Coulomb_calc(at, charge, this%DSF_alpha, charge_grads, e=e, f=f, local_e=local_e, virial=virial, cutoff=this%cutoff, error = error)
+         endif
       else
-         call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
+         if (this%use_inner_cutoff) then
+            call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, &
+                  inner_cutoff=this%inner_cutoff, inner_transition_width=this%inner_transition_width, error = error)
+         else
+            call DSF_Coulomb_calc(at, charge, this%DSF_alpha, e=e, local_e=local_e, f=f, virial=virial, cutoff=this%cutoff, error = error)
+         endif
       endif
    case default
       RAISE_ERROR("IPModel_Coulomb_Calc: unknown method", error)
