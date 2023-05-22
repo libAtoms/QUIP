@@ -1,4 +1,5 @@
 {
+    "dimensions": 1,
     "alpha": [
         0.07010828585906825,
         0.13894012738987543,
@@ -21,8 +22,51 @@
         -0.0442701138630239,
         -2.6949584608856374
     ],
-    "config": "at_file=Si.np1.xyz config_type_parameter_name=config_type default_sigma={0.01 1.0 0.5 0.0}  do_copy_atoms_file=F e0_offset=2.0 energy_parameter_name=dft_energy force_parameter_name=dft_force gap={{distance_2b covariance_type=ard_se cutoff=6.0 delta=1.0 n_sparse=20 print_sparse_index=sparse_index.out theta_uniform=0.1 sparse_method=uniform}} gp_file=gp.xml rnd_seed=1 sparse_jitter=1.0e-3 virial_parameter_name=dft_virial ",
-    "indices": [
+    "cutoff": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.6879497165641317,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.11577632227376994,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "sparsex": [
+        5.4623940193515885,
+        3.5688222160848806,
+        5.373030701777629,
+        2.366748847280801,
+        3.7328265689293683,
+        3.4153149357335995,
+        4.847310161865135,
+        5.6886669049872305,
+        4.324467709152653,
+        5.127270298361887,
+        2.615002066845072,
+        4.748264584298141,
+        2.849544,
+        5.8894851853622825,
+        3.9206867746250538,
+        2.238417828044457,
+        3.0122488161899286,
+        4.308949325836722,
+        1.7417089205427287,
+        1.891105406910405
+    ],
+    "index": [
         1,
         12,
         14,
@@ -44,5 +88,5 @@
         9507,
         9512
     ],
-    "sparse_hash": "2dc2f0dd2c25e9de584deefe96b0321fa8f94e6233a5707952cb6d40af4864e5"
+    "config": "at_file=Si.np1.xyz config_type_parameter_name=config_type default_sigma={0.01 1.0 0.5 0.0}  do_copy_atoms_file=F e0_offset=2.0 energy_parameter_name=dft_energy force_parameter_name=dft_force gap={{distance_2b covariance_type=ard_se cutoff=6.0 delta=1.0 n_sparse=20 print_sparse_index=sparse_index.out theta_uniform=0.1 sparse_method=uniform}} gp_file=gp.xml rnd_seed=1 sparse_jitter=1.0e-3 virial_parameter_name=dft_virial "
 }

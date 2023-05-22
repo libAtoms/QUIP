@@ -17,9 +17,8 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # To update a reference, add `self.make_ref_file(config, ref_file)` after
-# `self.run_gap_fit(config)`. To update a sparseX.inp file, prevent their
-# deletion in tearDown() and convert them via bin/gap_prepare_sparsex_input.py.
-# New xyz need reordered non-MPI frames per n_sparse due to unstable sorting.
+# `self.run_gap_fit(config)`. New xyz need reordered non-MPI frames to compare
+# with MPI ones.
 
 import unittest
 import os
@@ -45,15 +44,25 @@ def file2hash(filename, chunksize=4096):
     return hasher.hexdigest()
 
 
+class NumPyJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super().default(self, obj)
+
+
 @unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestGAP_fit(quippytest.QuippyTestCase):
     alpha_tol = 1e-5
+    sparsex_tol = 1e-8
     log_name = 'gap_fit.log'
     xml_name = 'gp.xml'
     index_name = 'sparse_index'
     index_name_inp = 'sparse_index.inp'
     index_name_out = 'sparse_index.out'
     config_name = 'gap_fit.config'
+    sparsex_name_inp = 'sparsex.inp'
     here = Path('.')
     if 'BUILDDIR' in os.environ:
         prog_path = Path(os.environ.get('BUILDDIR')) / 'gap_fit'
@@ -88,7 +97,8 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         self.env['OMP_NUM_THREADS'] = '1'
 
     def tearDown(self):
-        for fname in [self.log_name, self.config_name, self.index_name_inp, self.index_name_out]:
+        for fname in [self.config_name, self.index_name_inp, self.index_name_out,
+                      self.log_name, self.sparsex_name_inp]:
             try:
                 os.remove(self.here / fname)
             except FileNotFoundError:
@@ -102,18 +112,20 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         """check GP coefficients match expected values"""
         assert self.proc.returncode == 0, self.proc
 
-        alpha = self.get_alpha_from_xml(self.xml_name)
         ref_data = self.read_ref_data(ref_file)
-        self.assertLess(np.abs((alpha - ref_data['alpha'])).max(), self.alpha_tol)
         self.check_index_file(ref_data)
+
+        data = self.get_data_from_xml(self.xml_name)
+        self.assertLess(np.abs(data['sparsex'] - ref_data['sparsex']).max(), self.sparsex_tol)
+        self.assertLess(np.abs(data['alpha'] - ref_data['alpha']).max(), self.alpha_tol)
 
     def check_index_file(self, ref):
         file = self.here / self.index_name_out
         if not file.exists():
             return
 
-        indices = np.loadtxt(file).astype(int).tolist()
-        self.assertEqual(indices, ref['indices'])
+        index = np.loadtxt(file).astype(int).tolist()
+        self.assertEqual(index, ref['index'])
 
     def check_latest_sparsex_file_hash(self, ref):
         files = self.here.glob(self.xml_name + '.*')
@@ -121,13 +133,21 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         hash = file2hash(flast)
         self.assertEqual(hash, ref['sparse_hash'])
 
-    def get_alpha_from_xml(self, xml_file):
+    def get_data_from_xml(self, xml_file):
         root = ET.parse(xml_file).getroot()
-
-        idx = np.array([int(tag.attrib['i']) - 1 for tag in root[1][1][0].findall('sparseX')])
-        alpha = np.array([float(tag.attrib['alpha']) for tag in root[1][1][0].findall('sparseX')])
-        alpha = alpha[idx]  # reorder correctly
-        return alpha
+        coord = root.find('GAP_params/gpSparse/gpCoordinates')
+        alpha = np.array([float(tag.attrib['alpha']) for tag in coord.findall('sparseX')])
+        cutoff = np.array([float(tag.attrib['sparseCutoff']) for tag in coord.findall('sparseX')])
+        dimensions = int(coord.attrib['dimensions'])
+        sparsex_file = Path(xml_file).parent / coord.attrib['sparseX_filename']
+        sparsex = np.loadtxt(sparsex_file)
+        data = {
+            'dimensions': dimensions,
+            'alpha': alpha,
+            'cutoff': cutoff,
+            'sparsex': sparsex,
+        }
+        return data
 
     def get_config(self, xyz_file, gap, *, extra=''):
         config = self.config_template.substitute(self.config_default_mapping, XYZ_FILE=xyz_file, GAP=gap, EXTRA=extra)
@@ -140,25 +160,24 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     def make_index_file_from_ref(self, ref_file, index_file):
         ref_data = self.read_ref_data(ref_file)
         with open(index_file, 'w') as f:
-            for sp in ref_data['indices']:
+            for sp in ref_data['index']:
                 f.write(f'{sp}\n')
 
     def make_ref_file(self, config, ref_file='ref.json'):
-        alpha = self.get_alpha_from_xml(self.xml_name)
-        indices = np.loadtxt(self.index_name_out).astype(int)
+        data = self.get_data_from_xml(self.xml_name)
+        data['index'] = np.loadtxt(self.index_name_out).astype(int)
+        data['config'] = config
 
-        root = ET.parse(self.xml_name).getroot()
-        gp_coord = root.find('GAP_params/gpSparse/gpCoordinates')
-        sparse_hash = file2hash(gp_coord.attrib['sparseX_filename'])
-
-        gap_dict = {
-            'alpha': alpha.tolist(),
-            'config': config,
-            'indices': indices.tolist(),
-            'sparse_hash': sparse_hash,
-        }
         with open(ref_file, 'w') as f:
-            json.dump(gap_dict, f, indent=4)
+            json.dump(data, f, indent=4, cls=NumPyJSONEncoder)
+
+    def make_sparsex_input_file_from_ref(self, ref, sparsex_file):
+        with open(sparsex_file, 'w') as f:
+            size = ref['dimensions']
+            vectors = (ref['sparsex'][i:i+size] for i in range(0, len(ref['sparsex']), size))
+            for cutoff, vector in zip(ref['cutoff'], vectors):
+                print(cutoff, file=f)
+                print(*vector, sep='\n', file=f)
 
     def read_ref_data(self, ref_file):
         with open(ref_file) as f:
@@ -206,12 +225,15 @@ class TestGAP_fit(quippytest.QuippyTestCase):
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_si_scalapack_soap_file(self):
-        gap = self.get_gap(self.gap_soap_template, 'sparse_method=file sparse_file=Si.cur_points.sparseX.inp')
+        ref_file = self.ref_files[('Si', 'soap', 'cur_points')]
+        ref_data = self.read_ref_data(ref_file)
+        self.make_sparsex_input_file_from_ref(ref_data, self.sparsex_name_inp)
+        gap = self.get_gap(self.gap_soap_template, f'sparse_method=file sparse_file={self.sparsex_name_inp}')
         config = self.get_config('Si.np2.xyz', gap, extra='mpi_blocksize_rows=101')
         self.run_gap_fit(config, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
-        self.check_gap_fit(self.ref_files[('Si', 'soap', 'cur_points')])
+        self.check_gap_fit(ref_file)
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_si_scalapack_soap_cur_points(self):
