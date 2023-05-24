@@ -1515,6 +1515,7 @@ contains
        allocate(tip_dist(selectlist(surface)%N))
        allocate(sindex(selectlist(surface)%N))
        sorted = selectlist(surface)%int(5,1:selectlist(surface)%N)
+       sindex = [(i, i = 1, size(sindex))]
 
        ! multiply sorted by abs(distance from tip).
        do i = 1, selectlist(surface)%N
@@ -1523,7 +1524,7 @@ contains
           sorted(i) = sorted(i)*tip_dist(i)
        enddo
 
-       call insertion_sort(sorted, sindex)
+       call insertion_sort(sorted, i_data=sindex)
 
        i = 1
        do while (i <= selectlist(surface)%N .and. new_embed(surface)%N < params%selection_max_qm_atoms-temp_N)

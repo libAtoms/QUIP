@@ -5988,65 +5988,53 @@ endsubroutine
 
    endsubroutine heap_sort_i_2dim
 
-   !% Do an in place insertion sort on 'this', in ascending order.
-   !% If 'idx' is present  then on exit it will contain the list
-   !% of indices into 'this' permuted in the same way as the entries
-   !% have been.
-   subroutine insertion_sort_i(this, idx)
-     integer, intent(inout), dimension(:) :: this
-     integer, intent(out), dimension(size(this)), optional :: idx
+   !% Sort an array of integers into ascending order (stable, slow: scales as N$^2$).
+   !% i_data is an accompanying array of integers on which the same reordering is performed
+   subroutine insertion_sort_i(array, i_data)
+     integer, intent(inout), dimension(:) :: array
+     integer, intent(inout), dimension(size(array)), optional :: i_data
 
      integer :: i, vi, j, v
      vi = 1
 
-     if(present(idx)) idx = (/ (i, i=1,size(this)) /)
+     do i = 2, size(array)
+        if (array(i) >= array(i-1)) cycle
+        v = array(i)
+        if (present(i_data)) vi = i_data(i)
 
-     do i = 2, size(this)
-        if (this(i) >= this(i-1)) cycle
-        v = this(i)
-        if (present(idx)) vi = idx(i)
-
-        j = i-1
-        do while (j >= 1)
-           if (v > this(j)) exit
-           this(j+1) = this(j)
-           this(j) = v
-           if (present(idx)) then
-              idx(j+1) = idx(j)
-              idx(j) = vi
-           end if
-           j = j - 1
+        do j = (i - 1), 1, -1
+           if (v > array(j)) exit
+           array(j+1) = array(j)
+           if (present(i_data)) i_data(j+1) = i_data(j)
         end do
+        array(j+1) = v
+        if (present(i_data)) i_data(j+1) = vi
      end do
 
    end subroutine insertion_sort_i
 
-   subroutine insertion_sort_r(this, idx)
-     real(dp), intent(inout), dimension(:) :: this
-     integer, intent(out), dimension(size(this)), optional :: idx
+   !% Sort an array of reals into ascending order (stable, slow: scales as N$^2$).
+   !% i_data is an accompanying array of integers on which the same reordering is performed
+   subroutine insertion_sort_r(array, i_data)
+     real(dp), intent(inout), dimension(:) :: array
+     integer, intent(inout), dimension(size(array)), optional :: i_data
 
      integer :: i, vi, j
      real(dp) :: v
      vi = 1
 
-     if(present(idx)) idx = (/ (i, i=1,size(this)) /)
+     do i = 2, size(array)
+        if (array(i) >= array(i-1)) cycle
+        v = array(i)
+        if (present(i_data)) vi = i_data(i)
 
-     do i = 2, size(this)
-        if (this(i) >= this(i-1)) cycle
-        v = this(i)
-        if (present(idx)) vi = idx(i)
-
-        j = i-1
-        do while (j >= 1)
-           if (v > this(j)) exit
-           this(j+1) = this(j)
-           this(j) = v
-           if (present(idx)) then
-              idx(j+1) = idx(j)
-              idx(j) = vi
-           end if
-           j = j - 1
+        do j = (i - 1), 1, -1
+           if (v > array(j)) exit
+           array(j+1) = array(j)
+           if (present(i_data)) i_data(j+1) = i_data(j)
         end do
+        array(j+1) = v
+        if (present(i_data)) i_data(j+1) = vi
      end do
 
    end subroutine insertion_sort_r

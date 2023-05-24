@@ -146,7 +146,8 @@ subroutine IPModel_FC_Initialise_str(this, args_str, param_str)
     if (this%n_fcs(ti,tj) > 1) then
       allocate(sorted_index(this%n_fcs(ti,tj)))
       allocate(t_phi(this%n_fcs(ti,tj)))
-      call insertion_sort(this%r0(ti,tj,1:this%n_fcs(ti,tj)), sorted_index)
+      sorted_index = [(i, i = 1, size(sorted_index))]
+      call insertion_sort(this%r0(ti,tj,1:this%n_fcs(ti,tj)), i_data=sorted_index)
       t_phi = this%phi2(ti,tj,sorted_index); this%phi2(ti,tj,1:this%n_fcs(ti,tj)) = t_phi
       t_phi = this%phi3(ti,tj,sorted_index); this%phi3(ti,tj,1:this%n_fcs(ti,tj)) = t_phi
       t_phi = this%phi4(ti,tj,sorted_index); this%phi4(ti,tj,1:this%n_fcs(ti,tj)) = t_phi

@@ -145,6 +145,7 @@ end interface gather
 public :: gatherv
 interface gatherv
   module procedure MPI_context_gatherv_int1
+  module procedure MPI_context_gatherv_real1
   module procedure MPI_context_gatherv_real2
 end interface gatherv
 
@@ -377,10 +378,6 @@ subroutine MPI_context_scatter_hosts(this, error)
   end if
   call print("MPI my_host  : "//this%my_host)
   call print("MPI hostname : "//this%hostname)
-
-  if (allocated(hostnames)) deallocate(hostnames)
-  if (allocated(refs)) deallocate(refs)
-  if (allocated(hosts)) deallocate(hosts)
 #endif
 end subroutine MPI_context_scatter_hosts
 
@@ -689,7 +686,6 @@ subroutine MPI_context_sum_in_place_real2(this, v, error)
   allocate(v_sum(size(v,1),size(v,2)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -718,7 +714,6 @@ subroutine MPI_context_sum_in_place_real3(this, v, error)
   allocate(v_sum(size(v,1),size(v,2),size(v,3)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -747,7 +742,6 @@ subroutine MPI_context_sum_in_place_complex2(this, v, error)
   allocate(v_sum(size(v,1),size(v,2)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
@@ -803,7 +797,6 @@ subroutine MPI_context_sum_in_place_int1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_INTEGER, MPI_SUM, this%communicator, err)
 #endif
@@ -859,7 +852,6 @@ subroutine MPI_context_sum_in_place_real1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_PRECISION, MPI_SUM, this%communicator, err)
 #endif
@@ -888,7 +880,6 @@ subroutine MPI_context_sum_in_place_complex1(this, v, error)
   allocate(v_sum(size(v,1)))
   call MPI_allreduce(v, v_sum, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
   v = v_sum
-  deallocate(v_sum)
 #else
   call MPI_allreduce(MPI_IN_PLACE, v, size(v), MPI_DOUBLE_COMPLEX, MPI_SUM, this%communicator, err)
 #endif
@@ -1307,7 +1298,7 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
-  integer :: my_root, err, i, my_count
+  integer :: my_root, err, my_count
   integer, allocatable :: displs(:), my_counts(:)
 
   INIT_ERROR(error)
@@ -1332,16 +1323,12 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(my_counts) /= size(v_out)) then
+  if (sum(my_counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_gatherv_int1 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this)) then
-    allocate(displs(this%n_procs))
-    displs(1) = 0
-    do i = 2, this%n_procs
-      displs(i) = displs(i-1) + my_counts(i-1)
-    end do
+    call get_displs(my_counts, displs)
   else
     allocate(displs(1), source=0)
   end if
@@ -1350,15 +1337,64 @@ subroutine MPI_context_gatherv_int1(this, v_in, v_out, counts, root, error)
   PASS_MPI_ERROR(err, error)
 
   if (present(counts)) then
-    if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
-
-  if (allocated(displs)) deallocate(displs)
-  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_int1
+
+subroutine MPI_context_gatherv_real1(this, v_in, v_out, counts, root, error)
+  type(MPI_context), intent(in) :: this
+  real(dp), intent(in) :: v_in(:)
+  real(dp), intent(out) :: v_out(:)
+  integer, intent(out), allocatable, optional :: counts(:)
+  integer, intent(in), optional :: root
+  integer, intent(out), optional :: error
+
+  integer :: my_root, err, my_count
+  integer, allocatable :: displs(:), my_counts(:)
+
+  INIT_ERROR(error)
+
+  if (.not. this%active) then
+    if (any(shape(v_in) /= shape(v_out))) then
+      RAISE_ERROR("MPI_context_gatherv_real1 (no MPI) shape mismatch v_in " // shape(v_in) // " v_out " // shape(v_out), error)
+    endif
+    v_out = v_in
+    return
+  endif
+
+#ifdef _MPI
+  my_root = optional_default(ROOT_, root)
+  if (is_root(this)) then
+    allocate(my_counts(this%n_procs))
+  else
+    allocate(my_counts(1), source=0)
+  end if
+
+  my_count = size(v_in)
+  call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (sum(my_counts) > size(v_out)) then
+    RAISE_ERROR("MPI_context_gatherv_real1 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
+  endif
+
+  if (is_root(this)) then
+    call get_displs(my_counts, displs)
+  else
+    allocate(displs(1), source=0)
+  end if
+
+  call MPI_gatherv(v_in, my_count, MPI_DOUBLE_PRECISION, v_out, my_counts, displs, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
+  PASS_MPI_ERROR(err, error)
+
+  if (present(counts)) then
+    allocate(counts, source=my_counts)
+  end if
+#endif
+
+end subroutine MPI_context_gatherv_real1
 
 subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   type(MPI_context), intent(in) :: this
@@ -1368,7 +1404,7 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
-  integer :: my_root, err, i, my_count
+  integer :: my_root, err, my_count
   integer, allocatable :: displs(:), my_counts(:)
 
   INIT_ERROR(error)
@@ -1393,16 +1429,12 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   call mpi_gather(my_count, 1, MPI_INTEGER, my_counts, 1, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(my_counts) /= size(v_out)) then
+  if (sum(my_counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_gatherv_real2 not enough space sum(my_counts) " // sum(my_counts) // " size(v_out) " // size(v_out), error)
   endif
 
   if (is_root(this)) then
-    allocate(displs(this%n_procs))
-    displs(1) = 0
-    do i = 2, this%n_procs
-      displs(i) = displs(i-1) + my_counts(i-1)
-    end do
+    call get_displs(my_counts, displs)
   else
     allocate(displs(1), source=0)
   end if
@@ -1411,12 +1443,8 @@ subroutine MPI_context_gatherv_real2(this, v_in, v_out, counts, root, error)
   PASS_MPI_ERROR(err, error)
 
   if (present(counts)) then
-    if (allocated(counts)) deallocate(counts)
     allocate(counts, source=my_counts)
   end if
-
-  if (allocated(displs)) deallocate(displs)
-  if (allocated(my_counts)) deallocate(my_counts)
 #endif
 
 end subroutine MPI_context_gatherv_real2
@@ -1427,7 +1455,7 @@ subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
   real(dp), intent(out) :: v_out(:,:)
   integer, intent(out), optional :: error
 
-  integer err, i
+  integer err
   integer my_count
   integer, allocatable :: displs(:), counts(:)
 
@@ -1445,28 +1473,19 @@ subroutine MPI_context_allgatherv_real2(this, v_in, v_out, error)
 #ifdef _MPI
 
   my_count = size(v_in)
-  allocate(displs(this%n_procs))
   allocate(counts(this%n_procs))
   call mpi_allgather(my_count, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, this%communicator, err)
   PASS_MPI_ERROR(err, error)
 
-  if (sum(counts) /= size(v_out)) then
+  if (sum(counts) > size(v_out)) then
     RAISE_ERROR("MPI_context_allgatherv_real2 not enough space sum(counts) " // sum(counts) // " size(v_out) " // size(v_out), error)
   endif
 
-  displs(1) = 0
-  do i=2, this%n_procs
-    displs(i) = displs(i-1) + counts(i-1)
-  end do
-
+  call get_displs(counts, displs)
   call MPI_allgatherv(v_in, my_count, MPI_DOUBLE_PRECISION, &
                       v_out, counts, displs, MPI_DOUBLE_PRECISION, &
                       this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  deallocate(displs)
-  deallocate(counts)
-
 #endif
 
 end subroutine MPI_context_allgatherv_real2
@@ -1513,7 +1532,7 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
   integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
-  integer :: my_root, err, i, count
+  integer :: my_root, err, count
   integer, allocatable :: displs(:)
 
   INIT_ERROR(error)
@@ -1537,19 +1556,13 @@ subroutine MPI_context_scatterv_int1(this, v_in, v_out, counts, root, error)
   endif
 
   if (is_root(this, my_root)) then
-    allocate(displs(this%n_procs))
-    displs(1) = 0
-    do i = 2, this%n_procs
-      displs(i) = displs(i-1) + counts(i-1)
-    end do
+    call get_displs(counts, displs)
   else
     allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_INTEGER, v_out, count, MPI_INTEGER, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_int1
@@ -1562,7 +1575,7 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
   integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
-  integer :: my_root, err, i, count
+  integer :: my_root, err, count
   integer, allocatable :: displs(:)
 
   INIT_ERROR(error)
@@ -1586,19 +1599,13 @@ subroutine MPI_context_scatterv_real1(this, v_in, v_out, counts, root, error)
   endif
 
   if (is_root(this, my_root)) then
-    allocate(displs(this%n_procs))
-    displs(1) = 0
-    do i = 2, this%n_procs
-      displs(i) = displs(i-1) + counts(i-1)
-    end do
+    call get_displs(counts, displs)
   else
     allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_real1
@@ -1611,7 +1618,7 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
   integer, intent(in), optional :: root
   integer, intent(out), optional :: error
 
-  integer :: my_root, err, i, count
+  integer :: my_root, err, count
   integer, allocatable :: displs(:)
 
   INIT_ERROR(error)
@@ -1635,19 +1642,13 @@ subroutine MPI_context_scatterv_real2(this, v_in, v_out, counts, root, error)
   endif
 
   if (is_root(this, my_root)) then
-    allocate(displs(this%n_procs))
-    displs(1) = 0
-    do i = 2, this%n_procs
-      displs(i) = displs(i-1) + counts(i-1)
-    end do
+    call get_displs(counts, displs)
   else
     allocate(displs(1), source=0)
   end if
 
   call MPI_scatterv(v_in, counts, displs, MPI_DOUBLE_PRECISION, v_out, count, MPI_DOUBLE_PRECISION, my_root, this%communicator, err)
   PASS_MPI_ERROR(err, error)
-
-  if (allocated(displs)) deallocate(displs)
 #endif
 
 end subroutine MPI_context_scatterv_real2
@@ -1816,5 +1817,18 @@ subroutine push_MPI_error(info, fn, line)
 
 endsubroutine push_MPI_error
 
+! Get displacements (start 0) from counts for gatherv/scatterv
+subroutine get_displs(counts, displs)
+  integer, intent(in) :: counts(:)
+  integer, intent(out), allocatable :: displs(:)
+
+  integer :: i
+
+  allocate(displs(size(counts)))
+  displs(1) = 0
+  do i = 2, size(displs)
+    displs(i) = displs(i-1) + counts(i-1)
+  end do
+end subroutine get_displs
 
 end module MPI_context_module

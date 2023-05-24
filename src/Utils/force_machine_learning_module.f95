@@ -404,8 +404,6 @@ endfunction  internal_vector
 
    call system_timer('Sorting the DATABASE')
 
-!  call insertion_sort(distance_confs_unsorted, idx=distance_index)
-!  heap sorting below
    allocate(distance_confs(size(distance_confs_unsorted)))
    distance_confs = distance_confs_unsorted
    call heap_sort(distance_confs, i_data=distance_index)
@@ -1256,4 +1254,3 @@ subroutine optimisation_ivs_subset(data_dir, x_index)
 end subroutine optimisation_ivs_subset
 !
 end module force_machine_learning_module
-

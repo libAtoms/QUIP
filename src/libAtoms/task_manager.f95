@@ -11,7 +11,7 @@ module task_manager_module
 
   use libatoms_module, only : initialise, finalise, print_title, print, &
       operator(//), system_abort, inoutput, optional_default, OUTPUT, PRINT_VERBOSE
-  use linearalgebra_module, only : heap_sort
+  use linearalgebra_module, only : insertion_sort
   use MPI_context_module, only : MPI_Context, print
   use ScaLAPACK_module, only : Scalapack, print
 
@@ -123,7 +123,7 @@ module task_manager_module
       idata1_list(i) = this%tasks(i)%idata(1)
       index_list(i) = this%tasks(i)%index
     end do
-    call heap_sort(idata1_list, i_data=index_list) ! index_list sorted via idata1_list
+    call insertion_sort(idata1_list, i_data=index_list)  ! stable sort for easier testing
 
     ! count workload of preset tasks
     workloads = 0
@@ -175,8 +175,8 @@ module task_manager_module
   subroutine task_manager_distribute_shared_tasks(this)
     ! fill padding first, then distribute rows evenly
     type(task_manager_type), intent(inout) :: this
-  
-    integer :: i, n, t, w
+
+    integer :: n, t, w
     integer :: rest, n_split, n_extra, n_plus, offset
 
     if (.not. this%active) return
@@ -215,7 +215,7 @@ module task_manager_module
   subroutine task_manager_check_distribution(this)
     type(task_manager_type), intent(in) :: this
 
-    integer :: t, w, n, tmp
+    integer :: tmp
 
     if (.not. this%active) return
     if (.not. this%distributed) return
