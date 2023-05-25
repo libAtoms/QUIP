@@ -78,6 +78,7 @@ contains
     real(dp), dimension(3,3), intent(out), optional    :: virial
     real(dp), intent(in), optional                     :: ewald_error
     logical, intent(in), optional                      :: use_ewald_cutoff
+    !TODO add a default (False) since this is an optional argument
     logical, intent(in), optional                      :: drop_real_space
     real(dp), intent(in), optional                     :: smooth_coulomb_cutoff
     integer, intent(out), optional                     :: error

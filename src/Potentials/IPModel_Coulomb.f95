@@ -286,7 +286,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
    real(dp), dimension(:), pointer :: charge
    real(dp), dimension(:,:), allocatable :: dummy_force
    real(dp) :: r_scale, E_scale, e_pre_calc
-   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, do_grads, do_print_charges
+   logical :: do_rescale_r, do_rescale_E, do_pairwise_by_Z,do_e, do_f, do_grads, do_print_charges, drop_real_space
 
    real(dp), pointer :: local_e_by_Z(:,:), local_e_contrib(:)
    integer, allocatable :: Z_s(:), Z_u(:)
@@ -328,6 +328,7 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       call param_register(params, 'E_scale', '1.0',E_scale, has_value_target=do_rescale_E, help_string="Rescaling factor for energy. Default 1.0.")
       call param_register(params, 'pairwise_by_Z', 'F',do_pairwise_by_Z, help_string="If true, calculate pairwise contributions to local_e broken down by Z")
       call param_register(params, 'print_charge_prediction', 'F', do_print_charges, help_string="Print the predicted charges to stdout")
+      call param_register(params, 'drop_real_space', 'F', drop_real_space, help_string="For Ewald sum, perform only the reciprocal-space summation")
 
       if (.not. param_read_line(params, args_str, ignore_unknown=.true.,task='IPModel_Coulomb_Calc args_str')) then
          RAISE_ERROR("IPModel_Coulomb_Calc failed to parse args_str="//trim(args_str), error)
@@ -385,7 +386,8 @@ recursive subroutine IPModel_Coulomb_Calc(this, at, e, local_e, f, virial, local
       mpi=mpi, atom_mask_name=atom_mask_name, source_mask_name=source_mask_name, type_of_atomic_num=this%type_of_atomic_num, &
       pseudise=this%yukawa_pseudise, grid_size=this%yukawa_grid_size, error=error)
    case(IPCoulomb_Method_Ewald)
-      call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., smooth_coulomb_cutoff=this%smooth_coulomb_cutoff, error=error)
+      call Ewald_calc(at, charge, e, f, virial, ewald_error=this%ewald_error, use_ewald_cutoff=.false., &
+          smooth_coulomb_cutoff=this%smooth_coulomb_cutoff, drop_real_space=drop_real_space, error=error)
    case(IPCoulomb_Method_Ewald_NB)
       if (present(f) .or. present(virial) .or. present(local_virial)) then
          RAISE_ERROR("IPModel_Coulomb_Calc: method ewald_nb doesn't have F or V implemented yet", error)
@@ -690,7 +692,6 @@ subroutine IPModel_startElement_handler(URI, localname, name, attributes)
               not provided, using default of 0.5", PRINT_ALWAYS)
          parse_ip%inner_transition_width = 0.5_dp
       endif
-
 
       call QUIP_FoX_get_value(attributes, "yukawa_alpha", value, status)
       if (status /= 0) then
