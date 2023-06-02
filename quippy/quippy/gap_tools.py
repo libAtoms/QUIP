@@ -5,7 +5,6 @@ import os
 from quippy.descriptors import Descriptor
 from quippy.potential import Potential
 from ase.data import chemical_symbols
-from scipy.stats import norm
 
 try: # Try to use triangular solve (faster), if available
     from scipy.linalg import solve_triangular as solve
@@ -181,7 +180,7 @@ class GAPXMLWrapper():
 
     def _posterior_sample(self):
         if self.R is not None:
-            z = norm.rvs(size=self.total_nsparse)
+            z = np.random.normal(size=self.total_nsparse)
 
             return self.mean_weights + np.linalg.solve(self.R, z)
         else:
