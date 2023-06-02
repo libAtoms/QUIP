@@ -19,7 +19,7 @@ When the model is trained using SCALAPACK, this should create a new file of the 
 The matrix :math:`R` defined by the file is a square root of the posterior precision matrix, IE :math:`c \sim \mathcal{N}(\mu_c, (R^T R)^{-1})`.
 
 
-Drawing comittees from the Posterior Covariance
+Drawing committees from the Posterior Covariance
 --------------------------------------
 The ``quippy.gap_tools`` module contains a thin wrapper class to the GAP XML file, which we can use in order to draw a committee of models.
 The ``get_xml_committee`` function can be used to generate a list of committee members in the form of these wrapper classes. 

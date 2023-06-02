@@ -246,13 +246,13 @@ def read_xml(path_to_xml):
     return gap
 
 
-def get_xml_committee(path_to_xml, num_committors, return_core_wrapper=False):
+def get_xml_committee(path_to_xml, committee_size, return_core_wrapper=False):
     '''
-    Sample a comittee of GAPXMLWrappers based on the model defined by path_to_xml XML file
+    Sample a committee of GAPXMLWrappers based on the model defined by path_to_xml XML file
     '''
     gap_wrapper = read_xml(path_to_xml)
 
-    committee = gap_wrapper.draw_posterior_samples(num_committors)
+    committee = gap_wrapper.draw_posterior_samples(committee_size)
 
     if return_core_wrapper:
         return committee, gap_wrapper
@@ -260,13 +260,13 @@ def get_xml_committee(path_to_xml, num_committors, return_core_wrapper=False):
         return committee
 
 
-def get_calc_committee(path_to_xml, num_committors, return_core_wrapper=False):
+def get_calc_committee(path_to_xml, committee_size, return_core_wrapper=False):
     '''
-    Sample a comittee of quippy.potential.Potentials based on the model defined by path_to_xml XML file
+    Sample a committee of quippy.potential.Potentials based on the model defined by path_to_xml XML file
     '''
     xml_committee, gap_wrapper = get_xml_committee(
-        path_to_xml, num_committors, return_core_wrapper=True)
-    calc_committee = [committor.as_potential() for committor in xml_committee]
+        path_to_xml, committee_size, return_core_wrapper=True)
+    calc_committee = [model.as_potential() for model in xml_committee]
 
     if return_core_wrapper:
         return calc_committee, gap_wrapper
