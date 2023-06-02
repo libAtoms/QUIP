@@ -6,7 +6,13 @@ from quippy.descriptors import Descriptor
 from quippy.potential import Potential
 from ase.data import chemical_symbols
 from scipy.stats import norm
-from scipy.linalg import solve_triangular
+
+try: # Try to use triangular solve (faster), if available
+    from scipy.linalg import solve_triangular as solve
+except ImportError: # Revert to general solve
+    solve = np.linalg.solve
+
+
 
 
 class DescXMLWrapper():
@@ -177,7 +183,7 @@ class GAPXMLWrapper():
         if self.R is not None:
             z = norm.rvs(size=self.total_nsparse)
 
-            return self.mean_weights + solve_triangular(self.R, z)
+            return self.mean_weights + np.linalg.solve(self.R, z)
         else:
             raise FileNotFoundError(f"R matrix not found in directory {self.xml_dir}.")
 
