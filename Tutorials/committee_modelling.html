@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Committee Modelling using GAP potentials &mdash; quippy d0056b9 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quippy library reference" href="../quippy.html" />
+    <link rel="prev" title="References" href="adaptive-qmmm-references.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            quippy
+              <img src="../_static/hybrid.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                d0056b9
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation of QUIP and quippy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="overview.html">QUIP Overview Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quippy-ase-interoperability.html">Interoperability with Atomic Simulation Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adglass.html">Molecular Dynamics Simulation of Fracture in Quartz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptive-qmmm.html">Adaptive QM/MM MD of Fracture in Silicon</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Committee Modelling using GAP potentials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#exporting-the-gap-posterior-covariance">Exporting the GAP Posterior Covariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#drawing-committees-from-the-posterior-covariance">Drawing committees from the Posterior Covariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#code-example">Code Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quippy.html">Quippy library reference</a></li>
+</ul>
+
+    <p></p>
+    <ul>
+        <li><a href="../genindex.html">Index</a></li>
+        <li><a href="../py-modindex.html">Module Index</a></li>
+        <li><a href="../search.html">Search Page</a></li>
+        <li><a href="../_modules/index.html">Module Source Code</a></li>
+    </ul>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">quippy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Committee Modelling using GAP potentials</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/committee_modelling.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="committee-modelling-using-gap-potentials">
+<h1>Committee Modelling using GAP potentials<a class="headerlink" href="#committee-modelling-using-gap-potentials" title="Permalink to this heading"></a></h1>
+<p>Because GAP models are linear with respect to the weights, the full posterior distribution on the coefficients, <span class="math notranslate nohighlight">\(c\)</span>, is analytic:</p>
+<div class="math notranslate nohighlight">
+\[c \sim \mathcal{N}(\mu_c, (K_{MN} \Sigma^{-1} K_{NM} + K_{MM})^{-1})\]</div>
+<p>This means that the full posterior can be evaluated and saved during fitting, and that samples from the posterior can be drawn at any time.</p>
+<section id="exporting-the-gap-posterior-covariance">
+<h2>Exporting the GAP Posterior Covariance<a class="headerlink" href="#exporting-the-gap-posterior-covariance" title="Permalink to this heading"></a></h2>
+<p>In order to access the posterior covariance matrix, a new GAP model needs to be trained by <code class="docutils literal notranslate"><span class="pre">gap_fit</span></code> with the <em>export_covariance=T</em> command line option.
+When the model is trained using SCALAPACK, this should create a new file of the form &lt;GAP_NAME&gt;.R.&lt;GAP_LABEL&gt;.
+The matrix <span class="math notranslate nohighlight">\(R\)</span> defined by the file is a square root of the posterior precision matrix, IE <span class="math notranslate nohighlight">\(c \sim \mathcal{N}(\mu_c, (R^T R)^{-1})\)</span>.</p>
+</section>
+<section id="drawing-committees-from-the-posterior-covariance">
+<h2>Drawing committees from the Posterior Covariance<a class="headerlink" href="#drawing-committees-from-the-posterior-covariance" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">quippy.gap_tools</span></code> module contains a thin wrapper class to the GAP XML file, which we can use in order to draw a committee of models.
+The <code class="docutils literal notranslate"><span class="pre">get_xml_committee</span></code> function can be used to generate a list of committee members in the form of these wrapper classes.
+The committee members can each be saved back down to xml files using the <code class="docutils literal notranslate"><span class="pre">&lt;object&gt;.save(fname)</span></code> method, or transformed into <code class="docutils literal notranslate"><span class="pre">quippy.potential.Potential</span></code> calculators using the <code class="docutils literal notranslate"><span class="pre">&lt;object&gt;.as_potential()</span></code> method.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_calc_committee</span></code> function works similarly to <code class="docutils literal notranslate"><span class="pre">get_xml_committee</span></code>, except that it returns the <code class="docutils literal notranslate"><span class="pre">Potential</span></code> objects directly. Potential objects created by <code class="docutils literal notranslate"><span class="pre">get_calc_committee</span></code> or <code class="docutils literal notranslate"><span class="pre">&lt;xml_wrapper_object&gt;.as_potential()</span></code> are given an additional attribute <code class="docutils literal notranslate"><span class="pre">potential.xml</span></code>, which is a reference to the corresponding xml wrapper.</p>
+<p>Each xml wrapper object stored all the information required to generate new committee samples, which means that calling <code class="docutils literal notranslate"><span class="pre">&lt;object&gt;.draw_posterior_samples(num_samples)</span></code> will generate a new list of xml wrapper objects corresponding to a new committee.</p>
+</section>
+<section id="code-example">
+<h2>Code Example<a class="headerlink" href="#code-example" title="Permalink to this heading"></a></h2>
+<p>The code block generates an xml wrapper committee from a GAP xml file. It then saves down the committee, and generates a list of potentials. Finally, it uses the committee to test the uncertainty in a prediction of total energy.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pylab</span> inline
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="kn">from</span> <span class="nn">quippy.gap_tools</span> <span class="kn">import</span> <span class="n">get_xml_committee</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">gap_xml</span> <span class="o">=</span> <span class="s2">&quot;Carbon_GAP.xml&quot;</span>
+<span class="n">num_committors</span> <span class="o">=</span> <span class="mi">60</span>
+
+<span class="c1"># Generate committee from given GAP model</span>
+<span class="n">xml_committee</span> <span class="o">=</span> <span class="n">get_xml_committee</span><span class="p">(</span><span class="n">gap_xml</span><span class="p">,</span> <span class="n">num_committors</span><span class="p">)</span>
+
+<span class="n">calc_committee</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Save all committee members to XML files</span>
+<span class="c1"># Generate a list of quippy Potentials for committee</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_committors</span><span class="p">):</span>
+    <span class="n">xml_committee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GAP_Committee/Committor_</span><span class="si">{i}</span><span class="s2">.xml&quot;</span><span class="p">)</span>
+    <span class="n">calc_committee</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xml_committee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">as_potential</span><span class="p">())</span>
+
+
+<span class="n">structure</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;Carbon_Data_Set_Subset.xyz&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">)</span>
+
+<span class="n">E_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_committors</span><span class="p">))</span>
+
+<span class="c1"># Sample total energy on a structure</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_committors</span><span class="p">):</span>
+    <span class="n">structure</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc_committee</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">E_pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+
+
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">E_pred</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Total Energy (eV)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;GAP Committee predicted distribution of the total energy of a structure&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;GAP_Committee_Test.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/GAP_Committee_Test.png"><img alt="../_images/GAP_Committee_Test.png" class="align-center" src="../_images/GAP_Committee_Test.png" style="width: 600px;" /></a>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="adaptive-qmmm-references.html" class="btn btn-neutral float-left" title="References" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../quippy.html" class="btn btn-neutral float-right" title="Quippy library reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2008-2021, James Kermode.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
