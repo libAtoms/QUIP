@@ -290,7 +290,7 @@ subroutine MatrixD_to_MatrixD(A, B, M, N, ia, ja, ib, jb, UPLO)
 
   if (A%ScaLAPACK_Info_obj%active .and. B%ScaLAPACK_Info_obj%active) then ! ScaLAPACK
 
-    if (.not. present(UPLO)) then ! Assume full matrix copy
+    if ((my_uplo /= "U") .and. (my_uplo /= "L")) then ! Assume full matrix copy
       call ScaLAPACK_pdgemr2d_wrapper(A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
           A%ScaLAPACK_Info_obj%ScaLAPACK_obj%blacs_context, M, N, ia, ja, ib, jb)
 
