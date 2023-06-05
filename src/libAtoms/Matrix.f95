@@ -366,7 +366,6 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R, do_export_R
 
   ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
   call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
-  !call MatrixD_to_array1d(B_SP, X)
   call MatrixD_QR_Get_Weights(A_SP, B_SP, ng, X, R, do_export_R)
 
   call finalise(A_SP)
@@ -392,7 +391,7 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
 
   ! weights
   weights(:) = 0.0_dp
-  wt_matrixd%data(lbound(weights,1):ubound(weights,1),1:1) => weights(:)
+  wt_matrixd%data(1:M,1:1) => weights(:)
 
   call MatrixD_to_MatrixD(b, wt_matrixD, M, 1)
   call Finalise(wt_matrixD)
@@ -410,7 +409,7 @@ subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
       R(:, :) = 0.0_dp
       ! Reuse wt_scalapack, assuming context of A equal to context of B
       call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
-      R_matrixd%data(lbound(R,1):ubound(R,1),lbound(R,2):ubound(R,2)) => R(:, :)
+      R_matrixd%data(1:ubound(R,1),1:ubound(R,2)) => R(:, :)
       call MatrixD_to_MatrixD(A, R_matrixD, M, M, UPLO="U")
       call Finalise(R_matrixD)
     end if
