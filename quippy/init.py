@@ -29,7 +29,7 @@ import quippy.convert
 import quippy.potential
 import quippy.descriptors
 import quippy.nye_tensor
-
+import quippy.gap_tools
 import atexit
 
 # Reference values of .true. and .false. from Fortran

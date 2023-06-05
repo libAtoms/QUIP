@@ -272,6 +272,45 @@ subroutine MatrixD_to_array1d(this, array)
   end if
 end subroutine MatrixD_to_array1d
 
+subroutine MatrixD_to_MatrixD(A, B, M, N, ia, ja, ib, jb, UPLO)
+  ! Copy general submatrix A%data(ia:ia+M-1, ja:ja+N-1) to B%data(ib:ib+M-1, jb:jb+N-1)
+  ! For ScaLAPACK use, assumes the BLACS context of B is the same as (or a child of) the context of A
+  ! If UPLO is present, only copy upper (UPLO="U") or lower (UPLO="L") triangle
+  type(MatrixD), intent(in) :: A
+  type(MatrixD), intent(inout) :: B
+  integer, intent(in) :: M, N
+  integer, intent(in), optional:: ia, ja, ib, jb
+  character(1), intent(in), optional :: UPLO
+
+  integer :: my_ia, my_ja, my_ib, my_jb
+
+  character(1) :: my_uplo
+
+  my_uplo = optional_default("F", UPLO)
+
+  if (A%ScaLAPACK_Info_obj%active .and. B%ScaLAPACK_Info_obj%active) then ! ScaLAPACK
+
+    if ((my_uplo /= "U") .and. (my_uplo /= "L")) then ! Assume full matrix copy
+      call ScaLAPACK_pdgemr2d_wrapper(A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
+          A%ScaLAPACK_Info_obj%ScaLAPACK_obj%blacs_context, M, N, ia, ja, ib, jb)
+
+    else
+      ! Triangular matrix ScaLAPACK copy
+      call ScaLAPACK_pdtrmr2d_wrapper(my_uplo, "N", A%ScaLAPACK_Info_obj, A%data, B%ScaLAPACK_Info_obj, B%data, &
+          A%ScaLAPACK_Info_obj%ScaLAPACK_obj%blacs_context, M, N, ia, ja, ib, jb)
+    endif
+
+  else ! non-MPI
+    my_ia = optional_default(1, ia)
+    my_ja = optional_default(1, ja)
+    my_ib = optional_default(1, ib)
+    my_jb = optional_default(1, jb)
+
+    ! my_uplo = "F" will be interpreted as default full copy
+    call dlacpy(my_uplo, M, N, A%data(my_ia:my_ia+M-1, my_ja:my_ja+N-1), M, B%data(my_ib:my_ib+M-1, my_jb:my_jb+N-1), M)
+  end if
+end subroutine MatrixD_to_MatrixD
+
 subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   type(MatrixD), intent(inout) :: A_SP, B_SP
   logical, intent(in) :: cheat_nb_A
@@ -285,12 +324,14 @@ subroutine MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
   endif
 end subroutine MatrixD_QR_Solve
 
-subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
+subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A, R, do_export_R)
   real(dp), intent(inout), dimension(:,:), target :: A
   real(dp), intent(inout), dimension(:), target :: B
   real(dp), intent(out), dimension(:) :: X
   type(ScaLAPACK), intent(in) :: ScaLAPACK_obj
   integer, intent(in) :: mb_A, nb_A
+  real(dp), intent(out), dimension(:, :), allocatable, optional :: R
+  logical, intent(in), optional :: do_export_R
 
   logical :: cheat_nb_A
   integer :: mb, nb, ml, nl, mg, ng
@@ -325,11 +366,58 @@ subroutine SP_Matrix_QR_Solve(A, B, X, ScaLAPACK_obj, mb_A, nb_A)
 
   ! Scalapack needs mb == nb for p?trtrs, cheating if only single process column
   call MatrixD_QR_Solve(A_SP, B_SP, cheat_nb_A)
-  call MatrixD_to_array1d(B_SP, X)
+  call MatrixD_QR_Get_Weights(A_SP, B_SP, ng, X, R, do_export_R)
 
   call finalise(A_SP)
   call finalise(B_SP)
 end subroutine SP_Matrix_QR_Solve
+
+subroutine MatrixD_QR_Get_Weights(A, b, M, weights, R, do_export_R)
+  ! Extract weights from b after MatrixD_QR_Solve
+  ! Optionally extract R
+  type(MatrixD), intent(in) :: A, b
+  integer, intent(in) :: M
+  real(dp), dimension(M), intent(out), target :: weights
+  real(dp), dimension(:, :), intent(out), allocatable, target, optional :: R
+  logical, intent(in), optional :: do_export_R
+
+  type(ScaLAPACK) :: wt_scalapack
+  type(MatrixD) :: wt_matrixD, R_matrixD
+
+  ! Initialise 1x1 scalapack process grid
+  call initialise(wt_scalapack, b%ScaLAPACK_Info_obj%ScaLAPACK_obj%MPI_obj, 1, 1)
+
+  call initialise(wt_matrixD, M, 1, M, 1, wt_scalapack, use_allocate=.false.)
+
+  ! weights
+  weights(:) = 0.0_dp
+  wt_matrixd%data(1:M,1:1) => weights(:)
+
+  call MatrixD_to_MatrixD(b, wt_matrixD, M, 1)
+  call Finalise(wt_matrixD)
+
+  ! R
+  if (present(R) .and. present(do_export_R)) then
+    if (do_export_R) then
+      call print("Extracting Posterior Covariance", PRINT_VERBOSE)
+      if (wt_scalapack%blacs_context > -1) then
+        allocate(R(M, M))
+      else
+        allocate(R(1, 1))
+      end if
+
+      R(:, :) = 0.0_dp
+      ! Reuse wt_scalapack, assuming context of A equal to context of B
+      call initialise(R_matrixD, M, M, M, M, wt_scalapack, use_allocate=.false.)
+      R_matrixd%data(1:ubound(R,1),1:ubound(R,2)) => R(:, :)
+      call MatrixD_to_MatrixD(A, R_matrixD, M, M, UPLO="U")
+      call Finalise(R_matrixD)
+    end if
+  end if
+  call Finalise(wt_scalapack)
+
+end subroutine MatrixD_QR_Get_Weights
+
 
 subroutine MatrixZ_Initialise(this, N, M, NB, MB, scalapack_obj)
   type(MatrixZ), intent(out) :: this

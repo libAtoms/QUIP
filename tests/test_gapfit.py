@@ -110,6 +110,22 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         for path in self.here.glob('*.xyz.idx'):
             os.remove(path)
 
+    def check_gap_committee(self, err_tol=0.2):
+        np.random.seed(1)
+        ncomm = 200 # num_committee members to generate
+        xml_committee = quippy.gap_tools.get_xml_committee(self.xml_name, ncomm)
+
+        comm_weights = np.array([comm.weights for comm in xml_committee])
+        true_weights = xml_committee[0].mean_weights
+
+        weight_stds = np.std(comm_weights, axis=0)
+        weight_mean = np.average(comm_weights, axis=0)
+
+        mean_errs = np.abs(weight_mean - true_weights) / weight_stds
+        print("max mean err = ", np.max(mean_errs))
+        assert np.all(mean_errs < err_tol)
+        np.random.seed(None)
+
     def check_gap_fit(self, ref_file=None):
         """check GP coefficients match expected values"""
         assert self.proc.returncode == 0, self.proc
@@ -273,11 +289,12 @@ class TestGAP_fit(quippytest.QuippyTestCase):
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_si_scalapack_distance_2b_uniform(self):
         gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
-        config = self.get_config('Si.np2.xyz', gap)
+        config = self.get_config('Si.np2.xyz', gap, extra="export_covariance=T")
         self.run_gap_fit(config, prefix='mpirun -np 2')
         with open(self.log_name) as f:
             self.assertTrue("Using ScaLAPACK to solve QR" in f.read())
         self.check_gap_fit(self.ref_files[('Si', 'distance_2b', 'uniform')])
+        self.check_gap_committee()
 
     @unittest.skipIf(os.environ.get('HAVE_SCALAPACK') != '1', 'ScaLAPACK support not enabled')
     def test_si_scalapack_two_descriptors(self):

@@ -10,3 +10,4 @@ The following tutorials are currently available:
     quippy-ase-interoperability.rst
     adglass.rst
     adaptive-qmmm.rst
+    committee_modelling.rst
