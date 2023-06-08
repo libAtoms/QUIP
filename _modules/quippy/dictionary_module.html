@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>quippy.dictionary_module &mdash; quippy fc4be06 documentation</title>
+  <title>quippy.dictionary_module &mdash; quippy f454d23 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
@@ -36,7 +36,7 @@
               <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                fc4be06
+                f454d23
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -101,6 +101,7 @@
 <span class="kn">import</span> <span class="nn">quippy._quippy</span>
 <span class="kn">import</span> <span class="nn">f90wrap.runtime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="n">_arrays</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">_objs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1224,6 +1225,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="k">def</span> <span class="nf">_set_value_pointer_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1361,6 +1363,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="k">def</span> <span class="nf">_get_value_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1758,6 +1761,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="k">def</span> <span class="nf">_add_array_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">len_bn</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2053,6 +2057,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

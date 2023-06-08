@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>quippy.dynamicalsystem_module &mdash; quippy fc4be06 documentation</title>
+  <title>quippy.dynamicalsystem_module &mdash; quippy f454d23 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
@@ -36,7 +36,7 @@
               <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                fc4be06
+                f454d23
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -124,6 +124,7 @@
 <span class="kn">import</span> <span class="nn">quippy._quippy</span>
 <span class="kn">import</span> <span class="nn">f90wrap.runtime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">quippy.atoms_types_module</span> <span class="kn">import</span> <span class="n">Atoms</span>
 
 <span class="n">_arrays</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1120,6 +1121,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="k">def</span> <span class="nf">_ds_remove_atom_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1172,6 +1174,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1845,6 +1848,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span>
+    
 
 <span class="k">def</span> <span class="nf">_single_kinetic_virial</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">velo</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1905,6 +1909,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span>
+    
 
 <span class="k">def</span> <span class="nf">get_type_atom</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>

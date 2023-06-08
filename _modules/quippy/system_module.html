@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>quippy.system_module &mdash; quippy fc4be06 documentation</title>
+  <title>quippy.system_module &mdash; quippy f454d23 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
@@ -36,7 +36,7 @@
               <img src="../../_static/hybrid.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                fc4be06
+                f454d23
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,6 +100,7 @@
 <span class="kn">import</span> <span class="nn">quippy._quippy</span>
 <span class="kn">import</span> <span class="nn">f90wrap.runtime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="n">_arrays</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">_objs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -534,6 +535,7 @@
                 <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="k">continue</span></div>
+        
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2257,6 +2259,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span></div>
+    
 
 <span class="k">def</span> <span class="nf">_mem_info_i</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2309,6 +2312,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span></div>
+    
 
 <span class="k">def</span> <span class="nf">_optional_default_l</span><span class="p">(</span><span class="n">def_</span><span class="p">,</span> <span class="n">opt_val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2496,6 +2500,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span></div>
+    
 
 <span class="k">def</span> <span class="nf">_string_to_real_sub</span><span class="p">(</span><span class="n">string_bn</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2627,6 +2632,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span></div>
+    
 
 <span class="k">def</span> <span class="nf">_int_format_length_isp</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2683,6 +2689,7 @@
             <span class="k">return</span> <span class="n">proc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">continue</span></div>
+    
 
 <div class="viewcode-block" id="get_system_always_flush"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_system_always_flush">[docs]</a><span class="k">def</span> <span class="nf">get_system_always_flush</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -2787,7 +2794,7 @@
 
 <div class="viewcode-block" id="get_line"><a class="viewcode-back" href="../../system.html#quippy.system_module.get_line">[docs]</a><span class="k">def</span> <span class="nf">get_line</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Element line ftype=character(10240) pytype=str</span>
+<span class="sd">    Element line ftype=character(system_string_length_long) pytype=str</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 <span class="sd">    Defined at System.fpp line 182</span>
@@ -3120,7 +3127,7 @@
     <span class="k">return</span> <span class="n">command_arg</span></div>
 
 <span class="k">def</span> <span class="nf">set_array_command_arg</span><span class="p">(</span><span class="n">command_arg</span><span class="p">):</span>
-    <span class="n">command_arg</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">command_arg</span>
+    <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;command_arg&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">command_arg</span>
 
 
 <span class="n">_array_initialisers</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_array_command_arg</span><span class="p">]</span>
