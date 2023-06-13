@@ -158,8 +158,8 @@ class Test_Converter(quippytest.QuippyTestCase):
     def test_convert_add_arrays_unsupported_types(self):
         # setup of a separate atoms for this test
         at = self.at_base.copy()
-        at.arrays.update(dummy_obj_2d=np.zeros((3, 4), dtype=np.object),
-                         dummy_cplx_2d=np.zeros((3, 4), dtype=np.complex),
+        at.arrays.update(dummy_obj_2d=np.zeros((3, 4), dtype=object),
+                         dummy_cplx_2d=np.zeros((3, 4), dtype=complex),
                          dummy_void_2d=np.zeros((3, 4), dtype=np.void))
 
         # all should raise an error, the
