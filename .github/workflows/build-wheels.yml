@@ -97,14 +97,14 @@ jobs:
                 ./bin/gitversion --hash-only > build/${QUIP_ARCH}/VERSION
                 echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
                 if [ "$RUNNER_OS" == "macOS" ]; then
-                   export CIBW_SKIP="cp27-* cp35-* cp36-* cp311-* pp* *musllinux*"
+                   export CIBW_SKIP="cp27-* cp35-* cp36-* pp*"
                    python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH} 
                  else
                    for CIBW_MANYLINUX_X86_64_IMAGE in manylinux2010 manylinux2014; do
                      if [ "$CIBW_MANYLINUX_X86_64_IMAGE" == "manylinux2010" ]; then
                        export CIBW_SKIP="cp27-* cp35-* cp36-* cp310-* cp311-* pp* *musllinux*"
                      else
-                       export CIBW_SKIP="cp27-* cp35-* cp36-* cp311-* pp* *musllinux*"
+                       export CIBW_SKIP="cp27-* cp35-* cp36-* pp* *musllinux*"
                      fi
                      export CIBW_MANYLINUX_X86_64_IMAGE
                      python -m cibuildwheel --output-dir wheelhouse --archs $ARCHS build/${QUIP_ARCH}
