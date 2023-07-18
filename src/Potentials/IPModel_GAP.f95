@@ -934,6 +934,8 @@ subroutine IPModel_GAP_read_params_xml(this, param_str)
        characters_handler = IPModel_characters_handler)
      call close_xml_t(fxml)
 
+     call finalise(parse_cur_data)
+
      if(.not. parse_in_ip_done) &
      call  system_abort('IPModel_GAP_read_params_xml: could not initialise GAP potential. No GAP_params present?')
      this%initialised = .true.

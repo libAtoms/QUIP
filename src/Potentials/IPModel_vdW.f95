@@ -863,6 +863,8 @@ subroutine IPModel_vdW_read_params_xml(this, param_str)
        characters_handler = IPModel_characters_handler)
      call close_xml_t(fxml)
 
+     call finalise(parse_cur_data)
+
      if(.not. parse_in_ip_done) &
      call  system_abort('IPModel_vdW_read_params_xml: could not initialise vdW potential. No vdW_params present?')
      this%initialised = .true.
