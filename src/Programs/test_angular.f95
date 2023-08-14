@@ -6,18 +6,15 @@ program test_angular
 	implicit none
 
 	integer :: l_max, n, i, j
-	real(dp) :: x(3, 1), b( -3:3, 0:3, 1)
+	real(dp) :: x(4, 1), b(-4:4, 0:4, 1)
 
-	call system_initialise()
-	call enable_timing()
+	CALL system_initialise()
 
-	!x = transpose(reshape((/ 0.1_dp, 0.1_dp, 0.1_dp, 0.2_dp, 0.2_dp, 0.2_dp, 0.3_dp, 0.3_dp, 0.3_dp /), shape(x)))
-	x(1,1) = 1.0
-	x(2,1) = 1.0
-	x(3,1) = 1.0
-
-	l_max = 3
+	l_max = 4
 	n = 1
+	x(1, 1) = 1.0
+	x(2, 1) = 5.0
+	x(3, 1) = 1.0
 
 	b = IterativeHarmonics(l_max, x)
 
@@ -26,13 +23,6 @@ program test_angular
 			print *, "l=", i, "m=", j, "Q:", b(j,i,n)
 		end do
 	end do
-
-	! This is what I'll need to use for benchmarking
-	!CALL system_timer("timer")
-	!b = IterativeHarmonics(l_max, n, x)
-	!CALL system_timer("timer")
-
-	!print *, b
 
 	call system_finalise()
 

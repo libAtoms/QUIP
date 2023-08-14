@@ -45,7 +45,8 @@ PROGRAMS = quip md \
   quip_wrapper_example descriptors_wrapper_example \
   slice_sample order_atoms_as_molecules md_gid \
   quip_wrapper_simple_example  \
-  get_qw test_task_manager
+  get_qw test_task_manager \
+  test_angular
 
 CPROGRAMS = quip_wrapper_simple_example_C
 
