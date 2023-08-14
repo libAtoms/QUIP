@@ -14,7 +14,7 @@ private
 
    public :: SphericalYCartesian, GradSphericalYCartesian
    public :: SphericalYCartesian_all, GradSphericalYCartesian_all
-   public :: SolidRCartesian, IterativeHarmonics
+   public :: SolidRCartesian
 
    public :: wigner3j
    public :: cg_initialise, cg_finalise, cg_array
@@ -24,7 +24,7 @@ contains
    !#################################################################################
    !#
    !% Solid Harmonic function using Cartesian coordinates
-   !%
+1   !%
    !% $ R_{l m} = \sqrt{\frac{4 \pi}{2 l + 1}} r^l Y_{l m} $
    !#
    !#################################################################################
@@ -99,91 +99,6 @@ contains
      end do
 
    end function SolidRCartesian_all
-
-   function IterativeHarmonics(l_max, x)
-
-      real(dp), allocatable :: IterativeHarmonics(:,:,:), output(:,:,:)
-      real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared
-      real(dp) :: sm_cm_part, s_m, c_m, s_m_new, c_m_new
-      real(dp) :: x(:,:), F_ml(0:l_max,0:l_max)
-      integer :: l, m, j, i, num_of_points, l_max
-
-      num_of_points = SIZE(x, 2)
-
-      allocate(IterativeHarmonics(-l_max:l_max, 0:l_max, num_of_points))
-      allocate(output(-l_max:l_max, 0:l_max, num_of_points))
-
-      F_ml = 0
-      output = 0
-      
-      do l=0, l_max
-         F_ml(l, 0) = sqrt((2*l + 1)/(2*PI))
-
-         do m=1, l
-            F_ml(l,m) = F_ml(l,m-1) * (-1/sqrt(REAL((l+m)*(l+1-m))))
-         end do
-      end do
-
-
-      do i=1, num_of_points
-         do l=0, l_max
-            do m=-l, l
-               s_m = 0.0
-               c_m = 1.0
-
-               if (m == 0) then
-                  sm_cm_part = 1/sqrt(2.0)
-               
-               else
-                  do j=0, ABS(m)-2
-                     s_m_new = x(1, i)*s_m + x(2, i)*c_m
-                     c_m_new = -x(2, i)*s_m + x(1, i)*c_m
-
-                     s_m = s_m_new
-                     c_m = c_m_new
-                  end do
-
-                  if (m > 0) then
-                     sm_cm_part = -x(2, i)*s_m + x(1, i)*c_m
-                  else if (m < 0) then
-                     sm_cm_part = x(1, i)*s_m + x(2, i)*c_m
-                  end if   
-               end if
-
-               Q_ml_2 = 1.0
-
-               do j=1, l
-                  Q_ml_2 = Q_ml_2 * -(2*j - 1)
-               end do
-
-               Q_ml_1 = -x(3,i) * Q_ml_2
-
-               if (l-ABS(m)>1) then
-                  r_xy_squared = x(1,i)*x(1,i) + x(2,i)*x(2,i)
-
-                  do j=l-2, ABS(m), -1
-                     Q_ml_0 = (-(2 * (j+1) * x(3,i) * Q_ml_1) - (r_xy_squared * Q_ml_2))/((l+j+1) * (l-j))
-
-                     Q_ml_2 = Q_ml_1
-                     Q_ml_1 = Q_ml_0
-                  end do
-
-               else if (l-ABS(m)==1) then
-                  Q_ml_0 = Q_ml_1
-
-               else if (l-ABS(m)==0) then
-                  Q_ml_0 = Q_ml_2
-
-               end if
-
-               output(m, l, i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
-            end do
-         end do
-      end do
-
-      IterativeHarmonics = output
-
-   end function IterativeHarmonics
 
    !#################################################################################
    !#
