@@ -17,10 +17,12 @@
 # - GNU compilers version 11, python and FFTW
 # - obtain these with the following on Archer2
 #
-# module switch PrgEnv-cray PrgEnv-gnu/8.1.0
-# module load PrgEnv-gnu/8.1.0
-# module load cpe/22.04
-# module load cray-fftw
+# updated module versions. Working as of 29.08.2023
+#
+# module switch PrgEnv-cray PrgEnv-gnu/8.3.3
+# module load cpe/22.12
+# module load cray-fftw/3.3.10.3
+# module load PrgEnv-gnu/8.3.3
 #
 # Notes:
 # - comms:
