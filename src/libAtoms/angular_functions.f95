@@ -101,23 +101,7 @@ contains
 
    end function SolidRCartesian_all
 
-   subroutine ih_initialise(l_max)
 
-      real(dp), allocatable :: F_ml(:, :)
-      integer :: l_max, l, m
-
-      allocate(F_ml(0:l_max, 0:l_max))
-      F_ml = 0
-
-      do l=0, l_max
-         F_ml(l, 0) = sqrt((2*l + 1)/(2*PI))
-
-         do m=1, l
-            F_ml(l,m) = F_ml(l,m-1) * (-1/sqrt(REAL((l+m)*(l+1-m))))
-         end do
-      end do
-      
-   end subroutine ih_initialise
 
    function IterativeHarmonics(l_max, x)
 
