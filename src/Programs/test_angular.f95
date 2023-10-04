@@ -5,23 +5,26 @@ program test_angular
 
 	implicit none
 
-	integer :: l_max, n, i, j
-	real(dp) :: x(3, 1), b(-4:4, 0:4, 1, 3)
+	integer :: l_max, i, j, k
+	real(dp) :: x(3, 1)
+	real(dp), allocatable :: b(:,:,:)
+
+	l_max = 10
+	allocate(b(-l_max:l_max, 0:l_max, SIZE(x,2)))
+	x = 1.0
 
 	CALL system_initialise()
-	!CALL enable_timing()
 
-	l_max = 4
-	x(1,1) = 8.0
-	x(2,1) = 5.0
-	x(3,1) = 3.0	
+	b = IterativeHarmonics(l_max, x)
 
-	!CALL RANDOM_NUMBER(x)
-	
-	!CALL system_timer("timer")
-	b = GradSphericalIterative(l_max, x)
-	!CALL system_timer("timer")
+	do k=1, SIZE(x,2)
+		do i=0, l_max
+			do j=-i, i
+				print *, b(j,i,k)
+			end do
+		end do
+	end do
 
-	call system_finalise()
+	CALL system_finalise()
 
 end program test_angular

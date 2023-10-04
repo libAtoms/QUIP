@@ -1,4 +1,3 @@
-
 program test_grad_sphericals
 
 	use system_module
@@ -6,23 +5,24 @@ program test_grad_sphericals
 
 	implicit none
 
-    ! Variables
-	integer :: l_max, m
-	real(dp) :: x(3)
-	complex(dp) :: a, b(3)
+	integer :: l_max, n, i, j
+	real(dp) :: x(3, 1), b(-10:10, 0:10, 1:1, 1:3), y(3), c(0:10, -10:10)
 
 	CALL system_initialise()
+	CALL enable_timing()
 
-	l_max = 3
-    m = 0
-    x(1) = 1.0_dp
-    x(2) = 1.0_dp
-    x(3) = 1.0_dp
+	l_max = 10
+
+	CALL RANDOM_NUMBER(x)
 	
-	a = SolidRCartesian(l_max, m , x)
-	b = GradSphericalYCartesian(l_max, m, x)
-	print *, a
-    print *, b
+	CALL system_timer("timer")
+	do i=1, SIZE(x,2)
+		y(1) = x(1,i)
+		y(2) = x(2,i)
+		y(3) = x(3,i)
+		c = SphericalYCartesian_all(l_max, y)
+	end do
+	CALL system_timer("timer")
 
 	call system_finalise()
 
