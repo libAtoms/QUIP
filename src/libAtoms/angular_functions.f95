@@ -286,17 +286,13 @@ contains
 
    function IterativeHarmonics(l_max, x)
 
-      real(dp), allocatable :: IterativeHarmonics(:,:,:), output(:,:,:)
+      real(dp), allocatable :: IterativeHarmonics(:,:,:)
       real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part
       real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
       integer :: l, m, j, i, num_of_points, l_max
 
       num_of_points = SIZE(x, 2)
-
       allocate(IterativeHarmonics(-l_max:l_max, 0:l_max, num_of_points))
-      allocate(output(-l_max:l_max, 0:l_max, num_of_points))
-
-      output = 0
       F_ml = 0
 
       do l=0, l_max
@@ -347,19 +343,14 @@ contains
 
                else if (l-ABS(m)==1) then
                   Q_ml_0 = Q_ml_1
-
                else if (l-ABS(m)==0) then
                   Q_ml_0 = Q_ml_2
-
                end if
 
-               output(m, l, i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
+               IterativeHarmonics(m, l, i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
             end do
          end do
       end do
-
-      IterativeHarmonics = output
-
    end function IterativeHarmonics
 
    function GradSphericalIterative(l_max, x)

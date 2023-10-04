@@ -5,24 +5,25 @@ program test_grad_sphericals
 
 	implicit none
 
-	integer :: l_max, n, i, j
-	real(dp) :: x(3, 1), b(-10:10, 0:10, 1:1, 1:3), y(3), c(0:10, -10:10)
-
-	CALL system_initialise()
-	CALL enable_timing()
+	integer :: l_max, i, j, k
+	real(dp) :: x(3, 1)
+	real(dp), allocatable :: b(:,:,:,:)
 
 	l_max = 10
+	allocate(b(-l_max:l_max, 0:l_max, SIZE(x,2), 3))
+	x = 1.0
 
-	CALL RANDOM_NUMBER(x)
-	
-	CALL system_timer("timer")
-	do i=1, SIZE(x,2)
-		y(1) = x(1,i)
-		y(2) = x(2,i)
-		y(3) = x(3,i)
-		c = SphericalYCartesian_all(l_max, y)
+	CALL system_initialise()
+
+	b = GradSphericalIterative(l_max, x)
+	do k=1, SIZE(x,2)
+		do i=0, l_max
+			do j=-i, i
+				print *, b(j,i,k,1)
+			end do
+		end do
 	end do
-	CALL system_timer("timer")
+
 
 	call system_finalise()
 
