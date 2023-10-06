@@ -289,10 +289,9 @@ contains
       real(dp), allocatable :: IterativeHarmonics(:,:,:)
       real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part
       real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
-      integer :: l, m, j, i, num_of_points, l_max
+      integer :: l, m, i, j, l_max
 
-      num_of_points = SIZE(x, 2)
-      allocate(IterativeHarmonics(-l_max:l_max, 0:l_max, num_of_points))
+      allocate(IterativeHarmonics(-l_max:l_max, 0:l_max, SIZE(x, 2)))
       F_ml = 0
 
       do l=0, l_max
@@ -303,7 +302,7 @@ contains
          end do
       end do
 
-      do i=1, num_of_points
+      do i=1, SIZE(x, 2)
          do l=0, l_max
             do m=-l, l
                
@@ -347,7 +346,7 @@ contains
                   Q_ml_0 = Q_ml_2
                end if
 
-               IterativeHarmonics(m, l, i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
+               IterativeHarmonics(m,l,i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
             end do
          end do
       end do
@@ -358,10 +357,9 @@ contains
       real(dp), allocatable :: GradSphericalIterative(:,:,:,:)
       real(dp) :: r_xy_squared, first_term, second_term, Q_ml_0, Q_ml_1, Q_ml_2
       real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), Q_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
-      integer :: l, m, num_of_points, l_max, i, j
+      integer :: l, m, l_max, i, j
 
       allocate(GradSphericalIterative(-l_max:l_max, 0:l_max, SIZE(x, 2), 3))
-      num_of_points = SIZE(x, 2)
 
       F_ml = 0
       do l=0, l_max
@@ -372,8 +370,7 @@ contains
          end do
       end do
 
-      do i=1, num_of_points
-
+      do i=1, SIZE(x, 2)
          Q_ml = 0
          r_xy_squared = x(1,i)*x(1,i) + x(2,i)*x(2,i)
          do l=0, l_max
@@ -463,7 +460,6 @@ contains
             end do
          end do
       end do
-
    end function GradSphericalIterative
     
 

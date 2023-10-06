@@ -9,9 +9,11 @@ program test_angular
 	real(dp) :: x(3, 1)
 	real(dp), allocatable :: b(:,:,:)
 
-	l_max = 10
+	l_max = 4
 	allocate(b(-l_max:l_max, 0:l_max, SIZE(x,2)))
-	x = 1.0
+	x(1,1) = 8.0
+	x(2,1) = 3.0
+	x(3,1) = 9.0
 
 	CALL system_initialise()
 
@@ -25,6 +27,7 @@ program test_angular
 		end do
 	end do
 
+	deallocate(b)
 	CALL system_finalise()
 
 end program test_angular
