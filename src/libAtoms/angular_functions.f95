@@ -14,8 +14,7 @@ private
 
    public :: SphericalYCartesian, GradSphericalYCartesian
    public :: SphericalYCartesian_all, GradSphericalYCartesian_all
-   public :: SolidRCartesian, IterativeHarmonics, GradSphericalIterative
-   !public :: ih_initialise
+   public :: SolidRCartesian, SphericalIterative, GradSphericalIterative
 
    public :: wigner3j
    public :: cg_initialise, cg_finalise, cg_array
@@ -280,18 +279,18 @@ contains
 
    !#################################################################################
    !#
-   !% Spherical Harmonics and SH derivative functions using Iterative method
+   !% Spherical Harmonics and SH derivative functions in Cartesian coordinates using iterative method
    !#
    !#################################################################################
 
-   function IterativeHarmonics(l_max, x)
+   function SphericalIterative(l_max, x)
 
-      real(dp), allocatable :: IterativeHarmonics(:,:,:)
+      real(dp), allocatable :: SphericalIterative(:,:,:)
       real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part
       real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
       integer :: l, m, i, j, l_max
 
-      allocate(IterativeHarmonics(-l_max:l_max, 0:l_max, SIZE(x, 2)))
+      allocate(SphericalIterative(-l_max:l_max, 0:l_max, SIZE(x, 2)))
       F_ml = 0
 
       do l=0, l_max
@@ -346,11 +345,11 @@ contains
                   Q_ml_0 = Q_ml_2
                end if
 
-               IterativeHarmonics(m,l,i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
+               SphericalIterative(m,l,i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
             end do
          end do
       end do
-   end function IterativeHarmonics
+   end function SphericalIterative
 
    function GradSphericalIterative(l_max, x)
 

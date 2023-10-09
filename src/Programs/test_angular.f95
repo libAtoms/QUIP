@@ -17,7 +17,7 @@ program test_angular
 
 	CALL system_initialise()
 
-	b = IterativeHarmonics(l_max, x)
+	b = SphericalIterative(l_max, x)
 
 	do k=1, SIZE(x,2)
 		do i=0, l_max
