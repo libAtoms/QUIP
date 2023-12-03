@@ -286,8 +286,8 @@ contains
    function SphericalIterative(l_max, x)
 
       real(dp), allocatable :: SphericalIterative(:,:,:)
-      real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part
-      real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
+      real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part, s_m, c_m, s_m_new, c_m_new
+      real(dp) :: x(:,:), F_ml(0:l_max,0:l_max)
       integer :: l, m, i, j, l_max
 
       allocate(SphericalIterative(-l_max:l_max, 0:l_max, SIZE(x, 2)))
@@ -304,21 +304,24 @@ contains
       do i=1, SIZE(x, 2)
          do l=0, l_max
             do m=-l, l
-               
-               s(0) = 0.0
-               c(0) = 1.0
-
-               do j=1, l_max
-                  s(j) = x(1,i)*s(j-1) + x(2,i)*c(j-1)
-                  c(j) = -x(2,i)*s(j-1) + x(1,i)*c(j-1)
-               end do
+               s_m = 0.0
+               c_m = 1.0
 
                if (m == 0) then
                   sm_cm_part = 1/sqrt(2.0)
-               else if (m < 0) then
-                  sm_cm_part = s(abs(m))
+               
                else
-                  sm_cm_part = c(m)
+                  do j=0, ABS(m)-2
+                     s_m_new = x(1, i)*s_m + x(2, i)*c_m
+                     c_m_new = -x(2, i)*s_m + x(1, i)*c_m
+                     s_m = s_m_new
+                     c_m = c_m_new
+                  end do
+                  if (m > 0) then
+                     sm_cm_part = -x(2, i)*s_m + x(1, i)*c_m
+                  else if (m < 0) then
+                     sm_cm_part = x(1, i)*s_m + x(2, i)*c_m
+                  end if   
                end if
 
                Q_ml_2 = 1.0
