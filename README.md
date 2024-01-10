@@ -33,7 +33,7 @@ Copyright 2006-2021.
 Most of the publicly available version is released under the GNU
 General Public license, version 2, with some portions in the public
 domain. The GAP code, included as a submodule, is distributed under
-a non-commerical [academic source license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md)
+a non-commercial [academic source license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md)
 
 ## Citing QUIP, quippy and GAP
 
@@ -201,7 +201,7 @@ to get up and running quickly.
     ```
 
     One submodule is the GAP code, which can be found in `src/GAP`.
-    Note that GAP is distributed under a diferent
+    Note that GAP is distributed under a different
     [license](https://github.com/libAtoms/GAP/blob/main/LICENSE.md).
 
     GAP is a machine learning method that uses Gaussian process
