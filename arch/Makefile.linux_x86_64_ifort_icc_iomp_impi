@@ -28,39 +28,17 @@
 # H0 X
 # H0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# declarations
+include arch/Makefile.linux_x86_64_ifort_icc
 
-F77 = ifort
-F90 = ifort
-F95 = ifort
-CC = icc
-CPLUSPLUS = icpc -Kc++
-FPP = ifort -E
-LINKER = ifort
+F77 = mpiifort
+F90 = mpiifort
+F95 = mpiifort
+CC = mpiicc
+CPLUSPLUS = mpiicpc
+LINKER = mpiifort
 
-SAMPLE_DEBUG = -g -traceback -check bounds -DDUMP_CORE_ON_ABORT
-#DEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
-OPTIM = -O3
-#CDEBUG = -g -traceback -DDUMP_CORE_ON_ABORT
-COPTIM = -O3
+MKLOPTS = -qmkl=parallel -qopenmp
+MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 -liomp5 -lpthread -lm -ldl
 
-MKLOPTS = -I${MKLROOT}/include
-MKLLINK = -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
-
-DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
-F95FLAGS +=  -fpp -free -warn unused -fPIC $(MKLOPTS)
-F77FLAGS +=  -fpp -fixed -fPIC $(MKLOPTS)
-CFLAGS +=  -fPIC $(MKLOPTS)
-CPLUSPLUSFLAGS += -fPIC $(MKLOPTS)
-LINKOPTS = -nofor-main $(MKLLINK)
-
-AR_ADD = src
-
-QUIPPY_FCOMPILER = intelem
-QUIPPY_DEFINES = -DGETARG_F2003
-QUIPPY_F90FLAGS = -fpp -free $(MKLOPTS)
-QUIPPY_F77FLAGS = -fpp -fixed $(MKLOPTS)
-QUIPPY_CPP = ifort -EP
-QUIPPY_LDFLAGS = $(MKLLINK)
-
-F95_PRE_FILENAME_FLAG = -Tf
+DEFINES += -D_MPI
+DEFAULT_HAVE_SCALAPACK = 1

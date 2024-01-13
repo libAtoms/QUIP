@@ -1,8 +1,6 @@
 name: Build
 
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the public branch
   push:
     branches: [ public ]
   pull_request:
@@ -11,37 +9,32 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
-        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
-        gcc_version: [ 9 ]
-        have_gap: [ 0, 1 ]
-        have_scalapack: [ 0 ]
         include:
-          - arch: linux_x86_64_gfortran_openmp
-            gcc_version: 10
+          - arch: linux_x86_64_ifort_icc
             have_gap: 1
             have_scalapack: 0
-          - arch: linux_x86_64_gfortran_openmpi+openmp
-            gcc_version: 9
+          - arch: linux_x86_64_ifort_icc_iomp
+            have_gap: 1
+            have_scalapack: 0
+          - arch: linux_x86_64_ifort_icc_impi
             have_gap: 1
             have_scalapack: 1
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
+      - name: Install dependencies - GNU
+        if: contains( matrix.arch, 'gfortran' )
         env:
           QUIP_ARCH: ${{ matrix.arch }}
           HAVE_GAP: ${{ matrix.have_gap }}
@@ -54,18 +47,45 @@ jobs:
             python3-numpy
 
           if [[ "$HAVE_SCALAPACK" == 1 ]]; then
-            sudo apt-get install -y libscalapack-openmpi-dev
+              sudo apt-get install -y libscalapack-openmpi-dev
           fi
 
           if [[ "$gcc_version" == 10 ]]; then
               # compilers explicitly pointing to gcc-10
-
               export F77=gfortran-10
               export F90=gfortran-10
               export F95=gfortran-10
               export CC=gcc-10
               export CPLUSPLUS=g++-10
           fi
+
+      - name: Install INTEL compilers
+        if: contains( matrix.arch, 'ifort' )
+        env:
+          QUIP_ARCH: ${{ matrix.arch }}
+          HAVE_GAP: ${{ matrix.have_gap }}
+          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
+          gcc_version: ${{ matrix.gcc_version }}
+        run: |
+          wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          sudo echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+
+          sudo apt-get install -y python python-numpy pip
+
+          sudo apt-get install -y --no-install-recommends -o=Dpkg::Use-Pty=0 \
+                  intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic \
+                  intel-oneapi-compiler-fortran \
+                  intel-oneapi-mkl intel-oneapi-mkl-devel
+
+          if [[ "${{ matrix.have_scalapack }}" == 1 ]] ; then
+              sudo apt-get install -y --no-install-recommends intel-oneapi-mpi intel-oneapi-mpi-devel
+          fi
+
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> $GITHUB_ENV
 
       # substitute for make config
       - name: Include Config
@@ -75,7 +95,13 @@ jobs:
         run: |
           mkdir -p build/${QUIP_ARCH}
 
-          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
+          if [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_iomp_impi ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_iomp ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$QUIP_ARCH" == linux_x86_64_ifort_icc_impi ]] ; then
+              cp -v .github/workflows/Makefile.intel.inc build/${QUIP_ARCH}/Makefile.inc
+          elif [[ "$HAVE_SCALAPACK" == 1 ]]; then
               cp -v .github/workflows/Makefile.openmpi+openmp.inc build/${QUIP_ARCH}/Makefile.inc
           elif [[ "$gcc_version" == 10 ]]; then
               cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
@@ -94,11 +120,11 @@ jobs:
           make libquip
           make quippy
           make install-quippy
-          
+
       # Uncomment to get SSH access for testing
-#       - name: Setup tmate session
-#         if: failure()
-#         uses: mxschmitt/action-tmate@v3            
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3            
 
       - name: Test QUIP
         env:
@@ -106,9 +132,29 @@ jobs:
           HAVE_GAP: ${{ matrix.have_gap }}
           HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
         run: |
+          if [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc' ]] ; then
+              LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
+          elif [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_iomp' ]] ; then
+              LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$ONEAPI_ROOT/compiler/2022.0.2/linux/compiler/lib/intel64_lin/libiomp5.so"
+          elif [[ "$QUIP_ARCH" == 'linux_x86_64_ifort_icc_impi' ]] ; then
+              LD_PRELOAD="$MKLROOT/lib/intel64/libmkl_intel_lp64.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_sequential.so.2"
+              LD_PRELOAD="$LD_PRELOAD:$MKLROOT/lib/intel64/libmkl_core.so.2"
+          fi
+          export LD_PRELOAD
           export QUIP_ROOT=$PWD
           ulimit -n 256
           make test
+
+      # Uncomment to get SSH access for testing
+      - name: Setup tmate session
+        if: failure()
+        uses: mxschmitt/action-tmate@v3     
 
   # Builds the QUIP docs webpage image. This only happens ON the public 
   # branch, after tests pass and pull requests are completed
