@@ -14,7 +14,7 @@ private
 
    public :: SphericalYCartesian, GradSphericalYCartesian
    public :: SphericalYCartesian_all, GradSphericalYCartesian_all
-   public :: SolidRCartesian
+   public :: SolidRCartesian, SphericalIterative, GradSphericalIterative
 
    public :: wigner3j
    public :: cg_initialise, cg_finalise, cg_array
@@ -276,6 +276,194 @@ contains
         end do
 
     end function GradSphericalYCartesian_all
+
+   !#################################################################################
+   !#
+   !% Spherical Harmonics and SH derivative functions in Cartesian coordinates using iterative method
+   !#
+   !#################################################################################
+
+   function SphericalIterative(l_max, x)
+
+      real(dp), allocatable :: SphericalIterative(:,:,:)
+      real(dp) :: Q_ml_2, Q_ml_1, Q_ml_0, r_xy_squared, sm_cm_part, s_m, c_m, s_m_new, c_m_new
+      real(dp) :: x(:,:), F_ml(0:l_max,0:l_max)
+      integer :: l, m, i, j, l_max
+
+      allocate(SphericalIterative(-l_max:l_max, 0:l_max, SIZE(x, 2)))
+      F_ml = 0
+
+      do l=0, l_max
+         F_ml(l, 0) = sqrt((2*l + 1)/(2*PI))
+
+         do m=1, l
+            F_ml(l,m) = F_ml(l,m-1) * (-1/sqrt(REAL((l+m)*(l+1-m))))
+         end do
+      end do
+
+      do i=1, SIZE(x, 2)
+         do l=0, l_max
+            do m=-l, l
+               s_m = 0.0
+               c_m = 1.0
+
+               if (m == 0) then
+                  sm_cm_part = 1/sqrt(2.0)
+               
+               else
+                  do j=0, ABS(m)-2
+                     s_m_new = x(1, i)*s_m + x(2, i)*c_m
+                     c_m_new = -x(2, i)*s_m + x(1, i)*c_m
+                     s_m = s_m_new
+                     c_m = c_m_new
+                  end do
+                  if (m > 0) then
+                     sm_cm_part = -x(2, i)*s_m + x(1, i)*c_m
+                  else if (m < 0) then
+                     sm_cm_part = x(1, i)*s_m + x(2, i)*c_m
+                  end if   
+               end if
+
+               Q_ml_2 = 1.0
+
+               do j=1, l
+                  Q_ml_2 = Q_ml_2 * -(2*j - 1)
+               end do
+
+               Q_ml_1 = -x(3,i) * Q_ml_2
+
+               if (l-ABS(m)>1) then
+                  r_xy_squared = x(1,i)*x(1,i) + x(2,i)*x(2,i)
+
+                  do j=l-2, ABS(m), -1
+                     Q_ml_0 = (-(2 * (j+1) * x(3,i) * Q_ml_1) - (r_xy_squared * Q_ml_2))/((l+j+1) * (l-j))
+
+                     Q_ml_2 = Q_ml_1
+                     Q_ml_1 = Q_ml_0
+                  end do
+
+               else if (l-ABS(m)==1) then
+                  Q_ml_0 = Q_ml_1
+               else if (l-ABS(m)==0) then
+                  Q_ml_0 = Q_ml_2
+               end if
+
+               SphericalIterative(m,l,i) = Q_ml_0 * sm_cm_part * F_ml(l, ABS(m))
+            end do
+         end do
+      end do
+   end function SphericalIterative
+
+   function GradSphericalIterative(l_max, x)
+
+      real(dp), allocatable :: GradSphericalIterative(:,:,:,:)
+      real(dp) :: r_xy_squared, first_term, second_term, Q_ml_0, Q_ml_1, Q_ml_2
+      real(dp) :: x(:,:), F_ml(0:l_max,0:l_max), Q_ml(0:l_max,0:l_max), s(0:l_max), c(0:l_max)
+      integer :: l, m, l_max, i, j
+
+      allocate(GradSphericalIterative(-l_max:l_max, 0:l_max, SIZE(x, 2), 3))
+
+      F_ml = 0
+      do l=0, l_max
+         F_ml(l, 0) = sqrt((2*l + 1)/(2*PI))
+ 
+         do m=1, l
+            F_ml(l,m) = F_ml(l,m-1) * (-1/sqrt(REAL((l+m)*(l+1-m))))
+         end do
+      end do
+
+      do i=1, SIZE(x, 2)
+         Q_ml = 0
+         r_xy_squared = x(1,i)*x(1,i) + x(2,i)*x(2,i)
+         do l=0, l_max
+            do m=0, l
+               Q_ml_2 = 1.0
+
+               do j=1, l
+                  Q_ml_2 = Q_ml_2 * -(2*j - 1)
+               end do
+
+               Q_ml_1 = -x(3,i) * Q_ml_2
+
+               if (l-ABS(m)>1) then
+                  do j=l-2, ABS(m), -1
+                     Q_ml_0 = (-(2 * (j+1) * x(3,i) * Q_ml_1) - (r_xy_squared * Q_ml_2))/((l+j+1) * (l-j))
+
+                     Q_ml_2 = Q_ml_1
+                     Q_ml_1 = Q_ml_0
+                  end do
+               else if (l-ABS(m)==1) then
+                  Q_ml_0 = Q_ml_1
+
+               else if (l-ABS(m)==0) then
+                  Q_ml_0 = Q_ml_2
+               end if
+               Q_ml(m,l) = Q_ml_0
+            end do
+         end do
+
+         s(0) = 0.0
+         c(0) = 1.0
+         do j=1, l_max
+            s(j) = x(1,i)*s(j-1) + x(2,i)*c(j-1)
+            c(j) = -x(2,i)*s(j-1) + x(1,i)*c(j-1)
+         end do
+
+         do l=0, l_max
+            do m=-l, l
+               if (l == 0) then
+                  GradSphericalIterative(m,l,i,1) = 0.0
+                  GradSphericalIterative(m,l,i,2) = 0.0
+                  GradSphericalIterative(m,l,i,3) = 0.0
+               
+               else if (m == 0) then
+                  ! m = 0 case
+                  if (l == 1) then
+                     GradSphericalIterative(m,l,i,1) = 0.0
+                     GradSphericalIterative(m,l,i,2) = 0.0
+                     GradSphericalIterative(m,l,i,3) = F_ml(l,m)/sqrt(2.0) * l * Q_ml(0,l-1)
+                  else
+                     GradSphericalIterative(m,l,i,1) = F_ml(l,m)/sqrt(2.0) * x(1,i) * Q_ml(1,l-1)
+                     GradSphericalIterative(m,l,i,2) = F_ml(l,m)/sqrt(2.0) * x(2,i) * Q_ml(1,l-1)
+                     GradSphericalIterative(m,l,i,3) = F_ml(l,m)/sqrt(2.0) * l * Q_ml(0,l-1)
+                  end if
+               else if (m < 0) then
+                  if (abs(m) > l-2) then
+                     first_term = 0.0
+                  else
+                     first_term = Q_ml(abs(m)+1,l-1)
+                  end if
+                  if (l == abs(m)) then
+                     second_term = 0.0
+                  else
+                     second_term = Q_ml(abs(m),l-1)
+                  end if
+
+                  GradSphericalIterative(m,l,i,1) = F_ml(l,abs(m)) * ((s(abs(m))*x(1,i)*first_term) + (abs(m)*s(abs(m)-1)*Q_ml(abs(m),l)))
+                  GradSphericalIterative(m,l,i,2) = F_ml(l,abs(m)) * ((s(abs(m))*x(2,i)*first_term) + (abs(m)*c(abs(m)-1)*Q_ml(abs(m),l)))
+                  GradSphericalIterative(m,l,i,3) = F_ml(l,abs(m)) * s(abs(m)) * (l+abs(m)) * second_term
+               
+               else if (m > 0) then
+                  if (abs(m) > l-2) then
+                     first_term = 0.0
+                  else
+                     first_term = Q_ml(abs(m)+1,l-1)
+                  end if
+                  if (l == abs(m)) then
+                     second_term = 0.0
+                  else
+                     second_term = Q_ml(abs(m),l-1)
+                  end if
+
+                  GradSphericalIterative(m,l,i,1) = F_ml(l,abs(m)) * (c(abs(m))*x(1,i)*first_term + abs(m)*c(abs(m)-1)*Q_ml(abs(m),l))
+                  GradSphericalIterative(m,l,i,2) = F_ml(l,abs(m)) * (c(abs(m))*x(2,i)*first_term - abs(m)*s(abs(m)-1)*Q_ml(abs(m),l))
+                  GradSphericalIterative(m,l,i,3) = F_ml(l,abs(m)) * c(abs(m)) * (l+abs(m)) * second_term
+               end if
+            end do
+         end do
+      end do
+   end function GradSphericalIterative
+    
 
    subroutine cg_initialise(j,denom)
 
