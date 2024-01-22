@@ -278,17 +278,17 @@ RUN pip install git+https://github.com/Luthaf/rascaline.git
 
 #ADD files/GAPPotentials.md .
 
-#RUN wget -nv -O- "http://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
+#RUN wget -nv -O- "https://www.libatoms.org/pub/Home/TungstenGAP/GAP_6.tbz2" \
 #    | tar xj -P --transform "s,^,${POTENTIALS_DIR}/GAP/Tungsten/," \
-# && wget -nv -O- "http://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
+# && wget -nv -O- "https://www.libatoms.org/pub/Home/IronGAP/gp33b.tar.gz" \
 #    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Iron/," \
-# && wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
+# && wget -nv -O- "https://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_water.tgz" \
 #    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Water/," \
-# && wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
+# && wget -nv -O- "https://www.libatoms.org/pub/Home/DataRepository/gap_dft_corrections_ch4_h2o.tgz" \
 #    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterCH4/," \
-# && wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
+# && wget -nv -O- "https://www.libatoms.org/pub/Home/DataRepository/gap_dft_1_2_body_LiH2O.tgz" \
 #    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/WaterLiH2O/," \
-# && wget -nv -O- "http://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
+# && wget -nv -O- "https://www.libatoms.org/pub/Home/DataRepository/aC_GAP.tar.gz" \
 #    | tar xz -P --transform "s,^,${POTENTIALS_DIR}/GAP/Carbon/,"
 
 # GPAW data

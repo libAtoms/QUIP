@@ -7,7 +7,7 @@
                                            2
 
  CP2K| version string:                CP2K version 2.2.120 (Development Version)
- CP2K| is freely available from                          http://cp2k.berlios.de/
+ CP2K| is freely available from                          https://cp2k.berlios.de/
  CP2K| Program compiled at                          Tue Feb  1 06:49:25 HST 2011
  CP2K| Program compiled on                                          mlogin1.mana
  CP2K| Program compiled for                           Linux-x86-64-gfortran-mana
@@ -369,90 +369,90 @@
  -------------------------------------------------------------------------------
  
  CP2K version 2.2.120 (Development Version), the CP2K developers group (2011).
- CP2K is freely available from http://cp2k.berlios.de/ .
+ CP2K is freely available from https://cp2k.berlios.de/ .
 
  Laino, T; Mohamed, F; Laio, A; Parrinello, M. 
  JOURNAL OF CHEMICAL THEORY AND COMPUTATION, 2 (5), 1370-1378 (2006). 
  An efficient linear-scaling electrostatic coupling for treating
  periodic boundary conditions in QM/MM simulations.
- http://dx.doi.org/10.1021/ct6001169
+ https://dx.doi.org/10.1021/ct6001169
 
 
  Laino, T; Mohamed, F; Laio, A; Parrinello, M. 
  JOURNAL OF CHEMICAL THEORY AND COMPUTATION, 1 (6), 1176-1184 (2005). 
  An efficient real space multigrid OM/MM electrostatic coupling.
- http://dx.doi.org/10.1021/ct050123f
+ https://dx.doi.org/10.1021/ct050123f
 
 
  Krack, M. 
  THEORETICAL CHEMISTRY ACCOUNTS, 114 (1-3), 145-152 (2005). 
  Pseudopotentials for H to Kr optimized for gradient-corrected
  exchange-correlation functionals.
- http://dx.doi.org/10.1007/s00214-005-0655-y
+ https://dx.doi.org/10.1007/s00214-005-0655-y
 
 
  VandeVondele, J; Krack, M; Mohamed, F; Parrinello, M; Chassaing, T;
  Hutter, J. COMPUTER PHYSICS COMMUNICATIONS, 167 (2), 103-128 (2005). 
  QUICKSTEP: Fast and accurate density functional calculations using a
  mixed Gaussian and plane waves approach.
- http://dx.doi.org/10.1016/j.cpc.2004.12.014
+ https://dx.doi.org/10.1016/j.cpc.2004.12.014
 
 
  Frigo, M; Johnson, SG. 
  PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
  The design and implementation of FFTW3.
- http://dx.doi.org/10.1109/JPROC.2004.840301
+ https://dx.doi.org/10.1109/JPROC.2004.840301
 
 
  VandeVondele, J; Hutter, J. 
  JOURNAL OF CHEMICAL PHYSICS, 118 (10), 4365-4369 (2003). 
  An efficient orbital transformation method for electronic structure
  calculations.
- http://dx.doi.org/10.1063/1.1543154
+ https://dx.doi.org/10.1063/1.1543154
 
 
  Hartwigsen, C; Goedecker, S; Hutter, J. 
  PHYSICAL REVIEW B, 58 (7), 3641-3662 (1998). 
  Relativistic separable dual-space Gaussian pseudopotentials from H to Rn.
- http://dx.doi.org/10.1103/PhysRevB.58.3641
+ https://dx.doi.org/10.1103/PhysRevB.58.3641
 
 
  Lippert, G; Hutter, J; Parrinello, M. 
  MOLECULAR PHYSICS, 92 (3), 477-487 (1997). 
  A hybrid Gaussian and plane wave density functional scheme.
- http://dx.doi.org/10.1080/002689797170220
+ https://dx.doi.org/10.1080/002689797170220
 
 
  Goedecker, S; Teter, M; Hutter, J. 
  PHYSICAL REVIEW B, 54 (3), 1703-1710 (1996). 
  Separable dual-space Gaussian pseudopotentials.
- http://dx.doi.org/10.1103/PhysRevB.54.1703
+ https://dx.doi.org/10.1103/PhysRevB.54.1703
 
 
  ESSMANN, U; PERERA, L; BERKOWITZ, ML; DARDEN, T; LEE, H; PEDERSEN, LG. 
  JOURNAL OF CHEMICAL PHYSICS, 103 (19), 8577-8593 (1995). 
  A SMOOTH PARTICLE MESH EWALD METHOD.
- http://dx.doi.org/10.1063/1.470117
+ https://dx.doi.org/10.1063/1.470117
 
 
  BLOCHL, PE. 
  JOURNAL OF CHEMICAL PHYSICS, 103 (17), 7422-7428 (1995). 
  ELECTROSTATIC DECOUPLING OF PERIODIC IMAGES OF PLANE-WAVE-EXPANDED
  DENSITIES AND DERIVED ATOMIC POINT CHARGES.
- http://dx.doi.org/10.1063/1.470314
+ https://dx.doi.org/10.1063/1.470314
 
 
  BECKE, AD. PHYSICAL REVIEW A, 38 (6), 3098-3100 (1988). 
  DENSITY-FUNCTIONAL EXCHANGE-ENERGY APPROXIMATION WITH CORRECT
  ASYMPTOTIC-BEHAVIOR.
- http://dx.doi.org/10.1103/PhysRevA.38.3098
+ https://dx.doi.org/10.1103/PhysRevA.38.3098
 
 
  LEE, CT; YANG, WT; PARR, RG. 
  PHYSICAL REVIEW B, 37 (2), 785-789 (1988). 
  DEVELOPMENT OF THE COLLE-SALVETTI CORRELATION-ENERGY FORMULA INTO A
  FUNCTIONAL OF THE ELECTRON-DENSITY.
- http://dx.doi.org/10.1103/PhysRevB.37.785
+ https://dx.doi.org/10.1103/PhysRevB.37.785
 
 
  -------------------------------------------------------------------------------

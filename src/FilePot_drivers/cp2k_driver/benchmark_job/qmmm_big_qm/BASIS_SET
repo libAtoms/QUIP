@@ -3681,7 +3681,7 @@ Au TZ-GTH
 ################################################################################
 #
 # QS basis sets using as a guidance the results returned by
-# http://www.emsl.pnl.gov/forms/basisform.html
+# https://www.emsl.pnl.gov/forms/basisform.html
 # for BASIS="6-311++G(3df,3pd)"
 # (i.e. a pretty good gaussian basis set)
 # only polarisation / diffuse exponents are taken from this set

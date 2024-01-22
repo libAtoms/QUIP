@@ -17,7 +17,7 @@ versions are expected in the _movies/ directory, and a poster frame named
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive
 
-default_movie_host_path = 'http://www.jrkermode.co.uk/_movies'
+default_movie_host_path = 'https://www.jrkermode.co.uk/_movies'
 
 class Video(Directive):
 

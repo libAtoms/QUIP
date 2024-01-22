@@ -1,5 +1,5 @@
 <NRL_TB_params header_str="NN00001" label="Silicon">
-<!-- from http://cst-www.nrl.navy.mil/bind/si.html, Phys. Rev. B v. 62, p. 4477 (2000), sp basis -->
+<!-- from https://cst-www.nrl.navy.mil/bind/si.html, Phys. Rev. B v. 62, p. 4477 (2000), sp basis -->
   <defaults fermi_T="0.01"/>
   <header is_orthogonal="F" is_magnetic="F" has_pair_repulsion="F"
   overlap_zero_limit="T" force_harrison_signs="F"/>

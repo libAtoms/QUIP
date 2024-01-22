@@ -1,5 +1,5 @@
 <NRL_TB_params header_str="NN00000" label="Lead">
-  <comment> From http://cst-www.nrl.navy.mil/bind/pb.html Proceedings of the International Symposium on Novel Materials, Bhubaneswar, India, March 3-7, 1997 </comment>
+  <comment> From https://cst-www.nrl.navy.mil/bind/pb.html Proceedings of the International Symposium on Novel Materials, Bhubaneswar, India, March 3-7, 1997 </comment>
   <header is_orthogonal="F" is_magnetic="F" has_pair_repulsion="F" overlap_zero_limit="F" force_harrison_signs="F"/>
   <n_types v="1"/>
   <cutoff v="16.5000000000000000"/>

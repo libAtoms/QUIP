@@ -8,7 +8,7 @@
                                            silica
 
  CP2K| version string:                CP2K version 2.1.200 (Development Version)
- CP2K| is freely available from                          http://cp2k.berlios.de/
+ CP2K| is freely available from                          https://cp2k.berlios.de/
  CP2K| Program compiled at                          Thu Mar 25 15:46:25 GMT 2010
  CP2K| Program compiled on                                                node16
  CP2K| Program compiled for                                   Linux-x86-64-intel
@@ -389,23 +389,23 @@
  -------------------------------------------------------------------------------
  
  CP2K version 2.1.200 (Development Version), the CP2K developers group (2010).
- CP2K is freely available from http://cp2k.berlios.de/ .
+ CP2K is freely available from https://cp2k.berlios.de/ .
 
  Bussi, G; Donadio, D; Parrinello, M. 
  JOURNAL OF CHEMICAL PHYSICS, 126 (1), 014101 (2007). 
  Canonical sampling through velocity rescaling.
- http://dx.doi.org/10.1063/1.2408420
+ https://dx.doi.org/10.1063/1.2408420
 
 
  Frigo, M; Johnson, SG. 
  PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
  The design and implementation of FFTW3.
- http://dx.doi.org/10.1109/JPROC.2004.840301
+ https://dx.doi.org/10.1109/JPROC.2004.840301
 
 
  Ewald, PP. ANNALEN DER PHYSIK, 369 (3), 253-287 (1921). 
  Die Berechnung optischer und elektrostatischer Gitterpotentiale.
- http://dx.doi.org/10.1002/andp.19213690304
+ https://dx.doi.org/10.1002/andp.19213690304
 
 
  -------------------------------------------------------------------------------

@@ -1,16 +1,16 @@
 Published Interatomic Potentials for GAP
 ========================================
 
-For more information and data see http://www.libatoms.org
+For more information and data see https://www.libatoms.org
 
 Tungsten
 --------
 
-W.J. Szlachta, A.P. Bartók, and G. Csányi, http://arxiv.org/abs/1405.4370 
+W.J. Szlachta, A.P. Bartók, and G. Csányi, https://arxiv.org/abs/1405.4370 
 *Accuracy and transferability of GAP models for tungsten*, **2014**.
 
 
-W.J. Szlachta, http://arxiv.org/abs/1403.3291 *First principles interatomic
+W.J. Szlachta, https://arxiv.org/abs/1403.3291 *First principles interatomic
 potential for tungsten based on Gaussian process regression*, **2013**.
 
 
@@ -33,7 +33,7 @@ Bulk semiconductors
 -------------------
 
 Albert P. Bartók, Mike C. Payne, Risi Kondor, and Gábor Csányi,
-http://dx.doi.org/10.1103/PhysRevLett.104.136403 *Gaussian Approximation 
+https://dx.doi.org/10.1103/PhysRevLett.104.136403 *Gaussian Approximation 
 Potentials: The Accuracy of Quantum Mechanics, without the Electrons*, 
 **2010**.
 

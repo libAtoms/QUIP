@@ -1,5 +1,5 @@
 <NRL_TB_params header_str="NN00000" label="Tungsten">
-<!-- from http://cst-www.nrl.navy.mil/bind/w.html, Phys. Rev. B v. 54, p. 4519 (1996), spd basis -->
+<!-- from https://cst-www.nrl.navy.mil/bind/w.html, Phys. Rev. B v. 54, p. 4519 (1996), spd basis -->
   <header is_orthogonal="F" is_magnetic="F" has_pair_repulsion="F"
   overlap_zero_limit="F" force_harrison_signs="F"/>
   <n_types v="1"/>

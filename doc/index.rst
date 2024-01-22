@@ -5,14 +5,14 @@
 .. HQ X   Copyright James Kermode 2010
 .. HQ X
 .. HQ X   These portions of the source code are released under the GNU General
-.. HQ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+.. HQ X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 .. HQ X
 .. HQ X   If you would like to license the source code under different terms,
 .. HQ X   please contact James Kermode, james.kermode@gmail.com
 .. HQ X
 .. HQ X   When using this software, please cite the following reference:
 .. HQ X
-.. HQ X   http://www.jrkermode.co.uk/quippy
+.. HQ X   https://www.jrkermode.co.uk/quippy
 .. HQ X
 .. HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -29,7 +29,7 @@ collection of software tools to carry out molecular dynamics
 simulations. It implements a variety of interatomic potentials and
 tight binding quantum mechanics, and is also able to call external
 packages, and serve as plugins to other software such as `LAMMPS
-<http://lammps.sandia.gov>`_, `CP2K <http://www.cp2k.org>`_ and also
+<https://lammps.sandia.gov>`_, `CP2K <https://www.cp2k.org>`_ and also
 the python framework `ASE <https://wiki.fysik.dtu.dk/ase>`_.  Various
 hybrid combinations are also supported in the style of QM/MM, with a
 particular focus on materials systems such as metals and
@@ -37,7 +37,7 @@ semiconductors.
 
 ``quippy`` is a Python interface to ``QUIP`` that provides deep access to
 most of the Fortran types and routines. The quippy interface is principally
-maintained by `James Kermode <http://www.warwick.ac.uk/jrkermode>`_.
+maintained by `James Kermode <https://www.warwick.ac.uk/jrkermode>`_.
 
 Long term support of the package is ensured by:
  - Noam Bernstein (Naval Research Laboratory)

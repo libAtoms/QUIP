@@ -36,7 +36,7 @@
 
  CP2K| version string:                    CP2K version 2.3 (Development Version)
  CP2K| source code revision number:                                        12243
- CP2K| is freely available from                             http://www.cp2k.org/
+ CP2K| is freely available from                             https://www.cp2k.org/
  CP2K| Program compiled at                          Mon Jun  4 17:27:02 BST 2012
  CP2K| Program compiled on                                                womble
  CP2K| Program compiled for                                                ifort
@@ -324,24 +324,24 @@
  -------------------------------------------------------------------------------
  
  CP2K version 2.3 (Development Version), the CP2K developers group (2012).
- CP2K is freely available from http://www.cp2k.org/ .
+ CP2K is freely available from https://www.cp2k.org/ .
 
  Bussi, G; Donadio, D; Parrinello, M. 
  JOURNAL OF CHEMICAL PHYSICS, 126 (1), 014101 (2007). 
  Canonical sampling through velocity rescaling.
- http://dx.doi.org/10.1063/1.2408420
+ https://dx.doi.org/10.1063/1.2408420
 
 
  Frigo, M; Johnson, SG. 
  PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
  The design and implementation of FFTW3.
- http://dx.doi.org/10.1109/JPROC.2004.840301
+ https://dx.doi.org/10.1109/JPROC.2004.840301
 
 
  ESSMANN, U; PERERA, L; BERKOWITZ, ML; DARDEN, T; LEE, H; PEDERSEN, LG. 
  JOURNAL OF CHEMICAL PHYSICS, 103 (19), 8577-8593 (1995). 
  A SMOOTH PARTICLE MESH EWALD METHOD.
- http://dx.doi.org/10.1063/1.470117
+ https://dx.doi.org/10.1063/1.470117
 
 
  -------------------------------------------------------------------------------
