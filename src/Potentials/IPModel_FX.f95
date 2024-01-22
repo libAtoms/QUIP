@@ -9,7 +9,7 @@
 ! H0 X   Copyright 2006-2010.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
-! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 ! H0 X
 ! H0 X   If you would like to license the source code under different terms,
 ! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -21,7 +21,7 @@
 ! H0 X
 ! H0 X   When using this software, please cite the following reference:
 ! H0 X
-! H0 X   http://www.libatoms.org
+! H0 X   https://www.libatoms.org
 ! H0 X
 ! H0 X  Additional contributions by
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
@@ -33,7 +33,7 @@
 !X
 !% polarisable water model 
 !% G. S. Fanourgakis and S. S. Xantheas, Journal of Chemical Physics 128, 074506 (2008)
-!% This is a wrapper for a code downloaded from http://www.pnl.gov/science/ttm3f.asp
+!% This is a wrapper for a code downloaded from https://www.pnl.gov/science/ttm3f.asp
 !% WARNING: it does not deal with periodic boundary conditions
 !% UNITS: KCal/mol for energies and Angstroms for distance for the original FX code, of course the QUIP calculator converts to eVs. 
 !X

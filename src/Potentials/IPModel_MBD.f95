@@ -9,7 +9,7 @@
 ! H0 X   Copyright 2006-2010.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
-! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 ! H0 X
 ! H0 X   If you would like to license the source code under different terms,
 ! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -21,7 +21,7 @@
 ! H0 X
 ! H0 X   When using this software, please cite the following reference:
 ! H0 X
-! H0 X   http://www.libatoms.org
+! H0 X   https://www.libatoms.org
 ! H0 X
 ! H0 X  Additional contributions by
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
@@ -35,7 +35,7 @@
 !% Tkatchenko, DiStasio, Car, & Scheffler
 !% Phys. Rev. Lett. 108, 236402 (2012).
 !%
-!% Requires the MBD code from http://www.fhi-berlin.mpg.de/~tkatchen/MBD/MBD.tar
+!% Requires the MBD code from https://www.fhi-berlin.mpg.de/~tkatchen/MBD/MBD.tar
 !% Download and extract into ThirdParty/MBD
 !% TODO the Makefile should automatically patch their UTILS.F90 and compile it
 !%      in

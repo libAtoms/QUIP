@@ -9,7 +9,7 @@
 ! HJ X   Copyright 2006-2010.
 ! HJ X
 ! HJ X   These portions of the source code are released under the GNU General
-! HJ X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! HJ X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 ! HJ X
 ! HJ X   If you would like to license the source code under different terms,
 ! HJ X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -21,7 +21,7 @@
 ! HJ X
 ! HJ X   When using this software, please cite the following reference:
 ! HJ X
-! HJ X   http://www.libatoms.org
+! HJ X   https://www.libatoms.org
 ! HJ X
 ! HJ X  Additional contributions by
 ! HJ X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras

@@ -8,7 +8,7 @@ module real_space_covariance_module
 
    !% 24-point quaternion grid from centers of the cells of a
    !% truncated-cubic tetracontaoctachoron (48-cell), coverage angle
-   !% alpha=62.8 degrees. See http://charles.karney.info/orientation
+   !% alpha=62.8 degrees. See https://charles.karney.info/orientation
    real(dp), dimension(4,24) :: quat_grid_c48u1 = reshape( &
       (/1.        ,  0.        ,  0.        ,  0.        , &
         0.        ,  1.        ,  0.        ,  0.        , &

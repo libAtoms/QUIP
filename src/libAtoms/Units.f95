@@ -9,7 +9,7 @@
 ! H0 X   Copyright 2006-2010.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
-! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 ! H0 X
 ! H0 X   If you would like to license the source code under different terms,
 ! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -21,7 +21,7 @@
 ! H0 X
 ! H0 X   When using this software, please cite the following reference:
 ! H0 X
-! H0 X   http://www.libatoms.org
+! H0 X   https://www.libatoms.org
 ! H0 X
 ! H0 X  Additional contributions by
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
@@ -86,7 +86,7 @@ real(dp), parameter :: VACUUM_C = 299792458.0_dp  !% exact in m/s
 real(dp), parameter :: INVERSE_CM = 1.0e2_dp*VACUUM_C*HBAR_EVSEC*2.0_dp*PI !% 
 #else
 ! CODATA 2014 taken from
-! http://arxiv.org/pdf/1507.07956.pdf
+! https://arxiv.org/pdf/1507.07956.pdf
 ! Fundamentals
 real(dp), parameter :: ELECTRONMASS = 9.10938356e-31_dp  !% electron mass / kg
 real(dp), parameter :: N_A = 6.022140857e23_dp  !% Avogadro constant

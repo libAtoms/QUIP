@@ -376,7 +376,7 @@ contains
    !#################################################################################
    !#
    !% Check if input variables for CG make sense.
-   !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
+   !% Source: https://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
    !%
    !% $ j_1 + j_2 \ge j $ \\
    !% $ j_1 - j_2 \ge -j $ \\
@@ -407,7 +407,7 @@ contains
    !#################################################################################
    !#
    !% Calculate a Clebsch-Gordan coefficient $\left< j_1 m_1 j_2 m_2 | j m \right>$
-   !% Source: http://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
+   !% Source: https://mathworld.wolfram.com/Clebsch-GordanCoefficient.html \\
    !% $ \left< j_1 m_1 j_2 m_2 | j m \right> = (-1)^{m+j_1-j_2)
    !% \sqrt{2j+1} \left( \begin{array}{ccc}
    !% j_1 & j_2 & j \\
@@ -438,7 +438,7 @@ contains
    !#################################################################################
    !#
    !% Triangle coefficient
-   !% Source: http://mathworld.wolfram.com/TriangleCoefficient.html
+   !% Source: https://mathworld.wolfram.com/TriangleCoefficient.html
    !%
    !% $ \Delta(a,b,c) = \frac{ (a+b-c)! (a-b+c)! (-a+b+c)! }{ (a+b+c+1)! } $
    !#
@@ -461,7 +461,7 @@ contains
    !#################################################################################
    !#
    !% Wigner 3J symbol
-   !% Source: http://mathworld.wolfram.com/Wigner3j-Symbol.html
+   !% Source: https://mathworld.wolfram.com/Wigner3j-Symbol.html
    !%
    !% \[
    !% \left( \begin{array}{ccc}

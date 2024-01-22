@@ -1,6 +1,6 @@
 ! based on Varshney et al IEEE Comp. Graphics and Appl. v. 14 p 19 (1994)
 ! linear programming solver from
-!   http://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
+!   https://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
 ! Not sure why they think that intersection of power-cell half spaces and enclosing
 !   tetrahedron half spaces is null for internal atoms - seems to be just something
 !   like Voronoi cell of atom (if all (covalent) radii are equal, anyway)
@@ -157,7 +157,7 @@ function feasible_cell_has_solution(plane_constraints, bounds)
 end function feasible_cell_has_solution
 
 ! linear programming solver from
-!   http://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
+!   https://www.mpi-inf.mpg.de/departments/d1/teaching/ss10/opt/handouts/lecture25-SeidelLinearProgramming.pdf
 ! solve a.x <= b for x, subject to bounds.  Returns x, sets has_solution to false if no solution.
 recursive function seidel_solve(a, b, bounds, has_solution) result(x)
    real(dp) :: a(:,:), b(:), bounds(:,:)

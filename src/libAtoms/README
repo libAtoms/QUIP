@@ -15,13 +15,13 @@
      Contributors: Noam Bernstein, Alessio Comisso
 
      The source code is released under the GNU General Public License,
-     version 2, http://www.gnu.org/copyleft/gpl.html
+     version 2, https://www.gnu.org/copyleft/gpl.html
 
      If you would like to license the source code under different terms,
      please contact Gabor Csanyi, gabor@csanyi.net
 
      When using this software, please cite the following reference:
-     http://www.libatoms.org
+     https://www.libatoms.org
 
 
 
@@ -142,10 +142,10 @@ Documentation
 
 The libAtoms documentation is embedded within the source code as
 specially formatted comments. To generate the documentation, Python
-2.4 or later (http://www.python.org) and a working LaTeX installation
-(e.g. 'TeX Live' http://www.tug.org/texlive) are required. If you want
+2.4 or later (https://www.python.org) and a working LaTeX installation
+(e.g. 'TeX Live' https://www.tug.org/texlive) are required. If you want
 HTML formatted documentation then you will also need LaTeX2HTML
-(available from http://www.latex2html.org).
+(available from https://www.latex2html.org).
 
 > make doc
 

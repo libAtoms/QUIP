@@ -3,7 +3,7 @@ C HL X
 C HL X   LBFGS
 C HL X
 C HL X   This code was downloaded from J. Nocedal's web site
-C HL X   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
+C HL X   URL: https://www.eecs.northwestern.edu/~nocedal/lbfgs.html
 C HL X
 C HL X   Author: J. Nocedal
 C HL X

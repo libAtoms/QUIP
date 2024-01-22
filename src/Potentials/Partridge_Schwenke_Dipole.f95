@@ -408,7 +408,7 @@ data (coef(i),i=591,823)/ &
 
 contains
     ! some wrapper functions and the Partridge Schwenke Dipole moment surface for water - published 
-    ! J. Chem. Phys. 113, 6592 (2000); http://dx.doi.org/10.1063/1.1311392
+    ! J. Chem. Phys. 113, 6592 (2000); https://dx.doi.org/10.1063/1.1311392
     ! retreived from EPAPS : EPAPS Document No. E-JCPSA6-113-304040
 
    subroutine m_site_position(atomic_positions,gammaM,pos)

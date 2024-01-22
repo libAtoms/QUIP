@@ -9,7 +9,7 @@
 ! H0 X   Copyright 2006-2010.
 ! H0 X
 ! H0 X   These portions of the source code are released under the GNU General
-! H0 X   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+! H0 X   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 ! H0 X
 ! H0 X   If you would like to license the source code under different terms,
 ! H0 X   please contact Gabor Csanyi, gabor@csanyi.net
@@ -21,7 +21,7 @@
 ! H0 X
 ! H0 X   When using this software, please cite the following reference:
 ! H0 X
-! H0 X   http://www.libatoms.org
+! H0 X   https://www.libatoms.org
 ! H0 X
 ! H0 X  Additional contributions by
 ! H0 X    Alessio Comisso, Chiara Gattinoni, and Gianpietro Moras
@@ -130,7 +130,7 @@ program crack
   !% This is a difficultproblem since the timescales of thermal vibration
   !% and crack motion are not well separated.
   !% The hysteretic selection algorithm described in Section 4.6 of my thesis
-  !% \footnote{Available at 'http://www.srcf.ucam.org/\~jrk33/Publications'}.
+  !% \footnote{Available at 'https://www.srcf.ucam.org/\~jrk33/Publications'}.
   !% provides an effective solution to this problem.
   !%
   !% We identify atoms as active when they change their bonding topology,
