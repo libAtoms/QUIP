@@ -142,7 +142,7 @@ boundaries by holding `Shift` and dragging. Zoom in and out by
 dragging with the right mouse button (or scroll wheel, if you have
 one). Press `b` to toggle the display of bonds. For more help on
 `AtomEye` see its `web page
-<http://mt.seas.upenn.edu/Archive/Graphics/A>`_ or the documentation
+<https://mt.seas.upenn.edu/Archive/Graphics/A>`_ or the documentation
 for the :mod:`qlab` and :mod:`atomeye` modules.
 
 Now, we initialise the Stillinger-Weber (SW) classical interatomic
@@ -278,7 +278,7 @@ add it to the script file):
 We now shift the `unit_slab` vertically so that we will open up a
 surface along a :math:`(111)` glide plane, cutting vertically aligned
 bonds (see e.g. `this image
-<http://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif>`_). This
+<https://ej.iop.org/images/0295-5075/72/3/410/Full/img11.gif>`_). This
 choice gives the lowest energy surface. We then map the positions back
 into the unit cell::
 

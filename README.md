@@ -7,13 +7,13 @@ The `QUIP` package is a collection of software tools to carry out
 molecular dynamics simulations. It implements a variety of interatomic
 potentials and tight binding quantum mechanics, and is also able to
 call external packages, and serve as plugins to other software such as
-[LAMMPS](http://lammps.sandia.gov), [CP2K](http://www.cp2k.org)
+[LAMMPS](https://lammps.sandia.gov), [CP2K](https://www.cp2k.org)
 and also the python framework [ASE](https://wiki.fysik.dtu.dk/ase).
 Various hybrid combinations are also supported in the style of QM/MM,
 with a particular focus on materials systems such as metals and
 semiconductors.
 
-For more details, see the [online documentation](http://libatoms.github.io/QUIP). There is separate [documentation for SOAP and GAP](https://libatoms.github.io/GAP).
+For more details, see the [online documentation](https://libatoms.github.io/QUIP). There is separate [documentation for SOAP and GAP](https://libatoms.github.io/GAP).
 
 Long term support of the package is ensured by:
  - Noam Bernstein ([@bernstei](https://github.com/bernstei), Naval Research Laboratory)
@@ -173,7 +173,7 @@ here if you have problems installing with `pip`.
 ## Precompiled Containers
 
 If you have access to [Docker](https://hub.docker.com) or
-[Singularity](http://singularity.lbl.gov), you can try one of the
+[Singularity](https://singularity.lbl.gov), you can try one of the
 [precompiled images](https://github.com/libAtoms/quip-docker)
 to get up and running quickly.
 
@@ -285,7 +285,7 @@ to get up and running quickly.
     `ip.parms.LJ.xml` file under `share/Parameters` (ensure the path
     to this file is correct). The format of the atomic configuration is
     given in
-    [Extended XYZ](http://libatoms.github.io/QUIP/io.html#extendedxyz)
+    [Extended XYZ](https://libatoms.github.io/QUIP/io.html#extendedxyz)
     format, in which the first line is the number of atoms, the second line
     is a series of key=value pairs, which must at least contain the Lattice
     key giving the periodic bounding box and the Properties key that
@@ -307,10 +307,10 @@ to get up and running quickly.
     installs executuable scripts to is on your path (e.g. by setting
     `PATH=~/.local/bin:$PATH`).
     - Python 3
-    - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
+    - [NumPy](https://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
     - [f90wrap](https://github.com/jameskermode/f90wrap)
-    - (optional) [SciPy](http://www.scipy.org)
+    - (optional) [SciPy](https://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
     Note: If you are using a Python virtual environment (virtualenv) and would like
@@ -339,7 +339,7 @@ to get up and running quickly.
 
 9.  More details on the quippy installation process and troubleshooting for
     common build problems are available in the
-    [online documentation](http://libatoms.github.io/QUIP/).
+    [online documentation](https://libatoms.github.io/QUIP/).
 
 10.  To run the unit and regression tests, which depend on `quippy`::
     ```bash
@@ -357,7 +357,7 @@ to get up and running quickly.
 
 13. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
     into library form, and then follow the instructions in the
-    [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
+    [LAMMPS documentation](https://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
 
 # Developer notes:
 

@@ -13,7 +13,7 @@ Create executables
   make src/Programs/NRL_TB_to_xml
 
 Fix TBMD format input file (let's call it nrl_tb_param_file), as downloaded
-  from http://cst-www.nrl.navy.mil/bind by adding after each atomic mass
+  from https://cst-www.nrl.navy.mil/bind by adding after each atomic mass
   the atomic number for that element
 
 Create XML format NRL-TB parameter file for QUIP

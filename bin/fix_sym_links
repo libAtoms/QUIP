@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Workaround for viewvc tarball export bug which loses symbolic links
-# (see http://viewvc.tigris.org/issues/show_bug.cgi?id=487)
+# (see https://viewvc.tigris.org/issues/show_bug.cgi?id=487)
 
 if [[ $(gitversion) != "exported" ]]; then
     exit 0

@@ -46,7 +46,7 @@ $headers{""} = ["H0", <<'H0text'];
    Copyright 2006-2015.
 
    These portions of the source code are released under the GNU General
-   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 
    If you would like to license the source code under different terms,
    please contact Gabor Csanyi, gc121@cam.ac.uk
@@ -58,7 +58,7 @@ $headers{""} = ["H0", <<'H0text'];
 
    When using this software, please cite the following reference:
 
-   http://www.libatoms.org
+   https://www.libatoms.org
 
 ==============================================================================
 H0text
@@ -87,7 +87,7 @@ $headers{"_NO_DISTRIBUTION"} = ["HND", <<'HNDtext'];
 
    When using this software, please cite the following reference:
 
-   http://www.libatoms.org
+   https://www.libatoms.org
 
 ==============================================================================
 HNDtext
@@ -108,7 +108,7 @@ $headers{"_JAMES"} = ["HJ", <<'HJtext'];
    Copyright 2006-2015.
 
    These portions of the source code are released under the GNU General
-   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 
    If you would like to license the source code under different terms,
    please contact Gabor Csanyi, gc121@cam.ac.uk
@@ -120,7 +120,7 @@ $headers{"_JAMES"} = ["HJ", <<'HJtext'];
 
    When using this software, please cite the following reference:
 
-   http://www.libatoms.org
+   https://www.libatoms.org
 
 
 ==============================================================================
@@ -132,7 +132,7 @@ $headers{"_LBFGS"} = ["HL", <<'HLtext'];
    LBFGS
 
    This code was downloaded from J. Nocedal's web site
-   URL: http://www.eecs.northwestern.edu/~nocedal/lbfgs.html
+   URL: https://www.eecs.northwestern.edu/~nocedal/lbfgs.html
 
    Author: J. Nocedal
 
@@ -161,14 +161,14 @@ $headers{"_QUIPPY"} = ["HQ", <<'HJtext'];
    Copyright James Kermode 2010-2015
 
    These portions of the source code are released under the GNU General
-   Public License, version 2, http://www.gnu.org/copyleft/gpl.html
+   Public License, version 2, https://www.gnu.org/copyleft/gpl.html
 
    If you would like to license the source code under different terms,
    please contact James Kermode, james.kermode@gmail.com
 
    When using this software, please cite the following reference:
 
-   http://www.jrkermode.co.uk/quippy
+   https://www.jrkermode.co.uk/quippy
 
 ==============================================================================
 HJtext

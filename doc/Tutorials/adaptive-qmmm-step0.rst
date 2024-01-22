@@ -35,13 +35,13 @@ Practical considerations
 ========================
 
 In this tutorial we will carry out simulations using a combination of
-two packages: `quippy <http://www.jrkermode.co.uk/quippy>`_, a Python
-interface to the `libAtoms/QUIP <http://www.libatoms.org>`_ MD code
+two packages: `quippy <https://www.jrkermode.co.uk/quippy>`_, a Python
+interface to the `libAtoms/QUIP <https://www.libatoms.org>`_ MD code
 developed at King's College London, Cambridge University, the Naval
 Research Lab in Washington and the Fraunhofer IWM in Freiburg, and the
 Atomic Simulation Environment, `ASE <https://wiki.fysik.dtu.dk/ase>`_,
 a Python framework developed at the Centre for Atomistic Materials
-Design (`CAMd <http://www.camd.dtu.dk/>`_) at DTU, Copenhagen.
+Design (`CAMd <https://www.camd.dtu.dk/>`_) at DTU, Copenhagen.
 
 If you're not familiar with Python don't worry, it's quite easy to
 pick up and the syntax is very similar to Fortran. We have provided
@@ -55,7 +55,7 @@ hint. The source code listings are all in boxes like this::
    print ...                        # You need to add something here
                                     # e.g. replace the ... with a number
 
-To run code, we will be using `ipython <http://ipython.org>`_, an
+To run code, we will be using `ipython <https://ipython.org>`_, an
 interactive Python shell. You can start `ipython` with a simple shell
 command::
    
@@ -77,13 +77,13 @@ command::
    will then not be able to visualise interactively using the
    :func:`~qlab.view` function - you can always save configurations to
    external files and visualise them with other tools such as `VMD
-   <http://www.ks.uiuc.edu/Research/vmd/>`_ or `OVITO
-   <http://www.ovito.org>`_ instead. See the :mod:`qlab` and
+   <https://www.ks.uiuc.edu/Research/vmd/>`_ or `OVITO
+   <https://www.ovito.org>`_ instead. See the :mod:`qlab` and
    :mod:`atomeye` documentation for further details.
 
 You should prepare your Python scripts in a text editor and then run
 them from within `ipython` with the `%run
-<http://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing>`_
+<https://ipython.org/ipython-doc/stable/interactive/tutorial.html#running-and-editing>`_
 command. For example::
 
    In [2]: run make_crack.py
@@ -119,7 +119,7 @@ displays information about the :class:`~.Atoms` class, or ::
 
 displays information about the :func:`~quippy.io.write` function. See
 the `ipython tutorial
-<http://ipython.org/ipython-doc/stable/interactive/tutorial.html>`_
+<https://ipython.org/ipython-doc/stable/interactive/tutorial.html>`_
 for more information.
 
 Each subsection indicates the approximate amount of time you should

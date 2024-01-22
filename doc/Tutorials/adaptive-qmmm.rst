@@ -11,7 +11,7 @@ It is hosted here for archival purposes*
 
 This tutorial has been prepared for use at a hands-on session at the
 `ADGLASS Winter School on Advanced Molecular Dynamics Simulations
-<http://www.adglass.eu/adglass_news.html>`_, ICTP, Trieste, February
+<https://www.adglass.eu/adglass_news.html>`_, ICTP, Trieste, February
 2013.
 
 :Authors: James Kermode and Gianpietro Moras

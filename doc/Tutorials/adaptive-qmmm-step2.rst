@@ -522,7 +522,7 @@ and near the right hand side at the end, then run the command::
    render_movie('movie.mp4')
 
 This function renders each frame to a ``.jpg`` file, before combining the
-snapshots with the `ffmpeg <http://www.ffmpeg.org/>`_ tool to make a movie like
+snapshots with the `ffmpeg <https://www.ffmpeg.org/>`_ tool to make a movie like
 this one:
 
 .. video:: classical-111 720 360
@@ -576,7 +576,7 @@ For :ref:`netcdf` trajectories,
 the :attr:`AtomsReaderViewer.reader.netcdf_file` attribute of the current
 viewer object :func:`~qlab.gcv` provides direct access to the underlying NetCDF
 file using the Python `netCDF4 module
-<http://code.google.com/p/netcdf4-python/>`_::
+<https://code.google.com/p/netcdf4-python/>`_::
 
   traj = gcv()
   dataset = traj.reader.netcdf_file

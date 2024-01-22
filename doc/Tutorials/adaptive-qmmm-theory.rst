@@ -16,7 +16,7 @@ fracture: *brittle* and *ductile*.
 
    Brittle and ductile failure of steel, at low and high temperature
    respectively. Image credit: `Internet Electron Microscopy website, UMIST
-   <http://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html>`_
+   <https://pwatlas.mt.umist.ac.uk/internetmicroscope/micrographs/failure/ductile-steel.html>`_
 
 In brittle fracture, there is no plastic deformation, and failure occurs along
 particular low-energy cleavage planes. In contrast, ductile materials such as

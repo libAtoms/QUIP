@@ -8,17 +8,17 @@ It is hosted here for archival purposes*
 
 This tutorial was prepared for use at a hands-on session at the
 `Advanced Oxide Interfaces Workshop
-<http://cdsagenda5.ictp.it/full_display.php?ida=a10139>`_, ICTP,
+<https://cdsagenda5.ictp.it/full_display.php?ida=a10139>`_, ICTP,
 Trieste, May 2011.
 
 Setting up your working environment
 -----------------------------------
 
 In this tutorial we are going to be using the `QUIP
-<http://www.libatoms.org>`_ (short for QUantum mechanics and
+<https://www.libatoms.org>`_ (short for QUantum mechanics and
 Interatomic Potentials) code, which is a molecular dynamics code
 written in Fortran 95 and equipped with a Python interface named
-`quippy <http://www.jrkermode.co.uk/quippy>`_.
+`quippy <https://www.jrkermode.co.uk/quippy>`_.
 
 As well as working with the standard unix command line we'll also be
 using `ipython`, an interactive Python shell. In the listings below,
@@ -107,7 +107,7 @@ write the MD trajectory to a file named `quartz_crack_movie_1.xyz`.
 
 You can monitor the progress of the simulation by opening the
 trajectory file with my `modified version
-<http://www.jrkermode.co.uk/AtomEye>`_ of `AtomEye`::
+<https://www.jrkermode.co.uk/AtomEye>`_ of `AtomEye`::
 
    $ A quartz_crack_movie_1.xyz
 
@@ -120,8 +120,8 @@ forwards or backwards through the trajectory - note the frame number
 in the title bar of the window. You can quit `AtomEye` by pressing `q`.
 
 For more help on `AtomEye` see its `web page
-<http://mt.seas.upenn.edu/Archive/Graphics/A>`_ or my notes on this
-`modified version <http://www.jrkermode.co.uk/AtomEye>`_. In
+<https://mt.seas.upenn.edu/Archive/Graphics/A>`_ or my notes on this
+`modified version <https://www.jrkermode.co.uk/AtomEye>`_. In
 particular, you might find this :download:`startup file <atomeyerc>`
 useful (copy to `~/.A` to use).
 
@@ -136,7 +136,7 @@ timestep of 0.5 fs is chosen to accurately sample the highest
 frequency phonon mode in the system), and the second and third are the
 instantaneous and time-averaged temperatures in Kelvin. The average
 temperature is computed using an `exponential moving average
-<http://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>`_.
+<https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>`_.
 
 After a few hundred femtoseconds, you should see the crack start to
 propagate in a fairly steady way, similar to the snapshot shown below
@@ -237,7 +237,7 @@ ratio :math:`\nu`, surface energy density :math:`\gamma` and the
 Rayleigh Wave speed :math:`c_R`. These are all properties of the
 classical potential which in this case is a short-ranged version of
 the TS polarisable potential (see `this paper
-<http://jcp.aip.org/resource/1/jcpsa6/v133/i9/p094102_s1>`_ in
+<https://jcp.aip.org/resource/1/jcpsa6/v133/i9/p094102_s1>`_ in
 *J. Chem. Phys.* for more about this potential).
 
 Apart from :math:`\gamma`, all of these quantities can be obtained
