@@ -109,6 +109,7 @@ private
 
   integer,private                   :: mpi_n, mpi_myid    ! Number of processes and local process ID
   real(dp),private                  :: start_time         ! Initial time
+  integer, parameter, private       :: SYSTEM_STRING_LENGTH_SHORT = 32 !when a shorter strong is enough and we have lots of them
   integer, parameter, private       :: SYSTEM_STRING_LENGTH = 1024 !max line length read
   integer, parameter, private       :: SYSTEM_STRING_LENGTH_LONG = 102400 !max line length read
   character(SYSTEM_STRING_LENGTH_LONG),public           :: line               ! 'line' is global and is used by other modules
