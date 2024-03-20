@@ -61,7 +61,7 @@ module dictionary_module
   integer, parameter :: &
        PROPERTY_INT = 1, PROPERTY_REAL = 2, PROPERTY_STR = 3, PROPERTY_LOGICAL = 4
 
-  public :: C_KEY_LEN, STRING_LENGTH, DICT_N_FIELDS
+  public :: C_KEY_LEN, STRING_LENGTH, STRING_LENGTH_SHORT,  DICT_N_FIELDS
   integer, parameter :: C_KEY_LEN = 256
 #ifdef STRING_LENGTH_OVERRIDE
   integer, parameter :: STRING_LENGTH = STRING_LENGTH_OVERRIDE      !% Maximum string length
