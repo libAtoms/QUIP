@@ -68,6 +68,7 @@ module dictionary_module
 #else
   integer, parameter :: STRING_LENGTH = 30000      !% Maximum string length
 #endif
+  integer, parameter :: STRING_LENGTH_SHORT = 32   !% a shorter string length, for when there are LOTS of strings
   integer, parameter :: DICT_N_FIELDS = 1000       !% Maximum number of fields during parsing
 
   public :: dictdata
