@@ -1,5 +1,5 @@
 # Base Python (debian) image
-FROM python:3.11
+FROM python:3.12
 LABEL maintainer="Gabor Csanyi <gc121@cam.ac.uk>"
 
 # make /bin/sh symlink to bash instead of dash:
