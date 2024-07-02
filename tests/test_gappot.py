@@ -37,7 +37,7 @@ class TestCalculator_GAP_Potential(quippytest.QuippyTestCase):
         self.f = np.zeros((3, len(self.at)), order='F')
 
         self.energy_ref = self.at_orig.get_potential_energy()
-        self.forces_ref = self.at_orig.get_forces()
+        self.forces_ref = self.at_orig.arrays['force']
 
         self.at.calc = self.pot_calculator
 
