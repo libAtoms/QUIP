@@ -1,5 +1,5 @@
 # Base Python (debian) image
-FROM python:3.11
+FROM python:3.12
 LABEL maintainer="Gabor Csanyi <gc121@cam.ac.uk>"
 
 # make /bin/sh symlink to bash instead of dash:
@@ -93,16 +93,14 @@ RUN pip install --upgrade pip \
         spglib \
         rdkit-pypi \
         nglview \
-        RISE \
         pandas \
         phonopy \
         torch \
         torchani \
         gpaw \
- && jupyter nbextension enable --py --sys-prefix widgetsnbextension \
- && jupyter nbextension enable --py --sys-prefix nglview \
- && jupyter-nbextension install rise --py --sys-prefix \
- && jupyter-nbextension enable rise --py --sys-prefix
+        ipywidgets \
+        jupyterlab_widgets \
+        jupyterlab_rise
 
 # get latest version of ASE
 RUN pip install git+https://gitlab.com/ase/ase
@@ -312,5 +310,5 @@ ENV SHELL /bin/bash
 # Launch in the home directory of the user
 ADD files/demo.ipynb .
 
-CMD bash -c exit && jupyter notebook --ip=$(hostname -i) --port=8899 --allow-root
+CMD bash -c exit && jupyter lab --ip=$(hostname -i) --port=8899 --allow-root
 EXPOSE 8899
