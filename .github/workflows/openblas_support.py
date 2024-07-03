@@ -53,14 +53,11 @@ def get_ilp64():
     return "64_"
 
 
-def get_manylinux(arch):
-    if arch in ('x86_64', 'i686'):
-        default = '2010'
-    else:
-        default = '2014'
+def get_manylinux():
+    default = '2014'
     ret = os.environ.get("MB_ML_VER", default)
     # XXX For PEP 600 this can be a glibc version
-    assert ret in ('1', '2010', '2014', '_2_24'), f'invalid MB_ML_VER {ret}'
+    assert ret in ('2014', '_2_24'), f'invalid MB_ML_VER {ret}'
     return ret
 
 
@@ -73,7 +70,7 @@ def download_openblas(target, plat, ilp64):
                 '(KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3')}
     suffix = None
     if osname == "linux":
-        ml_ver = get_manylinux(arch)
+        ml_ver = get_manylinux()
         suffix = f'manylinux{ml_ver}_{arch}.tar.gz'
         typ = 'tar.gz'
     elif plat == 'macosx-x86_64':
@@ -246,16 +243,15 @@ def test_setup(plats):
             if arch not in ('i686', 'arm64', '32'):
                 yield plat, '64_'
             if osname == "linux" and arch in ('i686', 'x86_64'):
-                oldval = os.environ.get('MB_ML_VER', None)
-                os.environ['MB_ML_VER'] = '1'
+                ## The default is "2014" everywhere and so is oldval
+                # oldval = os.environ.get('MB_ML_VER', None)
+                ## Once we create x86_64 and i686 manylinux2014 wheels...
+                os.environ['MB_ML_VER'] = '2014'
                 yield plat, None
-                # Once we create x86_64 and i686 manylinux2014 wheels...
-                # os.environ['MB_ML_VER'] = '2014'
-                # yield arch, None, False
-                if oldval:
-                    os.environ['MB_ML_VER'] = oldval
-                else:
-                    os.environ.pop('MB_ML_VER')
+                # if oldval:
+                #     os.environ['MB_ML_VER'] = oldval
+                # else:
+                #     os.environ.pop('MB_ML_VER')
 
     errs = []
     for plat, ilp64 in items():
