@@ -81,8 +81,8 @@ RUN pip install --upgrade pip \
         jupyter \
         numpy \
         scipy \
-        scikit-learn\
-        scikit-build\
+        scikit-learn \
+        scikit-build \
         matplotlib \
         pyamg \
         imolecule \
@@ -91,7 +91,7 @@ RUN pip install --upgrade pip \
         nbsphinx \
         numpydoc \
         spglib \
-        rdkit-pypi \
+        rdkit \
         nglview \
         pandas \
         phonopy \
