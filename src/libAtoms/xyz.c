@@ -177,7 +177,7 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
   strncat(indexname, ".idx", LINESIZE-strlen(indexname)-1);
 
   if (access(fname, R_OK) != 0) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot access xyz file %s\n", fname);
+    RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Cannot access xyz file %s\n", fname);
   }
 
   idx_exists = access(indexname, R_OK) == 0;
@@ -200,10 +200,10 @@ int xyz_find_index(char *fname, char *indexname, int *do_update, int *error) {
   *do_update = 1;
   if (idx_exists) {
     if (stat(fname, &xyz_stat) != 0) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz file %s\n", fname);
+      RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Cannot stat xyz file %s\n", fname);
     }
     if (stat(indexname, &idx_stat) != 0) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Cannot stat xyz.idx file %s\n", fname);
+      RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Cannot stat xyz.idx file %s\n", fname);
     }
     *do_update = xyz_stat.st_mtime > idx_stat.st_mtime;
   }
@@ -221,16 +221,16 @@ int xyz_read_index(char *indexname, long **frames, int **atoms, int *frames_arra
   debug("xyz_read_index: reading XYZ index from file %s\n", indexname);
   index = fopen(indexname, "r");
   if (index == NULL) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s cannot be opened\n", indexname);
+    RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Index file %s cannot be opened\n", indexname);
   }
   if (!fgets(linebuffer,LINESIZE,index)) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "Index file %s is empty\n",indexname);
+    RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Index file %s is empty\n",indexname);
   }
   sscanf(linebuffer, "%d", &nframes);
   realloc_frames(frames, atoms, frames_array_size, nframes+2);
   for (i=0; i<=nframes; i++) {
     if (!fgets(linebuffer,LINESIZE,index)) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "Premature end of indexfile %s\n",indexname);
+      RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "Premature end of indexfile %s\n",indexname);
     }
     sscanf(linebuffer, "%ld %d", &(*frames)[i], &(*atoms)[i]);
     debug("index %ld %d\n", (*frames)[i], (*atoms)[i]);
@@ -247,7 +247,7 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
 
   in = fopen(fname, "r");
   if (in == NULL) {
-    RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_update_index: cannot open %s for reading", fname);
+    RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "xyz_update_index: cannot open %s for reading", fname);
   }
 
   if (nframes != 0) {
@@ -278,7 +278,7 @@ int xyz_update_index(char *fname, char *indexname, long **frames, int **atoms, i
     realloc_frames(frames, atoms, frames_array_size, nframes+2);
     (*frames)[nframes] = ftell(in)-strlen(linebuffer);
     if (sscanf(linebuffer, "%d", &natoms) != 1) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO, "xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
+      RAISE_ERROR_WITH_KIND_INT(ERROR_IO, "xyz_find_frames: malformed XYZ file %s at frame %d\n",fname,nframes);
     }
 
     (*atoms)[nframes] = natoms;
@@ -343,24 +343,24 @@ int xyz_find_frames(char *fname, long **frames, int **atoms, int *frames_array_s
   INIT_ERROR;
 
   got_index = xyz_find_index(fname, indexname, &do_update, error);
-  PASS_ERROR;
+  PASS_ERROR_INT;
 
   nframes = 0;
   if (got_index) {
     nframes = xyz_read_index(indexname, frames, atoms, frames_array_size, error);
-    PASS_ERROR;
+    PASS_ERROR_INT;
   }
 
   if (!got_index || do_update) {
     nframes = xyz_update_index(fname, indexname, frames, atoms, frames_array_size, nframes, error);
-    PASS_ERROR;
+    PASS_ERROR_INT;
 
     if (nframes == 0) {
-      RAISE_ERROR("xyz_find_frames: empty file!");
+      RAISE_ERROR_INT("xyz_find_frames: empty file!");
     }
 
     xyz_write_index(indexname, frames, atoms, frames_array_size, nframes, error);
-    PASS_ERROR;
+    PASS_ERROR_INT;
   }
 
   debug("xyz_find_frames: %s: found %d complete frames\n", fname, nframes);
@@ -410,7 +410,7 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
   *line_offset = 0;
   if (string) {
     if (*stringp == '\0' || (string_length != 0 && (stringp-orig_stringp >= string_length))) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
+      RAISE_ERROR_WITH_KIND_CHAR(ERROR_IO_EOF, info);
     }
     *prev_stringp = stringp;
     while (*stringp != '\n' && *stringp != '\0' && (string_length == 0 || stringp-orig_stringp < string_length)) stringp++;
@@ -422,20 +422,20 @@ char* get_line(char *linebuffer, int string, int string_length, char *orig_strin
       if (strchr(linebuffer, ' ') != NULL) {
         *line_offset = strchr(linebuffer, ' ')+1-linebuffer;
       } else {
-        RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+        RAISE_ERROR_WITH_KIND_CHAR(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
       }
     }
     return stringp;
   } else {
     if (!fgets(linebuffer,LINESIZE,in)) {
-      RAISE_ERROR_WITH_KIND(ERROR_IO_EOF, info);
+      RAISE_ERROR_WITH_KIND_CHAR(ERROR_IO_EOF, info);
     }
     linebuffer[strlen(linebuffer)-1] = '\0';
     if (strip_prefix) {
       if (strchr(linebuffer, ' ') != NULL) {
         *line_offset = strchr(linebuffer, ' ')+1-linebuffer;
       } else {
-        RAISE_ERROR_WITH_KIND(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
+        RAISE_ERROR_WITH_KIND_CHAR(ERROR_IO, "cannot strip prefix from line <%s>", linebuffer);
       }
       //debug("line = <%s>\n", linebuffer);
     }
