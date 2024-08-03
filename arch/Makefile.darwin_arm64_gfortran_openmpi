@@ -30,36 +30,13 @@
 
 # declarations
 
-F77 = gfortran
-F90 = gfortran
-F95 = gfortran
-CC = gcc
-CPLUSPLUS = g++
-LINKER = gfortran
-FPP = gfortran -E -x f95-cpp-input -P
+include arch/Makefile.darwin_x86_64_gfortran
 
-#set environment variable GFORTRAN_ERROR_DUMPCORE at runtime to produce cores from runtime errors
-SAMPLE_DEBUG = -O0 -g -fbounds-check -DDUMP_CORE_ON_ABORT
-DEBUG = 
-OPTIM = -O3
+F77 = mpif77
+F90 = mpif90
+F95 = mpif90
+CC = mpicc
+CPLUSPLUS = mpic++
+LINKER = mpif90
 
-DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -fPIC
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC -fno-realloc-lhs
-F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC -fno-realloc-lhs
-CFLAGS += -fPIC
-
-LIBTOOL = libtool -static
-
-export DEFAULT_MATH_LINKOPTS = -framework Accelerate
-
-NETCDF4_EXTRA_LIBS= -lz 
-
-
-QUIPPY_INSTALL_OPTS = 
-QUIPPY_FCOMPILER = gnu95
-QUIPPY_F90FLAGS = -ffree-line-length-none
-QUIPPY_DEFINES =  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE
-QUIPPY_CPP = gfortran -E -x f95-cpp-input
-QUIPPY_DEBUG = 1
-
-FPP_PRE_TARGET_STRING = -o
+DEFINES += -D_MPI -DMPI_1
