@@ -41,7 +41,6 @@ include arch/Makefile.linux_x86_64_gfortran_Sulis
 
 F77 = mpif90
 F90 = mpif90
-F95 = mpif90
 CC = mpicc
 CPLUSPLUS = mpicc
 LINKER = mpif90

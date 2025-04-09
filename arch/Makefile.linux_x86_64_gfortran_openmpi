@@ -34,7 +34,6 @@ include arch/Makefile.linux_x86_64_gfortran
 
 F77 = mpif77
 F90 = mpif90
-F95 = mpif90
 CC = mpicc
 CPLUSPLUS = mpiCC
 LINKER = mpif90

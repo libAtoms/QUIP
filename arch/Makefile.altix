@@ -32,7 +32,6 @@
 
 F77 = ifort
 F90 = ifort
-F95 = ifort
 CC = icc
 CPLUSPLUS = icpc
 LINKER = ifort -nofor_main
@@ -41,11 +40,11 @@ FPP = ifort -E
 OPTIM = -O3 -ip
 
 DEFINES = -DFORTRAN_UNDERSCORE
-F95FLAGS +=  -fpp -FR 
+F90FLAGS +=  -fpp -FR 
 F77FLAGS +=  -fpp 
 
 AR_ADD = src
 
 # rules
 
-F95_PRE_FILENAME_FLAG = -Tf
+F90_PRE_FILENAME_FLAG = -Tf

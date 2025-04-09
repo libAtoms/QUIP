@@ -32,7 +32,6 @@
 
 F77 = pgf77
 F90 = pgf90
-F95 = pgf95
 CC = pgcc
 CPLUSPLUS = pgCC
 LINKER = pgCC -pgf90libs
@@ -40,7 +39,7 @@ LINKER = pgCC -pgf90libs
 OPTIM = -fast -fastsse
 
 DEFINES = -DFORTRAN_UNDERSCORE
-F95FLAGS +=  -Mpreprocess -Mfree 
+F90FLAGS +=  -Mpreprocess -Mfree 
 F77FLAGS +=  -Mpreprocess 
 
 AR_ADD = src

@@ -2,7 +2,6 @@
 
 F77 = ifort
 F90 = ifort
-F95 = ifort
 CC = icc
 CPLUSPLUS = icpc -Kc++
 LINKER = ifort
@@ -13,8 +12,8 @@ OPTIM = -O3 -vec-report0 -unroll -xP -p
 CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
-DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE -DDARWIN
-F95FLAGS += -fpp -free 
+DEFINES = -DGETARG_F2003 -DFORTRAN_UNDERSCORE
+F90FLAGS += -fpp -free 
 F77FLAGS += -fixed
 LINKOPTS += -nofor-main
 
@@ -24,4 +23,4 @@ AR_ADD = src
 
 # rules
 
-F95_PRE_FILENAME_FLAG = -Tf
+F90_PRE_FILENAME_FLAG = -Tf

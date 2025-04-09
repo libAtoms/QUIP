@@ -34,7 +34,6 @@ include arch/Makefile.cray_xt3
 
 F77 = f77
 F90 = ftn
-F95 = ftn
 CC = cc
 CPLUSPLUS = CC
 LINKER = ftn -Mnomain

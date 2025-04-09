@@ -34,7 +34,6 @@ include arch/Makefile.darwin_x86_64_gfortran
 
 F77 = openmpif77
 F90 = openmpif90
-F95 = openmpif90
 CC = openmpicc
 CPLUSPLUS = openmpic++
 LINKER = openmpif90

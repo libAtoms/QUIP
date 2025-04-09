@@ -51,7 +51,6 @@ export DEFAULT_MATH_LINKOPTS =  -L${MKLROOT}/lib/intel64 -lmkl_scalapack_lp64 \
 # Invoke wrappers which use Intel MPI with Intel compilers
 F77 = mpiifort
 F90 = mpiifort
-F95 = mpiifort 
 CC = mpiicc 
 CPLUSPLUS = mpiicpc
 LINKER = mpiifort

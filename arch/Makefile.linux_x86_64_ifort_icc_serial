@@ -32,7 +32,6 @@
 
 F77 = ifort
 F90 = ifort
-F95 = ifort
 CC = icc
 CPLUSPLUS = icpc -Kc++
 FPP = ifort -E
@@ -45,7 +44,7 @@ CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE
-F95FLAGS += -fpp -free -warn unused -fPIC
+F90FLAGS += -fpp -free -warn unused -fPIC
 F77FLAGS += -fpp -fixed -fPIC
 CFLAGS += -fPIC
 CPLUSPLUSFLAGS += -fPIC
@@ -61,4 +60,4 @@ QUIPPY_F90FLAGS = -fpp -free
 QUIPPY_F77FLAGS = -fpp -fixed
 QUIPPY_CPP = ifort -EP
 
-F95_PRE_FILENAME_FLAG = -Tf
+F90_PRE_FILENAME_FLAG = -Tf

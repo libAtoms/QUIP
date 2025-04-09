@@ -34,7 +34,7 @@
 include arch/Makefile.archer2
 
 # needed for MPI in gcc11
-F95FLAGS += -fallow-argument-mismatch
+F90FLAGS += -fallow-argument-mismatch
 
 DEFINES += -D_MPI
 QUIPPY_LDFLAGS=`ftn --cray-print-opts all`

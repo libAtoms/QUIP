@@ -32,7 +32,6 @@
 
 F77 = ifort
 F90 = ifort
-F95 = ifort
 CC = gcc
 CPLUSPLUS = g++
 LINKER = ifort
@@ -46,7 +45,7 @@ CDEBUG = -g -DDUMP_CORE_ON_ABORT
 COPTIM = -O3 -fPIC
 
 DEFINES += -DGETARG_F2003 -DFORTRAN_UNDERSCORE -DF2008
-F95FLAGS += -fpp -free -warn unused -fPIC
+F90FLAGS += -fpp -free -warn unused -fPIC
 F77FLAGS += -fpp -fixed -fPIC
 CFLAGS += -fPIC
 CPLUSPLUSFLAGS += -fPIC
@@ -67,4 +66,4 @@ FARCH=
 
 # rules
 
-F95_PRE_FILENAME_FLAG = -Tf
+F90_PRE_FILENAME_FLAG = -Tf

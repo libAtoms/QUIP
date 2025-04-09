@@ -41,12 +41,11 @@ export DEFAULT_MATH_LINKOPTS = \
 
 F77 = mpiifort
 F90 = mpiifort
-F95 = mpiifort 
 CC = mpiicc 
 CPLUSPLUS = mpiicpc
 LINKER = mpiifort
 
-F95FLAGS += -qopenmp
+F90FLAGS += -qopenmp
 F77FLAGS += -qopenmp
 CFLAGS += -qopenmp
 CPLUSPLUSFLAGS += -qopenmp

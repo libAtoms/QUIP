@@ -33,7 +33,7 @@
 include arch/Makefile.linux_x86_64_ifort_gcc
 
 DEFINES += -D_OPENMP
-F95FLAGS += -openmp
+F90FLAGS += -openmp
 F77FLAGS += -openmp
 LINKOPTS += -openmp
 

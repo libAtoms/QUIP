@@ -33,7 +33,7 @@
 include arch/Makefile.darwin_x86_64_gfortran
 
 DEFINES += -D_OPENMP
-F95FLAGS += -fopenmp
+F90FLAGS += -fopenmp
 F77FLAGS += -fopenmp
 LINKOPTS += -fopenmp
 

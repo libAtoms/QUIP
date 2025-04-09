@@ -32,7 +32,6 @@
 
 F77 = nvfortran
 F90 = nvfortran
-F95 = nvfortran
 CC = nvc
 CPLUSPLUS = nvc++
 LINKER = nvc
@@ -49,8 +48,8 @@ DEBUG=   -O0
 ##OPTIM = -O3
 
 DEFINES += -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DFORTRAN_UNDERSCORE -DNO_FORTRAN_ISNAN
-F95FLAGS += -Mbackslash -Mlarge_arrays -fPIC -x f95-cpp-input
-#F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -fPIC -fno-realloc-lhs
+F90FLAGS += -Mbackslash -Mlarge_arrays -fPIC -x f95-cpp-input
+#F90FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form -fno-second-underscore -fPIC -fno-realloc-lhs
 #F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC -fno-realloc-lhs
 F77FLAGS += -fPIC -x f77-cpp-input
 CFLAGS += 

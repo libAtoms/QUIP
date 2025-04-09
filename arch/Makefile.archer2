@@ -43,7 +43,6 @@ include arch/Makefile.linux_x86_64_gfortran
 # compiler settings, make sure this is GNU!
 F77 = ftn
 F90 = ftn
-F95 = ftn
 CC = cc
 CPLUSPLUS = cc
 LINKER = ftn

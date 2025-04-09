@@ -32,7 +32,6 @@
 
 F77 = gfortran -m32
 F90 = gfortran -m32
-F95 = gfortran -m32
 CC = gcc -m32
 CPLUSPLUS = g++ -m32
 LINKER = gfortran -m32
@@ -43,8 +42,8 @@ SAMPLE_DEBUG = -g -fbounds-check -DDUMP_CORE_ON_ABORT
 DEBUG =
 OPTIM = -O3
 
-DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -DDARWIN -fPIC
-F95FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC -fno-realloc-lhs
+DEFINES += -DFORTRAN_UNDERSCORE  -DGETARG_F2003 -DGETENV_F2003 -DGFORTRAN -fPIC
+F90FLAGS += -x f95-cpp-input -ffree-line-length-none -ffree-form  -fno-second-underscore  -fPIC -fno-realloc-lhs
 F77FLAGS += -x f77-cpp-input -fno-second-underscore -fPIC -fno-realloc-lhs
 CFLAGS += -fPIC
 
