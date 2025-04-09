@@ -1,0 +1,2 @@
+option('mpi', type: 'boolean', value : false)
+option('gap', type: 'boolean', value : true)
