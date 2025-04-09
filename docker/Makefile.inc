@@ -3,7 +3,6 @@
 # 
 # F77=gfortran
 # F90=gfortran
-# F95=gfortran
 # CC=gcc
 # CPLUSPLUS=g++
 # FPP=gfortran -E -x f95-cpp-input
