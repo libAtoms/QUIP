@@ -488,13 +488,13 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define MMAP_CLEARS 0 /* WINCE and some others apparently don't clear */
 #endif  /* WIN32 */
 
-#if defined(DARWIN) || defined(_DARWIN)
+#if defined(__APPLE__) || defined(_DARWIN)
 /* Mac OSX docs advise not to use sbrk; it seems better to use mmap */
 #ifndef HAVE_MORECORE
 #define HAVE_MORECORE 0
 #define HAVE_MMAP 1
 #endif  /* HAVE_MORECORE */
-#endif  /* DARWIN */
+#endif  /* __APPLE__ */
 
 #ifndef LACKS_SYS_TYPES_H
 #include <sys/types.h>  /* For size_t */

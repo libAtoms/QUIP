@@ -41,7 +41,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef DARWIN
+#ifndef __APPLE__
 #include <sys/sysinfo.h>
 #else
 #include <sys/sysctl.h>
@@ -290,7 +290,7 @@ int pointer_to_(void *p) {
 
 void c_mem_info_(double *total_mem, double *free_mem)
 {
-#ifndef DARWIN
+#ifndef __APPLE__
    struct sysinfo s_info;
 #else
    int mib[6];
@@ -301,7 +301,7 @@ void c_mem_info_(double *total_mem, double *free_mem)
 #endif
    int error;
 
-#ifndef DARWIN
+#ifndef __APPLE__
    error = sysinfo(&s_info);
    *total_mem = s_info.totalram*s_info.mem_unit;
    *free_mem = s_info.freeram*s_info.mem_unit;
