@@ -42,47 +42,47 @@ ALL_TARGETS = libquip_core.a
 
 all: ${ALL_TARGETS}
 
-BASE_F95_FILES = RS_SparseMatrix QUIP_Common Functions Ewald Multipole_Interactions  Partridge_Schwenke_Dipole
-BASE_F95_SOURCES = ${addsuffix .f95, ${BASE_F95_FILES}}
-BASE_F95_OBJS = ${addsuffix .o, ${BASE_F95_FILES}}
+BASE_F90_FILES = RS_SparseMatrix QUIP_Common Functions Ewald Multipole_Interactions  Partridge_Schwenke_Dipole
+BASE_F90_SOURCES = ${addsuffix .F90, ${BASE_F90_FILES}}
+BASE_F90_OBJS = ${addsuffix .o, ${BASE_F90_FILES}}
 
 TB_F77_FILES = ginted
-TB_F95_FILES = TB_Common  TB_Kpoints TBModel_NRL_TB_defs TBModel_NRL_TB TBModel_Bowler TBModel_DFTB TBModel_GSP \
+TB_F90_FILES = TB_Common  TB_Kpoints TBModel_NRL_TB_defs TBModel_NRL_TB TBModel_Bowler TBModel_DFTB TBModel_GSP \
   TBModel TBMatrix TB_Mixing  TBSystem  ApproxFermi TB_GreensFunctions TB 
-TB_F77_SOURCES = ${addsuffix .f, ${TB_F77_FILES}}
-TB_F95_SOURCES = ${addsuffix .f95, ${TB_F95_FILES}}
-TB_F95_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F95_FILES}}
+TB_F77_SOURCES = ${addsuffix .F, ${TB_F77_FILES}}
+TB_F90_SOURCES = ${addsuffix .F90, ${TB_F90_FILES}}
+TB_F90_OBJS = ${addsuffix .o, ${TB_F77_FILES} ${TB_F90_FILES}}
 
-IP_F95_FILES = IPEwald Yukawa Multipoles IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_TS IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Coulomb IPModel_Sutton_Chen IPModel_FX IPModel_HFdimer IPModel_BornMayer IPModel_Custom IPModel_ConfiningMonomer IPModel_SW_VP IPModel_WaterDimer_Gillan IPModel_WaterTrimer_Gillan IPModel_Tether IPModel_LMTO_TBE IPModel_Multipoles IPModel_FC4 IPModel_Spring IPModel_DispTS IPModel_SCME IPModel_MTP IPModel_MBD IPModel_ZBL IPModel_LinearSOAP IPModel_TTM_nF IPModel_CH4 IPModel_vdW IPModel_RS IPModel_Template 
+IP_F90_FILES = IPEwald Yukawa Multipoles IPModel_GAP IPModel_LJ IPModel_Morse IPModel_FC IPModel_SW IPModel_Tersoff IPModel_EAM_Ercolessi_Adams IPModel_Brenner IPModel_FS IPModel_BOP IPModel_FB IPModel_Si_MEAM IPModel_Brenner_Screened IPModel_Brenner_2002 IPModel_TS IPModel_Glue IPModel_PartridgeSchwenke IPModel_Einstein IPModel_Coulomb IPModel_Sutton_Chen IPModel_FX IPModel_HFdimer IPModel_BornMayer IPModel_Custom IPModel_ConfiningMonomer IPModel_SW_VP IPModel_WaterDimer_Gillan IPModel_WaterTrimer_Gillan IPModel_Tether IPModel_LMTO_TBE IPModel_Multipoles IPModel_FC4 IPModel_Spring IPModel_DispTS IPModel_SCME IPModel_MTP IPModel_MBD IPModel_ZBL IPModel_LinearSOAP IPModel_TTM_nF IPModel_CH4 IPModel_vdW IPModel_RS IPModel_Template 
 
 ifeq (${HAVE_ASAP},1)
-  IP_F95_FILES += IPModel_ASAP
+  IP_F90_FILES += IPModel_ASAP
 endif
 ifeq (${HAVE_KIM},1)
-  IP_F95_FILES += IPModel_KIM
+  IP_F90_FILES += IPModel_KIM
 endif
-IP_F95_FILES += IP
-IP_F95_SOURCES = ${addsuffix .f95, ${IP_F95_FILES}}
-IP_F95_OBJS = ${addsuffix .o, ${IP_F95_FILES}}
+IP_F90_FILES += IP
+IP_F90_SOURCES = ${addsuffix .F90, ${IP_F90_FILES}}
+IP_F90_OBJS = ${addsuffix .o, ${IP_F90_FILES}}
 
-POT_F95_FILES = FilePot CallbackPot SocketPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed quip_unified_wrapper quip_lammps_wrapper
+POT_F90_FILES = FilePot CallbackPot SocketPot Potential_simple AdjustablePotential Potential ElectrostaticEmbed quip_unified_wrapper quip_lammps_wrapper
 ifeq (${HAVE_PRECON},1)
-  POT_F95_FILES += Potential_Precon_Minim
+  POT_F90_FILES += Potential_Precon_Minim
 endif
-POT_F95_SOURCES = ${addsuffix .f95, ${POT_F95_FILES}}
-POT_F95_OBJS = ${addsuffix .o, ${POT_F95_FILES}}
+POT_F90_SOURCES = ${addsuffix .F90, ${POT_F90_FILES}}
+POT_F90_OBJS = ${addsuffix .o, ${POT_F90_FILES}}
 
-ALL_F95_FILES = ${BASE_F95_SOURCES}  ${IP_F95_SOURCES}
-QUIP_OBJS = ${BASE_F95_OBJS}  ${IP_F95_OBJS} 
+ALL_F90_FILES = ${BASE_F90_SOURCES}  ${IP_F90_SOURCES}
+QUIP_OBJS = ${BASE_F90_OBJS}  ${IP_F90_OBJS} 
 ifeq (${HAVE_TB},1)
-  ALL_F95_FILES += ${TB_F95_SOURCES}
-  QUIP_OBJS += ${TB_F95_OBJS}	
+  ALL_F90_FILES += ${TB_F90_SOURCES}
+  QUIP_OBJS += ${TB_F90_OBJS}	
 endif
-QUIP_OBJS += ${POT_F95_OBJS}
-ALL_F95_FILES += ${POT_F95_SOURCES}
+QUIP_OBJS += ${POT_F90_OBJS}
+ALL_F90_FILES += ${POT_F90_SOURCES}
 ifeq (${HAVE_QC},1)
   QUIP_OBJS += QC_QUIP_Wrapper.o 
-  ALL_F95_FILES += QC_QUIP_Wrapper.f95
+  ALL_F90_FILES += QC_QUIP_Wrapper.F90
 endif
 
 
@@ -101,10 +101,10 @@ else
 endif
 
 Potential.o: \
-	Potential_Hybrid_utils.f95 \
-	Potential_Local_E_Mix_header.f95 Potential_Local_E_Mix_routines.f95 \
-	Potential_ONIOM_header.f95 Potential_ONIOM_routines.f95 \
-	Potential_ForceMixing_header.f95 Potential_ForceMixing_routines.f95
+	Potential_Hybrid_utils.F90 \
+	Potential_Local_E_Mix_header.F90 Potential_Local_E_Mix_routines.F90 \
+	Potential_ONIOM_header.F90 Potential_ONIOM_routines.F90 \
+	Potential_ForceMixing_header.F90 Potential_ForceMixing_routines.F90
 
 distribution: libquip_core.a
 	mkdir -p distribution/lib distribution/include
@@ -114,7 +114,7 @@ distribution: libquip_core.a
 
 
 ${TARGETS}: % :  libquip_core.a %.o 
-	${F95} ${LINKFLAGS} -o $@ $@.o libquip_core.a libatoms.a ${LINKOPTS}
+	${F90} ${LINKFLAGS} -o $@ $@.o libquip_core.a libatoms.a ${LINKOPTS}
 
 clean:
 	rm -f *.o *.mod *.mod.save *.mod.txt *.mod.save.txt *.fpp *.f90doc libquip_core.a quip.dtd  Potentials.depend
