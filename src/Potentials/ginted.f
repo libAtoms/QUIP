@@ -10,6 +10,7 @@
       ! 5-10 xx yy zz xy xz yz
       SUBROUTINE GINTED(A1,A2,A,B,W)
       IMPLICIT  REAL*8 (A-H,O-Z)
+      IMPLICIT  INTEGER (I-N)
       DIMENSION A(3),B(3),W(10,10,4),L3(3,4)
       DIMENSION V(3,3,5,3)
       DIMENSION ML(10,3)
