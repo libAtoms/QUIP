@@ -249,7 +249,7 @@ void fwrite_line_to_file_(char *filename, char *line, char *mode) {
 
 void fappend_file_to_file_(char *filename_to, char *filename_from) {
    FILE *fp_to, *fp_from;
-   char ch;
+   int ch;
 
    fp_to = fopen(filename_to, "a");
    fp_from = fopen(filename_from, "r");
