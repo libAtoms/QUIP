@@ -49,7 +49,7 @@
 
 #include "libatoms.h"
 
-#define LINESIZE 2048
+#define LINESIZE 20480
 #define MAX_ENTRY_COUNT 200
 #define MAX_FIELD_COUNT 200
 #define PROPERTY_STRING_LENGTH 10
