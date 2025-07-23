@@ -86,7 +86,7 @@ F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg i
 all: build
 
 f90wrap:
-	${PIP} install ${QUIPPY_INSTALL_OPTS} "f90wrap==0.2.13"
+	${PIP} install ${QUIPPY_INSTALL_OPTS} "f90wrap"
 
 clean:
 	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -115,8 +115,8 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 		--py-max-line-length 120 --f90-max-line-length 120
 
 quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
-	F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
-		-L. -lquip_nostub ${F2PY_LINK_ARGS} --fcompiler=${QUIPPY_FCOMPILER} --f90flags="${QUIPPY_F90FLAGS}"
+	FC=${F90} F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir build -c -m _quippy ${F90WRAP_FILES} \
+		-I.. -L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
 	mv _quippy${EXT_SUFFIX} quippy/
 
 build: f90wrap quippy/_quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
