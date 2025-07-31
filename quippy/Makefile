@@ -32,6 +32,17 @@ include Makefile.rules
 
 PY_VERSION=$(shell ${PYTHON} -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
 HAVE_PYTHON3=$(shell ${PYTHON} -c 'import sys; print(int(sys.version_info[0] >= 3))')
+HAVE_PYTHONge3_12=$(shell ${PYTHON} -c 'import sysconfig; print(float(sysconfig.get_python_version()) >= 3.12)')
+HAVE_NUMPY1=$(shell ${PYTHON} -c 'import numpy; print(float(numpy.version.version[:3])<2.0)')
+NUMPY_VERSION=$(shell ${PYTHON} -c 'import numpy; print(numpy.version.version)')
+
+# Check if  numpy version compatible with compilation requirements
+ifeq (${HAVE_PYTHONge3_12}, False)
+ifeq (${HAVE_NUMPY1},False)
+$(error make quippy: Error: Compilaton with Python<3.12 needs numpy<2. Current numpy version: ${NUMPY_VERSION}))
+endif
+endif
+
 ifeq (${PIP},)
 PIP=${PYTHON} -m pip
 endif
@@ -86,7 +97,12 @@ F2PY_LINK_ARGS = $(shell ${PYTHON} -c 'import sys; print(" ".join([arg for arg i
 all: build
 
 f90wrap:
-	${PIP} install ${QUIPPY_INSTALL_OPTS} "f90wrap"
+	@if [ ${HAVE_PYTHONge3_12} == True ] ; then\
+		${PIP} install ${QUIPPY_INSTALL_OPTS} "f90wrap";\
+	else\
+		${PIP} install ${QUIPPY_INSTALL_OPTS} "f90wrap==0.2.13";\
+	fi
+
 
 clean:
 	rm -f _quippy${EXT_SUFFIX} ${F90WRAP_FILES} ${WRAP_FPP_FILES}
@@ -114,9 +130,18 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 		--documentation-plugin ${QUIPPY_SRC_DIR}/doc_plugin.py \
 		--py-max-line-length 120 --f90-max-line-length 120
 
+
+# Quippy until Python 3.11 is built with distutils. From Python 3.12 onwards.
+# distutils has become deprecated, meson is used instead. As a result, the
+# compilation instructions change. We check if python greater than 3.12 is used.
 quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
-	FC=${F90} F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir build -c -m _quippy ${F90WRAP_FILES} \
-		-I.. -L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}"
+	@if [ ${HAVE_PYTHONge3_12} == True ] ; then\
+	       FC=${F90} F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir build -c -m _quippy ${F90WRAP_FILES} \
+		-I.. -L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}";\
+        else \
+	        F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
+		-L. -lquip_nostub ${F2PY_LINK_ARGS} --fcompiler=${QUIPPY_FCOMPILER} --f90flags="${QUIPPY_F90FLAGS}";\
+        fi
 	mv _quippy${EXT_SUFFIX} quippy/
 
 build: f90wrap quippy/_quippy${EXT_SUFFIX} ${QUIPPY_SRC_DIR}/quippy/*.py
