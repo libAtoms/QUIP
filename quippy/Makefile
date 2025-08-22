@@ -137,7 +137,7 @@ ${F90WRAP_FILES}: ${WRAP_FPP_FILES}
 quippy/_quippy${EXT_SUFFIX} ${F90WRAP_OBJS}: ${F90WRAP_FILES}
 	@if [ ${HAVE_PYTHONge3_12} == True ] ; then\
 	       FC=${F90} F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir build -c -m _quippy ${F90WRAP_FILES} \
-		-I.. -L. -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}";\
+		-I.. -L${BUILDDIR} -lquip_nostub ${F2PY_LINK_ARGS} --f90flags="${QUIPPY_F90FLAGS}";\
         else \
 	        F90=${F90} LDFLAGS="${QUIPPY_LDFLAGS}" f2py-f90wrap --build-dir . -c -m _quippy ${F90WRAP_FILES} \
 		-L. -lquip_nostub ${F2PY_LINK_ARGS} --fcompiler=${QUIPPY_FCOMPILER} --f90flags="${QUIPPY_F90FLAGS}";\
