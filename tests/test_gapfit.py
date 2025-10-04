@@ -52,7 +52,6 @@ class NumPyJSONEncoder(json.JSONEncoder):
             return super().default(self, obj)
 
 
-@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class TestGAP_fit(quippytest.QuippyTestCase):
     alpha_tol = 1e-5
     sparsex_tol = 1e-8

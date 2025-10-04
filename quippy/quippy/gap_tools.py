@@ -29,11 +29,11 @@ class DescXMLWrapper():
 
 
     '''
-    _Z_regex = "(Z|z)[1-9]*\s?=\s?([1-9]+)"  # RegEx to search command line for "Z=, Z1 = or z2= style args"
+    _Z_regex = r"(Z|z)[1-9]*\s?=\s?([1-9]+)"  # RegEx to search command line for "Z=, Z1 = or z2= style args"
     _Z_regex = re.compile(_Z_regex)
 
     # RegEx to find the dot_product exponents from command line args
-    _exponent_regex = "exponents\s?=\s?.((\s?(-\d+)\s?)+)."
+    _exponent_regex = r"exponents\s?=\s?.((\s?(-\d+)\s?)+)."
     _exponent_regex = re.compile(_exponent_regex)
 
     def __init__(self, desc_xml):

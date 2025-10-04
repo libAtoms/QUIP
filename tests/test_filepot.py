@@ -34,11 +34,14 @@ $bash: python2
 """
 
 import unittest
+import os
 import quippy
 import numpy as np
 import quippytest
 import ase.build
 import ase
+
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 diamond_pos = np.array([[-0.04999922, 0.01792964, 0.01711494],
                         [1.32315378, 1.40346929, 1.31076982],
@@ -82,7 +85,7 @@ class TestCalculator_SW_Potential(quippytest.QuippyTestCase):
       """
 
         quippy.system_module.system_reseed_rng(2065775975)
-        self.pot_calculator = quippy.potential.Potential("IP SW", param_filename="SW_pot.xml")
+        self.pot_calculator = quippy.potential.Potential("IP SW", param_filename=os.path.join(TEST_DIR, "SW_pot.xml"))
 
         self.at = ase.Atoms('Si8', positions=diamond_pos, pbc=True, cell=[5.44, 5.44, 5.44])
 

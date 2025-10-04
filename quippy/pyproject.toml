@@ -1,0 +1,27 @@
+[build-system]
+requires = [
+    "meson-python>=0.13.0",
+    "numpy>=1.20",
+    "meson>=1.1.0",
+    "f90wrap @ git+https://github.com/smjanke/f90wrap.git@master",
+]
+build-backend = "mesonpy"
+
+[project]
+name = "quippy-ase"
+version = "0.9.0"
+description = "ASE-compatible Python bindings for the QUIP and GAP codes"
+readme = {file = "README", content-type = "text/plain"}
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.20",
+    "ase>=3.17.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.meson-python.args]
+setup = ["-Dbuildtype=release"]
+compile = []
+install = []

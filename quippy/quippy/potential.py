@@ -30,6 +30,7 @@ import ase
 import ase.calculators.calculator
 import numpy as np
 import quippy
+import quippy._quippy
 from ase.io.extxyz import key_val_dict_to_str
 from quippy.convert import set_doc
 
@@ -78,8 +79,10 @@ class Potential(ase.calculators.calculator.Calculator):
         # init the quip potential
         if param_filename is not None and isinstance(param_filename, str):
             # from a param filename
-            self._quip_potential = quippy.potential_module.Potential.filename_initialise(args_str=args_str,
-                                                                                         param_filename=param_filename)
+            # Call the Fortran function directly since f90wrap generates duplicate __init__ methods
+            handle = quippy._quippy.f90wrap_potential_module__potential_filename_initialise(
+                args_str=args_str, param_filename=param_filename, bulk_scale=None, error=None)
+            self._quip_potential = quippy.potential_module.Potential(handle=handle[0] if isinstance(handle, tuple) else handle)
         elif pot1 is not None and pot2 is not None:
             # from sum of two potentials
             # noinspection PyProtectedMember

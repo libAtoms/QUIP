@@ -24,8 +24,8 @@ import quippytest
 import ase
 import numpy as np
 
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
-@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class Test_Potential_Cell(quippytest.QuippyTestCase):
     def setUp(self):
         cell_sizes = np.linspace(2.5, 4.5, 5)
@@ -34,7 +34,7 @@ class Test_Potential_Cell(quippytest.QuippyTestCase):
         for c in cell_sizes:
             self.at_list.append(ase.Atoms('HH', positions=[[0., 0., 0.], [1., 1., 1.]], cell=[c, c, c], pbc=True))
 
-        self.pot = quippy.potential.Potential('', param_filename='GAP.xml')
+        self.pot = quippy.potential.Potential('', param_filename=os.path.join(TEST_DIR, 'GAP.xml'))
 
         # calculated in a notebook with teh correct code
         self.ref_energies = [0.36747083829015637,

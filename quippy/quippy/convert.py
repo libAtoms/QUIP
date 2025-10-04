@@ -106,9 +106,7 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
 
     if ase_atoms.has('momenta'):
         # if ase atoms has momenta then add velocities to the quip object
-        # workaround for the interfaces not behaving properly in the wrapped code, see f90wrap issue #86
-        _quippy.f90wrap_atoms_add_property_real_2da(this=quip_atoms._handle, name='velo',
-                                                    value=velocities_ase_to_quip(ase_atoms.get_velocities()))
+        quip_atoms.add_property_real_2da('velo', velocities_ase_to_quip(ase_atoms.get_velocities()))
 
     def key_spec_to_list(keyspec, default, exclude=()):
         if keyspec is True:
@@ -209,11 +207,11 @@ def add_param_value(quip_atoms, name, value):
 
     # decide dim
     if dim == 0:
-        add_property_method = getattr(_quippy, 'f90wrap_dictionary_set_value_{}'.format(fortran_type_name))
+        add_property_method = getattr(_quippy, 'f90wrap_dictionary_module__dictionary_set_value_{}'.format(fortran_type_name))
     elif dim == 1:
-        add_property_method = getattr(_quippy, 'f90wrap_dictionary_set_value_{}_a'.format(fortran_type_name))
+        add_property_method = getattr(_quippy, 'f90wrap_dictionary_module__dictionary_set_value_{}_a'.format(fortran_type_name))
     elif dim == 2:
-        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_types_module__atoms_add_property_{}_2da'.format(fortran_type_name))
         value = value.T
     else:
         raise ValueError(
@@ -273,10 +271,10 @@ def add_property_array(quip_atoms, name, value):
 
     # decide dim
     if dim == 1:
-        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_a'.format(fortran_type_name))
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_types_module__atoms_add_property_{}_a'.format(fortran_type_name))
         add_property_method(this=quip_atoms._handle, name=name, value=value)
     elif dim == 2:
-        add_property_method = getattr(_quippy, 'f90wrap_atoms_add_property_{}_2da'.format(fortran_type_name))
+        add_property_method = getattr(_quippy, 'f90wrap_atoms_types_module__atoms_add_property_{}_2da'.format(fortran_type_name))
         add_property_method(this=quip_atoms._handle, name=name, value=value.T)
     else:
         raise ValueError(
@@ -345,6 +343,22 @@ def get_dict_arrays(fdict):
     if not isinstance(fdict, quippy.dictionary_module.Dictionary):
         raise TypeError('fdict argument is not a quippy.dictionary_module.Dictionary')
 
+    # Type codes from Dictionary.F90
+    T_INTEGER = 1
+    T_REAL = 2
+    T_COMPLEX = 3
+    T_LOGICAL = 4
+    T_INTEGER_A = 5
+    T_REAL_A = 6
+    T_COMPLEX_A = 7
+    T_LOGICAL_A = 8
+    T_CHAR = 9
+    T_CHAR_A = 10
+    T_DATA = 11
+    T_INTEGER_A2 = 12
+    T_REAL_A2 = 13
+    T_DICT = 14
+
     arrays = {}
     for i in range(1, fdict.n + 1):
         key = fdict.get_key(i)
@@ -352,15 +366,46 @@ def get_dict_arrays(fdict):
         # fixme: fails for non_array elements. Make universal: compatible with array or scalar content in dictionary
         try:  # this is an unsufficient temporary fix
             value = f90wrap.runtime.get_array(f90wrap.runtime.sizeof_fortran_t,
-                                              fdict._handle, _quippy.f90wrap_dictionary__array__, key)
+                                              fdict._handle, _quippy.f90wrap_dictionary_module__dictionary__array__, key)
             arrays[key] = value.copy()
         except ValueError:
-            value = fdict.get_value(key)
-            try:
-                # normally it is an tuple, because the error arf from fortran is converted to output
-                arrays[key] = cp(value[0])
-            except TypeError:
+            # For scalars, get the type and use the appropriate get_value method
+            thesize2 = np.zeros(2, dtype='i')
+            type_bn, thesize = fdict.get_type_and_size(key, thesize2)
+
+            # Map type to appropriate get_value method
+            if type_bn == T_INTEGER:
+                value, success = fdict.get_value_i(key)
+            elif type_bn == T_REAL:
+                value, success = fdict.get_value_r(key)
+            elif type_bn == T_COMPLEX:
+                value, success = fdict.get_value_c(key)
+            elif type_bn == T_LOGICAL:
+                value, success = fdict.get_value_l(key)
+            elif type_bn == T_CHAR:
+                value, success = fdict.get_value_s(key)
+            elif type_bn == T_DICT:
+                value, success = fdict.get_value_dict(key)
+            elif type_bn == T_DATA:
+                value, success = fdict.get_value_d(key)
+            else:
+                # For array types or unknown, fall back to the overloaded method
+                value = fdict.get_value(key)
+                try:
+                    arrays[key] = cp(value[0])
+                except TypeError:
+                    arrays[key] = cp(value)
+                continue
+
+            if success:
                 arrays[key] = cp(value)
+            else:
+                # If get failed, try the overloaded method as fallback
+                value = fdict.get_value(key)
+                try:
+                    arrays[key] = cp(value[0])
+                except TypeError:
+                    arrays[key] = cp(value)
 
     return arrays
 

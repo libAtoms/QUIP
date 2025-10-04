@@ -18,12 +18,14 @@
 
 import sys
 import unittest
+import os
 import os.path
-from distutils.util import get_platform
-from distutils.sysconfig import get_python_version
 
 import quippy
-print('Successfully imported quippy3')
+print('Successfully imported quippy')
+
+# Set QUIP_WHEEL_TEST to skip shell script tests that require Fortran binaries
+os.environ['QUIP_WHEEL_TEST'] = '1'
 
 # find tests and run them
 suite = unittest.defaultTestLoader.discover(os.getcwd())

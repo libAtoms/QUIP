@@ -17,4 +17,5 @@ Utils = library('Utils',
     mpi_dep,
     ],
   link_with : [libAtoms,fox,GAP,Potentials],
+  link_args: ['-lgomp'],
   )

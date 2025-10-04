@@ -23,11 +23,12 @@ import ase.build
 import quippy
 import quippytest
 
-@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+
 class TestCalculatorSumPotential(quippytest.QuippyTestCase):
     def setUp(self):
-        self.pot1 = quippy.potential.Potential("IP glue", param_filename="glue.xml")
-        self.pot2 = quippy.potential.Potential("IP GAP", param_filename="GAP.xml")
+        self.pot1 = quippy.potential.Potential("IP glue", param_filename=os.path.join(TEST_DIR, "glue.xml"))
+        self.pot2 = quippy.potential.Potential("IP GAP", param_filename=os.path.join(TEST_DIR, "GAP.xml"))
 
         self.sumpot = quippy.potential.Potential(args_str="Potential Sum", pot1=self.pot1, pot2=self.pot2)
 

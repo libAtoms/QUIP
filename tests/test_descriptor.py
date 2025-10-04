@@ -58,7 +58,6 @@ grad (119, 3, 51)
 """
 
 
-@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class Test_Descriptor(quippytest.QuippyTestCase):
     def setUp(self):
         at_h2 = ase.Atoms('H2', positions=[[0, 0, 0], [0, 0, 1]])

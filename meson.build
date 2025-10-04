@@ -30,6 +30,7 @@ if get_option('gap')
   add_global_arguments([
     '-DGAP_VERSION='+gap_version_res.stdout().strip(),
     '-DHAVE_GAP',
+    '-DHAVE_TB',
     ], language:'fortran')
 endif
 
@@ -62,7 +63,19 @@ else
   mpi_dep = dependency('',required: false)
 endif
 
-blas_dep = dependency('openblas')
+# Get openblas dependency and filter out -fopenmp for C compiler
+openblas_dep = dependency('openblas')
+c = meson.get_compiler('c')
+if c.get_id() == 'clang'
+  # Apple clang doesn't support -fopenmp, so we need to filter it out
+  # For Fortran, gfortran supports it, so we keep it
+  blas_dep = declare_dependency(
+    compile_args: ['-I' + openblas_dep.get_variable(pkgconfig: 'includedir')],
+    link_args: ['-L' + openblas_dep.get_variable(pkgconfig: 'libdir'), '-lopenblas'],
+  )
+else
+  blas_dep = openblas_dep
+endif
 
 subdir('src')
 

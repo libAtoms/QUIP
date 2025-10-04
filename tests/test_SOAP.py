@@ -31,7 +31,6 @@ import quippytest
 # ref data made using blah blah blah
 
 
-@unittest.skipIf(os.environ['HAVE_GAP'] != '1', 'GAP support not enabled')
 class Test_Descriptor(quippytest.QuippyTestCase):
     def setUp(self):
         #construct datasets
