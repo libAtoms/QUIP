@@ -1,8 +1,12 @@
+name: Build Wheels
+
 on:
   push:
-    branches: [ public ]
+    branches: [ public, mesonify ]
     tags:
        - v*
+  pull_request:
+    branches: [ public, mesonify ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -11,117 +15,108 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ubuntu-latest, macos-11]
       fail-fast: false
+      matrix:
+        # macos-13 is x86_64, macos-14 is arm64
+        os: [ubuntu-latest, macos-13, macos-14]
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
-      - uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.19.1
+        run: python -m pip install cibuildwheel==2.21.1
+
+      - name: Determine architecture
+        id: arch
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            echo "arch=x86_64" >> $GITHUB_OUTPUT
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            # macos-13 is x86_64, macos-14 is arm64
+            if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+              echo "arch=arm64" >> $GITHUB_OUTPUT
+            else
+              echo "arch=x86_64" >> $GITHUB_OUTPUT
+            fi
+          fi
 
       - name: Build wheels
-        run: |
-             if [ "$RUNNER_OS" == "Linux" ]; then
-                ARCHS=auto64
-             elif [ "$RUNNER_OS" == "macOS" ]; then
-                # Build both architectures for macOS
-                ARCHS="x86_64 arm64"
-             else
-               echo "RUNNER_OS=$RUNNER_OS not supported!"
-               exit 1
-             fi
-             echo "RUNNER_OS=$RUNNER_OS"
-             echo "ARCHS=${ARCHS}"
-
-             # see if this workflow run was triggered from a tag
-             event_ref=${{ github.ref }}
-             if [[ ! -z $event_ref && $event_ref =~ ^refs/tags/ ]]; then
-                 echo ${{ github.ref }} | sed -e 's|refs/tags/||' > GITHUB_TAG
-             fi
-
-             for ARCH in $ARCHS; do
-                echo "Building for ARCH=${ARCH}"
-
-                if [[ $ARCH == "arm64" ]]; then
-                  # install arm64 cross compiler
-                  # taken from https://github.com/MacPython/gfortran-install/blob/master/gfortran_utils.sh#L97
-                  curl -L -O https://github.com/isuruf/gcc/releases/download/gcc-10-arm-20210228/gfortran-darwin-arm64.tar.gz
-                  export GFORTRAN_SHA=f26990f6f08e19b2ec150b9da9d59bd0558261dd
-                  if [[ "$(shasum gfortran-darwin-arm64.tar.gz)" != "${GFORTRAN_SHA}  gfortran-darwin-arm64.tar.gz" ]]; then
-                            echo "shasum mismatch for gfortran-darwin-arm64"
-                            exit 1
-                  fi
-                  sudo mkdir -p /opt/
-                  sudo cp "gfortran-darwin-arm64.tar.gz" /opt/gfortran-darwin-arm64.tar.gz
-                  pushd /opt
-                        sudo tar -xvf gfortran-darwin-arm64.tar.gz
-                        sudo rm gfortran-darwin-arm64.tar.gz
-                  popd
-                  export FC_ARM64="$(find /opt/gfortran-darwin-arm64/bin -name "*-gfortran")"
-                  libgfortran="$(find /opt/gfortran-darwin-arm64/lib -name libgfortran.dylib)"
-                  libdir=$(dirname $libgfortran)
-                  export FC_ARM64_LDFLAGS="-L$libdir -Wl,-rpath,$libdir"
-
-                  # Setup cross build for single arch arm_64 wheels
-                  export CIBW_ENVIRONMENT="ARCHS=${ARCH} RUNNER_OS=${RUNNER_OS} FC=$FC_ARM64 F90=$FC_ARM64 F95=$FC_ARM64 F77=$FC_ARM64 LDFLAGS=\" -arch arm64 $FC_ARM64_LDFLAGS\" CFLAGS=\" -arch arm64\" CXXFLAGS=\" -arch arm64\" CPPFLAGS=\" -arch arm64\" _PYTHON_HOST_PLATFORM=macosx-11.0-arm64 ARCHFLAGS=\" -arch arm64\" FCFLAGS=\" -arch arm64\" CROSS_COMPILING=1 host_alias=aarch64-apple-darwin20.0.0  MACOSX_DEPLOYMENT_TARGET=11.0 SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"
-                else
-                  export CIBW_ENVIRONMENT="ARCHS=${ARCH} RUNNER_OS=${RUNNER_OS}"
-                fi
-
-                echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT"
-                if [ "$RUNNER_OS" == "macOS" ]; then
-                  export CIBW_SKIP="cp27-* cp35-* cp36-* pp*"
-                  python -m cibuildwheel --output-dir wheelhouse --archs $ARCH quippy
-                else
-                  export CIBW_MANYLINUX_X86_64_IMAGE="manylinux2014"
-                  export CIBW_SKIP="cp27-* cp35-* cp36-* pp* *musllinux*"
-                  python -m cibuildwheel --output-dir wheelhouse --archs $ARCH quippy
-                fi
-             done
+        run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
-           CIBW_TEST_SKIP: "*-macosx_arm64"
-           CIBW_BEFORE_ALL_MACOS: "brew install gfortran && brew unlink gfortran && brew link gfortran"
-           CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran || apk add gfortran"
-           CIBW_BEFORE_BUILD: "bash .github/workflows/prepare-wheel-build.sh"
-           CIBW_BUILD_FRONTEND: "build"
+          # Skip Python 2.7, 3.5, 3.6, PyPy, and musllinux
+          CIBW_SKIP: "cp27-* cp35-* cp36-* pp* *musllinux*"
+
+          # Use manylinux2014 for Linux
+          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+
+          # Install system dependencies
+          CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran openblas-devel"
+          CIBW_BEFORE_ALL_MACOS: "brew install gfortran openblas"
+
+          # Build with meson-python (already configured in pyproject.toml)
+          CIBW_BUILD_FRONTEND: "build"
+
+          # Architecture setting
+          CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
       # Uncomment to get SSH access for testing
-      - name: Setup tmate session
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 15
+      # - name: Setup tmate session
+      #   if: failure()
+      #   uses: mxschmitt/action-tmate@v3
+      #   timeout-minutes: 15
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload wheels as artifacts
+        uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
 
+  # Combine all wheels and create release
+  release:
+    name: Create release
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: wheelhouse
+
       - name: Build source tarball
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
-           pip install git-archive-all
-           version=$(echo ${{ github.ref }} | sed -e 's|refs/tags/||')
-           git-archive-all QUIP-$version.tar.gz
+          pip install git-archive-all
+          version=$(echo ${{ github.ref }} | sed -e 's|refs/tags/||')
+          git-archive-all QUIP-$version.tar.gz
 
       - name: Release wheels and source tarball
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
-          files: wheelhouse/*.whl QUIP-*.tar.gz
+          files: |
+            wheelhouse/*.whl
+            QUIP-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check tag
+      - name: Check if production release tag
         id: check-tag
         run: |
           if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo ::set-output name=match::true
+              echo "match=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to PyPI

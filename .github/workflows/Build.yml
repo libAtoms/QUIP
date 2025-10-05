@@ -1,116 +1,80 @@
 name: Build
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the public branch
   push:
-    branches: [ public ]
+    branches: [ public, mesonify ]
   pull_request:
-    branches: [ public ]
+    branches: [ public, mesonify ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # Build and test QUIP with meson
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    name: Build QUIP (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
-        arch: [ linux_x86_64_gfortran, linux_x86_64_gfortran_openmp ]
-        gcc_version: [ 9 ]
-        have_gap: [ 0, 1 ]
-        have_scalapack: [ 0 ]
-        include:
-          - arch: linux_x86_64_gfortran_openmp
-            gcc_version: 10
-            have_gap: 1
-            have_scalapack: 0
-          - arch: linux_x86_64_gfortran_openmpi+openmp
-            gcc_version: 9
-            have_gap: 1
-            have_scalapack: 1
+        os: [ubuntu-latest, macos-14]  # macos-14 is native ARM64
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
-        env:
-          QUIP_ARCH: ${{ matrix.arch }}
-          HAVE_GAP: ${{ matrix.have_gap }}
-          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
-          gcc_version: ${{ matrix.gcc_version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y  gfortran libblas-dev liblapack-dev \
-            openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev libhdf5-serial-dev \
-            python3-numpy
+          sudo apt-get install -y gfortran meson ninja-build \
+            libopenblas-dev liblapack-dev \
+            libnetcdf-dev libhdf5-serial-dev
 
-          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
-            sudo apt-get install -y libscalapack-openmpi-dev
-          fi
-
-          if [[ "$gcc_version" == 10 ]]; then
-              # compilers explicitly pointing to gcc-10
-
-              export F77=gfortran-10
-              export F90=gfortran-10
-              export F95=gfortran-10
-              export CC=gcc-10
-              export CPLUSPLUS=g++-10
-          fi
-
-      # substitute for make config
-      - name: Include Config
-        env:
-          QUIP_ARCH: ${{ matrix.arch }}
-          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
         run: |
-          mkdir -p build/${QUIP_ARCH}
+          brew install gfortran meson ninja openblas
 
-          if [[ "$HAVE_SCALAPACK" == 1 ]]; then
-              cp -v .github/workflows/Makefile.openmpi+openmp.inc build/${QUIP_ARCH}/Makefile.inc
-          elif [[ "$gcc_version" == 10 ]]; then
-              cp -v .github/workflows/Makefile.gcc10.inc build/${QUIP_ARCH}/Makefile.inc
-          else
-              # gcc-9 is the default one in github actions containers (last checked: 2021 Aug)
-              cp -v .github/workflows/Makefile.inc build/${QUIP_ARCH}/Makefile.inc
-          fi
-
-      - name: Build QUIP
-        env:
-          QUIP_ARCH: ${{ matrix.arch }}
-          HAVE_GAP: ${{ matrix.have_gap }}
-          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
+      - name: Install Python dependencies
         run: |
-          make
-          make libquip
-          make quippy
-          make install-quippy
-          
+          python -m pip install --upgrade pip
+          pip install numpy ase meson-python build
+
+      - name: Build QUIP libraries
+        run: |
+          meson setup builddir
+          meson compile -C builddir
+
+      - name: Build and install quippy
+        run: |
+          cd quippy
+          pip install --no-build-isolation -e .
+
+      - name: Run quippy tests
+        run: |
+          cd tests
+          python run_all.py
+
       # Uncomment to get SSH access for testing
-#       - name: Setup tmate session
-#         if: failure()
-#         uses: mxschmitt/action-tmate@v3            
+      # - name: Setup tmate session
+      #   if: failure()
+      #   uses: mxschmitt/action-tmate@v3
+      #   timeout-minutes: 15
 
-      - name: Test QUIP
-        env:
-          QUIP_ARCH: ${{ matrix.arch }}
-          HAVE_GAP: ${{ matrix.have_gap }}
-          HAVE_SCALAPACK: ${{ matrix.have_scalapack }}
-        run: |
-          export QUIP_ROOT=$PWD
-          ulimit -n 256
-          make test
-
-  # Builds the QUIP docs webpage image. This only happens ON the public 
+  # Builds the QUIP docs webpage image. This only happens ON the public
   # branch, after tests pass and pull requests are completed
   docs:
     runs-on: ubuntu-latest
@@ -118,22 +82,42 @@ jobs:
     if: github.ref == 'refs/heads/public'
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y gfortran meson ninja-build \
+            libopenblas-dev pandoc
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc \
+            pygments nbconvert ipython numpy ase meson-python
+
+      - name: Build QUIP and quippy
+        run: |
+          meson setup builddir
+          meson compile -C builddir
+          cd quippy
+          pip install --no-build-isolation -e .
 
       - name: Build documentation
         run: |
-          sudo apt-get install -y libgsl0-dev libxpm-dev pandoc
-          pip install sphinx sphinx-rtd-theme nbsphinx numpydoc pygments==2.5.2 nbconvert[execute] ipython
-
-          # FIXME: currently we use the released version of quippy package to build docs, 
-          # would be better to cache wheel from step above
-          pip install quippy-ase
-
           cd doc
           python -m sphinx . _build/html
 
       - name: Deploy documentation
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: doc/_build/html
@@ -147,16 +131,18 @@ jobs:
     if: github.ref == 'refs/heads/public'
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # with dev tag for now
-      - name: Build quip
+      - name: Build and push QUIP Docker image
         run: |
           docker build --tag libatomsquip/quip:public docker
           docker push libatomsquip/quip:public
