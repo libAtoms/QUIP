@@ -63,8 +63,18 @@ else
   mpi_dep = dependency('',required: false)
 endif
 
-# Get openblas dependency and filter out -fopenmp for C compiler
-openblas_dep = dependency('openblas')
+# Get openblas dependency with fallback for systems without pkg-config support
+openblas_dep = dependency('openblas', required: false)
+if not openblas_dep.found()
+  # Fallback: try to find openblas as a system library
+  message('openblas not found via pkg-config, trying system library search')
+  openblas_lib = fortran.find_library('openblas', required: true)
+  # Assume standard include path for openblas
+  openblas_dep = declare_dependency(
+    dependencies: openblas_lib,
+    compile_args: ['-I/usr/include', '-I/usr/include/openblas'],
+  )
+endif
 c = meson.get_compiler('c')
 if c.get_id() == 'clang'
   # Apple clang doesn't support -fopenmp, so we need to filter it out

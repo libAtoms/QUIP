@@ -65,20 +65,24 @@ jobs:
             pkg-config --list-all | grep -i blas || true
 
           # macOS: Install gcc (includes gfortran) and openblas
-          CIBW_BEFORE_ALL_MACOS: >
+          # Create gfortran symlink since homebrew installs versioned binaries (gfortran-14, etc.)
+          CIBW_BEFORE_ALL_MACOS: >-
             brew install gcc openblas &&
-            brew link --overwrite gcc || true &&
-            ls -la /usr/local/bin/*fortran* || true &&
-            ls -la /opt/homebrew/bin/*fortran* || true
+            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
+              if [ -f "$gfortran_bin" ]; then
+                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
+              fi
+            done &&
+            gfortran --version
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
           CIBW_ENVIRONMENT_LINUX: >
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
 
-          # macOS: Add homebrew bin to PATH and set PKG_CONFIG_PATH
+          # macOS: Add paths for openblas
           CIBW_ENVIRONMENT_MACOS: >
-            PATH="/opt/homebrew/bin:/usr/local/bin:/opt/homebrew/opt/gcc/bin:/usr/local/opt/gcc/bin:$PATH"
+            PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
 
           # Build with meson-python (already configured in pyproject.toml)
