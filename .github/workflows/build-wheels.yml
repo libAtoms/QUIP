@@ -57,15 +57,29 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Install system dependencies
-          # Linux: Install openblas and set PKG_CONFIG_PATH for meson
-          CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran openblas-devel pkgconfig && export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
-          # macOS: Install gfortran and openblas, ensure they're in PATH
-          CIBW_BEFORE_ALL_MACOS: "brew install gcc openblas && brew link --overwrite gcc"
+          # Install system dependencies and set up environment
+          # Linux: Install gfortran and openblas
+          CIBW_BEFORE_ALL_LINUX: >
+            yum install -y gcc-gfortran openblas-devel pkgconfig &&
+            ls -la /usr/lib64/pkgconfig/ | grep -i blas || true &&
+            pkg-config --list-all | grep -i blas || true
 
-          # Set environment for builds
-          CIBW_ENVIRONMENT_LINUX: "PKG_CONFIG_PATH=/usr/lib64/pkgconfig"
-          CIBW_ENVIRONMENT_MACOS: "PATH=/opt/homebrew/bin:/usr/local/bin:$PATH PKG_CONFIG_PATH=/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
+          # macOS: Install gcc (includes gfortran) and openblas
+          CIBW_BEFORE_ALL_MACOS: >
+            brew install gcc openblas &&
+            brew link --overwrite gcc || true &&
+            ls -la /usr/local/bin/*fortran* || true &&
+            ls -la /opt/homebrew/bin/*fortran* || true
+
+          # Set environment variables for builds
+          # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
+          CIBW_ENVIRONMENT_LINUX: >
+            PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
+
+          # macOS: Add homebrew bin to PATH and set PKG_CONFIG_PATH
+          CIBW_ENVIRONMENT_MACOS: >
+            PATH="/opt/homebrew/bin:/usr/local/bin:/opt/homebrew/opt/gcc/bin:/usr/local/opt/gcc/bin:$PATH"
+            PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
 
           # Build with meson-python (already configured in pyproject.toml)
           CIBW_BUILD_FRONTEND: "build"
