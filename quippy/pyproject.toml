@@ -3,7 +3,10 @@ requires = [
     "meson-python>=0.13.0",
     "numpy>=1.20",
     "meson>=1.1.0",
-    # f90wrap with fixes for QUIP/quippy (Fortran optional for installation)
+    # f90wrap with fixes for QUIP/quippy:
+    # - Optional Fortran compiler for pip install
+    # - Correct fortranobject.c path detection
+    # - Compatibility with older Meson versions (>= 0.64.0)
     "f90wrap @ git+https://github.com/smjanke/f90wrap.git@master",
 ]
 build-backend = "mesonpy"
