@@ -58,8 +58,14 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
           # Install system dependencies
-          CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran openblas-devel"
-          CIBW_BEFORE_ALL_MACOS: "brew install gfortran openblas"
+          # Linux: Install openblas and set PKG_CONFIG_PATH for meson
+          CIBW_BEFORE_ALL_LINUX: "yum install -y gcc-gfortran openblas-devel pkgconfig && export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
+          # macOS: Install gfortran and openblas, ensure they're in PATH
+          CIBW_BEFORE_ALL_MACOS: "brew install gcc openblas && brew link --overwrite gcc"
+
+          # Set environment for builds
+          CIBW_ENVIRONMENT_LINUX: "PKG_CONFIG_PATH=/usr/lib64/pkgconfig"
+          CIBW_ENVIRONMENT_MACOS: "PATH=/opt/homebrew/bin:/usr/local/bin:$PATH PKG_CONFIG_PATH=/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
 
           # Build with meson-python (already configured in pyproject.toml)
           CIBW_BUILD_FRONTEND: "build"
