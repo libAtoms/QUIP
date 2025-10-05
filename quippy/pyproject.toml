@@ -12,7 +12,7 @@ name = "quippy-ase"
 version = "0.9.0"
 description = "ASE-compatible Python bindings for the QUIP and GAP codes"
 readme = {file = "README", content-type = "text/plain"}
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.20",
     "ase>=3.17.0",
