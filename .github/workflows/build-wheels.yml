@@ -57,15 +57,17 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Install system dependencies and set up environment
-          # Linux: Install gfortran and openblas
+          # Install system dependencies and build QUIP libraries
+          # Linux: Install gfortran, openblas, and f90wrap, then build QUIP
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y gcc-gfortran openblas-devel pkgconfig &&
-            ls -la /usr/lib64/pkgconfig/ | grep -i blas || true &&
-            pkg-config --list-all | grep -i blas || true
+            pip install 'f90wrap @ git+https://github.com/smjanke/f90wrap.git@master' &&
+            cd {project}/.. &&
+            meson setup builddir &&
+            meson compile -C builddir
 
-          # macOS: Install gcc (includes gfortran) and openblas
-          # Create gfortran symlink since homebrew installs versioned binaries (gfortran-14, etc.)
+          # macOS: Install gcc (gfortran), openblas, f90wrap, build QUIP
+          # Create gfortran symlink since homebrew installs versioned binaries
           CIBW_BEFORE_ALL_MACOS: >-
             brew install gcc openblas &&
             for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
@@ -73,12 +75,11 @@ jobs:
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
               fi
             done &&
-            gfortran --version
-
-          # Build QUIP libraries before building quippy wheel
-          # quippy expects ../builddir to exist with compiled libraries and .mod files
-          # {project} is the quippy directory, so we need to go up one level to build QUIP
-          CIBW_BEFORE_BUILD: "cd {project}/.. && meson setup builddir && meson compile -C builddir"
+            gfortran --version &&
+            pip install 'f90wrap @ git+https://github.com/smjanke/f90wrap.git@master' &&
+            cd {project}/.. &&
+            meson setup builddir &&
+            meson compile -C builddir
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
