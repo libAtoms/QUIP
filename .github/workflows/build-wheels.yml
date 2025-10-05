@@ -77,7 +77,8 @@ jobs:
 
           # Build QUIP libraries before building quippy wheel
           # quippy expects ../builddir to exist with compiled libraries and .mod files
-          CIBW_BEFORE_BUILD: "cd {project} && meson setup builddir && meson compile -C builddir && cd quippy"
+          # {project} is the quippy directory, so we need to go up one level to build QUIP
+          CIBW_BEFORE_BUILD: "cd {project}/.. && meson setup builddir && meson compile -C builddir"
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
