@@ -47,6 +47,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install gfortran meson ninja openblas
+          which gfortran
 
       - name: Install Python dependencies
         run: |
@@ -61,7 +62,7 @@ jobs:
       - name: Build and install quippy
         run: |
           cd quippy
-          pip install --no-build-isolation -e .
+          pip install .
 
       - name: Run quippy tests
         run: |

@@ -20,6 +20,7 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.20",
     "ase>=3.17.0",
+    "f90wrap @ git+https://github.com/smjanke/f90wrap.git@master",
 ]
 
 [project.optional-dependencies]
