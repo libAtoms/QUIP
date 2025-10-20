@@ -47,6 +47,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install gfortran meson ninja openblas
+          brew link gfortran
 
       - name: Install Python dependencies
         run: |
