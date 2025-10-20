@@ -51,8 +51,8 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
-          # Skip Python 2.7, 3.5, 3.6, PyPy, and musllinux
-          CIBW_SKIP: "cp27-* cp35-* cp36-* pp* *musllinux*"
+          # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
+          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* pp* *musllinux*"
 
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
