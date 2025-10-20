@@ -46,14 +46,24 @@ jobs:
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install gfortran meson ninja openblas
-          brew link gfortran
+          brew install gcc meson ninja openblas
+          # Create gfortran symlink since homebrew installs versioned binaries
+          for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
+            if [ -f "$gfortran_bin" ]; then
+              sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran
+              break
+            fi
+          done
+          gfortran --version
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install numpy ase meson-python build
           pip install 'git+https://github.com/jameskermode/f90wrap.git@master'
+        env:
+          FC: gfortran
+          CC: gcc
 
       - name: Build QUIP libraries
         run: |
