@@ -20,16 +20,26 @@
 # HQ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 The aim of quippy is to make all the functions, subroutines and types
-defined in QUIP available from Python scripts. 
+defined in QUIP available from Python scripts.
 
 Quick-start:
- $ export QUIP_ARCH=linux_x86_64_gfortran
+ # First, build the main QUIP libraries
  $ cd ${QUIP_ROOT}
- $ make quippy
- $ make install-quippy
+ $ meson setup builddir
+ $ meson compile -C builddir
+
+ # Then build and install quippy
+ $ cd quippy
+ $ meson setup builddir
+ $ meson compile -C builddir
+ $ meson install -C builddir
+
+Alternatively, you can install quippy directly with pip:
+ $ cd quippy
+ $ pip install .
 
 For more details, see documentation in doc/ subdirectory, which is in
-reStructredText format.
+reStructuredText format.
 
 The documentation is available online at http://libatoms.github.io/QUIP/
 

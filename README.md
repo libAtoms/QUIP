@@ -184,18 +184,23 @@ to get up and running quickly.
     - A working Fortran compiler. QUIP is tested with `gfortran` 4.4 and
       later, and `ifort` 11.1.
 
-    - Linear algebra libraries BLAS and LAPACK. QUIP is tested with
-      reference versions `libblas-dev` and `liblapack-dev` on Ubuntu
-      12.04, and `mkl` 11.1 with `ifort`.
+    - Linear algebra libraries BLAS and LAPACK. QUIP works with
+      reference versions, OpenBLAS (recommended), or Intel MKL.
 
-    - MPI: To use the MPI parallelisatin of `gap_fit`, you need a
+    - [Meson build system](https://mesonbuild.com/) version 1.1 or later.
+      Install with `pip install meson` or via your package manager.
+
+    - [Ninja build tool](https://ninja-build.org/).
+      Install with `pip install ninja` or via your package manager.
+
+    - MPI (optional): To use MPI parallelization of `gap_fit`, you need a
       ScaLAPACK library, e.g. `libscalapack-openmpi` on Ubuntu, or
-      as part of the MKL.
+      as part of MKL.
 
 2.  Clone the QUIP repository from GitHub. The `--recursive` option
     brings in submodules automatically (If you don't do this, then
     you will need to run `git submodule update --init --recursive`
-    from the top-level QUIP directory after cloning) ::
+    from the top-level QUIP directory after cloning):
     ```bash
     git clone --recursive https://github.com/libAtoms/QUIP.git
     ```
@@ -209,66 +214,68 @@ to get up and running quickly.
     potentials that have been published as well as training data in
     our [data repository](https://libatoms.github.io/GAP/data.html), see also the [online docs](https://libatoms.github.io/GAP).
 
-3.  Decide your architecture by looking in the `arch/` directory, and
-    define an environmental variable `QUIP_ARCH`, e.g.::
+3.  **Important:** Ensure the submodules are on the correct branches with meson support:
     ```bash
-    export QUIP_ARCH=linux_x86_64_gfortran
+    cd src/fox && git checkout master && git pull
+    cd ../GAP && git checkout main && git pull
+    cd ../..
     ```
-    for standard gfortran on Linux. Here is where you can adjust which
-    compiler is being used, if you do not like the defaults. You may need to
-    create your own `arch/Makefile.${QUIP_ARCH}` file based on an existing file for
-    more exotic systems.
 
-    MPI: Some arch files already include adjustments for MPI use. Those
-    usually have `mpi` in their name, e.g. `linux_x86_64_gfortran_openmpi+openmp`.
-
-4.  Customise QUIP, set the maths libraries and provide linking options::
+4.  Configure the build with meson:
     ```bash
-    make config
+    meson setup builddir
     ```
-    Makefile.config will create a build directory, `build/${QUIP_ARCH}`,
-    and all the building happen there. First it will ask you some
-    questions about where you keep libraries and other stuff, if you
-    don't use something it is asking for, just leave it blank. The
-    answers will be stored in `Makefile.inc` in the `build/${QUIP_ARCH}`
-    directory, and you can edit them later (e.g. to change compiler, optimisation
-    or debug options).
 
-    If you later make significant changes to the configuration such as
-    enabling or disabling tight-binding support you should force a
-    full rebuild by doing a `make deepclean; make`.
+    This creates a `builddir` directory where all build artifacts will be placed.
+    Meson will automatically detect your compiler, BLAS/LAPACK libraries, and configure
+    the build appropriately.
 
-    MPI: To use the MPI parallelisation of `gap_fit`, you have to add
-    your system library to the linking options, e.g. `-lscalapack` or
-    `-lscalapack-openmpi`, enable GAP support, enable QR decomposition,
-    and enable ScaLAPACK.
-
-5.  Compile all programs, modules and libraries::
+    **Build options**: You can customize the build using `-D` flags:
     ```bash
-    make
+    meson setup builddir -Dgap=true -Dmpi=false
     ```
-    From the top-level `QUIP` directory. All programs are built in
-    `build/${QUIP_ARCH}/`. You can also find compiled object files
-    and libraries (`libquip.a`) in that directory. Programs can be
-    called directly from that directory.
 
-    Other useful make targets include:
+    Available options:
+    - `gap` (default: `true`): Enable GAP (Gaussian Approximation Potentials) support
+    - `mpi` (default: `false`): Enable MPI parallelization
 
-    - `make install` : copies all compiled programs it can find to
-      `QUIP_INSTALLDIR`, if it's defined and is a directory (full path
-      required), and copies bundled structures to `QUIP_STRUCTS_DIR`
-      if it is defined.
+    To reconfigure an existing build directory:
+    ```bash
+    meson configure builddir -Dmpi=true
+    ```
 
-    - `make libquip`:   Compile QUIP as a library and link to it.
-      This will make all the various libraries and combine them into one:
-      `build/${QUIP_ARCH}/libquip.a`, which is what you need to link with
-      (as well as LAPACK).
+5.  Compile all programs, modules and libraries:
+    ```bash
+    meson compile -C builddir
+    ```
+
+    All programs are built in `builddir/src/Programs/`. You can also find compiled
+    shared libraries in `builddir/src/*/lib*.so`. Programs can be called directly from
+    the build directory:
+    ```bash
+    ./builddir/src/Programs/quip --help
+    ./builddir/src/Programs/gap_fit --help
+    ```
+
+    Other useful meson commands:
+
+    - `meson install -C builddir` : Install compiled programs and libraries to the
+      system (or use `--destdir` to specify an installation prefix)
+
+    - `meson test -C builddir` : Run the test suite (requires quippy to be built)
+
+    - Clean and rebuild:
+      ```bash
+      rm -rf builddir
+      meson setup builddir
+      meson compile -C builddir
+      ```
 
 6.  A good starting point is to use the `quip` program, which can
     calculate the properties of an atomic configuration using a
-    variety of models. For example::
+    variety of models. For example:
     ```bash
-    quip atoms_filename=test.xyz init_args='IP LJ' \
+    ./builddir/src/Programs/quip atoms_filename=test.xyz init_args='IP LJ' \
         param_filename=share/Parameters/ip.parms.LJ.xml E
     ```
     assuming that you have a file called `test.xyz` with the following
@@ -302,62 +309,127 @@ to get up and running quickly.
     the types of interatomic potentials (IP) that are available.
 
 7.  To compile the Python wrappers (`quippy`), the minimum requirements
-    are as follows. `f90wrap` will be installed automatically by the build
-    process, but you might need to check that the directory where `pip`
-    installs executuable scripts to is on your path (e.g. by setting
-    `PATH=~/.local/bin:$PATH`).
-    - Python 3
+    are as follows:
+    - Python 3.9+
+    - [Meson build system](https://mesonbuild.com/) version 1.1+
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
-    - [f90wrap](https://github.com/jameskermode/f90wrap)
+    - [f90wrap](https://github.com/jameskermode/f90wrap) development version - install with:
+      ```bash
+      pip install git+https://github.com/jameskermode/f90wrap.git@master
+      ```
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
 
-    Note: If you are using a Python virtual environment (virtualenv) and would like
+    **Recommended**: Use [uv](https://docs.astral.sh/uv/) for fast, isolated environment management:
+    ```bash
+    # Install uv if not already installed
+    pip install uv
+
+    # Create isolated environment
+    uv venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+    # Install f90wrap development version
+    uv pip install git+https://github.com/jameskermode/f90wrap.git@master
+
+    # Install other dependencies
+    uv pip install numpy ase meson ninja
+    ```
+
+    Note: If you are using a Python virtual environment (virtualenv or venv) and would like
     to install `quippy` into it, ensure the environment is activated
     (`source <env_dir>/bin/activate`, where `<env_dir>` is the root of
-    your virtual environment) _before_ building `quippy` (otherwise library
-    versions may cause unexpected conflicts).
+    your virtual environment) _before_ building `quippy`.
 
-8.  To compile the Python wrappers (`quippy`), run::
+8.  To compile the Python wrappers (`quippy`):
+
+    **Important:** You must first build the main QUIP libraries (steps 4-5 above) before building quippy.
+
+    **Method 1: Using pip (recommended)**
+
+    The simplest way to build and install quippy is with pip:
     ```bash
-    make quippy
+    cd quippy
+    pip install .
     ```
-    Quippy can be used by adding the `lib` directory in
-    `quippy/build/${QUIP_ARCH}` to your `$PYTHONPATH`, however it can be
-    more convenient to install into a specific Python distribution::
+
+    **Note:** Do NOT use `pip install -e .` (editable install) as this is problematic with meson-based builds.
+
+    **Method 2: Using meson directly**
+
+    Alternatively, you can build with meson and then install:
     ```bash
-    make install-quippy
+    cd quippy
+    meson setup builddir
+    meson compile -C builddir
     ```
-    will either install into the current virtualenv or attempt to install
-    systemwide (usually fails without `sudo`). To install only for the
-    current user (into `~/.local`), execute the command
-    `QUIPPY_INSTALL_OPTS=--user make install-quippy`,
-    or use `QUIPPY_INSTALL_OPTS=--prefix=<directory>` to install into a
-    specific directory. `QUIPPY_INSTALL_OPTS` can also be set in the file
-    `build/${QUIP_ARCH}/Makefile.inc`.
+
+    This will:
+    - Preprocess the Fortran source files
+    - Generate Python wrappers using f90wrap
+    - Compile the Python extension module
+    - Prepare the quippy package for installation
+
+    Then install with pip:
+    ```bash
+    pip install .
+    ```
 
 9.  More details on the quippy installation process and troubleshooting for
     common build problems are available in the
     [online documentation](http://libatoms.github.io/QUIP/).
 
-10.  To run the unit and regression tests, which depend on `quippy`::
+10.  To run the unit and regression tests (requires quippy to be installed):
     ```bash
-    make test
+    cd tests
+    python3 run_all.py -v
+    ```
+    Or if using meson:
+    ```bash
+    meson test -C builddir
     ```
 
-11.  To get back to a state near to a fresh clone, use
-    ```bash
-    make distclean
-    ```
-
-12. Some functionality is only available if you check out other
+11. Some functionality is only available if you check out other
     modules within the `QUIP/src/` directories, e.g. the `ThirdParty`
     (DFTB parameters, TTM3f water model).
 
-13. In order to run QUIP potentials via LAMMPS, `make libquip` to get QUIP
-    into library form, and then follow the instructions in the
+12. In order to run QUIP potentials via LAMMPS, build the QUIP libraries with meson,
+    and then follow the instructions in the
     [LAMMPS documentation](http://lammps.sandia.gov/doc/pair_quip.html). You need at least 11 Aug 2017 version or later.
+    The required libraries will be in `builddir/src/*/lib*.so`.
+
+## Migrating from Make to Meson
+
+If you have previously built QUIP using the old Makefile-based system, note the following differences:
+
+**Key Changes:**
+- **No `QUIP_ARCH` environment variable**: Meson automatically detects your system configuration
+- **Build directory**: All build artifacts go to `builddir/` (or whatever name you choose) instead of `build/${QUIP_ARCH}/`
+- **Configuration**: Use `meson configure` with `-D` options instead of editing `Makefile.inc`
+- **Submodules**: Ensure submodules are updated to versions with meson support (fox: master, GAP: main)
+- **Programs location**: Executables are in `builddir/src/Programs/` instead of `build/${QUIP_ARCH}/`
+- **Libraries**: Shared libraries (`.so`) are built by default instead of static libraries (`.a`)
+
+**Workflow Comparison:**
+
+| Task | Old (Make) | New (Meson) |
+|------|-----------|-------------|
+| Setup | `export QUIP_ARCH=...` + `make config` | `meson setup builddir` |
+| Configure | Edit `build/${QUIP_ARCH}/Makefile.inc` | `meson configure builddir -Doption=value` |
+| Build | `make` | `meson compile -C builddir` |
+| Install | `make install` | `meson install -C builddir` |
+| Clean | `make clean` | `rm -rf builddir` |
+| Test | `make test` | `meson test -C builddir` |
+
+**To clean your old Make builds:**
+```bash
+# If you still have the old Makefile setup
+make distclean
+
+# Remove old build directories
+rm -rf build/
+```
 
 # Developer notes:
 

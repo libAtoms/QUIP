@@ -61,7 +61,7 @@ jobs:
           # Linux: Install gfortran, openblas, and f90wrap, then build QUIP
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y gcc-gfortran openblas-devel pkgconfig &&
-            pip install 'f90wrap @ git+https://github.com/smjanke/f90wrap.git@master' &&
+            pip install 'f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master' &&
             cd {project}/.. &&
             meson setup builddir &&
             meson compile -C builddir
@@ -76,7 +76,7 @@ jobs:
               fi
             done &&
             gfortran --version &&
-            pip install 'f90wrap @ git+https://github.com/smjanke/f90wrap.git@master' &&
+            pip install 'f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master' &&
             cd {project}/.. &&
             meson setup builddir &&
             meson compile -C builddir

@@ -53,6 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install numpy ase meson-python build
+          pip install 'git+https://github.com/jameskermode/f90wrap.git@master'
 
       - name: Build QUIP libraries
         run: |
@@ -114,7 +115,7 @@ jobs:
           meson setup builddir
           meson compile -C builddir
           cd quippy
-          pip install --no-build-isolation -e .
+          pip install --no-build-isolation .
 
       - name: Build documentation
         run: |
