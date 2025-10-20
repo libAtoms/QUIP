@@ -47,7 +47,6 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install gfortran meson ninja openblas
-          which gfortran
 
       - name: Install Python dependencies
         run: |
@@ -58,11 +57,15 @@ jobs:
         run: |
           meson setup builddir
           meson compile -C builddir
+        env:
+          PKG_CONFIG_PATH: ${{ runner.os == 'macOS' && '/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig' || '' }}
 
       - name: Build and install quippy
         run: |
           cd quippy
           pip install .
+        env:
+          PKG_CONFIG_PATH: ${{ runner.os == 'macOS' && '/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig' || '' }}
 
       - name: Run quippy tests
         run: |
