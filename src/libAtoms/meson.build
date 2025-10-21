@@ -60,6 +60,15 @@ libAtoms_c_sources = [
   'xyz.c',
   'sockets.c',
 ]
+# Platform-specific link args
+if build_machine.system() == 'darwin'
+  # macOS: allow undefined symbols (will be resolved from _quippy extension)
+  libatoms_link_args = ['-lgomp', '-Wl,-undefined,dynamic_lookup']
+else
+  # Linux: use standard linking (weak symbols in stub will be overridden)
+  libatoms_link_args = ['-lgomp']
+endif
+
 libAtoms = library('libAtoms',
   libAtoms_c_sources+libAtoms_F77_sources+libAtoms_F90_sources,
   dependencies: [
@@ -67,5 +76,5 @@ libAtoms = library('libAtoms',
     mpi_dep,
     ],
   c_args: ['-DPROTOTYPES=1'],
-  link_args: ['-lgomp', '-Wl,-undefined,dynamic_lookup'],
+  link_args: libatoms_link_args,
   )
