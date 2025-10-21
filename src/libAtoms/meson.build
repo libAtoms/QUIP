@@ -1,5 +1,5 @@
 libAtoms_F90_sources = [
-  # 'f90wrap_stub.F90',  # Stub implementation for standalone builds
+  'f90wrap_stub.F90',  # Stub implementation for standalone builds
   'error.F90',
   'kind_module.F90',
   'System.F90',
