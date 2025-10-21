@@ -170,8 +170,18 @@ alias_target('wrappers', patched_py_files)
 quip_root = meson.project_source_root() / '..'
 quip_builddir = quip_root / 'builddir' / 'src'
 
-# Find required libraries
-openblas_dep = dependency('openblas', required: true)
+# Try multiple methods to find OpenBLAS
+openblas_dep = dependency('openblas', required: false)
+if not openblas_dep.found()
+  # Fallback: try to find openblas as a system library
+  message('openblas not found via pkg-config, trying system library search')
+  openblas_lib = fortran.find_library('openblas', required: true)
+  # Assume standard include path for openblas
+  openblas_dep = declare_dependency(
+    dependencies: openblas_lib,
+    compile_args: ['-I/usr/include', '-I/usr/include/openblas'],
+  )
+endif
 
 # Get f2py-f90wrap
 f2py_f90wrap = find_program('f2py-f90wrap', required: true)

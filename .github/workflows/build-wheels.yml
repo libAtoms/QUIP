@@ -53,30 +53,30 @@ jobs:
         env:
           # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
           CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* pp* *musllinux*"
+          CIBW_BUILD_VERBOSITY: 3
 
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
           # Install system dependencies and build QUIP libraries
-          # Linux: Install gfortran, openblas, and f90wrap, then build QUIP
+          # Note: QUIP libraries don't need f90wrap (only quippy does)
+          # f90wrap will be installed later from pyproject.toml for each Python version
+          # Linux: Install gfortran and openblas, then build QUIP
           CIBW_BEFORE_ALL_LINUX: >
-            yum install -y gcc-gfortran openblas-devel pkgconfig &&
-            pip install 'f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master' &&
+            yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
             cd {project}/.. &&
             meson setup builddir &&
             meson compile -C builddir
 
-          # macOS: Install gcc (gfortran), openblas, f90wrap, build QUIP
+          # macOS: Install gcc (gfortran) and openblas, build QUIP
           # Create gfortran symlink since homebrew installs versioned binaries
           CIBW_BEFORE_ALL_MACOS: >-
-            brew install gcc openblas &&
+            brew gfortran meson ninja openblas netcdf hdf5 &&
             for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
               if [ -f "$gfortran_bin" ]; then
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
               fi
             done &&
-            gfortran --version &&
-            pip install 'f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master' &&
             cd {project}/.. &&
             meson setup builddir &&
             meson compile -C builddir
@@ -96,6 +96,17 @@ jobs:
 
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
+
+      - name: Debug - list environment
+        if: always()
+        run: |
+          echo "=== Environment ==="
+          env | sort
+          echo "=== Python info ==="
+          python --version
+          pip list
+          echo "=== Keeping alive ==="
+          sleep 3600
 
       # Uncomment to get SSH access for testing
       # - name: Setup tmate session
