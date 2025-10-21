@@ -1,5 +1,6 @@
 libAtoms_F90_sources = [
-  'f90wrap_stub.F90',  # Stub implementation for standalone builds
+  # Note: f90wrap_stub.F90 is NOT included here to avoid symbol conflicts
+  # It's linked separately only for standalone programs
   'error.F90',
   'kind_module.F90',
   'System.F90',
@@ -60,12 +61,17 @@ libAtoms_c_sources = [
   'xyz.c',
   'sockets.c',
 ]
+# Create static library for f90wrap stub (linked only with standalone programs)
+f90wrap_stub_lib = static_library('f90wrap_stub',
+  'f90wrap_stub.F90',
+)
+
 # Platform-specific link args
 if build_machine.system() == 'darwin'
-  # macOS: allow undefined symbols (will be resolved from _quippy extension)
+  # macOS: allow undefined symbols (resolved from _quippy extension at runtime)
   libatoms_link_args = ['-lgomp', '-Wl,-undefined,dynamic_lookup']
 else
-  # Linux: use standard linking (weak symbols in stub will be overridden)
+  # Linux: allow undefined symbols (resolved at runtime from _quippy or stub)
   libatoms_link_args = ['-lgomp']
 endif
 
@@ -77,4 +83,5 @@ libAtoms = library('libAtoms',
     ],
   c_args: ['-DPROTOTYPES=1'],
   link_args: libatoms_link_args,
+  override_options: ['b_lundef=false'],  # Allow undefined symbols
   )

@@ -4,6 +4,7 @@ link_quip = [
     GAP,
     Potentials,
     Utils,
+    f90wrap_stub_lib,  # Provide f90wrap_abort for standalone programs
     ]
 
 gap_fit = library('gap_fit',
@@ -28,6 +29,7 @@ quip = executable('quip', 'quip.F90',
     blas_dep,
     mpi_dep,
     ],
+  link_args: ['-Wl,--unresolved-symbols=ignore-in-shared-libs'],
 )
 
 DFTB_to_xml = executable('DFTB_to_xml', 'DFTB_to_xml.F90',
