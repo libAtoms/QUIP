@@ -264,8 +264,9 @@ class Potential(ase.calculators.calculator.Calculator):
             args_str += ' force'
         # TODO: implement 'elastic_constants', 'unrelaxed_elastic_constants', 'numeric_forces'
 
-        # fixme: workaround to get the calculated energy, because the wrapped dictionary is not handling that float well
-        ener_dummy = np.zeros(1, dtype=float)
+        # Use 0-dimensional array to pass mutable scalar to Fortran
+        # (NumPy 1.25+ requires explicit scalars, not 1-element arrays)
+        ener_dummy = np.zeros((), dtype=float)
 
         # the calculation itself
         # print('Calling QUIP Potential.calc() with args_str "{}"'.format(args_str))
@@ -275,7 +276,7 @@ class Potential(ase.calculators.calculator.Calculator):
         _quip_properties = quippy.convert.get_dict_arrays(self._quip_atoms.properties)
         _quip_params = quippy.convert.get_dict_arrays(self._quip_atoms.params)
 
-        self.results['energy'] = ener_dummy[0]
+        self.results['energy'] = float(ener_dummy)
         self.results['free_energy'] = self.results['energy']
 
         # process potential output to ase.properties
