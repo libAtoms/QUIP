@@ -1,5 +1,18 @@
 from __future__ import print_function, absolute_import, division
+import sys
+import os
+
+# Make symbols in _quippy globally visible so libAtoms can resolve f90wrap_abort
+# This is critical because libAtoms has an undefined reference to f90wrap_abort_
+# which must be resolved to the implementation in _quippy at load time
+old_flags = sys.getdlopenflags()
+sys.setdlopenflags(os.RTLD_NOW | os.RTLD_GLOBAL)
+
 import quippy._quippy
+
+# Restore original dlopen flags after loading _quippy
+sys.setdlopenflags(old_flags)
+
 import f90wrap.runtime
 import logging
 import numpy
