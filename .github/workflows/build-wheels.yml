@@ -58,15 +58,10 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Build QUIP libraries inside containers before building Python wheels
-          # The working directory when before_all runs is the project directory (quippy)
-          # We need to go up to the QUIP root and build there
+          # Install system dependencies before building
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
-            pip3 install meson &&
-            cd .. &&
-            meson setup builddir &&
-            meson compile -C builddir
+            pip3 install meson
 
           CIBW_BEFORE_ALL_MACOS: >-
             brew install gcc meson ninja openblas netcdf hdf5 &&
@@ -74,10 +69,10 @@ jobs:
               if [ -f "$gfortran_bin" ]; then
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
               fi
-            done &&
-            cd .. &&
-            meson setup builddir &&
-            meson compile -C builddir
+            done
+
+          # Build QUIP libraries before each wheel build
+          CIBW_BEFORE_BUILD: bash .github/workflows/prepare-wheel-build-meson.sh
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
