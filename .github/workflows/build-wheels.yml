@@ -48,24 +48,6 @@ jobs:
             fi
           fi
 
-      - name: Build QUIP libraries
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt-get update
-            sudo apt-get install -y gfortran ninja-build libopenblas-dev liblapack-dev libnetcdf-dev libhdf5-dev pkg-config
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            brew install gcc meson ninja openblas netcdf hdf5
-            # Create gfortran symlink
-            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
-              if [ -f "$gfortran_bin" ]; then
-                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break
-              fi
-            done
-          fi
-          pip install meson
-          meson setup builddir
-          meson compile -C builddir
-
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
@@ -76,8 +58,26 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Note: QUIP libraries are already built in the "Build QUIP libraries" step above
-          # cibuildwheel only needs to build the Python wrapper (quippy)
+          # Build QUIP libraries inside containers before building Python wheels
+          # The working directory when before_all runs is the project directory (quippy)
+          # We need to go up to the QUIP root and build there
+          CIBW_BEFORE_ALL_LINUX: >
+            yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
+            pip3 install meson &&
+            cd .. &&
+            meson setup builddir &&
+            meson compile -C builddir
+
+          CIBW_BEFORE_ALL_MACOS: >-
+            brew install gcc meson ninja openblas netcdf hdf5 &&
+            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
+              if [ -f "$gfortran_bin" ]; then
+                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
+              fi
+            done &&
+            cd .. &&
+            meson setup builddir &&
+            meson compile -C builddir
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
