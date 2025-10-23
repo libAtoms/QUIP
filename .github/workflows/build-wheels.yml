@@ -62,17 +62,17 @@ jobs:
           # Note: QUIP libraries don't need f90wrap (only quippy does)
           # f90wrap will be installed later from pyproject.toml for each Python version
           # Linux: Install gfortran and openblas, then build QUIP
-          # Note: When building from subdirectory, need to reference parent for QUIP root
+          # In containers, /host is mounted as the repository root, {project} is /project (quippy dir)
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
             pip3 install meson &&
-            QUIP_ROOT=$(dirname {project}) &&
-            cd "$QUIP_ROOT" &&
+            cd /host &&
             meson setup builddir &&
             meson compile -C builddir
 
           # macOS: Install gcc (gfortran) and openblas, build QUIP
           # Create gfortran symlink since homebrew installs versioned binaries
+          # Find repository root by looking for meson.build from the project directory
           CIBW_BEFORE_ALL_MACOS: >-
             brew install gcc meson ninja openblas netcdf hdf5 &&
             for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
@@ -80,7 +80,7 @@ jobs:
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
               fi
             done &&
-            QUIP_ROOT=$(dirname {project}) &&
+            QUIP_ROOT=$(cd {project} && cd .. && pwd) &&
             cd "$QUIP_ROOT" &&
             meson setup builddir &&
             meson compile -C builddir
@@ -94,6 +94,12 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
+
+          # macOS: Custom repair command to handle duplicate libgfortran libraries
+          # Skip arch requirement on failure to avoid issues with multiple libgfortran sources
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} ||
+            delocate-wheel -w {dest_dir} -v {wheel}
 
           # Build with meson-python (already configured in pyproject.toml)
           CIBW_BUILD_FRONTEND: "build"
