@@ -72,7 +72,20 @@ jobs:
             done
 
           # Build QUIP libraries before each wheel build
-          CIBW_BEFORE_BUILD: bash .github/workflows/prepare-wheel-build-meson.sh
+          # Navigate to repo root from package dir (quippy/) and build with meson
+          CIBW_BEFORE_BUILD: >
+            cd .. &&
+            echo "Building QUIP from $(pwd)" &&
+            if [ ! -f "meson.build" ]; then
+              echo "ERROR: meson.build not found in $(pwd)";
+              ls -la;
+              exit 1;
+            fi &&
+            if [ ! -d "builddir" ]; then
+              meson setup builddir && meson compile -C builddir;
+            else
+              echo "Build directory exists, skipping build";
+            fi
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
