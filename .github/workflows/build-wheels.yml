@@ -48,6 +48,41 @@ jobs:
             fi
           fi
 
+      - name: Install build dependencies
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y gfortran ninja-build pkg-config libopenblas-dev liblapack-dev libnetcdf-dev libhdf5-dev
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install gcc meson ninja openblas netcdf hdf5
+            # Link gfortran
+            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
+              if [ -f "$gfortran_bin" ]; then
+                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break
+              fi
+            done
+          fi
+          pip install meson
+
+      - name: Build QUIP libraries
+        run: |
+          echo "Building QUIP libraries with Meson"
+          meson setup builddir
+          meson compile -C builddir
+
+          echo "Copying build artifacts to quippy/"
+          # Copy all shared libraries
+          mkdir -p quippy/lib
+          find builddir/src -name "*.so" -exec cp {} quippy/lib/ \; 2>/dev/null || true
+          find builddir/src -name "*.dylib" -exec cp {} quippy/lib/ \; 2>/dev/null || true
+
+          # Copy the entire builddir for quippy to reference during its build
+          cp -r builddir quippy/
+
+          echo "Copied shared libraries:"
+          ls -la quippy/lib/
+          echo "Copied builddir to quippy/"
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
@@ -58,34 +93,7 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Install system dependencies before building
-          CIBW_BEFORE_ALL_LINUX: >
-            yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
-            pip3 install meson
-
-          CIBW_BEFORE_ALL_MACOS: >-
-            brew install gcc meson ninja openblas netcdf hdf5 &&
-            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
-              if [ -f "$gfortran_bin" ]; then
-                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
-              fi
-            done
-
-          # Build QUIP libraries before each wheel build
-          # Navigate to repo root from package dir (quippy/) and build with meson
-          CIBW_BEFORE_BUILD: >
-            cd .. &&
-            echo "Building QUIP from $(pwd)" &&
-            if [ ! -f "meson.build" ]; then
-              echo "ERROR: meson.build not found in $(pwd)";
-              ls -la;
-              exit 1;
-            fi &&
-            if [ ! -d "builddir" ]; then
-              meson setup builddir && meson compile -C builddir;
-            else
-              echo "Build directory exists, skipping build";
-            fi
+          # No CIBW_BEFORE_ALL or CIBW_BEFORE_BUILD needed since we build before cibuildwheel
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
