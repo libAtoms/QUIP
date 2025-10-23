@@ -3,8 +3,8 @@ requires = [
     "meson-python>=0.13.0",
     "numpy>=1.20",
     "meson>=1.1.0",
-    # f90wrap with fix for overload resolution (PR #283)
-    "f90wrap @ git+https://github.com/jameskermode/f90wrap.git@fix-overload-resolution-order",
+    # f90wrap with fix for overload resolution (merged to master)
+    "f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master",
 ]
 build-backend = "mesonpy"
 
@@ -17,8 +17,8 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.20",
     "ase>=3.17.0",
-    # f90wrap with fix for overload resolution (PR #283)
-    "f90wrap @ git+https://github.com/jameskermode/f90wrap.git@fix-overload-resolution-order",
+    # f90wrap with fix for overload resolution (merged to master)
+    "f90wrap @ git+https://github.com/jameskermode/f90wrap.git@master",
 ]
 
 [project.optional-dependencies]

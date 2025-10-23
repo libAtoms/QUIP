@@ -64,6 +64,7 @@ jobs:
           # Linux: Install gfortran and openblas, then build QUIP
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
+            pip3 install meson &&
             cd {project}/.. &&
             meson setup builddir &&
             meson compile -C builddir
@@ -71,7 +72,7 @@ jobs:
           # macOS: Install gcc (gfortran) and openblas, build QUIP
           # Create gfortran symlink since homebrew installs versioned binaries
           CIBW_BEFORE_ALL_MACOS: >-
-            brew gfortran meson ninja openblas netcdf hdf5 &&
+            brew install gcc meson ninja openblas netcdf hdf5 &&
             for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
               if [ -f "$gfortran_bin" ]; then
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
@@ -98,15 +99,13 @@ jobs:
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
       - name: Debug - list environment
-        if: always()
+        if: failure()
         run: |
           echo "=== Environment ==="
           env | sort
           echo "=== Python info ==="
           python --version
           pip list
-          echo "=== Keeping alive ==="
-          sleep 3600
 
       # Uncomment to get SSH access for testing
       # - name: Setup tmate session
