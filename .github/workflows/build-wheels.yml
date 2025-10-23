@@ -48,6 +48,24 @@ jobs:
             fi
           fi
 
+      - name: Build QUIP libraries
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y gfortran ninja-build libopenblas-dev liblapack-dev libnetcdf-dev libhdf5-dev pkg-config
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install gcc meson ninja openblas netcdf hdf5
+            # Create gfortran symlink
+            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
+              if [ -f "$gfortran_bin" ]; then
+                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break
+              fi
+            done
+          fi
+          pip install meson
+          meson setup builddir
+          meson compile -C builddir
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
@@ -58,32 +76,8 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # Install system dependencies and build QUIP libraries
-          # Note: QUIP libraries don't need f90wrap (only quippy does)
-          # f90wrap will be installed later from pyproject.toml for each Python version
-          # Linux: Install gfortran and openblas, then build QUIP
-          # In containers, /host is mounted as the repository root, {project} is /project (quippy dir)
-          CIBW_BEFORE_ALL_LINUX: >
-            yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
-            pip3 install meson &&
-            cd /host &&
-            meson setup builddir &&
-            meson compile -C builddir
-
-          # macOS: Install gcc (gfortran) and openblas, build QUIP
-          # Create gfortran symlink since homebrew installs versioned binaries
-          # Find repository root by looking for meson.build from the project directory
-          CIBW_BEFORE_ALL_MACOS: >-
-            brew install gcc meson ninja openblas netcdf hdf5 &&
-            for gfortran_bin in /opt/homebrew/bin/gfortran-* /usr/local/bin/gfortran-*; do
-              if [ -f "$gfortran_bin" ]; then
-                sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
-              fi
-            done &&
-            QUIP_ROOT=$(cd {project} && cd .. && pwd) &&
-            cd "$QUIP_ROOT" &&
-            meson setup builddir &&
-            meson compile -C builddir
+          # Note: QUIP libraries are already built in the "Build QUIP libraries" step above
+          # cibuildwheel only needs to build the Python wrapper (quippy)
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
