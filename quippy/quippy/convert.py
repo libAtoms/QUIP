@@ -102,7 +102,9 @@ def ase_to_quip(ase_atoms: ase.Atoms, quip_atoms=None, add_arrays=None, add_info
     quip_atoms.pos[:] = ase_atoms.get_positions().T.copy()
     quip_atoms.is_periodic[:] = ase_atoms.get_pbc()
     quip_atoms.z[:] = ase_atoms.numbers
-    quip_atoms.set_atoms(quip_atoms.z)  # set species and mass
+    # Call the array version explicitly to avoid f90wrap overload resolution bug
+    # that would call set_atoms_singlez instead, setting all atoms to the same Z
+    quip_atoms._set_atoms_0(quip_atoms.z)  # set species and mass
 
     if ase_atoms.has('momenta'):
         # if ase atoms has momenta then add velocities to the quip object

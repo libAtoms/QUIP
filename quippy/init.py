@@ -25,6 +25,15 @@ Maintained by James Kermode <j.r.kermode@warwick.ac.uk>
 Contains python bindings to the libAtoms/QUIP Fortran 95 codes
 <http://libatoms.github.org/QUIP>. """
 
+# IMPORTANT: Set RTLD_GLOBAL before any imports to ensure symbol visibility
+# This is critical for runtime symbol resolution: libAtoms.so has undefined
+# references to f90wrap_abort_ which must be resolved from _quippy.so
+# By default Python loads extensions with RTLD_LOCAL, hiding symbols
+import sys
+import os
+_quippy_dlopen_flags = sys.getdlopenflags()
+sys.setdlopenflags(os.RTLD_NOW | os.RTLD_GLOBAL)
+
 import quippy.convert
 import quippy.potential
 import quippy.descriptors
@@ -48,3 +57,6 @@ def quippy_cleanup():
 quippy.system_module.system_initialise(-1, quippy_running=QUIPPY_TRUE)
 quippy.system_module.verbosity_push(0)
 atexit.register(quippy_cleanup)
+
+# Restore original dlopen flags after all quippy modules are loaded
+sys.setdlopenflags(_quippy_dlopen_flags)

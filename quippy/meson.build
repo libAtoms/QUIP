@@ -162,8 +162,22 @@ patched_py_files = custom_target('patch_f90wrap',
   build_by_default: true,
 )
 
+# Fix import order in __init__.py to set RTLD_GLOBAL before importing _quippy
+fix_init_script = find_program('fix_init_rtld_global.py', required: true)
+fixed_init_file = custom_target('fix_init_rtld',
+  input: f90wrap_output,
+  output: 'init_fixed.stamp',
+  command: [
+    fix_init_script,
+    meson.current_build_dir() / 'quippy' / '__init__.py',
+    '&&', 'touch', '@OUTPUT@'
+  ],
+  depends: patched_py_files,
+  build_by_default: true,
+)
+
 # Create alias target to build all wrappers
-alias_target('wrappers', patched_py_files)
+alias_target('wrappers', fixed_init_file)
 
 # Now we need to compile the wrappers and create the Python extension
 # Get paths to QUIP libraries
@@ -274,7 +288,7 @@ quippy_ext = custom_target('quippy_extension',
   input: f90wrap_output,
   output: '_quippy' + ext_suffix,
   command: ['bash', f2py_wrapper, '@INPUT@'],
-  depends: [f90wrap_output, patched_py_files],
+  depends: [f90wrap_output, fixed_init_file],
   build_by_default: true,
   install: true,
   install_dir: py.get_install_dir() / 'quippy',
@@ -301,7 +315,7 @@ f90wrap_py_files = custom_target('f90wrap_py_install',
   input: f90wrap_output,
   output: 'f90wrap_installed.stamp',
   command: ['touch', '@OUTPUT@'],
-  depends: patched_py_files,
+  depends: fixed_init_file,
   build_by_default: true,
   install: false,
 )
