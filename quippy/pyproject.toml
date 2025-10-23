@@ -17,6 +17,7 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.20",
     "ase>=3.17.0",
+    # f90wrap with fix for overload resolution (PR #283)
     "f90wrap @ git+https://github.com/jameskermode/f90wrap.git@fix-overload-resolution-order",
 ]
 
