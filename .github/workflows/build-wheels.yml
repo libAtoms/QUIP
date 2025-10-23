@@ -62,10 +62,12 @@ jobs:
           # Note: QUIP libraries don't need f90wrap (only quippy does)
           # f90wrap will be installed later from pyproject.toml for each Python version
           # Linux: Install gfortran and openblas, then build QUIP
+          # Note: When building from subdirectory, need to reference parent for QUIP root
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y pkgconfig gcc-gfortran ninja-build openblas-devel lapack-devel netcdf-devel hdf5-devel &&
             pip3 install meson &&
-            cd {project}/.. &&
+            QUIP_ROOT=$(dirname {project}) &&
+            cd "$QUIP_ROOT" &&
             meson setup builddir &&
             meson compile -C builddir
 
@@ -78,7 +80,8 @@ jobs:
                 sudo ln -sf "$gfortran_bin" /usr/local/bin/gfortran && break;
               fi
             done &&
-            cd {project}/.. &&
+            QUIP_ROOT=$(dirname {project}) &&
+            cd "$QUIP_ROOT" &&
             meson setup builddir &&
             meson compile -C builddir
 
