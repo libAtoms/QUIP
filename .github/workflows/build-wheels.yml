@@ -67,6 +67,13 @@ jobs:
       - name: Build QUIP libraries
         run: |
           echo "Building QUIP libraries with Meson"
+
+          # Set PKG_CONFIG_PATH for macOS to find openblas
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig:$PKG_CONFIG_PATH"
+            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
+          fi
+
           meson setup builddir
           meson compile -C builddir
 
