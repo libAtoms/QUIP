@@ -109,7 +109,6 @@ f90wrap_cmd = [
   '--skip', 'atoms_shallowcopy', 'atoms_initialise_ptr', 'atoms_finalise_multi',
   'potential_initialise_inoutput', 'cplx_2d', 'cplx_2d_array1_finalise',
   'potential_local_e_mix_initialise', 'potential_local_e_mix_finalise',
-  'enable_timing', # workaround for f90wrap name clash introduced in PR #290
   '--skip-types', 'spherical_harmonics_type', 'potential_local_e_mix',
   '--force-public', 'set_cutoff',
   '--documentation-plugin', meson.current_source_dir() + '/doc_plugin.py',
