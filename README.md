@@ -165,8 +165,8 @@ programs available (providing the [directory that pip installs scripts
 to](https://stackoverflow.com/questions/62162970/programmatically-determine-pip-user-install-location-scripts-directory/62167797#62167797) is on your `PATH`).
 
 Currently, wheels are available for `x86_64` architectures
-with Python 3.6+ on macOS and glibc-based Linux distributions
-(e.g. Ubuntu, CentOS) and for macOS arm64. The wheels are updated periodically
+with Python 3.9+ on macOS and glibc-based Linux distributions
+(e.g. Ubuntu, CentOS) and for macOS arm64 (Apple Silicon). The wheels are updated periodically
 using GitHub Actions CI. Please open [issues](https://github.com/libAtoms/QUIP/issues)
 here if you have problems installing with `pip`.
 

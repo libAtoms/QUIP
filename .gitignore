@@ -15,3 +15,10 @@ src/Potentials/*.mod
 src/Potentials/*.mod.save
 quippy/quippy.f90doc
 quippy/quippy.spec
+
+# macOS system files
+.DS_Store
+
+# f90wrap generated files (build artifacts)
+quippy/quippy/*_module.py
+quippy/quippy/__init__.py
