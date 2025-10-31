@@ -64,32 +64,6 @@ jobs:
           fi
           pip install meson
 
-      - name: Build QUIP libraries
-        run: |
-          echo "Building QUIP libraries with Meson"
-
-          # Set PKG_CONFIG_PATH for macOS to find openblas
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            export PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig:$PKG_CONFIG_PATH"
-            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH"
-          fi
-
-          meson setup builddir
-          meson compile -C builddir
-
-          echo "Copying build artifacts to quippy/"
-          # Copy all shared libraries
-          mkdir -p quippy/lib
-          find builddir/src -name "*.so" -exec cp {} quippy/lib/ \; 2>/dev/null || true
-          find builddir/src -name "*.dylib" -exec cp {} quippy/lib/ \; 2>/dev/null || true
-
-          # Copy the entire builddir for quippy to reference during its build
-          cp -r builddir quippy/
-
-          echo "Copied shared libraries:"
-          ls -la quippy/lib/
-          echo "Copied builddir to quippy/"
-
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
@@ -100,7 +74,24 @@ jobs:
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
 
-          # No CIBW_BEFORE_ALL or CIBW_BEFORE_BUILD needed since we build before cibuildwheel
+          # Install system dependencies in build containers
+          CIBW_BEFORE_ALL_LINUX: >
+            yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel &&
+            pip install meson ninja
+
+          CIBW_BEFORE_ALL_MACOS: >
+            brew install openblas netcdf hdf5 || true
+
+          # Build QUIP libraries inside each wheel's isolated environment
+          CIBW_BEFORE_BUILD_LINUX: >
+            cd {package} && cd .. &&
+            meson setup builddir &&
+            meson compile -C builddir
+
+          CIBW_BEFORE_BUILD_MACOS: >
+            cd {package} && cd .. &&
+            PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig" meson setup builddir &&
+            meson compile -C builddir
 
           # Set environment variables for builds
           # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
