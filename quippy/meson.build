@@ -195,6 +195,11 @@ if not openblas_dep.found()
     dependencies: openblas_lib,
     compile_args: ['-I/usr/include', '-I/usr/include/openblas'],
   )
+  # Set libdir for system library (standard location on manylinux)
+  openblas_libdir = '/usr/lib64'
+else
+  # Get libdir from pkg-config
+  openblas_libdir = openblas_dep.get_variable(pkgconfig: 'libdir')
 endif
 
 # Get f2py-f90wrap
@@ -273,7 +278,7 @@ f2py_wrapper_script = f2py_wrapper_script.replace('@FOX_MODDIR@', fox_moddir)
 f2py_wrapper_script = f2py_wrapper_script.replace('@GAP_MODDIR@', gap_moddir)
 f2py_wrapper_script = f2py_wrapper_script.replace('@POTENTIALS_MODDIR@', potentials_moddir)
 f2py_wrapper_script = f2py_wrapper_script.replace('@UTILS_MODDIR@', utils_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@OPENBLAS_LIBDIR@', openblas_dep.get_variable(pkgconfig: 'libdir'))
+f2py_wrapper_script = f2py_wrapper_script.replace('@OPENBLAS_LIBDIR@', openblas_libdir)
 f2py_wrapper_script = f2py_wrapper_script.replace('@EXT_SUFFIX@', ext_suffix)
 f2py_wrapper_script = f2py_wrapper_script.replace('@OUTPUT@', meson.current_build_dir() / ('_quippy' + ext_suffix))
 
