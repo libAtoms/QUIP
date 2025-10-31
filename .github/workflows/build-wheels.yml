@@ -76,19 +76,21 @@ jobs:
 
           # Install system dependencies in build containers
           CIBW_BEFORE_ALL_LINUX: >
-            yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel &&
-            pip install meson ninja
+            yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel
 
           CIBW_BEFORE_ALL_MACOS: >
             brew install openblas netcdf hdf5 || true
 
           # Build QUIP libraries inside each wheel's isolated environment
+          # Install meson/ninja in the current Python environment, then build QUIP
           CIBW_BEFORE_BUILD_LINUX: >
+            pip install meson ninja &&
             cd {package} && cd .. &&
             meson setup builddir &&
             meson compile -C builddir
 
           CIBW_BEFORE_BUILD_MACOS: >
+            pip install meson ninja &&
             cd {package} && cd .. &&
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig" meson setup builddir &&
             meson compile -C builddir
