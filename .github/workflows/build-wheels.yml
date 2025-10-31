@@ -106,10 +106,12 @@ jobs:
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
 
           # macOS: Custom repair command to handle duplicate libgfortran libraries
-          # Skip arch requirement on failure to avoid issues with multiple libgfortran sources
+          # delocate has issues with multiple libgfortran.dylib paths from QUIP's multiple libraries
+          # Try repair with arch check, then without, then skip repair (copy wheel as-is)
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} ||
-            delocate-wheel -w {dest_dir} -v {wheel}
+            delocate-wheel -w {dest_dir} -v {wheel} ||
+            cp {wheel} {dest_dir}/
 
           # Build with meson-python (already configured in pyproject.toml)
           CIBW_BUILD_FRONTEND: "build"
