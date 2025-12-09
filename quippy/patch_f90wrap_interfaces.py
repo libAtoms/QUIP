@@ -1,14 +1,44 @@
 #!/usr/bin/env python3
 """
-Post-process f90wrap-generated Python files to fix overloaded interface shadowing bug.
+Post-process f90wrap-generated Python files to fix bugs in f90wrap output.
 
-F90wrap generates overloaded interfaces that shadow the methods they're trying to call.
-This script fixes that by saving references to the original methods before they're shadowed.
+Fixes:
+1. Overloaded interface shadowing bug - F90wrap generates overloaded interfaces
+   that shadow the methods they're trying to call.
+2. Finalizer initialise/finalise bug - F90wrap's fallback finalizer incorrectly
+   uses _initialise instead of _finalise due to a pattern matching bug.
 """
 
 import re
 import sys
 from pathlib import Path
+
+
+def fix_finalizer_initialise_bug(content):
+    """Fix finalizer bug where _initialise is used instead of _finalise.
+
+    F90wrap's pywrapgen.py has a bug in write_constructor where it tries to
+    replace "__initialise" with "__finalise" for the fallback finalizer, but
+    the actual pattern in subroutine names is "_initialise" (single underscore).
+
+    This results in finalizers calling the initialise function instead of
+    finalise, causing errors on cleanup when garbage collection runs.
+
+    Bug pattern:
+        self._finalizer = weakref.finalize(self, quippy._quippy.f90wrap_..._initialise, self._handle)
+
+    Fixed pattern:
+        self._finalizer = weakref.finalize(self, quippy._quippy.f90wrap_..._finalise, self._handle)
+    """
+    # Pattern matches finalizer lines that incorrectly use _initialise
+    # We need to be careful to only match finalizer lines, not other uses of _initialise
+    # The pattern looks for: self._finalizer = weakref.finalize(..._initialise...)
+    pattern = r'(self\._finalizer\s*=\s*weakref\.finalize\([^)]*?)_initialise(\s*,|\s*\))'
+
+    def replacer(match):
+        return match.group(1) + '_finalise' + match.group(2)
+
+    return re.sub(pattern, replacer, content)
 
 
 def fix_init_alloc(content):
@@ -77,6 +107,9 @@ def patch_file(filepath):
 
     content = filepath.read_text()
     original_content = content
+
+    # Fix finalizer bug where _initialise is incorrectly used instead of _finalise
+    content = fix_finalizer_initialise_bug(content)
 
     # Note: fix_init_alloc is now handled by f90wrap itself (pywrapgen.py)
     # We only need to fix overloaded interfaces here

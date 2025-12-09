@@ -21,6 +21,9 @@
 
 import unittest
 import os
+import subprocess
+import sys
+import gc
 
 import numpy as np
 import ase
@@ -239,6 +242,112 @@ class Test_Descriptor(quippytest.QuippyTestCase):
             # n.b. `ii` is kept with Fortran indexing
             for ii_item in set(ii_arr - 1):
                 assert ii_item in grad_data
+
+
+class Test_DescriptorCleanup(quippytest.QuippyTestCase):
+    """Test descriptor finalization/cleanup to catch finalizer bugs.
+
+    These tests specifically target a bug in f90wrap where the finalizer
+    incorrectly called _initialise instead of _finalise, causing errors
+    during garbage collection and process exit.
+
+    Bug report: https://github.com/libAtoms/QUIP/issues/XXX
+    The bug manifested as garbage characters in the descriptor string
+    during cleanup, with errors like:
+        RuntimeError: descriptor_initialise found 0 IP Model types args_str='...'
+    """
+
+    def setUp(self):
+        # Simple carbon structure for testing
+        a = 2.46
+        self.atoms = ase.Atoms(
+            "C2",
+            positions=[[0, 0, 0], [a / 2., np.sqrt(3.) / 6. * a, 0]],
+            cell=[[a, 0, 0], [a / 2., np.sqrt(3.) / 2. * a, 0], [0, 0, 20.]],
+            pbc=True
+        )
+
+    def test_descriptor_explicit_cleanup(self):
+        """Test that descriptors can be explicitly deleted without errors."""
+        desc = quippy.descriptors.Descriptor(
+            "soap cutoff=3.5 l_max=4 n_max=4 atom_sigma=0.5 n_Z=1 Z={6}"
+        )
+        # Explicitly delete and collect garbage
+        del desc
+        gc.collect()
+        # If we get here without RuntimeError, the test passes
+
+    def test_soap_turbo_cleanup(self):
+        """Test soap_turbo descriptor cleanup - from original bug report."""
+        desc = quippy.descriptors.Descriptor(
+            "soap_turbo l_max=8 alpha_max={8} atom_sigma_r={0.5} atom_sigma_t={0.5} "
+            "atom_sigma_r_scaling={0.} atom_sigma_t_scaling={0.} "
+            "rcut_hard=3.5 rcut_soft=3. basis=poly3gauss scaling_mode=polynomial add_species=F "
+            "amplitude_scaling={1.0} n_species=1 species_Z={6} central_index=1 "
+            "radial_enhancement=1 compress_mode=trivial central_weight={1.0}"
+        )
+        del desc
+        gc.collect()
+
+    def test_multiple_descriptor_types_cleanup(self):
+        """Test cleanup of multiple descriptor types."""
+        descriptors = [
+            ("soap", "soap cutoff=3.5 l_max=4 n_max=4 atom_sigma=0.5 n_Z=1 Z={6}"),
+            ("distance_2b", "distance_2b cutoff=3.5 Z1=6 Z2=6"),
+            ("angle_3b", "angle_3b cutoff=3.5 Z=6 Z1=6 Z2=6"),
+        ]
+        for name, desc_str in descriptors:
+            with self.subTest(descriptor=name):
+                desc = quippy.descriptors.Descriptor(desc_str)
+                del desc
+                gc.collect()
+
+    def test_descriptor_cleanup_in_subprocess(self):
+        """Test descriptor cleanup at process exit via subprocess.
+
+        This is the most reliable way to catch finalizer bugs because
+        they often only manifest during Python's atexit cleanup phase,
+        which occurs after unittest reports results.
+        """
+        script = '''
+import sys
+import numpy as np
+from ase import Atoms
+from quippy.descriptors import Descriptor
+
+# Create a structure
+a = 2.46
+atoms = Atoms("C2", positions=[[0,0,0], [a/2., np.sqrt(3.)/6.*a, 0]],
+              cell=[[a,0,0], [a/2., np.sqrt(3.)/2.*a, 0], [0,0,20.]], pbc=True)
+
+# Test soap_turbo (from original bug report)
+desc = Descriptor("soap_turbo l_max=8 alpha_max={8} atom_sigma_r={0.5} atom_sigma_t={0.5} "
+                  "atom_sigma_r_scaling={0.} atom_sigma_t_scaling={0.} "
+                  "rcut_hard=3.5 rcut_soft=3. basis=poly3gauss scaling_mode=polynomial add_species=F "
+                  "amplitude_scaling={1.0} n_species=1 species_Z={6} central_index=1 "
+                  "radial_enhancement=1 compress_mode=trivial central_weight={1.0}")
+
+# Also test regular soap
+desc2 = Descriptor("soap cutoff=3.5 l_max=4 n_max=4 atom_sigma=0.5 n_Z=1 Z={6}")
+
+# Exit normally - finalizers will run
+sys.exit(0)
+'''
+        result = subprocess.run(
+            [sys.executable, '-c', script],
+            capture_output=True,
+            text=True
+        )
+
+        # Check for errors in stderr
+        if result.returncode != 0:
+            self.fail(f"Subprocess failed with return code {result.returncode}\n"
+                      f"stdout: {result.stdout}\n"
+                      f"stderr: {result.stderr}")
+
+        # Check for the specific finalizer error pattern
+        if "descriptor_initialise" in result.stderr or "RuntimeError" in result.stderr:
+            self.fail(f"Finalizer error detected in subprocess:\n{result.stderr}")
 
 
 if __name__ == "__main__":
