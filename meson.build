@@ -34,6 +34,22 @@ if get_option('gap')
     ], language:'fortran')
 endif
 
+# Determine QUIP_ARCH dynamically based on host machine
+quip_system = host_machine.system()
+quip_cpu = host_machine.cpu_family()
+if quip_system == 'darwin'
+  quip_os = 'darwin'
+elif quip_system == 'linux'
+  quip_os = 'linux'
+else
+  quip_os = quip_system
+endif
+
+quip_arch = quip_os + '_' + quip_cpu + '_gfortran'
+if get_option('mpi')
+  quip_arch += '_openmpi'
+endif
+
 add_global_arguments([
   '-ffree-line-length-none',
   '-fno-second-underscore',
@@ -43,7 +59,7 @@ add_global_arguments([
   '-DGETARG_F2003',
   '-DGETENV_F2003',
   '-DGFORTRAN',
-  '-DQUIP_ARCH="darwin_x86_64_gfortran"',
+  '-DQUIP_ARCH="' + quip_arch + '"',
   '-DSIZEOF_FORTRAN_T='+sizeof_fortran_t,
   ], language:'fortran')
 
@@ -62,6 +78,9 @@ else
   message('MPI OFF')
   mpi_dep = dependency('',required: false)
 endif
+
+# Shared OpenMP link args for all libraries
+openmp_link_args = ['-lgomp']
 
 # Get openblas dependency with fallback for systems without pkg-config support
 openblas_dep = dependency('openblas', required: false)

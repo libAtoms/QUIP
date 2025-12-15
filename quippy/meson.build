@@ -58,36 +58,24 @@ gap_sources = [
   'descriptors',
 ]
 
-# Preprocess sources
+# Preprocess sources - consolidate loops using dict of source directories
+sources_by_dir = {
+  '../src/libAtoms/': libatoms_sources,
+  '../src/Potentials/': pot_sources,
+  '../src/GAP/': gap_sources,
+}
+
 fpp_files = []
-foreach src : libatoms_sources
-  fpp_file = custom_target(src + '_fpp',
-    input: '../src/libAtoms/' + src + '.F90',
-    output: src + '.fpp',
-    command: [gfortran, '-E', '-cpp', fpp_flags, '@INPUT@'],
-    capture: true,
-  )
-  fpp_files += fpp_file
-endforeach
-
-foreach src : pot_sources
-  fpp_file = custom_target(src + '_fpp',
-    input: '../src/Potentials/' + src + '.F90',
-    output: src + '.fpp',
-    command: [gfortran, '-E', '-cpp', fpp_flags, '@INPUT@'],
-    capture: true,
-  )
-  fpp_files += fpp_file
-endforeach
-
-foreach src : gap_sources
-  fpp_file = custom_target(src + '_fpp',
-    input: '../src/GAP/' + src + '.F90',
-    output: src + '.fpp',
-    command: [gfortran, '-E', '-cpp', fpp_flags, '@INPUT@'],
-    capture: true,
-  )
-  fpp_files += fpp_file
+foreach dir, sources : sources_by_dir
+  foreach src : sources
+    fpp_file = custom_target(src + '_fpp',
+      input: dir + src + '.F90',
+      output: src + '.fpp',
+      command: [gfortran, '-E', '-cpp', fpp_flags, '@INPUT@'],
+      capture: true,
+    )
+    fpp_files += fpp_file
+  endforeach
 endforeach
 
 # Run f90wrap to generate wrappers
@@ -266,21 +254,28 @@ cd bbdir && meson compile
 mv "_quippy@EXT_SUFFIX@" "@OUTPUT@"
 '''
 
-f2py_wrapper_script = f2py_wrapper_script.replace('@F2PY@', f2py_f90wrap.full_path())
-f2py_wrapper_script = f2py_wrapper_script.replace('@BUILDDIR@', meson.current_build_dir())
-f2py_wrapper_script = f2py_wrapper_script.replace('@QUIP_LIBATOMS@', quip_builddir / 'libAtoms')
-f2py_wrapper_script = f2py_wrapper_script.replace('@QUIP_FOX@', quip_builddir / 'fox')
-f2py_wrapper_script = f2py_wrapper_script.replace('@QUIP_GAP@', quip_builddir / 'GAP')
-f2py_wrapper_script = f2py_wrapper_script.replace('@QUIP_POTENTIALS@', quip_builddir / 'Potentials')
-f2py_wrapper_script = f2py_wrapper_script.replace('@QUIP_UTILS@', quip_builddir / 'Utils')
-f2py_wrapper_script = f2py_wrapper_script.replace('@LIBATOMS_MODDIR@', libatoms_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@FOX_MODDIR@', fox_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@GAP_MODDIR@', gap_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@POTENTIALS_MODDIR@', potentials_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@UTILS_MODDIR@', utils_moddir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@OPENBLAS_LIBDIR@', openblas_libdir)
-f2py_wrapper_script = f2py_wrapper_script.replace('@EXT_SUFFIX@', ext_suffix)
-f2py_wrapper_script = f2py_wrapper_script.replace('@OUTPUT@', meson.current_build_dir() / ('_quippy' + ext_suffix))
+# Define all substitutions in a dictionary and apply in a loop
+f2py_substitutions = {
+  '@F2PY@': f2py_f90wrap.full_path(),
+  '@BUILDDIR@': meson.current_build_dir(),
+  '@QUIP_LIBATOMS@': quip_builddir / 'libAtoms',
+  '@QUIP_FOX@': quip_builddir / 'fox',
+  '@QUIP_GAP@': quip_builddir / 'GAP',
+  '@QUIP_POTENTIALS@': quip_builddir / 'Potentials',
+  '@QUIP_UTILS@': quip_builddir / 'Utils',
+  '@LIBATOMS_MODDIR@': libatoms_moddir,
+  '@FOX_MODDIR@': fox_moddir,
+  '@GAP_MODDIR@': gap_moddir,
+  '@POTENTIALS_MODDIR@': potentials_moddir,
+  '@UTILS_MODDIR@': utils_moddir,
+  '@OPENBLAS_LIBDIR@': openblas_libdir,
+  '@EXT_SUFFIX@': ext_suffix,
+  '@OUTPUT@': meson.current_build_dir() / ('_quippy' + ext_suffix),
+}
+
+foreach key, val : f2py_substitutions
+  f2py_wrapper_script = f2py_wrapper_script.replace(key, val)
+endforeach
 
 f2py_wrapper = configure_file(
   output: 'f2py_wrapper.sh',

@@ -12,14 +12,6 @@ import sys
 from pathlib import Path
 
 
-def fix_init_alloc(content):
-    """Fix __init__ methods to set self._alloc = True in else clause."""
-    # Pattern: else clause that gets handle but doesn't set _alloc
-    pattern = r'(else:\s+result = \w+\._quippy\.f90wrap_\w+\(\)\s+self\._handle = result\[0\] if isinstance\(result, tuple\) else result)\n'
-    replacement = r'\1\n            self._alloc = True\n'
-    return re.sub(pattern, replacement, content)
-
-
 def fix_overloaded_interface(content):
     """Fix overloaded interface pattern to avoid method shadowing."""
 
@@ -79,8 +71,6 @@ def patch_file(filepath):
     content = filepath.read_text()
     original_content = content
 
-    # Note: fix_init_alloc is now handled by f90wrap itself (pywrapgen.py)
-    # We only need to fix overloaded interfaces here
     content = fix_overloaded_interface(content)
 
     if content != original_content:

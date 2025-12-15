@@ -18,6 +18,47 @@ import platform
 class TestSymbolResolution(unittest.TestCase):
     """Test that f90wrap_abort symbol resolution works correctly"""
 
+    def _find_libatoms(self, lib_extension):
+        """Find libAtoms library file."""
+        import quippy
+        quippy_dir = os.path.dirname(quippy.__file__)
+
+        potential_paths = [
+            os.path.join(quippy_dir, '..', '..', '..', 'builddir', 'src', 'libAtoms', f'liblibAtoms{lib_extension}'),
+            os.path.join(quippy_dir, '..', '..', 'builddir', 'src', 'libAtoms', f'liblibAtoms{lib_extension}'),
+        ]
+
+        for path in potential_paths:
+            abs_path = os.path.abspath(path)
+            if os.path.exists(abs_path):
+                return abs_path
+        return None
+
+    def _check_weak_symbol(self, lib_extension, nm_flags, weak_check_func):
+        """Common implementation for weak symbol verification."""
+        libatoms_path = self._find_libatoms(lib_extension)
+        if libatoms_path is None:
+            self.skipTest(f"Could not find liblibAtoms{lib_extension}")
+
+        try:
+            result = subprocess.run(
+                ['nm'] + nm_flags + [libatoms_path],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            abort_lines = [line for line in result.stdout.split('\n')
+                          if 'f90wrap_abort' in line]
+
+            self.assertTrue(len(abort_lines) > 0,
+                          "f90wrap_abort symbol not found in libAtoms")
+
+            weak_check_func(abort_lines)
+
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            self.skipTest(f"Could not run nm: {e}")
+
     def test_repeated_calculations_are_deterministic(self):
         """
         Run the same calculation multiple times and verify results are identical.
@@ -75,111 +116,29 @@ class TestSymbolResolution(unittest.TestCase):
 
     @unittest.skipUnless(platform.system() == 'Darwin', "macOS-specific test")
     def test_weak_symbol_on_macos(self):
-        """
-        On macOS, verify that f90wrap_abort in libAtoms is a weak symbol.
-        This requires the 'nm' tool to be available.
-        """
-        # Find quippy installation
-        import quippy
-        quippy_dir = os.path.dirname(quippy.__file__)
-
-        # Try to find libAtoms
-        # It should be in a location relative to quippy
-        potential_paths = [
-            os.path.join(quippy_dir, '..', '..', '..', 'builddir', 'src', 'libAtoms', 'liblibAtoms.dylib'),
-            os.path.join(quippy_dir, '..', '..', 'builddir', 'src', 'libAtoms', 'liblibAtoms.dylib'),
-        ]
-
-        libatoms_path = None
-        for path in potential_paths:
-            abs_path = os.path.abspath(path)
-            if os.path.exists(abs_path):
-                libatoms_path = abs_path
-                break
-
-        if libatoms_path is None:
-            self.skipTest("Could not find libAtoms.dylib")
-
-        # Check symbol with nm
-        try:
-            result = subprocess.run(
-                ['nm', '-m', libatoms_path],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-
-            # Look for f90wrap_abort in output
-            abort_lines = [line for line in result.stdout.split('\n')
-                          if 'f90wrap_abort' in line]
-
-            self.assertTrue(len(abort_lines) > 0,
-                          "f90wrap_abort symbol not found in libAtoms")
-
-            # Check if it's marked as weak
-            has_weak = any('weak' in line.lower() for line in abort_lines)
+        """On macOS, verify f90wrap_abort is a weak symbol."""
+        def check_weak(lines):
+            has_weak = any('weak' in line.lower() for line in lines)
             self.assertTrue(has_weak,
                           f"f90wrap_abort should be weak symbol on macOS.\n"
-                          f"Symbol info: {abort_lines}")
+                          f"Symbol info: {lines}")
 
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            self.skipTest(f"Could not run nm: {e}")
+        self._check_weak_symbol('.dylib', ['-m'], check_weak)
 
     @unittest.skipUnless(platform.system() == 'Linux', "Linux-specific test")
     def test_weak_symbol_on_linux(self):
-        """
-        On Linux, verify that f90wrap_abort in libAtoms is a weak symbol.
-        This requires the 'nm' tool to be available.
-        """
-        # Find quippy installation
-        import quippy
-        quippy_dir = os.path.dirname(quippy.__file__)
-
-        # Try to find libAtoms
-        potential_paths = [
-            os.path.join(quippy_dir, '..', '..', '..', 'builddir', 'src', 'libAtoms', 'liblibAtoms.so'),
-            os.path.join(quippy_dir, '..', '..', 'builddir', 'src', 'libAtoms', 'liblibAtoms.so'),
-        ]
-
-        libatoms_path = None
-        for path in potential_paths:
-            abs_path = os.path.abspath(path)
-            if os.path.exists(abs_path):
-                libatoms_path = abs_path
-                break
-
-        if libatoms_path is None:
-            self.skipTest("Could not find liblibAtoms.so")
-
-        # Check symbol with nm
-        try:
-            result = subprocess.run(
-                ['nm', '-D', libatoms_path],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-
-            # Look for f90wrap_abort in output
-            abort_lines = [line for line in result.stdout.split('\n')
-                          if 'f90wrap_abort' in line]
-
-            self.assertTrue(len(abort_lines) > 0,
-                          "f90wrap_abort symbol not found in libAtoms")
-
-            # Check if it's marked as weak (W) not strong (T)
-            has_weak = any(' W ' in line for line in abort_lines)
-            has_strong = any(' T ' in line for line in abort_lines)
-
+        """On Linux, verify f90wrap_abort is a weak symbol."""
+        def check_weak(lines):
+            has_weak = any(' W ' in line for line in lines)
+            has_strong = any(' T ' in line for line in lines)
             self.assertTrue(has_weak,
                           f"f90wrap_abort should be weak symbol (W) on Linux.\n"
-                          f"Symbol info: {abort_lines}")
+                          f"Symbol info: {lines}")
             self.assertFalse(has_strong,
                            f"f90wrap_abort should NOT be strong symbol (T) on Linux.\n"
-                           f"Symbol info: {abort_lines}")
+                           f"Symbol info: {lines}")
 
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            self.skipTest(f"Could not run nm: {e}")
+        self._check_weak_symbol('.so', ['-D'], check_weak)
 
 
 if __name__ == '__main__':

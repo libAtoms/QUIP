@@ -94,5 +94,5 @@ Potentials = library('Potentials',
     mpi_dep,
     ],
   link_with : [libAtoms,fox,GAP],
-  link_args: ['-lgomp'],
+  link_args: openmp_link_args,
   )
