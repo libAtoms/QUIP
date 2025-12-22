@@ -109,22 +109,23 @@ jobs:
             meson compile -C builddir
 
           # Set environment variables for builds
-          # Linux: Set PKG_CONFIG_PATH to where openblas.pc is installed
+          # Linux: Set PKG_CONFIG_PATH and LD_LIBRARY_PATH for auditwheel to find QUIP libraries
           CIBW_ENVIRONMENT_LINUX: >
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
+            LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:$LD_LIBRARY_PATH"
 
-          # macOS: Add paths for openblas
+          # macOS: Add paths for openblas and QUIP libraries
+          # QUIP_LIB_PATH is used by the repair command to find QUIP shared libraries
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
+            QUIP_LIB_PATH="$GITHUB_WORKSPACE/builddir/src/libAtoms:$GITHUB_WORKSPACE/builddir/src/fox:$GITHUB_WORKSPACE/builddir/src/GAP:$GITHUB_WORKSPACE/builddir/src/Potentials:$GITHUB_WORKSPACE/builddir/src/Utils"
 
-          # macOS: Custom repair command to handle duplicate libgfortran libraries
-          # delocate has issues with multiple libgfortran.dylib paths from QUIP's multiple libraries
-          # Try repair with arch check, then without, then skip repair (copy wheel as-is)
+          # macOS: Custom repair command to bundle QUIP libraries into wheel
+          # Set DYLD_LIBRARY_PATH so delocate can find QUIP shared libraries
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} ||
-            delocate-wheel -w {dest_dir} -v {wheel} ||
-            cp {wheel} {dest_dir}/
+            DYLD_LIBRARY_PATH="$QUIP_LIB_PATH:$DYLD_LIBRARY_PATH"
+            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
 
           # Build with meson-python (already configured in pyproject.toml)
           CIBW_BUILD_FRONTEND: "build"
