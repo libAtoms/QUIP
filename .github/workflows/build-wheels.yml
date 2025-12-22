@@ -114,17 +114,17 @@ jobs:
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
             LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:$LD_LIBRARY_PATH"
 
-          # macOS: Add paths for openblas and QUIP libraries
-          # QUIP_LIB_PATH is used by the repair command to find QUIP shared libraries
+          # macOS: Pass through GITHUB_WORKSPACE and set library paths
+          CIBW_ENVIRONMENT_PASS_MACOS: "GITHUB_WORKSPACE"
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
-            QUIP_LIB_PATH="$GITHUB_WORKSPACE/builddir/src/libAtoms:$GITHUB_WORKSPACE/builddir/src/fox:$GITHUB_WORKSPACE/builddir/src/GAP:$GITHUB_WORKSPACE/builddir/src/Potentials:$GITHUB_WORKSPACE/builddir/src/Utils"
+            QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils"
 
           # macOS: Custom repair command to bundle QUIP libraries into wheel
-          # Set DYLD_LIBRARY_PATH so delocate can find QUIP shared libraries
+          # DYLD_LIBRARY_PATH helps delocate find QUIP shared libraries
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-            DYLD_LIBRARY_PATH="$QUIP_LIB_PATH:$DYLD_LIBRARY_PATH"
+            DYLD_LIBRARY_PATH="${QUIP_LIB_PATH}"
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
 
           # Build with meson-python (already configured in pyproject.toml)
