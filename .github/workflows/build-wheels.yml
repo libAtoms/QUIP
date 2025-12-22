@@ -122,10 +122,9 @@ jobs:
             QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils"
 
           # macOS: Custom repair command to bundle QUIP libraries into wheel
-          # Use delocate-wheel with explicit library paths to avoid duplicate detection
-          # First find the GCC library path, then run delocate with all library paths
+          # Find GCC lib path via brew, set DYLD_LIBRARY_PATH for delocate to find all libs
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
-            GCC_LIB=$(dirname $(find /opt/homebrew/opt/gcc /usr/local/opt/gcc -name "libgfortran.5.dylib" 2>/dev/null | head -1)) &&
+            GCC_LIB="$(brew --prefix gcc)/lib/gcc/current" &&
             DYLD_LIBRARY_PATH="${GCC_LIB}:${QUIP_LIB_PATH}"
             delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
 
