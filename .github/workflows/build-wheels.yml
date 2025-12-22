@@ -47,7 +47,7 @@ jobs:
           echo "Updated quippy/meson.build:"
           head -5 quippy/meson.build
 
-      - name: Determine architecture
+      - name: Determine architecture and deployment target
         id: arch
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
@@ -56,8 +56,10 @@ jobs:
             # macos-15-intel is x86_64, macos-14 is arm64
             if [[ "${{ matrix.os }}" == "macos-14" ]]; then
               echo "arch=arm64" >> $GITHUB_OUTPUT
+              echo "macos_target=14.0" >> $GITHUB_OUTPUT
             else
               echo "arch=x86_64" >> $GITHUB_OUTPUT
+              echo "macos_target=15.0" >> $GITHUB_OUTPUT
             fi
           fi
 
@@ -120,7 +122,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
-            MACOSX_DEPLOYMENT_TARGET="14.0"
+            MACOSX_DEPLOYMENT_TARGET="${{ steps.arch.outputs.macos_target }}"
             QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils"
 
           # macOS: Custom repair command to bundle QUIP libraries into wheel
