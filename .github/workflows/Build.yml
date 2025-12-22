@@ -92,10 +92,11 @@ jobs:
 
   # Builds the QUIP docs webpage image. This only happens ON the public
   # branch, after tests pass and pull requests are completed
+  # TEMPORARILY DISABLED - needs investigation
   docs:
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/public'
+    if: false  # github.ref == 'refs/heads/public'
 
     steps:
       - name: Checkout repository
@@ -141,10 +142,11 @@ jobs:
   # Builds the QUIP docker image. This takes about 1h 20min
   # this only happens ON the public branch, after pull requests
   # are completed
+  # TEMPORARILY DISABLED - needs investigation
   docker:
     runs-on: ubuntu-latest
     needs: build # depends on the previous matrix jobs to succeed
-    if: github.ref == 'refs/heads/public'
+    if: false  # github.ref == 'refs/heads/public'
 
     steps:
       - name: Checkout repository
