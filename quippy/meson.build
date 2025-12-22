@@ -1,5 +1,6 @@
+# Version is updated by CI from git tags (see .github/workflows/build-wheels.yml)
 project('quippy', 'c', 'fortran',
-  version: '0.9.0',
+  version: '0.10.0',
   meson_version: '>=1.1.0',
   default_options: [
     'buildtype=release',

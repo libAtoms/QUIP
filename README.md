@@ -314,9 +314,9 @@ to get up and running quickly.
     - [Meson build system](https://mesonbuild.com/) version 1.1+
     - [NumPy](http://www.numpy.org) (`numpy>=1.5.0`)
     - [Atomic Simulation Environment ](https://wiki.fysik.dtu.dk/ase/) (`ase>=3.17.0`)
-    - [f90wrap](https://github.com/jameskermode/f90wrap) development version - install with:
+    - [f90wrap](https://github.com/jameskermode/f90wrap) version 0.3.0 or later:
       ```bash
-      pip install git+https://github.com/jameskermode/f90wrap.git@master
+      pip install 'f90wrap>=0.3.0'
       ```
     - (optional) [SciPy](http://www.scipy.org)
     - (optional) [matscipy](https://github.com/libAtoms/matscipy).
@@ -330,8 +330,8 @@ to get up and running quickly.
     uv venv .venv
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-    # Install f90wrap development version
-    uv pip install git+https://github.com/jameskermode/f90wrap.git@master
+    # Install f90wrap
+    uv pip install 'f90wrap>=0.3.0'
 
     # Install other dependencies
     uv pip install numpy ase meson ninja

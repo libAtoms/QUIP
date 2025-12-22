@@ -234,7 +234,7 @@ Enable GAP in build: Use `-Dgap=true` (enabled by default). For MPI-parallel gap
 - **Feature flags**: Many features are optional (TB, GAP, MPI, etc.) - controlled via meson options
 - **Virtual environments**: Activate virtualenv before building quippy to install there
 - **GAP license**: GAP has a non-commercial academic license, distinct from QUIP's GPL
-- **f90wrap**: Install development version with `pip install git+https://github.com/jameskermode/f90wrap.git@master` before building quippy
+- **f90wrap**: Install with `pip install 'f90wrap>=0.3.0'` before building quippy
 - **Submodule versions**: Ensure fox is on `master` and GAP is on `main` for meson support
 
 ## External Interfaces

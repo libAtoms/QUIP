@@ -60,7 +60,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install numpy ase meson-python build
-          pip install 'git+https://github.com/jameskermode/f90wrap.git@master'
+          pip install 'f90wrap>=0.3.0'
         env:
           FC: gfortran
           CC: gcc

@@ -34,6 +34,19 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.21.1
 
+      - name: Set version from git tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "Setting version to $VERSION from tag"
+          echo "$VERSION" > quippy/VERSION
+          # Update meson.build version (meson-python reads from project() call)
+          # Only update the project version line, not meson_version
+          sed -i.bak "s/^  version: '[^']*'/  version: '$VERSION'/" quippy/meson.build
+          rm -f quippy/meson.build.bak
+          echo "Updated quippy/meson.build:"
+          head -5 quippy/meson.build
+
       - name: Determine architecture
         id: arch
         run: |
@@ -69,7 +82,7 @@ jobs:
         env:
           # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
           CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* pp* *musllinux*"
-          CIBW_BUILD_VERBOSITY: 3
+          CIBW_BUILD_VERBOSITY: 1
 
           # Use manylinux2014 for Linux
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
