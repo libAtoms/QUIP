@@ -14,7 +14,8 @@ description = "ASE-compatible Python bindings for the QUIP and GAP codes"
 readme = {file = "README", content-type = "text/plain"}
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.20",
+    # Wheels are built against NumPy 2.x and require it at runtime
+    "numpy>=2.0",
     "ase>=3.17.0",
     "f90wrap>=0.3.0",
 ]
