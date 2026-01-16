@@ -1,7 +1,10 @@
 [build-system]
 requires = [
     "meson-python>=0.13.0",
-    "numpy>=1.20",
+    # Use oldest-supported-numpy for Python <3.12 to ensure ABI compatibility with NumPy 1.x
+    # Use NumPy 2.0+ for Python >=3.12 where NumPy 2.x is the standard
+    "oldest-supported-numpy; python_version<'3.12'",
+    "numpy>=2.0; python_version>='3.12'",
     "meson>=1.1.0",
     "f90wrap>=0.3.0",
 ]
@@ -14,7 +17,10 @@ description = "ASE-compatible Python bindings for the QUIP and GAP codes"
 readme = {file = "README", content-type = "text/plain"}
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.20",
+    # Python <3.12 wheels are built against NumPy 1.x (via oldest-supported-numpy)
+    # Python >=3.12 wheels are built against NumPy 2.x
+    "numpy>=1.20,<2; python_version<'3.12'",
+    "numpy>=2.0; python_version>='3.12'",
     "ase>=3.17.0",
     "f90wrap>=0.3.0",
 ]
