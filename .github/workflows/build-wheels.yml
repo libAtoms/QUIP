@@ -138,6 +138,16 @@ jobs:
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
+          # Test that the wheel works correctly
+          CIBW_TEST_COMMAND: >
+            python -c "import quippy" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'quip')), 'quip executable missing'" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'gap_fit')), 'gap_fit executable missing'" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'" &&
+            quip --help &&
+            gap_fit --help &&
+            md --help
+
       - name: Debug - list environment
         if: failure()
         run: |

@@ -330,4 +330,15 @@ install_subdir(
   strip_directory: false,
 )
 
+# Install CLI executables (quip, gap_fit, md) into the quippy package
+# Use install script to handle files from external build directory
+install_exe_script = find_program('install_executables.py', required: true)
+programs_builddir = quip_builddir / 'Programs'
+
+meson.add_install_script(
+  install_exe_script,
+  programs_builddir,
+  py.get_install_dir() / 'quippy',
+)
+
 message('f90wrap wrapper generation and extension build configured')
