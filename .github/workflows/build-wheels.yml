@@ -114,7 +114,7 @@ jobs:
           # Linux: Set PKG_CONFIG_PATH and LD_LIBRARY_PATH for auditwheel to find QUIP libraries
           CIBW_ENVIRONMENT_LINUX: >
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
-            LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:$LD_LIBRARY_PATH"
+            LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:/project/builddir/src/Programs:$LD_LIBRARY_PATH"
 
           # macOS: Pass through GITHUB_WORKSPACE and set library paths
           # Set MACOSX_DEPLOYMENT_TARGET to match the runner's Homebrew libraries
@@ -123,7 +123,7 @@ jobs:
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
             MACOSX_DEPLOYMENT_TARGET="${{ steps.arch.outputs.macos_target }}"
-            QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils"
+            QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils:${GITHUB_WORKSPACE}/builddir/src/Programs"
 
           # macOS: Custom repair command to bundle QUIP libraries into wheel
           # Find GCC lib path via brew, set DYLD_LIBRARY_PATH for delocate to find all libs
