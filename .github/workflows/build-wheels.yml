@@ -148,6 +148,15 @@ jobs:
             python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'gap_fit')), 'gap_fit executable missing'" &&
             python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'"
 
+      - name: Verify wheel contents
+        run: |
+          echo "=== Checking wheel contents for executables ==="
+          for whl in wheelhouse/*.whl; do
+            echo ""
+            echo "=== Contents of $whl ==="
+            unzip -l "$whl" | grep -E "(quip|gap_fit|md)$" || echo "WARNING: No executables found in $whl"
+          done
+
       - name: Debug - list environment
         if: failure()
         run: |
