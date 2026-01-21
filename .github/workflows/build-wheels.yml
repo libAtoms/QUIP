@@ -29,7 +29,7 @@ jobs:
             os: ubuntu-latest
             manylinux_image: manylinux_2_28
             cibw_build: "cp311-manylinux* cp312-manylinux* cp313-manylinux*"
-            before_all: "dnf install -y openblas-devel lapack-devel netcdf-devel hdf5-devel"
+            before_all: "dnf install -y epel-release && dnf install -y openblas-devel lapack-devel"
           # macOS ARM64
           - name: macos-arm64
             os: macos-14
