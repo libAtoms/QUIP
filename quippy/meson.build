@@ -331,31 +331,20 @@ install_subdir(
 )
 
 # Install CLI executables (quip, gap_fit, md) into the quippy package
-# Copy executables from QUIP build directory using a custom target
 programs_builddir = quip_builddir / 'Programs'
 
-# Use find_program to locate executables (they exist after CIBW_BEFORE_BUILD)
-quip_exe = find_program(programs_builddir / 'quip', required: false, disabler: true)
-gap_fit_exe = find_program(programs_builddir / 'gap_fit', required: false, disabler: true)
-md_exe = find_program(programs_builddir / 'md', required: false, disabler: true)
-
-# Copy executables to build directory and install them
-copy_script = find_program('cp')
-foreach exe_info : [['quip', quip_exe], ['gap_fit', gap_fit_exe], ['md', md_exe]]
-  exe_name = exe_info[0]
-  exe_prog = exe_info[1]
-  if not is_disabler(exe_prog)
-    copied_exe = custom_target(
-      'copy_' + exe_name,
-      output: exe_name,
-      command: [copy_script, exe_prog.full_path(), '@OUTPUT@'],
-      build_by_default: true,
+# Copy executables using fs.copyfile (simpler than find_program + custom_target)
+fs = import('fs')
+foreach exe_name : ['quip', 'gap_fit', 'md']
+  exe_path = programs_builddir / exe_name
+  if fs.exists(exe_path)
+    fs.copyfile(exe_path, exe_name,
       install: true,
       install_dir: py.get_install_dir() / 'quippy',
       install_mode: 'rwxr-xr-x',
     )
   else
-    warning('Executable ' + exe_name + ' not found at ' + programs_builddir / exe_name)
+    warning('Executable ' + exe_name + ' not found at ' + exe_path)
   endif
 endforeach
 

@@ -139,15 +139,12 @@ jobs:
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
           # Test that the wheel works correctly
-          # Note: QUIP executables may exit non-zero even on --help, so ignore exit status
+          # Note: Don't run executables as they may hang on Linux waiting for input
           CIBW_TEST_COMMAND: >
             python -c "import quippy" &&
             python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'quip')), 'quip executable missing'" &&
             python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'gap_fit')), 'gap_fit executable missing'" &&
-            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'" &&
-            (quip --help || true) &&
-            (gap_fit --help || true) &&
-            (md --help || true)
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'"
 
       - name: Debug - list environment
         if: failure()
