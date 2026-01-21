@@ -138,6 +138,15 @@ jobs:
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
+          # Set up test environment for Linux
+          # scipy 1.17+ only provides manylinux_2_27+ wheels, so it builds from source on manylinux2014
+          # Install scipy-openblas32 so scipy can find OpenBLAS, and gfortran for compilation
+          CIBW_BEFORE_TEST_LINUX: >
+            yum install -y gcc-gfortran
+
+          # Provide scipy-openblas32 for scipy to find OpenBLAS when building from source
+          CIBW_TEST_REQUIRES_LINUX: "scipy-openblas32"
+
           # Test that the wheel works correctly
           # Note: Don't run executables as they may hang on Linux waiting for input
           CIBW_TEST_COMMAND: >
