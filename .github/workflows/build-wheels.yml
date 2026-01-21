@@ -12,13 +12,30 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # macos-15-intel is x86_64, macos-14 is arm64
-        os: [ubuntu-latest, macos-15-intel, macos-14]
+        include:
+          # Linux with manylinux2014 for Python 3.9-3.10 (broader compatibility)
+          - name: linux-manylinux2014
+            os: ubuntu-latest
+            manylinux_image: manylinux2014
+            cibw_build: "cp39-manylinux* cp310-manylinux*"
+            before_all: "yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel"
+          # Linux with manylinux_2_28 for Python 3.11+ (scipy compatibility)
+          - name: linux-manylinux_2_28
+            os: ubuntu-latest
+            manylinux_image: manylinux_2_28
+            cibw_build: "cp311-manylinux* cp312-manylinux* cp313-manylinux*"
+            before_all: "dnf install -y epel-release && dnf install -y openblas-devel lapack-devel"
+          # macOS ARM64
+          - name: macos-arm64
+            os: macos-14
+          # macOS x86_64
+          - name: macos-x86_64
+            os: macos-15-intel
 
     steps:
       - name: Checkout repository
@@ -82,16 +99,19 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
-          # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
-          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* pp* *musllinux*"
+          # For Linux matrix entries, build only specific Python versions
+          # For macOS, build all supported versions (3.9+)
+          CIBW_BUILD: ${{ matrix.cibw_build || 'cp39-* cp310-* cp311-* cp312-* cp313-*' }}
+          # Skip PyPy and musllinux
+          CIBW_SKIP: "pp* *musllinux*"
           CIBW_BUILD_VERBOSITY: 1
 
-          # Use manylinux2014 for Linux
-          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
+          # Use matrix-specified manylinux image (manylinux2014 or manylinux_2_28)
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image || 'manylinux2014' }}
 
           # Install system dependencies in build containers
-          CIBW_BEFORE_ALL_LINUX: >
-            yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel
+          # manylinux2014 uses yum, manylinux_2_28 uses dnf
+          CIBW_BEFORE_ALL_LINUX: ${{ matrix.before_all || 'yum install -y openblas-devel lapack-devel netcdf-devel hdf5-devel' }}
 
           CIBW_BEFORE_ALL_MACOS: >
             brew install openblas netcdf hdf5 || true
@@ -114,7 +134,7 @@ jobs:
           # Linux: Set PKG_CONFIG_PATH and LD_LIBRARY_PATH for auditwheel to find QUIP libraries
           CIBW_ENVIRONMENT_LINUX: >
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
-            LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:$LD_LIBRARY_PATH"
+            LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:/project/builddir/src/Programs:$LD_LIBRARY_PATH"
 
           # macOS: Pass through GITHUB_WORKSPACE and set library paths
           # Set MACOSX_DEPLOYMENT_TARGET to match the runner's Homebrew libraries
@@ -123,7 +143,7 @@ jobs:
             PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
             PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig"
             MACOSX_DEPLOYMENT_TARGET="${{ steps.arch.outputs.macos_target }}"
-            QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils"
+            QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils:${GITHUB_WORKSPACE}/builddir/src/Programs"
 
           # macOS: Custom repair command to bundle QUIP libraries into wheel
           # Find GCC lib path via brew, set DYLD_LIBRARY_PATH for delocate to find all libs
@@ -137,6 +157,23 @@ jobs:
 
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
+
+          # Test that the wheel works correctly
+          # Note: Don't run executables as they may hang on Linux waiting for input
+          CIBW_TEST_COMMAND: >
+            python -c "import quippy" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'quip')), 'quip executable missing'" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'gap_fit')), 'gap_fit executable missing'" &&
+            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'"
+
+      - name: Verify wheel contents
+        run: |
+          echo "=== Checking wheel contents for executables ==="
+          for whl in wheelhouse/*.whl; do
+            echo ""
+            echo "=== Contents of $whl ==="
+            unzip -l "$whl" | grep -E "(quip|gap_fit|md)$" || echo "WARNING: No executables found in $whl"
+          done
 
       - name: Debug - list environment
         if: failure()
@@ -156,7 +193,7 @@ jobs:
       - name: Upload wheels as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-${{ matrix.name }}
           path: ./wheelhouse/*.whl
 
   # Combine all wheels and create release

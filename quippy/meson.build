@@ -330,4 +330,22 @@ install_subdir(
   strip_directory: false,
 )
 
+# Install CLI executables (quip, gap_fit, md) into the quippy package
+programs_builddir = quip_builddir / 'Programs'
+
+# Copy executables using fs.copyfile (simpler than find_program + custom_target)
+fs = import('fs')
+foreach exe_name : ['quip', 'gap_fit', 'md']
+  exe_path = programs_builddir / exe_name
+  if fs.exists(exe_path)
+    fs.copyfile(exe_path, exe_name,
+      install: true,
+      install_dir: py.get_install_dir() / 'quippy',
+      install_mode: 'rwxr-xr-x',
+    )
+  else
+    warning('Executable ' + exe_name + ' not found at ' + exe_path)
+  endif
+endforeach
+
 message('f90wrap wrapper generation and extension build configured')

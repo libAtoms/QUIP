@@ -23,6 +23,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest"]
 
+[project.scripts]
+quip = "quippy.cli:quip"
+gap_fit = "quippy.cli:gap_fit"
+md = "quippy.cli:md"
+quip-config = "quippy.cli:quip_config"
+
 [tool.meson-python.args]
 setup = ["-Dbuildtype=release"]
 compile = []
