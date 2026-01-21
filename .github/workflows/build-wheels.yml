@@ -83,9 +83,9 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
           # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
-          # Also skip Python 3.13+ on Linux: scipy only provides manylinux_2_27+ wheels for 3.13+,
-          # but we use manylinux2014 for broader compatibility. macOS wheels work fine for 3.13+.
-          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* cp313-manylinux* cp314-manylinux* pp* *musllinux*"
+          # Also skip Python 3.11+ on Linux: scipy only provides manylinux_2_27+ wheels,
+          # but we use manylinux2014 for broader compatibility. macOS wheels work fine for 3.11+.
+          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* cp311-manylinux* cp312-manylinux* cp313-manylinux* cp314-manylinux* pp* *musllinux*"
           CIBW_BUILD_VERBOSITY: 1
 
           # Use manylinux2014 for Linux
@@ -117,11 +117,6 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: >
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
             LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:/project/builddir/src/Programs:$LD_LIBRARY_PATH"
-
-          # Linux: Install OpenBLAS dev headers before testing
-          # scipy doesn't provide manylinux2014 wheels, so pip builds from source during test
-          CIBW_BEFORE_TEST_LINUX: >
-            yum install -y openblas-devel lapack-devel
 
           # macOS: Pass through GITHUB_WORKSPACE and set library paths
           # Set MACOSX_DEPLOYMENT_TARGET to match the runner's Homebrew libraries
