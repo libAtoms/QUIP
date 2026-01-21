@@ -83,7 +83,9 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse quippy
         env:
           # Skip Python 2.7, 3.5, 3.6, 3.7, 3.8, PyPy, and musllinux (requires Python >=3.9)
-          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* pp* *musllinux*"
+          # Also skip Python 3.13+ on Linux: scipy only provides manylinux_2_27+ wheels for 3.13+,
+          # but we use manylinux2014 for broader compatibility. macOS wheels work fine for 3.13+.
+          CIBW_SKIP: "cp27-* cp35-* cp36-* cp37-* cp38-* cp313-manylinux* cp314-manylinux* pp* *musllinux*"
           CIBW_BUILD_VERBOSITY: 1
 
           # Use manylinux2014 for Linux
@@ -137,15 +139,6 @@ jobs:
 
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
-
-          # Set up test environment for Linux
-          # scipy 1.17+ only provides manylinux_2_27+ wheels, so it builds from source on manylinux2014
-          # Install scipy-openblas32 so scipy can find OpenBLAS, and gfortran for compilation
-          CIBW_BEFORE_TEST_LINUX: >
-            yum install -y gcc-gfortran
-
-          # Provide scipy-openblas32 for scipy to find OpenBLAS when building from source
-          CIBW_TEST_REQUIRES_LINUX: "scipy-openblas32"
 
           # Test that the wheel works correctly
           # Note: Don't run executables as they may hang on Linux waiting for input
