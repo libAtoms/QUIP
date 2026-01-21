@@ -118,6 +118,11 @@ jobs:
             PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib64/pkgconfig"
             LD_LIBRARY_PATH="/project/builddir/src/libAtoms:/project/builddir/src/fox:/project/builddir/src/GAP:/project/builddir/src/Potentials:/project/builddir/src/Utils:/project/builddir/src/Programs:$LD_LIBRARY_PATH"
 
+          # Linux: Install OpenBLAS dev headers before testing
+          # scipy doesn't provide manylinux2014 wheels, so pip builds from source during test
+          CIBW_BEFORE_TEST_LINUX: >
+            yum install -y openblas-devel lapack-devel
+
           # macOS: Pass through GITHUB_WORKSPACE and set library paths
           # Set MACOSX_DEPLOYMENT_TARGET to match the runner's Homebrew libraries
           CIBW_ENVIRONMENT_PASS_MACOS: "GITHUB_WORKSPACE"
