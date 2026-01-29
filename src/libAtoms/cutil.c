@@ -216,7 +216,14 @@ void fread_array_d_(int *size, double *v, char *filename) {
 
    fp = fopen(filename, "r");
    for (i=0; i < *size; i++) {
-      fscanf(fp, "%lf", v+i);
+      int n_read = fscanf(fp, "%lf", v+i);
+      if (i == 0 && n_read <= 0) {
+          // try binary
+          fclose(fp);
+          fp = fopen(filename, "r");
+          fread(v, *size, sizeof(double), fp);
+          break;
+      }
    }
    fclose(fp);
 }
@@ -227,14 +234,7 @@ void fread_array_i_(int *size, int *v, char *filename) {
 
    fp = fopen(filename, "r");
    for (i=0; i < *size; i++) {
-      int n_read = fscanf(fp, "%lf", v+i);
-      if (i == 0 && n_read <= 0) {
-          // try binary
-          fclose(fp);
-          fp = fopen(filename, "r");
-          fread(v, *size, sizeof(double), fp);
-          break;
-      }
+      fscanf(fp, "%i", v+i);
    }
    fclose(fp);
 }
