@@ -108,3 +108,23 @@ endif
 
 subdir('src')
 
+# CMake package config generation for find_package(QUIP) support
+cmake = import('cmake')
+
+cmake_conf = configuration_data()
+cmake_conf.set('QUIP_VERSION', meson.project_version())
+cmake_conf.set('QUIP_HAS_GAP', get_option('gap') ? 'TRUE' : 'FALSE')
+
+cmake.write_basic_package_version_file(
+    name: 'QUIP',
+    version: meson.project_version(),
+    compatibility: 'SameMajorVersion',
+    install_dir: get_option('libdir') / 'cmake' / 'QUIP'
+)
+
+cmake.configure_package_config_file(
+    name: 'QUIP',
+    input: 'cmake/QUIPConfig.cmake.in',
+    configuration: cmake_conf,
+    install_dir: get_option('libdir') / 'cmake' / 'QUIP'
+)
