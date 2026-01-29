@@ -202,6 +202,14 @@ void fwrite_array_d_(int *size, double *v, char *filename) {
    fclose(fp);
 }
 
+void fwrite_array_d_bin_(int *size, double *v, char *filename) {
+   FILE *fp;
+   int i;
+   fp = fopen(filename, "w");
+   fwrite(v, *size, sizeof(double), fp);
+   fclose(fp);
+}
+
 void fread_array_d_(int *size, double *v, char *filename) {
    FILE *fp;
    int i;
@@ -219,7 +227,14 @@ void fread_array_i_(int *size, int *v, char *filename) {
 
    fp = fopen(filename, "r");
    for (i=0; i < *size; i++) {
-      fscanf(fp, "%i", v+i);
+      int n_read = fscanf(fp, "%lf", v+i);
+      if (i == 0 && n_read <= 0) {
+          // try binary
+          fclose(fp);
+          fp = fopen(filename, "r");
+          fread(v, *size, sizeof(double), fp);
+          break;
+      }
    }
    fclose(fp);
 }
