@@ -12,7 +12,7 @@ link_quip = [
 # gap_fit library (special case - needed before gap_fit_exe)
 gap_fit_lib = library('gap_fit',
   '../GAP/gap_fit_module.F90',
-  dependencies: [blas_dep],
+  dependencies: [blas_dep, mpi_dep],
   link_with: link_quip,
 )
 

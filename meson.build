@@ -65,8 +65,13 @@ add_global_arguments([
 
 if get_option('mpi')
   message('MPI ON')
+  scalapack_dep = dependency('scalapack', required: false)
+  if not scalapack_dep.found()
+    message('scalapack not found via pkg-config/cmake, trying system library search')
+    scalapack_dep = fortran.find_library('scalapack', required: true)
+  endif
   mpi_dep = [
-    dependency('scalapack'),
+    scalapack_dep,
     dependency('mpi', language: 'fortran'),
     dependency('mpi', language: 'c'),
   ]
