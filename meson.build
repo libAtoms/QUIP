@@ -31,6 +31,7 @@ if get_option('gap')
     '-DGAP_VERSION='+gap_version_res.stdout().strip(),
     '-DHAVE_GAP',
     '-DHAVE_TB',
+    '-DHAVE_QR',
     ], language:'fortran')
 endif
 
