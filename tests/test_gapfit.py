@@ -125,6 +125,13 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         assert np.all(mean_errs < err_tol)
         np.random.seed(None)
 
+    def check_qr_path(self):
+        """check that QR decomposition was used (requires -DHAVE_QR)"""
+        with open(self.log_name) as f:
+            log = f.read()
+        self.assertIn("Using LAPACK to solve QR", log,
+                      "QR decomposition not used - check -DHAVE_QR is set")
+
     def check_gap_fit(self, ref_file=None):
         """check GP coefficients match expected values"""
         assert self.proc.returncode == 0, self.proc
@@ -226,6 +233,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap = self.get_gap(self.gap_soap_template, 'sparse_method=cur_points')
         config = self.get_config('Si.np1.xyz', gap, extra='condition_number_norm=I')
         self.run_gap_fit(config)
+        self.check_qr_path()
         self.check_gap_fit(ref_file)
 
     def test_si_distance_2b_uniform(self):
@@ -234,6 +242,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
         config = self.get_config('Si.np1.xyz', gap)
         self.run_gap_fit(config)
+        self.check_qr_path()
         self.check_gap_fit(ref_file)
 
     def test_si_two_descriptors(self):
@@ -244,6 +253,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap = ":".join([gap1, gap2])
         config = self.get_config('Si.np1.xyz', gap)
         self.run_gap_fit(config)
+        self.check_qr_path()
         self.check_gap_fit(ref_file)
 
     def test_sic_distance_2b_uniform(self):
@@ -252,6 +262,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         gap = self.get_gap(self.gap_distance_2b_template, 'sparse_method=uniform')
         config = self.get_config('SiC.np1.xyz', gap)
         self.run_gap_fit(config)
+        self.check_qr_path()
         self.check_gap_fit(ref_file)
 
     def test_si_distance_2b_index(self):
@@ -261,6 +272,7 @@ class TestGAP_fit(quippytest.QuippyTestCase):
         config = self.get_config('Si.np1.xyz', gap)
         self.make_first_index_file_from_ref(ref_file, self.index_name_inp)
         self.run_gap_fit(config)
+        self.check_qr_path()
         self.check_gap_fit(ref_file)
 
     def test_si_config_file_sparsify_only(self):
