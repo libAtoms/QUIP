@@ -27,11 +27,15 @@ add_global_arguments([
 
 if get_option('gap')
   gap_version_res = run_command('src/GAP/gapversion',check:true)
-  add_global_arguments([
+  gap_args = [
     '-DGAP_VERSION='+gap_version_res.stdout().strip(),
     '-DHAVE_GAP',
     '-DHAVE_TB',
-    ], language:'fortran')
+  ]
+  if get_option('qr')
+    gap_args += '-DHAVE_QR'
+  endif
+  add_global_arguments(gap_args, language:'fortran')
 endif
 
 # Determine QUIP_ARCH dynamically based on host machine
