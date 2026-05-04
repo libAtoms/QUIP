@@ -53,6 +53,7 @@ foreach prog : standard_programs
     link_with: link_quip,
     dependencies: [blas_dep],
     override_options: ['b_lundef=false'],
+    install: true,
   )
 endforeach
 
@@ -61,12 +62,14 @@ executable('quip', 'quip.F90',
   link_with: link_quip,
   dependencies: [blas_dep, mpi_dep],
   override_options: ['b_lundef=false'],
+  install: true,
 )
 
 executable('gap_fit', '../GAP/gap_fit.F90',
   link_with: link_quip + [gap_fit_lib],
   dependencies: [blas_dep, mpi_dep],
   override_options: ['b_lundef=false'],
+  install: true,
 )
 
 # C program
@@ -74,4 +77,5 @@ executable('quip_wrapper_simple_example_C', 'quip_wrapper_simple_example_C.c',
   link_with: link_quip,
   dependencies: [blas_dep],
   override_options: ['b_lundef=false'],
+  install: true,
 )
