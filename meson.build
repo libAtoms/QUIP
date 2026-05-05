@@ -27,12 +27,15 @@ add_global_arguments([
 
 if get_option('gap')
   gap_version_res = run_command('src/GAP/gapversion',check:true)
-  add_global_arguments([
+  gap_args = [
     '-DGAP_VERSION='+gap_version_res.stdout().strip(),
     '-DHAVE_GAP',
     '-DHAVE_TB',
-    '-DHAVE_QR',
-    ], language:'fortran')
+  ]
+  if get_option('qr')
+    gap_args += '-DHAVE_QR'
+  endif
+  add_global_arguments(gap_args, language:'fortran')
 endif
 
 # Determine QUIP_ARCH dynamically based on host machine
@@ -114,3 +117,23 @@ endif
 
 subdir('src')
 
+# CMake package config generation for find_package(QUIP) support
+cmake = import('cmake')
+
+cmake_conf = configuration_data()
+cmake_conf.set('QUIP_VERSION', meson.project_version())
+cmake_conf.set('QUIP_HAS_GAP', get_option('gap') ? 'TRUE' : 'FALSE')
+
+cmake.write_basic_package_version_file(
+    name: 'QUIP',
+    version: meson.project_version(),
+    compatibility: 'SameMajorVersion',
+    install_dir: get_option('libdir') / 'cmake' / 'QUIP'
+)
+
+cmake.configure_package_config_file(
+    name: 'QUIP',
+    input: 'cmake/QUIPConfig.cmake.in',
+    configuration: cmake_conf,
+    install_dir: get_option('libdir') / 'cmake' / 'QUIP'
+)

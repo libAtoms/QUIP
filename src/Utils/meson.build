@@ -18,4 +18,5 @@ Utils = library('Utils',
     ],
   link_with : [libAtoms,fox,GAP,Potentials],
   link_args: openmp_link_args,
+  install: true,
   )

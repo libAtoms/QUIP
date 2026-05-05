@@ -83,6 +83,8 @@ jobs:
         run: |
           cd tests
           python run_all.py
+        env:
+          BUILDDIR: ${{ github.workspace }}/builddir/src/Programs
 
       # Uncomment to get SSH access for testing
       # - name: Setup tmate session

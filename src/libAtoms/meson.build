@@ -61,9 +61,11 @@ libAtoms_c_sources = [
   'xyz.c',
   'sockets.c',
 ]
-# Create static library for f90wrap stub (linked only with standalone programs)
+# Create static library for f90wrap stub (linked with standalone programs and external users)
+# This provides the f90wrap_abort implementation for non-Python usage
 f90wrap_stub_lib = static_library('f90wrap_stub',
   'f90wrap_stub.F90',
+  install: true,
 )
 
 # Platform-specific link args
@@ -84,4 +86,5 @@ libAtoms = library('libAtoms',
   c_args: ['-DPROTOTYPES=1'],
   link_args: libatoms_link_args,
   override_options: ['b_lundef=false'],  # Allow undefined symbols
+  install: true,
   )

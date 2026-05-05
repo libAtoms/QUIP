@@ -1,2 +1,3 @@
 option('mpi', type: 'boolean', value : false)
 option('gap', type: 'boolean', value : true)
+option('qr', type: 'boolean', value : true, description : 'Use QR decomposition for numerically stable GAP fitting (requires GAP)')

@@ -95,4 +95,5 @@ Potentials = library('Potentials',
     ],
   link_with : [libAtoms,fox,GAP],
   link_args: openmp_link_args,
+  install: true,
   )
