@@ -1,5 +1,5 @@
-subdir('libAtoms')
 subdir('fox')
+subdir('libAtoms')
 
 if get_option('gap')
   subdir('GAP')

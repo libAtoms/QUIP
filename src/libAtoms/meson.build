@@ -83,6 +83,7 @@ libAtoms = library('libAtoms',
     blas_dep,
     mpi_dep,
     ],
+  link_with: [fox],
   c_args: ['-DPROTOTYPES=1'],
   link_args: libatoms_link_args,
   override_options: ['b_lundef=false'],  # Allow undefined symbols

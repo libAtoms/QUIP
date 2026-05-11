@@ -48,6 +48,7 @@
 module system_module
   use error_module
   use kind_module
+  use m_common_error, only: FoX_set_error_handler
 !$ use omp_lib
 #ifdef _MPI
 #ifndef _OLDMPI
@@ -2320,7 +2321,21 @@ contains
 
     system_quippy_running = optional_default(.false., quippy_running)
 
+    ! Route FoX parse errors through system_abort so they propagate to
+    ! Python as exceptions (libAtoms/QUIP#724). The handler is installed
+    ! unconditionally -- non-quippy callers still get system_abort, which
+    ! preserves the historical "abort on XML parse error" behaviour.
+    call FoX_set_error_handler(system_fox_error_handler)
+
   end subroutine system_initialise
+
+  !% FoX error handler bridge: route FoX parse errors through system_abort
+  !% so they reach Python as exceptions when running under quippy
+  !% (see libAtoms/QUIP#724).
+  subroutine system_fox_error_handler(msg)
+    character(len=*), intent(in) :: msg
+    call system_abort('FoX: '//trim(msg))
+  end subroutine system_fox_error_handler
 
   subroutine get_mainlog_errorlog_ptr(mainlog_ptr, errorlog_ptr)
     type inoutput_ptr
