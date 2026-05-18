@@ -1,5 +1,5 @@
 project('quip','fortran','c',
-  version : '0.1',
+  version : '0.10.4',
   default_options : ['warning_level=3'],
   meson_version : '>=1.1'
   )

@@ -67,8 +67,10 @@ jobs:
 
       - name: Build QUIP libraries
         run: |
-          meson setup builddir
+          meson setup builddir --prefix=$GITHUB_WORKSPACE/quip-install
           meson compile -C builddir
+          meson install -C builddir
+          test -f $GITHUB_WORKSPACE/quip-install/bin/gap_fit
         env:
           PKG_CONFIG_PATH: ${{ runner.os == 'macOS' && '/opt/homebrew/opt/openblas/lib/pkgconfig:/usr/local/opt/openblas/lib/pkgconfig' || '' }}
 
