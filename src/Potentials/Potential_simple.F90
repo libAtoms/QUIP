@@ -358,7 +358,7 @@ contains
 
     real(dp) :: energy, virial(3,3), deform(3,3), lat_save(3,3)
     real(dp), allocatable :: allpos_save(:,:)
-    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:)
+    real(dp), pointer :: at_force_ptr(:,:), at_local_energy_ptr(:), at_local_virial_ptr(:,:) 
 
     integer:: i,j,k,n, zero_loc(1)
     real(dp):: e_plus, e_minus, pos_save, r_scale, E_scale, cluster_box_buffer
@@ -379,8 +379,10 @@ contains
     integer, pointer :: cut_bonds_p(:,:), old_cut_bonds_p(:,:)
     integer :: i_inner, i_outer, n_non_term
     type(Atoms) :: cluster
-    character(len=STRING_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial
-    logical :: do_calc_force, do_calc_energy, do_calc_local_energy, do_calc_virial, do_calc_local_virial
+    character(len=STRING_LENGTH), target :: calc_force, calc_energy, calc_local_energy, calc_virial, calc_local_virial, &
+       calc_dipole, calc_local_dipole
+    logical :: do_calc_force, do_calc_energy, do_calc_local_energy, do_calc_virial, do_calc_local_virial, &
+       do_calc_dipole, do_calc_local_dipole
 
     integer, pointer :: cluster_mark_p(:), at_prop_ptr_i(:), cluster_prop_ptr_i(:)
     integer, pointer :: old_cluster_mark_p(:)
@@ -458,6 +460,10 @@ contains
       help_string="If present, calculate virial and put it in field with this string as name")
     call param_register(params, 'local_virial', '', calc_local_virial, &
       help_string="If present, calculate local_virial and put it in field with this string as name")
+    call param_register(params, 'dipole', '', calc_dipole, &
+      help_string="If present, calculate dipole and put it in field with this string as name")
+    call param_register(params, 'local_dipole', '', calc_local_dipole, &
+      help_string="If present, calculate local_dipole and put it in field with this string as name")
     call param_register(params, "read_extra_param_list", '', read_extra_param_list, &
          help_string="if single_cluster=T and carve_cluster=T, extra params to copy back from cluster")
     call param_register(params, "read_extra_property_list", '', read_extra_property_list, &
@@ -853,6 +859,9 @@ contains
        do_calc_local_energy = len_trim(calc_local_energy) > 0
        do_calc_virial = (len_trim(calc_virial) > 0) .and. .not. virial_using_fd
        do_calc_local_virial = len_trim(calc_local_virial) > 0
+       do_calc_dipole = len_trim(calc_dipole) > 0
+       do_calc_local_dipole = len_trim(calc_local_dipole) > 0
+
        call print("do_calc_force=        "//do_calc_force//" calc_force="//trim(calc_force), PRINT_VERBOSE)
        call print("force_using_fd=       "//force_using_fd, PRINT_VERBOSE)
        call print("virial_using_fd=      "//virial_using_fd, PRINT_VERBOSE)
@@ -860,6 +869,8 @@ contains
        call print("do_calc_local_energy= "//do_calc_local_energy//" calc_local_energy="//trim(calc_local_energy), PRINT_VERBOSE)
        call print("do_calc_virial=       "//do_calc_virial//" calc_virial="//trim(calc_virial), PRINT_VERBOSE)
        call print("do_calc_local_virial= "//do_calc_local_virial//" calc_local_virial="//trim(calc_local_virial), PRINT_VERBOSE)
+       call print("do_calc_dipole=       "//do_calc_dipole//" calc_dipole="//trim(calc_dipole), PRINT_VERBOSE)
+       call print("do_calc_local_dipole= "//do_calc_local_dipole//" calc_local_dipole="//trim(calc_local_dipole), PRINT_VERBOSE)
 
        if(do_calc_virial .or. do_calc_energy .or. do_calc_force .or. do_calc_local_energy .or. do_calc_local_virial) then
           if(associated(this%ip)) then
@@ -1285,6 +1296,12 @@ contains
           end if
 
        end if
+
+       if( do_calc_dipole .or. do_calc_local_dipole ) then
+          if( associated(this%ip) ) then
+             call Calc(this%ip, at, args_str=args_str, error=error)
+          endif
+       endif
 
        if (force_using_fd .and. len_trim(calc_force) > 0) then ! do forces by finite difference
 
