@@ -145,6 +145,11 @@ jobs:
             MACOSX_DEPLOYMENT_TARGET="${{ steps.arch.outputs.macos_target }}"
             QUIP_LIB_PATH="${GITHUB_WORKSPACE}/builddir/src/libAtoms:${GITHUB_WORKSPACE}/builddir/src/fox:${GITHUB_WORKSPACE}/builddir/src/GAP:${GITHUB_WORKSPACE}/builddir/src/Potentials:${GITHUB_WORKSPACE}/builddir/src/Utils:${GITHUB_WORKSPACE}/builddir/src/Programs"
 
+          # Linux: install modern patchelf for wheels to work with glibc >=2.36
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
+            pip install "patchelf>=0.17" &&
+            auditwheel repair -w {dest_dir} {wheel}
+
           # macOS: Custom repair command to bundle QUIP libraries into wheel
           # Find GCC lib path via brew, set DYLD_LIBRARY_PATH for delocate to find all libs
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
@@ -158,13 +163,12 @@ jobs:
           # Architecture setting
           CIBW_ARCHS: ${{ steps.arch.outputs.arch }}
 
-          # Test that the wheel works correctly
-          # Note: Don't run executables as they may hang on Linux waiting for input
+          # Check the bundled executables both exist and actually run.
           CIBW_TEST_COMMAND: >
             python -c "import quippy" &&
-            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'quip')), 'quip executable missing'" &&
-            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'gap_fit')), 'gap_fit executable missing'" &&
-            python -c "import os, quippy; assert os.path.exists(os.path.join(quippy.__path__[0], 'md')), 'md executable missing'"
+            python -c "import os, quippy; missing=[b for b in ('quip','gap_fit','md') if not os.path.exists(os.path.join(quippy.__path__[0], b))]; assert not missing, 'missing executables: '+', '.join(missing)" &&
+            timeout 60 quip --help &&
+            timeout 60 gap_fit --help
 
       - name: Verify wheel contents
         run: |
